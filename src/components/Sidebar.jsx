@@ -5,6 +5,7 @@ import {
   ShoppingCart,
   FileText,
   ChevronLeft,
+  ChevronDown,
   ChevronRight,
   Settings,
   Radio,
@@ -18,6 +19,7 @@ import {
   Layers,
   BellElectric,
   PanelLeft,
+  Circle,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -42,10 +44,15 @@ import { userKeys } from "../queries/users.queries";
 import { getAllUsers } from "../api/users.api";
 import logo, { headingLogo } from "../assets/assets";
 import { useGpcController } from "../queries/controller.queries";
+import { useLayoutPreferences } from "../queries/prefrences.queries";
+import Icon from "./ui/Icon/Icon";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
   const { enteredEmail: email } = useContext(PageContext)
+  const [expandedGroups, setExpandedGroups] = useState({});
+  const { data: sidebarData, isPending: sidebarLoading } = useLayoutPreferences()
+  console.log("SIDEBAR", sidebarData)
   const { user } = useSelector(s => s.user)
   const { data: usersData, isPending: usersPending } = useQuery({ queryKey: userKeys.lists, queryFn: getAllUsers })
   const { data } = useGpcController();
@@ -82,7 +89,12 @@ export function Sidebar() {
   const { isPending: invoiceStatLoading, data: invoiceStats } = useInvoiceStats({ email })
   const { isPending: reminderStatLoading, data: reminderStats } = useReminderStats({ email })
 
-
+  const toggleGroup = (groupName) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName],
+    }));
+  };
 
   // MENU ITEMS WITH COLORS
   const menuItems = [
@@ -226,6 +238,7 @@ export function Sidebar() {
       hover: "hover:bg-red-50",
       countBg: "bg-blue-500 text-white",
     },
+
     {
       id: "view-reports",
       label: "Reports",
@@ -237,6 +250,15 @@ export function Sidebar() {
       countBg: "bg-teal-500 text-white ",
     }
   ];
+  useEffect(() => {
+    if (!sidebarData?.data) return;
+
+    setExpandedGroups(
+      Object.fromEntries(
+        sidebarData.data.map(group => [group.group_name, true])
+      )
+    );
+  }, [sidebarData]);
   // const isMobile = useMediaQuery("(max-width: 1023px)");
   return (
     <>
@@ -344,49 +366,136 @@ shadow-2xl"
             </div>
           )}
         </button>
-
         {/* MENU ITEMS */}
-        <div className="mt-4 space-y-2 flex-1">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setSidebarCollapsed(true);
-                setActivePage(item.id);
-                navigateTo(item.id);
-              }}
-              className={`w-full flex items-center gap-2 p-2  transition-all duration-200 cursor-pointer hover:bg-white/5
-                ${collapsed ? "justify-center" : ""}
-                    ${activePage === item.id
-                  ? `bg-white/10 shadow-2xl rounded-full `
-                  : `  rounded-lg`
-                }
-                `}
-            >
-              {/* FIXED ICON SIZE ALWAYS */}
-              <item.icon
-                className={`w-5 h-5 transition-all duration-100 ease-out
-    ${activePage === item.id
-                    ? " scale-120" : ""
-
-                  }`}
-              />
-
-              {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
-              {!collapsed && (
-                <>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.count != null && (
-                    <span
-                      className={`px-2 py-0.5 rounded-full bg-[#7657ff]/20 ${activePage == item.id ? "text-md" : "text-xs"} `}
-                    >
-                      {item.loading ? <LoadingSpin /> : item.count}
-                    </span>
+        <div
+          className="
+    mt-4
+    flex-1
+    min-h-0
+    overflow-y-auto
+    pr-1
+    custom-scrollbar
+  "
+        >
+          {sidebarLoading ? (
+            <div className="animate-pulse space-y-5">
+              {[1, 2, 3].map((group) => (
+                <div key={group}>
+                  {/* Group Header */}
+                  {!collapsed && (
+                    <div className="mb-3 flex items-center justify-between px-3">
+                      <div className="h-3 w-28 rounded bg-white/10" />
+                      <div className="h-4 w-4 rounded bg-white/10" />
+                    </div>
                   )}
-                </>
-              )}
-            </button>
-          ))}
+
+                  {/* Group Items */}
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4].map((item) => (
+                      <div
+                        key={item}
+                        className={`flex items-center gap-3 p-2 ${collapsed ? "justify-center" : ""
+                          }`}
+                      >
+                        {/* Icon */}
+                        <div className="h-5 w-5 rounded-full bg-white/10 shrink-0" />
+
+                        {!collapsed && (
+                          <>
+                            {/* Text */}
+                            <div className="h-4 flex-1 rounded bg-white/10" />
+
+                            {/* Count */}
+                            <div className="h-5 w-8 rounded-full bg-white/10" />
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            sidebarData?.data
+              ?.sort((a, b) => a.group_priority - b.group_priority)
+              .map((group) => (
+                <div key={group.group_name} className="mb-3">
+                  {/* Group Header */}
+                  {!collapsed && (
+                    <button
+                      onClick={() => toggleGroup(group.group_name)}
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-300 hover:bg-white/5"
+                    >
+                      <span>{group.group_name}</span>
+
+                      {expandedGroups[group.group_name] ? (
+                        <ChevronDown size={16} />
+                      ) : (
+                        <ChevronRight size={16} />
+                      )}
+                    </button>
+                  )}
+
+                  {/* Group Items */}
+                  {(collapsed || expandedGroups[group.group_name]) && (
+                    <div className="mt-1 space-y-1 ml-2">
+                      {group.data
+                        ?.sort((a, b) => Number(a.weight) - Number(b.weight))
+                        .map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              setSidebarCollapsed(true);
+                              setActivePage(item.id);
+
+                              navigateTo(
+                                item.endpoint ||
+                                item.module_name
+                                  ?.toLowerCase()
+                                  .replace(/\s+/g, "-")
+                              );
+                            }}
+                            className={`
+                      flex w-full items-center gap-3 rounded-lg p-2
+                      transition-all duration-200
+                      hover:bg-white/5
+                      ${collapsed ? "justify-center" : ""}
+                      ${activePage === item.id
+                                ? "bg-white/10 rounded-full shadow-lg"
+                                : ""
+                              }
+                    `}
+                          >
+                            <Icon
+                              name={item.icon}
+                              library={item.library}
+                              className={`
+                        h-5 w-5 shrink-0
+                        ${activePage === item.id
+                                  ? "scale-125 text-blue-400 "
+                                  : ""
+                                }
+                      `}
+                            />
+
+                            {!collapsed && (
+                              <>
+                                <span className="flex-1 truncate text-left">
+                                  {item.name}
+                                </span>
+
+                                <span className="rounded-full bg-[#7657ff]/20 px-2 py-0.5 text-xs">
+                                  {100}
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              ))
+          )}
         </div>
         <div onClick={() => navigateTo("/settings/controller")}
           className="my-6 flex items-center justify-center cursor-pointer">
