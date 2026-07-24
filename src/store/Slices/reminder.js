@@ -2,7 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { getLadger } from "./ladger";
 import { buildLedgerItem, createLedgerEntry, getCurrentUser } from "../../services/utils";
 
 const orderRemSlice = createSlice({
@@ -105,7 +104,6 @@ export const cancelReminder = ({ email, reminderId }) => {
             user: getCurrentUser(),
           }),
         ],
-        okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),
       });
 
 

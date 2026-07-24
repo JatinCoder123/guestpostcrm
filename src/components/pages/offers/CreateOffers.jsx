@@ -12,7 +12,6 @@ import IconButton from "../../ui/Buttons/IconButton";
 
 import {
   createOffer,
-  getOffers,
   offersAction,
 } from "../../../store/Slices/offers";
 import { toast } from "react-toastify";
@@ -22,11 +21,13 @@ import { offerKeys, useOffersByEmail } from "../../../queries/offers.queries";
 import { useTemplateByName } from "../../../queries/template.queries";
 import { queryClient } from "../../../lib/queryClient";
 import { useWebsites } from "../../../queries/web.queries";
+import { useContact } from "../../../queries/contact.queries";
 
-export default function CreateOffers({ threadId, email }) {
+export default function CreateOffers({ email }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const { data: contactData } = useContact(email)
+  const threadId = contactData?.contact?.thread_id
   const { data: webSitesData } = useWebsites();
   const websiteLists = webSitesData?.data ?? [];
   const { creating, message, error } = useSelector(

@@ -19,32 +19,26 @@ const FirstReplyBtn = ({ email, threadEmails = [] }) => {
     if (!reminderId) return;
 
     const alreadyFirstReplySent = threadEmails.some((mail) => {
-  const fromEmail = mail?.from_email?.toLowerCase?.() || "";
-  const userEmail = businessEmail?.toLowerCase?.() || "";
+      const fromEmail = mail?.from_email?.toLowerCase?.() || "";
+      const userEmail = businessEmail?.toLowerCase?.() || "";
 
-  return userEmail && (fromEmail === userEmail || fromEmail.includes(userEmail));
-});
+      return userEmail && (fromEmail === userEmail || fromEmail.includes(userEmail));
+    });
 
-if (alreadyFirstReplySent) {
-  const confirmSend = window.confirm(
-    "First reply is already sent in this thread. Do you want to send it again?"
-  );
+    if (alreadyFirstReplySent) {
+      const confirmSend = window.confirm(
+        "First reply is already sent in this thread. Do you want to send it again?"
+      );
 
-  if (!confirmSend) return;
-}
+      if (!confirmSend) return;
+    }
 
     try {
       setFrLoading(true);
-      showConsole && console.log("First rply send button clicked");
       await fetchGpc({
         params: { type: "send_reminder", reminder_id: reminderId },
       });
-      dispatch(
-        viewEmailAction.compleConv({
-          message: `First reply sent successfully to ${email}`,
-          sendedEmail: email,
-        }),
-      );
+      toast.success(`First Reply Sent Successfully to ${email}`)
       updateActivity(email, "first reply sent");
       moveToNext(email)
       setShowFirstReplyBtn(false);

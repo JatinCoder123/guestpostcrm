@@ -10,8 +10,7 @@ import { Trash2 } from "lucide-react";
 import { Save, Send } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
 import { toast } from "react-toastify";
-import { createDeal, dealsAction, getDeals } from "../../../store/Slices/deals";
-import { getOffers } from "../../../store/Slices/offers";
+import { createDeal, dealsAction } from "../../../store/Slices/deals";
 import { offerKeys, useOffersByEmail } from "../../../queries/offers.queries";
 import { useTemplateByName } from "../../../queries/template.queries";
 import { dealKeys, useDealsByEmail } from "../../../queries/deals.queries";
@@ -26,7 +25,6 @@ export default function CreateDeals({ email }) {
 
   const { data: webSitesData } = useWebsites();
   const websiteLists = webSitesData?.data ?? []
-  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   // 🔥 now using deals everywhere
   const { creating, message, error } = useSelector(
     (state) => state.deals,
@@ -137,11 +135,11 @@ export default function CreateDeals({ email }) {
   }, [message, error]);
   useEffect(() => {
     const currentOfferWithoutDeal = offers.filter((o) => {
-      const isSameThread = (o.thread_id == threadId && o.offer_status !== "expired");
+      const isSameThread = (o.name == email && o.offer_status !== "expired");
 
       // ✅ check against ALL deals (not only active)
       const alreadyHasDeal = deals.some(
-        (d) => d.thread_id == threadId && d.website_c == o.website,
+        (d) => d.email == email && d.website_c == o.website,
       );
 
       return isSameThread && !alreadyHasDeal;
@@ -155,7 +153,7 @@ export default function CreateDeals({ email }) {
 
       setNewDeals(newDeals);
     }
-  }, [deals, offers, threadId]);
+  }, [deals, offers, email]);
   return (
     <div className="w-full flex gap-6 items-start">
       {/* LEFT SIDE */}

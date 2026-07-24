@@ -17,19 +17,21 @@ import {
     Calendar,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { editContact } from "../store/Slices/viewEmail";
 import AccountPage from "../components/pages/AccountPage";
 import { LoadingAll } from "./Loading";
-import { useContact } from "../queries/contact.queries";
+import { useContact, useUpdateAccount, useUpdateContact } from "../queries/contact.queries";
+import { ContactDetailSkeleton } from "./ContactDetailSkeleton";
 
 
 export default function ContactDetail({ email }) {
-    const { data, isPending: contactLoading } =
-        useContact(email);
+    const { data, isLoading: contactLoading, isFetching: contactFetching } = useContact(email);
+    const { mutate: updateContact, isPending: contactUpdateLoading, error: contactError } = useUpdateContact()
+    const { mutate: updateAccount, isPending: accountUpdateLoading, error: accountError } = useUpdateAccount()
     const contactInfo = data?.contact
     const accountInfo = data?.account
     const dealInfo = data?.deal_fetch
     const [isEditing, setIsEditing] = useState(false);
+    const [isEditingAccount, setIsEditingAccount] = useState(false);
     const [formData, setFormData] = useState({
         contact: {},
         account: {},
@@ -67,7 +69,8 @@ export default function ContactDetail({ email }) {
 
         setFormData(newFormData);
         calculateDealStats(newFormData.deal);
-    }, [contactInfo, accountInfo, dealInfo]);
+    }, [data]);
+
 
     const calculateDealStats = (deals) => {
         if (!Array.isArray(deals) || deals.length === 0) {
@@ -129,30 +132,23 @@ export default function ContactDetail({ email }) {
         }));
     };
 
-    const handleSave = () => {
+    const handleSaveContact = () => {
         // console.log("formData", formData);
-        dispatch(editContact(formData));
+        updateContact({ email, payload: formData.contact, id: formData.contact.id });
         setIsEditing(false);
+    };
+    const handleSaveAccount = () => {
+        // console.log("formData", formData);
+        updateAccount({ email, payload: formData.account, id: formData.account?.id });
+        setIsEditingAccount(false);
     };
 
     const handleCancel = () => {
         setIsEditing(false);
+        setIsEditingAccount(false);
     };
-    if (contactLoading) {
-        return (
-            <div className="w-full mt-10  flex items-center justify-center bg-gradient-to-br from-[#faf5ff] via-[#f0f9ff] to-[#fdf2f8]">
-                <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl px-10 py-12 shadow-2xl flex flex-col items-center">
-                    <LoadingAll
-                        type="hourglass"
-                        size="70"
-                        color="#9333ea"
-                    />
-                    <p className="mt-5 text-lg font-semibold text-gray-700">
-                        Loading Contact Details...
-                    </p>
-                </div>
-            </div>
-        );
+    if (contactLoading || accountUpdateLoading || contactUpdateLoading) {
+        return <ContactDetailSkeleton />;
     }
     if (accountShow) {
         return (
@@ -160,8 +156,7 @@ export default function ContactDetail({ email }) {
                 setAccountShow={setAccountShow}
                 formData={formData}
                 setFormData={setFormData}
-                handleSave={handleSave}
-            // handleChange={handleChange}
+                handleSave={handleSaveAccount}
             />
         );
     }
@@ -196,21 +191,22 @@ export default function ContactDetail({ email }) {
                                 alt="create-new"
                             />
                         </div>
-                        <button
-                            onClick={() => setAccountShow(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl
+                        {contactInfo?.type?.toLowerCase() == "brand" && (
+                            <button
+                                onClick={() => setAccountShow(true)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl
                             bg-gradient-to-r from-[#ec4899] to-[#9333ea]
                             text-white font-semibold shadow-lg hover:scale-105 transition"
-                        >
-                            <Building2 size={18} />
-                            View Account
-                        </button>
+                            >
+                                <Building2 size={18} />
+                                View Account
+                            </button>)}
                     </div>
                 </div>
             </div>
 
             {/* Main Content Grid */}
-            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-1 gap-6">
                 {/* Contact Information - 2 columns */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Contact Information Card */}
@@ -499,65 +495,7 @@ export default function ContactDetail({ email }) {
                     </div>
                 </div>
 
-                {/* Account Details - 1 column */}
-                <div className="space-y-6">
-                    <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f472b6] to-[#a855f7] flex items-center justify-center">
-                                <Building2 className="text-white" size={20} />
-                            </div>
-                            Account
-                        </h2>
 
-                        <div className="space-y-4">
-                            <GlassInfo
-                                icon={<Building2 />}
-                                label="Company"
-                                value={formData?.contact?.account_name}
-                                fullWidth
-                            />
-                            <GlassInfo
-                                icon={<CreditCard />}
-                                label="Account ID"
-                                value={formData?.contact?.account_id}
-                                fullWidth
-                            />
-                            <GlassInfo
-                                icon={<Phone />}
-                                label="Phone"
-                                value={formData?.contact?.phone_work}
-                                fullWidth
-                            />
-                            <GlassInfo
-                                icon={<Building2 />}
-                                label="Website"
-                                value={accountInfo?.website}
-                                fullWidth
-                            />
-                        </div>
-                    </div>
-
-                    {/* Account Addresses */}
-                    <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">
-                            Account Addresses
-                        </h3>
-                        <div className="space-y-4">
-                            <GlassInfo
-                                icon={<MapPin />}
-                                label="Billing"
-                                value={accountInfo?.billing_address_street}
-                                fullWidth
-                            />
-                            <GlassInfo
-                                icon={<MapPin />}
-                                label="Shipping"
-                                value={accountInfo?.shipping_address_street}
-                                fullWidth
-                            />
-                        </div>
-                    </div>
-                </div>
             </div>
 
             {/* Edit Modal */}
@@ -572,7 +510,7 @@ export default function ContactDetail({ email }) {
                     >
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-3xl font-bold text-gray-800">
-                                Edit Contact & Account
+                                Edit Contact
                             </h2>
                             <button
                                 onClick={handleCancel}
@@ -590,7 +528,7 @@ export default function ContactDetail({ email }) {
                                 Cancel
                             </button>
                             <button
-                                onClick={handleSave}
+                                onClick={handleSaveContact}
                                 className="px-6 py-2 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white font-semibold rounded-xl hover:from-[#7e22ce] hover:to-[#2563eb] transition-colors"
                             >
                                 Save Changes
@@ -629,18 +567,7 @@ export default function ContactDetail({ email }) {
                                             className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Stage
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="stage"
-                                            value={formData.contact.stage || ""}
-                                            onChange={(e) => handleChange(e, "contact")}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                                        />
-                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-600 mb-1">
                                             Phone
@@ -677,18 +604,6 @@ export default function ContactDetail({ email }) {
                                             className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Customer Type
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="customer_type"
-                                            value={formData.contact.customer_type || ""}
-                                            onChange={(e) => handleChange(e, "contact")}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                                        />
-                                    </div>
                                 </div>
                             </div>
 
@@ -719,98 +634,6 @@ export default function ContactDetail({ email }) {
                                             name="alt_address_street"
                                             value={formData.contact.alt_address_street || ""}
                                             onChange={(e) => handleChange(e, "contact")}
-                                            rows={3}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Account Information */}
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <Building2 size={20} className="text-[#ec4899]" />
-                                    Account Information
-                                </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Company
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="company"
-                                            value={formData.account.company || ""}
-                                            onChange={(e) => handleChange(e, "account")}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Account ID
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="accountId"
-                                            value={formData.account.accountId || ""}
-                                            onChange={(e) => handleChange(e, "account")}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Phone
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            name="phone_office"
-                                            value={formData.account.phone_office || ""}
-                                            onChange={(e) => handleChange(e, "account")}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Website
-                                        </label>
-                                        <input
-                                            type="url"
-                                            name="website"
-                                            value={formData.account.website || ""}
-                                            onChange={(e) => handleChange(e, "account")}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Account Addresses */}
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <MapPin size={20} className="text-[#3b82f6]" />
-                                    Account Addresses
-                                </h3>
-                                <div className="space-y-4">
-                                    <div className="col-span-full">
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Billing Address
-                                        </label>
-                                        <textarea
-                                            name="billing_address_street"
-                                            value={formData.account.billing_address_street || ""}
-                                            onChange={(e) => handleChange(e, "account")}
-                                            rows={3}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
-                                        />
-                                    </div>
-                                    <div className="col-span-full">
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Shipping Address
-                                        </label>
-                                        <textarea
-                                            name="shipping_address_street"
-                                            value={formData.account.shipping_address_street || ""}
-                                            onChange={(e) => handleChange(e, "account")}
                                             rows={3}
                                             className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
                                         />

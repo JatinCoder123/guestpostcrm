@@ -81,11 +81,11 @@ const STATUS_CONFIG = [
 
   },
   {
-    value: "marketplace",
+    value: "Marketplace",
     label: "Marketplace",
     icon: StoreIcon,
     color: "#ed3ab7", // purple
-    filter: 'type',
+    filter: 'order_type',
     showAmount: true
 
   },
@@ -94,7 +94,7 @@ const STATUS_CONFIG = [
     label: "Listacle",
     icon: ListFilter,
     color: "#56cd1f", // purple
-    filter: 'type',
+    filter: 'order_type',
     showAmount: true
 
 

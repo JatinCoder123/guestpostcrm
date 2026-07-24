@@ -9,6 +9,7 @@ export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const showConsole = true;
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
@@ -99,13 +100,16 @@ export const PageContextProvider = (props) => {
     setShowNextPrev(nextPrev);
 
     if (navigate === "/" || navigate === "") {
-  setActivePage("");
-}
+      setActivePage("");
+    }
 
     if (navigate != null) {
       navigateTo(navigate);
     }
   };
+  const toggleMobileSidebar = () => {
+    setMobileSidebarOpen(prev => !prev)
+  }
 
   // Set activePage based on current URL
   useEffect(() => {
@@ -130,6 +134,9 @@ export const PageContextProvider = (props) => {
     superfastToggle,
     superfastReply,
     setSidebarCollapsed,
+    mobileSidebarOpen,
+    setMobileSidebarOpen,
+    toggleMobileSidebar,
     handleDateClick,
     currentIndex,
     showNextPrev,

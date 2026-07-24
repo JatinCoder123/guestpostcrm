@@ -2,7 +2,7 @@
 @import "tailwindcss";
 :root {
   --font-size: 16px;
-  --background: #ffffff;
+  --background: #ddf2ff;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
   --card-foreground: oklch(0.145 0 0);
@@ -33,7 +33,8 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
+  --sidebar-primary: #010a1b;
+  --sidebar-secondary: #033081;
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
@@ -75,6 +76,8 @@
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
+    --sidebar-secondary: #033081;
+
   --sidebar-ring: oklch(0.439 0 0);
 }
 
@@ -112,6 +115,7 @@
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-secondary: var(--sidebar-secondary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -233,40 +237,9 @@ html {
   -ms-overflow-style: none; /* IE & Edge */
   scrollbar-width: none; /* Firefox */
 }
-.mail-content {
-  color: #1f2937; /* slate-800 */
-  background-color: #ffffff;
-  padding: 1rem;
-  border-radius: 0.5rem;
-}
 
 /* Fix common email HTML elements */
-.mail-content * {
-  color: inherit !important;
-  background-color: transparent !important;
-  max-width: 100%;
-}
 
-.mail-content a {
-  color: #2563eb !important; /* blue-600 */
-  text-decoration: underline;
-}
-
-.mail-content table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.mail-content td,
-.mail-content th {
-  padding: 6px;
-  border: 1px solid #e5e7eb;
-}
-
-.mail-content img {
-  max-width: 100%;
-  height: auto;
-}
 @keyframes pulseGlow {
   0%,
   100% {
@@ -313,4 +286,7 @@ html {
     opacity: 0;
     transform: translateX(100%);
   }
+}
+body {
+  margin: 0 !important;
 }

@@ -204,10 +204,29 @@ export const updateContact = async ({
     id,
     payload,
 }) => {
+    console.log("ID", id)
+    console.log("PAYLOAD", payload)
     const response = await http({
         method: "POST",
         body: {
             module: "Contacts",
+            action: "update",
+            id,
+            data: { ...payload }
+        },
+    });
+
+    return response;
+};
+export const updateAccount = async ({
+    id,
+    payload,
+}) => {
+    const response = await http({
+        method: "POST",
+        body: {
+            module: "Accounts",
+            action: "update",
             id,
             data: { ...payload }
         },

@@ -17,6 +17,7 @@ import {
   CircleX,
   Layers,
   BellElectric,
+  PanelLeft,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -39,18 +40,21 @@ import { useReminderStats } from "../queries/reminder.queries";
 import { useQuery } from "@tanstack/react-query";
 import { userKeys } from "../queries/users.queries";
 import { getAllUsers } from "../api/users.api";
+import logo, { headingLogo } from "../assets/assets";
+import { useGpcController } from "../queries/controller.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
   const { enteredEmail: email } = useContext(PageContext)
   const { user } = useSelector(s => s.user)
   const { data: usersData, isPending: usersPending } = useQuery({ queryKey: userKeys.lists, queryFn: getAllUsers })
-
+  const { data } = useGpcController();
+  const summary = data?.summary ?? {}
   const currentUser = usersData?.find((u) => u.description === user.email);
   const currentUserId = currentUser?.id;
 
 
-  const { activePage, setActivePage, collapsed, setSidebarCollapsed } =
+  const { activePage, setActivePage, collapsed, setSidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } =
     useContext(PageContext);
 
   const [openSettingsCard, setOpenSettingsCard] = useState(false);
@@ -233,42 +237,112 @@ export function Sidebar() {
       countBg: "bg-teal-500 text-white ",
     }
   ];
-
+  // const isMobile = useMediaQuery("(max-width: 1023px)");
   return (
     <>
-      {/* SIDEBAR */}
-      <motion.div
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+      <motion.aside
         data-tour="sidebar"
-        animate={{ width: collapsed ? 100 : 260 }}
-        transition={{ duration: 0.25 }}
-        className="bg-white border-r border-gray-200 min-h-full
-                   p-2 relative flex flex-col shadow-sm"
+        animate={{
+          // x: mobileSidebarOpen ? 0 : -300,
+          width: collapsed ? 80 : 260,
+        }} transition={{ duration: 0.25 }}
+        className="
+         fixed
+      left-0
+      top-0
+      z-50
+      h-screen
+lg:static
+ lg:translate-x-0
+px-1
+flex
+flex-col
+overflow-hidden
+bg-gradient-to-b
+from-sidebar-primary
+to-sidebar-secondary
+text-white
+shadow-2xl"
       >
-        {/* COLLAPSE BUTTON */}
-        <button
-          onClick={() => setSidebarCollapsed(!collapsed)}
-          className={`fixed ${collapsed ? "left-23" : "left-62"
-            } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
-                     rounded-full flex items-center justify-center hover:bg-gray-100 shadow`}
-        >
-          {collapsed ? <ChevronRight /> : <ChevronLeft />}
-        </button>
 
+        <div className="mx-3 my-4 h-11 rounded-xl bg-white/90 shadow">
+          <div className="group relative flex h-full items-center justify-center gap-3">
+
+            {/* Logo */}
+            <img
+              src={collapsed ? logo : headingLogo}
+              className={`
+        h-9 w-auto max-w-[160px] cursor-pointer object-contain transition-all duration-200
+        ${collapsed
+                  ? "group-hover:hidden"
+                  : ""
+                }
+      `}
+              alt="App logo"
+              onClick={() => navigateTo("")}
+              draggable={false}
+            />
+
+            {/* Collapse / Expand Button */}
+            <button
+              onClick={() => setSidebarCollapsed(!collapsed)}
+              className={`
+         flex h-7 w-7 items-center justify-center rounded-full shadow cursor-pointer
+        transition-all duration-200
+
+        ${collapsed
+                  ? "hidden group-hover:flex"
+                  : "flex"
+                }
+      `}
+            >
+              <PanelLeft className="h-5 w-5" color="#0a3687ff" />
+            </button>
+
+          </div>
+        </div>
         {/* LIVE BUTTON */}
+
         <button
-          data-tour="sidebar-live"
           onClick={() => {
             setActivePage("");
             navigateTo("");
           }}
-          className={`w-full flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-            ${activePage === ""
-              ? "bg-green-500 text-white"
-              : "bg-green-50 text-green-700"
-            }`}
+          className="flex items-center justify-center"
         >
-          <Radio className="w-5 h-5 animate-pulse" />
-          {!collapsed && <span className="font-medium">Live</span>}
+          {/* Icon */}
+          <div
+            className={`
+      z-10 flex h-13 w-13 items-center justify-center
+      rounded-full border-5 border-[#0b6dfd] bg-white
+      shadow-md
+    `}
+          >
+            <Radio className="h-6 w-6 text-black" />
+          </div>
+
+          {/* Live Preview */}
+          {!collapsed && (
+            <div
+              className="
+        -ml-3 flex h-9 w-[170px]
+        items-center justify-center
+        rounded-r-xl
+        bg-gradient-to-r from-[#0b6dfd] to-[#074197]
+        pl-6 pr-4
+        text-sm font-medium text-white
+        shadow-md
+      "
+            >
+              Live Preview
+            </div>
+          )}
         </button>
 
         {/* MENU ITEMS */}
@@ -281,11 +355,11 @@ export function Sidebar() {
                 setActivePage(item.id);
                 navigateTo(item.id);
               }}
-              className={`w-full flex items-center gap-2 p-2  transition-all duration-200 cursor-pointer
+              className={`w-full flex items-center gap-2 p-2  transition-all duration-200 cursor-pointer hover:bg-white/5
                 ${collapsed ? "justify-center" : ""}
                     ${activePage === item.id
-                  ? `${item.countBg}  shadow-2xl rounded-full `
-                  : `text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${item.hover} rounded-lg`
+                  ? `bg-white/10 shadow-2xl rounded-full `
+                  : `  rounded-lg`
                 }
                 `}
             >
@@ -304,7 +378,7 @@ export function Sidebar() {
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.count != null && (
                     <span
-                      className={`px-2 py-0.5 rounded-full ${activePage == item.id ? "text-md" : "text-xs"} ${item.countBg}`}
+                      className={`px-2 py-0.5 rounded-full bg-[#7657ff]/20 ${activePage == item.id ? "text-md" : "text-xs"} `}
                     >
                       {item.loading ? <LoadingSpin /> : item.count}
                     </span>
@@ -314,22 +388,51 @@ export function Sidebar() {
             </button>
           ))}
         </div>
+        <div onClick={() => navigateTo("/settings/controller")}
+          className="my-6 flex items-center justify-center cursor-pointer">
+          {/* Progress Circle */}
+          <div
+            className="
+    relative z-10 grid size-14 place-items-center rounded-full
+    after:absolute after:inset-1.5 after:rounded-full after:bg-[#042158]
+    shrink-0
+  "
+            style={{
+              background: `conic-gradient(
+      #1775ef ${summary?.total_score ?? 0}%,
+      rgba(107,141,189,.33) 0%
+    )`,
+            }}
+          >
+            <span className="relative z-10 text-sm font-semibold text-white">
+              {summary?.total_score ?? 0}%
+            </span>
+          </div>
 
-        {/* SETTINGS BUTTON */}
-        <button
-          data-tour="sidebar-settings"
-          onClick={() => {
-            setSidebarCollapsed(true);
-            navigateTo("settings");
-          }}
-          className=" fixed bottom-2 cursor-pointer mt-auto flex items-center gap-3 px-3 py-2.5 
-                     bg-gray-200 hover:bg-gray-300 rounded-lg transition-all shadow"
-        >
-          <Settings className="w-5 h-5 text-gray-700" />
-        </button>
-      </motion.div>
+          {/* Automation Score Card */}
+          {!collapsed && (
+            <div
+              className="
+        -ml-3 flex h-12 w-[170px]
+        items-center rounded-r-xl
+        border border-[#3973c9]
+        bg-gradient-to-b from-[#011334] to-[#032e7e]
+        pl-6 pr-4 shadow-md
+        max-h-[850px]:hidden
+      "
+            >
+              <p className="text-sm font-medium leading-5 text-white">
+                Automation
+                <br />
+                Score
+              </p>
+            </div>
+          )}
+        </div>
 
-
+      </motion.aside>
     </>
+
+
   );
 }

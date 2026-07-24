@@ -7,8 +7,9 @@ import {
   buildLedgerItem,
   createLedgerEntry,
 } from "../../services/utils";
-import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { queryClient } from "../../lib/queryClient";
+import { dealKeys } from "../../queries/deals.queries";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -27,28 +28,6 @@ const dealsSlice = createSlice({
     deleteDealId: null,
   },
   reducers: {
-    getDealsRequest(state) {
-      state.loading = true;
-      state.error = null;
-    },
-    getDealsSucess(state, action) {
-      const { count, deals, pageCount, summary, pageIndex } = action.payload;
-      state.loading = false;
-      if (pageIndex === 1) {
-        state.deals = deals;
-      } else {
-        state.deals = [...state.deals, ...deals];
-      }
-      state.count = count;
-      state.summary = summary;
-      state.pageCount = pageCount;
-      state.pageIndex = pageIndex;
-      state.error = null;
-    },
-    getDealsFailed(state, action) {
-      state.loading = false;
-      state.error = action.payload;
-    },
     createDealRequest(state) {
       state.creating = true;
       state.message = null;
@@ -115,49 +94,6 @@ const dealsSlice = createSlice({
     },
   },
 });
-
-export const getDeals = ({
-  email = null,
-  page = 1,
-  loading = true,
-  brand = false,
-}) => {
-  return async (dispatch, getState) => {
-    if (loading) {
-      dispatch(dealsSlice.actions.getDealsRequest());
-    }
-
-    try {
-      let res;
-      const timeline = getState().ladger.timeline;
-      const params = {
-        ...(timeline && timeline !== "null" ? { filter: timeline } : {}),
-        email,
-        page,
-        page_size: "50",
-      };
-      brand
-        ? (res = await fetchGpc({
-          params: { type: "brandTimeline", case: "deal", ...params },
-        }))
-        : (res = await fetchGpc({ params: { type: "get_deals", ...params } }));
-      const data = brand ? res.data.deal : res;
-      showConsole && console.log(`${brand ? "Brand" : ""} Deals`, data);
-      dispatch(
-        dealsSlice.actions.getDealsSucess({
-          count: data.data_count ?? 0,
-          deals: data.data,
-          pageCount: data.total_pages ?? 1,
-          pageIndex: data.current_page ?? 1,
-          summary: data.summary ?? null,
-        }),
-      );
-      dispatch(dealsSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(dealsSlice.actions.getDealsFailed("Fetching Deal  Failed"));
-    }
-  };
-};
 export const createDeal = ({ threadId, email, deals = [], contactId }) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
@@ -228,8 +164,6 @@ export const createDeal = ({ threadId, email, deals = [], contactId }) => {
             parent_name: "outr_deal",
           }),
         ),
-
-        okHandler: () => dispatch(getLadger({ email, loading: false })),
       });
     } catch (error) {
       console.log(error)
@@ -326,7 +260,6 @@ export const updateDeal = ({ deals = [] }) => {
             parent_name: "outr_deal",
           }),
         ),
-        okHandler: () => dispatch(getLadger({ email, loading: false })),
       });
       console.log(`Ledger Entry`, res);
     } catch (error) {
@@ -337,7 +270,7 @@ export const updateDeal = ({ deals = [] }) => {
 export const deleteDeal = (deal, id) => {
   0;
   return async (dispatch, getState) => {
-    const email = extractEmail(deal?.real_name ?? deal?.email);
+    const email = extractEmail(deal?.email);
     const getDomain1 = (url) => {
       try {
         return new URL(url).hostname.replace(/^www\./, "");
@@ -388,12 +321,11 @@ export const deleteDeal = (deal, id) => {
       );
 
       console.log(`Deal`, deal);
-
+      queryClient.invalidateQueries({ queryKey: dealKeys.all })
       const res = await createLedgerEntry({
         domain: state.user.crmEndpoint.split("?")[0],
         email: email,
         group: "Deal",
-        okHandler: () => dispatch(getLadger({ email })),
         items: [
           buildLedgerItem({
             status: "Deal-Deleted",

@@ -9,12 +9,9 @@ import {
 } from "../store/Slices/forwardedEmailSlice";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState, useRef, useMemo } from "react";
-import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
-import { applyTag, markTagAction } from "../store/Slices/markTagSlice";
 import { MdOutlineHome } from "react-icons/md";
 import { viewEmailAction } from "../store/Slices/viewEmail";
-import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
 import { applyHashtag, getCurrentUser, getRighteeUsers, updateActivity } from "../services/utils";
 import { fetchGpc } from "../services/api";
@@ -171,7 +168,6 @@ Open Contact
   const navigate = useNavigate();
   const { isPending: loading, mutate: addToMarket } = useAddMarketPlace();
   const { isPending: removing, mutate: delMarket } = useDelMarketPlace();
-  const { loading: markTagLoading, error: markTagError, message: markTagMessage } = useSelector((s) => s.markTag);
   const isMark = Number(contactInfo?.bulk) == 1
   /* highlight states from contactInfo */
   const isFavActive = contactInfo?.favorite == "1";
@@ -197,15 +193,6 @@ Open Contact
       toast.success(forwardMessage);
       dispatch(forwardedAction.clearAllMessages());
       queryClient.invalidateQueries({ queryKey: forwardedKeys.all })
-    }
-    if (markTagError) {
-      toast.error(markTagError);
-      dispatch(markTagAction.clearAllErrors());
-    }
-
-    if (markTagMessage) {
-      toast.success(markTagMessage);
-      dispatch(markTagAction.clearAllMessage());
     }
 
     if (changeMessage) {
@@ -233,7 +220,6 @@ Open Contact
     changeError,
     changeMessage,
     editMessage,
-    markTagMessage, markTagError
   ]);
 
   const actionButtons = [
@@ -251,7 +237,7 @@ Open Contact
       action: () => navigate("/ip"),
     },
     {
-      icon: markTagLoading || applyTagLoading ? <LoadingChase /> : <img
+      icon: applyTagLoading ? <LoadingChase /> : <img
         src="https://img.icons8.com/color/48/tags--v1.png"
         className="w-6 h-6"
         alt="tag"

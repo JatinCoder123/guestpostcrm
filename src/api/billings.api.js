@@ -1,5 +1,4 @@
-import { Turtle } from "lucide-react";
-import { fetchGpc, http } from "../services/api";
+import { http } from "../services/api";
 import { buildTableRequestBody } from "../utils/preferenceStorage";
 
 export const getBillingHistory = ({

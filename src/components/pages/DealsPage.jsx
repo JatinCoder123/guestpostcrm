@@ -12,8 +12,8 @@ import {
   Eye,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useContext } from "react";
-import { deleteDeal } from "../../store/Slices/deals.js";
+import { useContext, useEffect } from "react";
+import { dealsAction, deleteDeal } from "../../store/Slices/deals.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import TableView, { Table } from "../ui/table/Table";
@@ -21,6 +21,7 @@ import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingChase } from "../Loading.jsx";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
 import { useDealStats, useDeleteDeal, useInfiniteDeals } from "../../queries/deals.queries.js";
+import toast from "react-hot-toast";
 const STATUS_CONFIG = [
   {
     value: "active",
@@ -42,6 +43,7 @@ const STATUS_CONFIG = [
   },
 ];
 export function DealsPage() {
+  const { deleting, deleteDealId, message, error } = useSelector(s => s.deals)
   const preferences =
     useTablePreference(
       "deals"
@@ -60,13 +62,23 @@ export function DealsPage() {
   const {
     data: summary,
   } = useDealStats({ email });
+  useEffect(() => {
+    if (message) {
+      dispatch(dealsAction.clearAllMessages())
+      toast.success(message)
+    }
+    if (error) {
+      dispatch(dealsAction.clearAllErrors())
+      toast.error(error)
+    }
 
-  const {
-    mutate: deleteDeal,
-    isPending: deleting,
-    variables:
-    deleteDealId,
-  } = useDeleteDeal();
+  }, [message, error])
+  // const {
+  //   mutate: deleteDeal,
+  //   isPending: deleting,
+  //   variables:
+  //   deleteDealId,
+  // } = useDeleteDeal();
   const { handleDateClick } =
     useContext(PageContext);
   const navigateTo = useNavigate();
@@ -169,7 +181,7 @@ export function DealsPage() {
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
               onClick={() =>
-                deleteDeal(row.id)
+                dispatch(deleteDeal(row, row.id))
               }
             >
               <Trash className="w-5 h-5 text-red-600" />

@@ -7,8 +7,9 @@ import {
   createLedgerEntry,
   buildLedgerItem,
 } from "../../services/utils";
-import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { queryClient } from "../../lib/queryClient";
+import { offerKeys } from "../../queries/offers.queries";
 
 const offersSlice = createSlice({
   name: "offers",
@@ -27,30 +28,6 @@ const offersSlice = createSlice({
     deleteOfferId: null,
   },
   reducers: {
-    getOffersRequest(state) {
-      state.loading = true;
-
-      state.error = null;
-    },
-    getOffersSucess(state, action) {
-      const { count, offers, summary, pageCount, pageIndex } = action.payload;
-      state.loading = false;
-      if (pageIndex === 1) {
-        state.offers = offers;
-      } else {
-        state.offers = [...state.offers, ...offers];
-      }
-      state.summary = summary;
-      state.count = count;
-      state.error = null;
-      state.pageCount = pageCount;
-      state.pageIndex = pageIndex;
-    },
-    getOffersFailed(state, action) {
-      state.loading = false;
-
-      state.error = action.payload;
-    },
     createOfferRequest(state) {
       state.creating = true;
       state.message = null;
@@ -114,44 +91,14 @@ const offersSlice = createSlice({
   },
 });
 
-export const getOffers = ({ email = null, page = 1, loading = true, brand = false }) => {
-  return async (dispatch, getState) => {
-    if (loading) {
-      dispatch(offersSlice.actions.getOffersRequest());
-    }
-
-    try {
-      let res;
-      const timeline = getState().ladger.timeline
-      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email, page, page_size: "50" }
-      brand ? res = await fetchGpc({ params: { type: "brandTimeline", case: "offer", ...params } })
-        : res = await fetchGpc({ params: { type: "get_offers", ...params } });
-      const data = brand ? res.data.offer : res
-      showConsole && console.log(`${brand ? "BRAND" : ""} offers`, data);
-      dispatch(
-        offersSlice.actions.getOffersSucess({
-          count: data.data_count ?? 0,
-          offers: data.data ?? [],
-          summary: data.summary ?? null,
-          pageCount: data.total_pages ?? 1,
-          pageIndex: data.current_page ?? 1,
-        }),
-      );
-      dispatch(offersSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(offersSlice.actions.getOffersFailed("Fetching Offers  Failed"));
-    }
-  };
-};
 
 export const updateOffer = ({ offers = [] }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
-    const email = extractEmail(offers[0]?.real_name ?? offers[0]?.email_c)
+    const email = offers[0]?.name
     try {
       const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const crmEndpoint = getState().user.crmEndpoint;
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
@@ -201,6 +148,8 @@ export const updateOffer = ({ offers = [] }) => {
 
         "Offer Updated ",
       );
+      queryClient.invalidateQueries({ queryKey: offerKeys.all })
+
 
       await createLedgerEntry({
         domain,
@@ -210,7 +159,6 @@ export const updateOffer = ({ offers = [] }) => {
         group: "Offer",
         reminder_type: "offer",
         websites: offers.map((offer) => offer.website),
-        okHandler: () => dispatch(getLadger({ email, loading: false })),
         items: offers.map((offer) =>
           buildLedgerItem({
             status: "Our-Offer-Updated",
@@ -291,7 +239,6 @@ export const createOffer = ({
           group: "Offer",
           reminder_type: "offer",
           websites: offers.map((offer) => offer.website),
-          okHandler: () => dispatch(getLadger({ email, loading: false })),
           items: offers.map((offer) =>
             buildLedgerItem({
               status: "Our-Offer-Created",
@@ -315,7 +262,7 @@ export const createOffer = ({
 export const deleteOffer = (id, offer) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.deleteOfferRequest({ id }));
-    const email = extractEmail(offer?.real_name ?? offer.email_c)
+    const email = offer?.name
     const state = getState();
     const crmEndpoint = getState().user.crmEndpoint;
 
@@ -357,11 +304,11 @@ export const deleteOffer = (id, offer) => {
         email,
         "Offer Deleted",
       );
+      queryClient.invalidateQueries({ queryKey: offerKeys.all })
       await createLedgerEntry({
         domain: state.user.crmEndpoint.split("?")[0],
         email: email,
         group: "Offer",
-        okHandler: () => dispatch(getLadger({ email, loading: false })),
         items: [
           buildLedgerItem({
             status: "offer_deleted",

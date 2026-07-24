@@ -1,9 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { updateActivity, createLedgerEntry, buildLedgerItem, getCurrentUser } from "../../services/utils";
-import { apiRequest, fetchGpc } from "../../services/api";
-import { viewEmailAction } from "./viewEmail";
-import { getLadger } from "./ladger";
+import { apiRequest } from "../../services/api";
 
 const exchangeSlice = createSlice({
   name: "linkExchange",

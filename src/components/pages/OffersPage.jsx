@@ -32,6 +32,8 @@ import {
   useOfferStats,
   useDeleteOffer,
 } from "../../queries/offers.queries";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteOffer } from "../../store/Slices/offers.js";
 
 const STATUS_CONFIG = [
   {
@@ -58,6 +60,8 @@ const STATUS_CONFIG = [
 ];
 
 export function OffersPage() {
+  const dispatch = useDispatch()
+  const { deleting, deleteOfferId } = useSelector(s => s.offers)
   const preferences =
     useTablePreference(
       "offers"
@@ -75,12 +79,12 @@ export function OffersPage() {
     data: summary,
   } = useOfferStats({ email });
 
-  const {
-    mutate: deleteOffer,
-    isPending: deleting,
-    variables:
-    deleteOfferId,
-  } = useDeleteOffer();
+  // const {
+  //   mutate: deleteOffer,
+  //   isPending: deleting,
+  //   variables:
+  //   deleteOfferId,
+  // } = useDeleteOffer();
 
   const {
     handleDateClick,
@@ -135,7 +139,7 @@ export function OffersPage() {
       onClick: (row) =>
         handleDateClick({
           email:
-            row?.email,
+            row?.name,
           navigate: "/",
         }),
 
@@ -163,7 +167,7 @@ export function OffersPage() {
       onClick: (row) =>
         handleDateClick({
           email:
-            row?.email_c,
+            row?.name,
           navigate:
             "/contacts",
         }),
@@ -274,7 +278,7 @@ export function OffersPage() {
             title="View"
             onClick={() =>
               navigateTo(
-                `/offers/view?email=${row?.email}&id=${row?.id}`)
+                `/offers/view?email=${row?.name}&id=${row?.id}`)
             }
           >
             <Eye className="w-5 h-5 text-blue-600" />
@@ -291,11 +295,7 @@ export function OffersPage() {
             <button
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
-              onClick={() =>
-                deleteOffer(
-                  row.id
-                )
-              }
+              onClick={() => dispatch(deleteOffer(row.id, row))}
             >
               <Trash className="w-5 h-5 text-red-600" />
             </button>

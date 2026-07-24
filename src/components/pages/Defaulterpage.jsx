@@ -7,7 +7,6 @@ import {
   EqualApproximatelyIcon,
 } from "lucide-react";
 
-import SearchComponent from "./SearchComponent";
 import { useState, useEffect, useContext } from "react";
 
 import { useDispatch, useSelector } from "react-redux";

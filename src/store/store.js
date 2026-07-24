@@ -3,26 +3,18 @@ import ladgerReducer from "./Slices/ladger.js";
 import unrepliedReducer from "./Slices/unrepliedEmails.js";
 import favReducer from "./Slices/favEmailSlice.js";
 import forwarededReducer from "./Slices/forwardedEmailSlice.js";
-import markTagReducer from "./Slices/markTagSlice.js";
 import dealsReducer from "./Slices/deals.js";
 import offersReducer from "./Slices/offers.js";
-import invoiceReducer from "./Slices/invoices.js";
-import detectionReducer from "./Slices/detection.js";
 import orderReducer from "./Slices/orders.js";
 import viewEmailReducer from "./Slices/viewEmail.js";
 import aiReplyReducer from "./Slices/aiReply.js";
 import orderRemReducer from "./Slices/reminder.js";
 import userReducer from "./Slices/userSlice.js";
-import avatarReducer from "./Slices/avatarSlice.js";
-import defaulterReducer from "./Slices/defaulterEmails.js";
 import eventReducer from "./Slices/eventSlice.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
 import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
-import DraftInvoiceReducer from "./Slices/draftInvoice.js";
-import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
 import hotReducer from "./Slices/hotSlice.js";
 import tagReducer from "./Slices/tag.js";
-import gpcControllerReducer from "./Slices/gpcControllerSlice";
 import syncReducer from "./Slices/syncSlice.js";
 import reportReducer from "./Slices/reportSlice.js";
 import brandTimelineReducer from "./Slices/brandTimeline.js";
@@ -37,25 +29,17 @@ export const store = configureStore({
     forwarded: forwarededReducer,
     deals: dealsReducer,
     orders: orderReducer,
-    detection: detectionReducer,
-    invoices: invoiceReducer,
     offers: offersReducer,
     viewEmail: viewEmailReducer,
     aiReply: aiReplyReducer,
     reminders: orderRemReducer,
     user: userReducer,
-    markTag: markTagReducer,
-    avatar: avatarReducer,
-    defaulter: defaulterReducer,
     events: eventReducer,
     linkExchange: linkExchangeReducer,
     hot: hotReducer,
     contactdefaulter: contactdefaulterReducer,
-    duplicateEmails: duplicateEmailReducer,
     user: userReducer,
-    DraftInvoice: DraftInvoiceReducer,
     tag: tagReducer,
-    gpcController: gpcControllerReducer,
     sync: syncReducer,
     report: reportReducer,
     brandTimeline: brandTimelineReducer,
