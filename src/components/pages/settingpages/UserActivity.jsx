@@ -1,41 +1,19 @@
 import React, { useContext } from "react";
 import Header from "./Header";
 import { SocketContext } from "../../../context/SocketContext";
-import { useNavigate } from "react-router-dom";
+import { useCrmUsers } from "../../../queries/users.queries";
 
 const UserActivity = () => {
   const { activeUsers } = useContext(SocketContext);
-  const navigateTo = useNavigate()
-
+  const { data: crmUsers } = useCrmUsers()
+  const getName = (email, name) => {
+    return crmUsers?.find((user) => user.description === email)?.name || name;
+  }
   const sortedUsers = [...activeUsers].sort((a, b) => {
-    if (a.status === "online" && b.status !== "online") return -1;
-    if (a.status !== "online" && b.status === "online") return 1;
+    if (a?.status === "online" && b?.status !== "online") return -1;
+    if (a?.status !== "online" && b?.status === "online") return 1;
     return 0;
   });
-  const getTimeAgo = (date) => {
-    if (!date) return "-";
-
-    const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
-
-    const intervals = [
-      { label: "year", seconds: 31536000 },
-      { label: "month", seconds: 2592000 },
-      { label: "day", seconds: 86400 },
-      { label: "hour", seconds: 3600 },
-      { label: "min", seconds: 60 },
-      { label: "sec", seconds: 1 },
-    ];
-
-    for (const interval of intervals) {
-      const count = Math.floor(seconds / interval.seconds);
-
-      if (count >= 1) {
-        return `${count} ${interval.label}${count > 1 ? "s" : ""} ago`;
-      }
-    }
-
-    return "Just now";
-  };
 
   return (
     <div className="p-8">
@@ -57,21 +35,18 @@ const UserActivity = () => {
 
           <tbody>
             {sortedUsers.map((user) => (
-              <tr onClick={() => navigateTo(`/view-reports?email=${encodeURIComponent(user.email)}`)} key={user.email} className="border-t hover:bg-gray-50 transition-colors">
-                <td className="p-3 text-gray-600">
-                  {getTimeAgo(user.lastActiveAt)}
-                </td>
-                <td className="p-3">{user.name || "Unknown"}</td>
+              <tr key={user.email} className="border-t hover:bg-gray-50 transition-colors">
+                <td className="p-3">{getName(user.email, user.name)}</td>
                 <td className="p-3">{user.email}</td>
                 <td className="p-3">
                   <span
                     className={
-                      user.status === "online"
+                      user?.status === "online"
                         ? "text-green-600 font-medium"
                         : "text-yellow-600 font-medium"
                     }
                   >
-                    {user.status === "online" ? "online" : "idle"}
+                    {user?.status === "online" ? "online" : "idle"}
                   </span>
                 </td>
                 <td className="p-3">{user.page === "/" ? "/timeline" : user.page}</td>

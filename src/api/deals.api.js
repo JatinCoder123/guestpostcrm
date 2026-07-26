@@ -31,20 +31,22 @@ export const getDealStats = ({ filters, email }) => {
         params: { ...params },
         body: {
             action: "get_stats",
-            ...filters,
+            ...buildTableRequestBody(filters),
             queries: [
                 {
                     "key": "active",
                     "module": "outr_deal_fetch",
+                    sum_of: ['dealamount'],
                     "filters": {
                         "status": "active"
                     }
                 },
                 {
-                    "key": "expiry",
+                    "key": "expire",
                     "module": "outr_deal_fetch",
+                    sum_of: ['dealamount'],
                     "filters": {
-                        "status": "expiry"
+                        "status": "expire"
                     }
                 },
             ]
@@ -75,3 +77,4 @@ export const getDealById = (
         body: { id },
     });
 export const getDealsByEmail = (email) => fetchGpc({ params: { type: "get_deals", email, page: 1, page_size: 50 } })
+export const getDealsByMessageId = ({ email, message_id }) => fetchGpc({ params: { type: "sync_opr" }, body: { email, message_id, sync_type: "deal" }, method: "POST" })

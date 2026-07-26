@@ -1,16 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { SocketContext } from "../context/SocketContext";
 import { hotAction } from "../store/Slices/hotSlice";
-import { checkForDuplicates } from "../store/Slices/duplicateEmailSlice";
-import { getOrders } from "../store/Slices/orders";
-import { getInvoices } from "../store/Slices/invoices";
-import { getOffers } from "../store/Slices/offers";
 import { useDispatch, useSelector } from "react-redux";
 import { queryClient } from "../lib/queryClient";
 import { hotKeys } from "../queries/hot.queries";
 import { offerKeys } from "../queries/offers.queries";
 import { dealKeys } from "../queries/deals.queries";
 import { emailKeys } from "../queries/email.queries";
+import { invoiceKeys } from "../queries/invoice.queries";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
@@ -36,8 +33,7 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_order_gp_li) {
-            dispatch(getOrders({ loading: false }));
-            dispatch(getInvoices({ loading: false }));
+
             queryClient.invalidateQueries({ queryKey: hotKeys.all })
 
             dispatch(hotAction.updateCount(1));
@@ -47,7 +43,6 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_self_test) {
-            dispatch(getInvoices({ loading: false }));
             queryClient.invalidateQueries({ queryKey: hotKeys.all })
 
             dispatch(hotAction.updateCount(1));
@@ -57,7 +52,6 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_offer) {
-            dispatch(getOffers({ loading: false }));
             queryClient.invalidateQueries({ queryKey: hotKeys.all })
             queryClient.invalidateQueries({ queryKey: offerKeys.all })
             queryClient.invalidateQueries({ queryKey: dealKeys.all })
@@ -69,6 +63,7 @@ function useRefresh() {
         }
         if (notificationCount.outr_paypal_invoice_links) {
             queryClient.invalidateQueries({ queryKey: hotKeys.all })
+            queryClient.invalidateQueries({ queryKey: invoiceKeys.all })
             dispatch(hotAction.updateCount(1));
             setNotificationCount((prev) => ({
                 ...prev,

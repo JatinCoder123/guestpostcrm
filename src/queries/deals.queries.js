@@ -11,9 +11,11 @@ import {
     deleteDeal,
     getDealById,
     getDealsByEmail,
+    getDealsByMessageId,
 } from "../api/deals.api";
 
 import toast from "react-hot-toast";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 export const dealKeys = {
     all: ["deals"],
@@ -27,10 +29,11 @@ export const dealKeys = {
             filters,
         ],
 
-    stats: (email = '') => [
+    stats: (email = '', filters = {}) => [
         "deals",
         "stats",
-        email
+        email,
+        filters
     ],
 
     byId: (id) => [
@@ -43,18 +46,29 @@ export const dealKeys = {
         "email",
         email,
     ],
+    byMessageId: ({ email, message_id }) => [
+        "deals",
+        "message_id",
+        message_id,
+        "email",
+        email,
+    ],
 };
 
 export const useDealStats =
-    ({ email }) => useQuery({
-        queryKey: dealKeys.stats(email),
+    ({ email }) => {
+        const preferences =
+            useTablePreference(
+                "deals"
+            ); return useQuery({
+                queryKey: dealKeys.stats(email, preferences),
 
-        queryFn: () => getDealStats({ email }),
+                queryFn: () => getDealStats({ email, filters: preferences }),
 
-        staleTime:
-            5 * 60 * 1000,
-    });
-
+                staleTime:
+                    5 * 60 * 1000,
+            });
+    }
 export const useInfiniteDeals =
     (
         { preferences = {},
@@ -95,6 +109,13 @@ export const useDealsByEmail = (email = "") =>
         queryKey: dealKeys.byEmail(email),
         queryFn: () => getDealsByEmail(email),
     });
+
+export const useFetchDealByMessage = () => {
+    return useMutation({
+        mutationFn: ({ email, message_id }) =>
+            getDealsByMessageId({ email, message_id }),
+    });
+};
 
 export const useDeleteDeal =
     () => {

@@ -15,7 +15,7 @@ export const getContactStats = async (
         method: "POST",
         body: {
             action: "get_stats",
-            ...filters,
+            ...buildTableRequestBody(filters),
             queries: [
                 {
                     "key": "new",
@@ -74,14 +74,17 @@ export const getContactStats = async (
                     "key": "inbound",
                     "module": "Contacts",
                     "filters": {
-                        "direction": "inbound"
+                        "direction": "inbound",
+                        "conversation_complete": {
+                            "neq": "1"
+                        }
                     }
                 },
                 {
                     "key": "outbound",
                     "module": "Contacts",
                     "filters": {
-                        "direction": "outbound"
+                        "direction": "outbound",
                     }
                 },
                 {
@@ -109,14 +112,16 @@ export const getContactStats = async (
                     "key": "forwarded",
                     "module": "Contacts",
                     "filters": {
-                        "forwarded": "1"
+                        "forwarded": "1",
+                        "direction": "inbound"
                     }
                 },
                 {
                     "key": "favorite",
                     "module": "Contacts",
                     "filters": {
-                        "favorite": "1"
+                        "favorite": "1",
+                        "direction": "inbound"
                     }
                 },
                 {
@@ -199,10 +204,29 @@ export const updateContact = async ({
     id,
     payload,
 }) => {
+    console.log("ID", id)
+    console.log("PAYLOAD", payload)
     const response = await http({
         method: "POST",
         body: {
             module: "Contacts",
+            action: "update",
+            id,
+            data: { ...payload }
+        },
+    });
+
+    return response;
+};
+export const updateAccount = async ({
+    id,
+    payload,
+}) => {
+    const response = await http({
+        method: "POST",
+        body: {
+            module: "Accounts",
+            action: "update",
             id,
             data: { ...payload }
         },

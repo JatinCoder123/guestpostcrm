@@ -103,7 +103,7 @@ export const getUser = (email = null) => {
       let message = "Something went wrong. Please try again.";
 
       if (error.response) {
-        const status = error.response.status;
+        const status = error.response?.status;
         const backendError = error.response.data?.error || "";
 
         switch (status) {

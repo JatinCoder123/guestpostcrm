@@ -4,10 +4,7 @@ import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
 import { Duplicate } from "./components/pages/DuplicatePage";
-import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { TagManagerpage } from "./components/pages/TagManagerpage";
-import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
-import { DraftInvoice } from "./components/pages/DraftInvoice";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
 import { useDispatch, useSelector } from "react-redux";
@@ -66,6 +63,11 @@ import { TimelineProvider } from "./context/TimelineContext";
 import MeetingWidget from "./components/MeetingWidget";
 import TwakChat from "./components/TwakTo";
 import BootApp from "./components/BootApp";
+import Recharge from "./components/pages/Recharge";
+import PlansPage from "./components/pages/PlansPage";
+import BillingSettings from "./components/pages/BillingSettings";
+import InternetStatus from "./components/InternetStatus";
+
 const router = createBrowserRouter([
   {
     path: "*",
@@ -74,20 +76,22 @@ const router = createBrowserRouter([
   {
     path: "",
     element: (
-      <SocketContextProvider>
+      <ErrorBoundary>
+        <SocketContextProvider>
 
-        <ThreadContextProvider>
-          <PageContextProvider>
-            <TimelineProvider>
-              <ErrorBoundary>
+          <ThreadContextProvider>
+            <PageContextProvider>
+              <TimelineProvider>
+
                 <BootApp />
                 <RootLayout />
-              </ErrorBoundary>
 
-            </TimelineProvider>
-          </PageContextProvider>
-        </ThreadContextProvider>
-      </SocketContextProvider>
+              </TimelineProvider>
+            </PageContextProvider>
+          </ThreadContextProvider>
+        </SocketContextProvider>
+      </ErrorBoundary>
+
 
     ),
     children: [
@@ -108,22 +112,20 @@ const router = createBrowserRouter([
         element: <AiCreditsPage />,
       },
       {
-        path: "spam-detection",
-        element: <SpamDetectionPage />,
+        path: "recharge",
+        element: <Recharge />,
       },
+      {
+        path: "plans",
+        element: <PlansPage />,
+      },
+
+
       {
         path: "tag-manager",
         element: <TagManagerpage />,
       },
-      {
-        path: "system-suggestion",
-        element: <SystemSuggestionsPage />,
-      },
 
-      {
-        path: "draft-invoice",
-        element: <DraftInvoice />,
-      },
       {
         path: "contacts/:id?",
         element: <Contactpage />,
@@ -288,6 +290,10 @@ const router = createBrowserRouter([
             element: <UsersPage />,
           },
           {
+            path: "billing/:tab?",
+            element: <BillingSettings />,
+          },
+          {
             path: "buttons",
             element: <ButtonPage />,
           },
@@ -371,6 +377,9 @@ export default function App() {
   return (
     <>
       <Toaster />
+      <InternetStatus />
+
+
       {isAuthenticated && !loading && (
         <>
           <MeetingWidget />
@@ -378,8 +387,8 @@ export default function App() {
           <RouterProvider router={router} />
         </>
       )}
-
       {!isAuthenticated && loading && <LoadingPage />}
+
 
       {!isAuthenticated && !loading && <Login />}
 

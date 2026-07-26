@@ -13,6 +13,7 @@ import {
 } from "../api/backlinks.api";
 
 import toast from "react-hot-toast";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 export const backlinkKeys = {
     all: ["backlinks"],
@@ -40,26 +41,29 @@ export const backlinkKeys = {
     ],
 };
 
-export const useBacklinkStats =
-    (
-        filters = {}
-    ) =>
-        useQuery({
-            queryKey:
-                backlinkKeys.stats(
-                    filters
-                ),
+export const useBacklinkStats = () => {
+    const preferences =
+        useTablePreference(
+            "backlinks"
+        );
+    return useQuery({
+        queryKey:
+            backlinkKeys.stats(
+                preferences
+            ),
 
-            queryFn: () =>
-                getBacklinkStats(
-                    filters
-                ),
+        queryFn: () =>
+            getBacklinkStats(
+                preferences
+            ),
 
-            staleTime:
-                5 *
-                60 *
-                1000,
-        });
+        staleTime:
+            5 *
+            60 *
+            1000,
+    });
+
+}
 
 export const useInfiniteBacklinks =
     (

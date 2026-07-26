@@ -432,7 +432,7 @@ export default function TemplatesPage() {
       );
 
       if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        throw new Error(`HTTP ${res?.status}: ${res.statusText}`);
       }
 
       const result = await res.json();

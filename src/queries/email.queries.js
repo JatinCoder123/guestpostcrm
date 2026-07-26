@@ -11,6 +11,7 @@ import {
     getContactStats,
     getUnreadCount,
 } from "../api/contact.api";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 
 /**
@@ -26,21 +27,22 @@ export const emailKeys = {
         unread
     ],
 
-    stats: () => [
+    stats: (filters = {}) => [
         "emails",
         "stats",
+        filters
     ],
 };
 
 
 export const useEmailStats = (
 ) => {
+    const preferences = useTablePreference("emails");
     return useQuery({
         queryKey:
-            emailKeys.stats(),
+            emailKeys.stats(preferences),
 
-        queryFn: () =>
-            getContactStats(),
+        queryFn: () => getContactStats(preferences),
 
         staleTime:
             5 * 60 * 1000,
@@ -56,7 +58,7 @@ export const useUnreadCount = (
 export const useInfiniteEmails = (
     preferences = {}
 ) => {
-    const unread = preferences?.filters.status == 'unread';
+    const unread = preferences?.filters?.status == 'unread';
     const effectivePreferences = unread ? {} : preferences;
     return useInfiniteQuery({
         queryKey:

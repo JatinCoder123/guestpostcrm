@@ -35,9 +35,11 @@ import {
   normalizeTemplateRows,
 } from "./profile/profileUtils";
 import { queryClient } from "../../lib/queryClient";
+import { useCrmUsers } from "../../queries/users.queries";
 
 const Profile = () => {
   const { handleDateClick } = useContext(PageContext);
+  const { data } = useCrmUsers()
   const navigate = useNavigate();
   const location = useLocation();
   const { user, businessEmail, currentScore, crmEndpoint } = useSelector(
@@ -273,8 +275,8 @@ const Profile = () => {
       step: ONBOARDING_STEP.WEBSITE_ADDED,
     });
     setCrmOnboardingStep((step) =>
-  Math.max(step, ONBOARDING_STEP.WEBSITE_ADDED),
-);
+      Math.max(step, ONBOARDING_STEP.WEBSITE_ADDED),
+    );
     broadcastSyncState({
       websiteDone: true,
       onboardingStep: ONBOARDING_STEP.WEBSITE_ADDED,
@@ -288,8 +290,8 @@ const Profile = () => {
       step: ONBOARDING_STEP.TEMPLATE_READY,
     });
     setCrmOnboardingStep((step) =>
-  Math.max(step, ONBOARDING_STEP.TEMPLATE_READY),
-);
+      Math.max(step, ONBOARDING_STEP.TEMPLATE_READY),
+    );
     broadcastSyncState({
       onboardingStep: ONBOARDING_STEP.TEMPLATE_READY,
     });
@@ -491,7 +493,7 @@ const Profile = () => {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response?.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
@@ -700,8 +702,8 @@ const Profile = () => {
         step: ONBOARDING_STEP.FIRST_SYNC_DONE,
       });
       setCrmOnboardingStep((step) =>
-  Math.max(step, ONBOARDING_STEP.FIRST_SYNC_DONE),
-);
+        Math.max(step, ONBOARDING_STEP.FIRST_SYNC_DONE),
+      );
       setSyncResult(result);
       setFirstSyncRecordsSeen(false);
       broadcastSyncState({
@@ -778,7 +780,7 @@ const Profile = () => {
           data?.message ||
           data?.error ||
           text ||
-          `Delete failed with status ${response.status}`,
+          `Delete failed with status ${response?.status}`,
         );
       }
 
@@ -992,8 +994,8 @@ const Profile = () => {
                     <label
                       key={reason}
                       className={`cursor-pointer rounded-xl border p-4 transition ${deleteReason === reason
-                          ? "border-red-300 bg-red-50"
-                          : "border-slate-200 hover:border-slate-300"
+                        ? "border-red-300 bg-red-50"
+                        : "border-slate-200 hover:border-slate-300"
                         }`}
                     >
                       <div className="flex items-center gap-3">

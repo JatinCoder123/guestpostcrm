@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { BsRobot } from "react-icons/bs";
-import { editContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { toast } from "react-toastify";
 import EmojiInput from "./EmojiPicker";
 import FirstReplyBtn from "./FirstReplyBtn";
@@ -26,7 +25,9 @@ import { useTimeline } from "../context/TimelineContext";
 import { useThread } from "../queries/threads.queries";
 import { useTemplateByName } from "../queries/template.queries";
 import { useQuickBtn } from "../queries/quickBtn.queries";
-import { useContact } from "../queries/contact.queries";
+import { useContact, useUpdateContact } from "../queries/contact.queries";
+import { queryClient } from "../lib/queryClient";
+import { emailKeys } from "../queries/email.queries";
 const LatestMessage = ({ handleMessageClick }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -34,6 +35,8 @@ const LatestMessage = ({ handleMessageClick }) => {
   const [activePromptId, setActivePromptId] = useState(null)
   const { moveToNext } = useNext()
   const { currentEmail } = useTimeline()
+  const { mutate: updateContact, isPending: contactUpdateLoading, error: contactError } = useUpdateContact()
+
   const { data: summary, isPending: mail } = useMailerSummary(currentEmail);
   const { data: contactData, isPending: contactLoading } = useContact(currentEmail);
   const contactInfo = contactData?.contact
@@ -46,7 +49,7 @@ const LatestMessage = ({ handleMessageClick }) => {
   const email1 = contactInfo?.email1;
   const threadId = contactInfo?.thread_id;
   const hanldeConvDone = () => {
-    dispatch(editContact({ contact: { ...contactInfo, conversation_complete: "1" }, account: accountInfo }, null));
+    updateContact({ id: contactInfo?.id, payload: { ...contactInfo, conversation_complete: "1" } })
     toast.success(`Conversion Complete with ${email1}`)
     moveToNext(email1)
   };
@@ -132,7 +135,7 @@ const LatestMessage = ({ handleMessageClick }) => {
                     viewEmail[viewEmail.length - 1]?.body ||
                     "",
                   )
-                  : "No Message Found!",
+                  : data?.message ?? "No Message Found",
             }}
           />
           {/* View Message Button */}

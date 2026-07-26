@@ -32,14 +32,15 @@ export const apiRequest = async ({
   const params1 = {
     ...params,
     ...(DB_NAME ? { db_name: DB_NAME } : {}),
-    ...(USER_EMAIL ? { dash_user_email: USER_EMAIL } : {}),}
+    ...(USER_EMAIL ? { dash_user_email: USER_EMAIL } : {}),
+  }
   const response = await apiClient({
     url: endpoint,
     method,
     data: body,
     headers,
     params: {
-     ...params1
+      ...params1
     },
     withCredentials,
   });
@@ -66,6 +67,7 @@ const generateToken = () => {
 
 export const http = async ({
   method = "GET",
+  rightee = false,
   body = null,
   params = {},
   headers = {},
@@ -88,7 +90,7 @@ export const http = async ({
   }
 
   const response = await apiClient({
-    url: `${getCRM()}?entryPoint=smart_gateway`,
+    url: `${rightee ? 'https://crm.outrightsystems.org/index.php' : getCRM()}?entryPoint=smart_gateway`,
     method,
     data: body,
     params: params1,

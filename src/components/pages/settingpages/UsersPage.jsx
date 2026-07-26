@@ -37,6 +37,16 @@ export function UsersPage() {
 
   // ✅ CREATE
   const handleCreate = async (updatedItem) => {
+      const newEmail = updatedItem.email?.trim().toLowerCase();
+
+  const emailExists = (crmUsers || []).some(
+    (user) => user.description?.trim().toLowerCase() === newEmail
+  );
+
+  if (emailExists) {
+    toast.error("User email already exists in CRM");
+    return false;
+  }
     try {
       await add({
         url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data&email=${businessEmail}`,

@@ -6,7 +6,6 @@ import {
   buildLedgerItem,
   getCurrentUser,
 } from "../../services/utils";
-import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { viewEmailAction } from "./viewEmail";
 
@@ -105,7 +104,6 @@ export const favEmail = ({ threadId, email }) => {
             user: getCurrentUser(),
           }),
         ],
-        okHandler: () => dispatch(getLadger({ email }))
       });
     } catch (error) {
       dispatch(favSlice.actions.favouriteEmailFailed(error.message));

@@ -1,7 +1,6 @@
 import { createSlice, current } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { updateActivity, createLedgerEntry, buildLedgerItem, getCurrentUser } from "../../services/utils";
-import { getLadger } from "./ladger";
 import { fetchGpc } from "../../services/api";
 
 const forwardedSlice = createSlice({
@@ -56,31 +55,7 @@ const forwardedSlice = createSlice({
   },
 });
 
-export const getForwardedEmails = ({ loading = true }) => {
-  return async (dispatch, getState) => {
-    if (loading) {
-      dispatch(forwardedSlice.actions.getEmailRequest());
-    }
 
-    try {
-      const data = await fetchGpc({ params: { type: 'forwarded', current_email: getState().user.user.email } });
-      showConsole && console.log(`forwarded emails`, data);
-      dispatch(
-        forwardedSlice.actions.getEmailSucess({
-          count: data?.length ?? 0,
-          emails: data,
-        })
-      );
-      dispatch(forwardedSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        forwardedSlice.actions.getEmailFailed(
-          "Fetching Forwarded Emails Failed"
-        )
-      );
-    }
-  };
-};
 
 export const forwardEmail = (email, id) => {
   return async (dispatch, getState) => {

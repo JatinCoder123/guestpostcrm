@@ -98,6 +98,10 @@ export const PageContextProvider = (props) => {
 
     setShowNextPrev(nextPrev);
 
+    if (navigate === "/" || navigate === "") {
+  setActivePage("");
+}
+
     if (navigate != null) {
       navigateTo(navigate);
     }

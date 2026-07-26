@@ -297,11 +297,11 @@ export default function ViewReports() {
   const [searchParams] = useSearchParams();
 
   const email = searchParams.get("email");
+  console.log(email)
   const { data: users } = useCrmUsers();
   const storedReportFilter = useMemo(() => getStoredReportFilter(), []);
-  const [dateFilter, setDateFilter] = useState(() =>
-    getInitialDateFilter(!!email)
-  ); const stages = useSelector(selectStages);
+  const [dateFilter, setDateFilter] = useState(() => getInitialDateFilter());
+  const stages = useSelector(selectStages);
   const categories = useSelector(selectCategories);
   const details = useSelector(selectDetails);
   const stats = useSelector(selectReportStats);
@@ -324,7 +324,7 @@ export default function ViewReports() {
       );
 
       const userId = user?.id || "";
-      setDateFilter(() => getInitialDateFilter(true))
+
       setSelectedUser(userId);
       setAppliedFilters(prev => ({
         ...prev,

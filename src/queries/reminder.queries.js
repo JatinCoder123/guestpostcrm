@@ -5,6 +5,7 @@ import {
     useQueryClient,
 } from "@tanstack/react-query";
 import { getAllReminders, getReminderStats, getTodayPaymentReminderStats } from "../api/reminders.api";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 
 
@@ -37,15 +38,20 @@ export const reminderKeys = {
  * Offer Stats
  */
 export const useReminderStats = (
-    { filters = {}, email = '' }
-) =>
-    useQuery({
+    { filters, email = '' }
+) => {
+    const preferences = filters ?? useTablePreference("reminders");
+    return useQuery({
         queryKey: reminderKeys.stats(filters, email),
 
-        queryFn: () => getReminderStats({ filters, email }),
+        queryFn: () => getReminderStats({ filters: preferences, email }),
 
 
     });
+
+
+}
+
 
 /**
  * Infinite Offers
@@ -85,10 +91,10 @@ export const useInfiniteReminders = (
             5 * 60 * 1000,
     });
 
-    export const useTodayPaymentReminderStats = () =>
-  useQuery({
-    queryKey: reminderKeys.todayPaymentStats(),
-    queryFn: getTodayPaymentReminderStats,
-    staleTime: 2 * 60 * 1000,
-  });
+export const useTodayPaymentReminderStats = () =>
+    useQuery({
+        queryKey: reminderKeys.todayPaymentStats(),
+        queryFn: getTodayPaymentReminderStats,
+        staleTime: 2 * 60 * 1000,
+    });
 

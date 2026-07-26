@@ -20,14 +20,9 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
-import {
-  getOrders,
-  orderAction,
-  updateOrder,
-} from "../../store/Slices/orders.js";
+import { orderAction, updateOrder } from "../../store/Slices/orders.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import { extractEmail } from "../../assets/assets";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingAll } from "../Loading.jsx";
@@ -37,14 +32,16 @@ const STATUS_CONFIG = [
     label: "New",
     icon: Package,
     color: "#2563eb", // blue
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
   },
   {
     value: "accepted",
     label: "Accepted",
     icon: CheckCircle,
     color: "#16a34a", // green
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
@@ -52,15 +49,17 @@ const STATUS_CONFIG = [
     label: "Rejected",
     icon: XCircle,
     color: "#dc2626", // red
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
     value: "wrong",
     label: "Wrong",
     icon: X,
-    color: "#662744ff", // red
-    filter: 'order_status'
+    color: "#662744", // red
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
@@ -68,7 +67,8 @@ const STATUS_CONFIG = [
     label: "Pending",
     icon: PauseCircle,
     color: "#ca8a04", // yellow
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
@@ -76,15 +76,17 @@ const STATUS_CONFIG = [
     label: "Completed",
     icon: BadgeCheck,
     color: "#7c3aed", // purple
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
-    value: "marketplace",
+    value: "Marketplace",
     label: "Marketplace",
     icon: StoreIcon,
     color: "#ed3ab7", // purple
-    filter: 'type'
+    filter: 'order_type',
+    showAmount: true
 
   },
   {
@@ -92,7 +94,9 @@ const STATUS_CONFIG = [
     label: "Listacle",
     icon: ListFilter,
     color: "#56cd1f", // purple
-    filter: 'type'
+    filter: 'order_type',
+    showAmount: true
+
 
   },
 ];
@@ -164,7 +168,7 @@ export function OrdersPage() {
     },
     {
       label: "Amount",
-      accessor: "website",
+      accessor: "total_amount_c",
       headerClasses: "",
       icon: DollarSign,
       sortable: true,
@@ -322,6 +326,7 @@ export function OrdersPage() {
     return {
       ...config,
       count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
+      amount: Number(summary?.stats?.[`${config.value}`]?.sum_of?.total_amount_c || 0)
     };
   });
   const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)

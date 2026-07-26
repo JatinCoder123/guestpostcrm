@@ -96,7 +96,7 @@ export const getTagStats = (
         body: {
             action: "get_stats",
 
-            ...filters,
+            ...buildTableRequestBody(filters),
 
             queries: [
                 {

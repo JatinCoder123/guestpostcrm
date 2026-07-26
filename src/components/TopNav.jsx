@@ -27,6 +27,7 @@ import GlobalSearch from "./GlobalSearch";
 import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
+import { useCrmUsers } from "../queries/users.queries";
 
 /* ─────────────────────────────────────────────────────────────
    Reusable icon button — coloured tint + badge + tooltip
@@ -133,6 +134,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const navigateTo = useNavigate();
+  const { data: crmUsers } = useCrmUsers()
 
   /* Close on outside click */
   useEffect(() => {
@@ -144,11 +146,11 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   }, []);
 
   /* Split: show current user first, then others (max 3 avatars in stack) */
-  const onlineUsers = activeUsers.filter((u) => u.status === "online");
-  const idleUsers = activeUsers.filter((u) => u.status !== "online");
+  const onlineUsers = activeUsers.filter((u) => u?.status === "online");
+  const idleUsers = activeUsers.filter((u) => u?.status !== "online");
 
-  const meOnline = onlineUsers.find((u) => u.email === currentUserEmail);
-  const otherOnlineUsers = onlineUsers.filter((u) => u.email !== currentUserEmail);
+  const meOnline = onlineUsers?.find((u) => u?.email === currentUserEmail);
+  const otherOnlineUsers = onlineUsers.filter((u) => u?.email !== currentUserEmail);
 
   const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
   const ordered = [...orderedOnline, ...idleUsers];
@@ -180,12 +182,13 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         <div className="flex items-center w-full h-2">
           {stackVisible.map((u, i) => {
             const c = getColorForUser(u.email);
-            const initials = getInitials(u.name, u.email);
+            const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+            const initials = getInitials(name || u.name, u.email);
             const isMe = u.email === currentUserEmail;
             return (
               <span
                 key={u.email}
-                title={isMe ? "You" : u.name || u.email}
+                title={isMe ? "You" : name || u.email}
                 className={`relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white
                   ${c.bg} ${c.text}
                   ${i > 0 ? "-ml-1.5" : ""}
@@ -196,7 +199,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                 {/* Online / idle dot */}
                 <span
                   className={`absolute bottom-0 right-0 h-1.5 w-1.5 rounded-full border border-white
-                    ${u.status === "online" ? "bg-emerald-500" : "bg-amber-400"}`}
+                    ${u?.status === "online" ? "bg-emerald-500" : "bg-amber-400"}`}
                 />
               </span>
             );
@@ -255,15 +258,15 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               ) : (
                 ordered.map((u) => {
                   const c = getColorForUser(u.email);
-                  const initials = getInitials(u.name, u.email);
+                  const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+                  const initials = getInitials(name || u.name, u.email);
                   const isMe = u.email === currentUserEmail;
-                  const isOnline = u.status === "online";
+                  const isOnline = u?.status === "online";
 
                   return (
                     <div
                       key={u.email}
                       onClick={() => navigateTo(`/view-reports?email=${encodeURIComponent(u.email)}`)}
-
                       className="flex items-center gap-3 border-b border-slate-50 px-4 py-3 last:border-none hover:bg-slate-50/60 transition"
                     >
                       {/* Avatar */}
@@ -283,7 +286,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <p className="truncate text-sm font-semibold text-slate-800">
-                            {u.name || "Unknown"}
+                            {name || u.name}
                           </p>
                           {isMe && (
                             <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-500">
@@ -352,6 +355,7 @@ export function TopNav() {
 
   /* ── Data ── */
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
+  const { data } = useCrmUsers()
   const {
     data: paymentReminderData,
     isPending: paymentReminderPending,
@@ -427,11 +431,7 @@ export function TopNav() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  /* ── Handlers ── (unchanged) */
-  const handleSelectPeriod = (option) => {
-    localStorage.setItem("timeline", option);
-    dispatch(ladgerAction.setTimeline(option));
-  };
+
 
   const handleLogout = () => {
     dispatch(logout());
@@ -468,8 +468,9 @@ export function TopNav() {
   };
 
   const getUserInitials = () => {
-    if (!user?.name) return "U";
-    const parts = user.name.trim().split(" ");
+    const name = data?.find((d) => d.description === user?.email)?.name || user?.name;
+    if (!name) return "U";
+    const parts = name.trim().split(" ");
     return parts.length === 1
       ? parts[0][0].toUpperCase()
       : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -715,7 +716,7 @@ export function TopNav() {
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-slate-800">
-                      {user?.name || "User"}
+                      {data?.find((d) => d.description === user?.email)?.name || user?.name}
                     </p>
                     <p className="truncate text-xs text-slate-400 mt-0.5">
                       {user?.email}

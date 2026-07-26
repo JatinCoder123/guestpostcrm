@@ -12,44 +12,78 @@ function StatusRow({ statusCount }) {
         showStatus,
     } = useTableContext();
 
-    const toggleStatus = (
-        value,
-        field
-    ) => {
-        const key =
-            field || statusKey;
+    const toggleStatus = (status) => {
+        const key = status.filter || status.field || statusKey;
 
-        const donutFields = [
-            ...new Set(
-                statusList.map(
-                    (s) =>
-                        s.filter ||
-                        s.field ||
-                        statusKey
-                )
-            ),
-        ];
+        const updated = { ...filters };
 
-        const updated = {
-            ...filters,
-        };
+        // Remove every filter added by any status
+        statusList.forEach((s) => {
+            // Remove main filter
+            delete updated[s.filter || s.field || statusKey];
 
-        // Remove all donut-related filters
-        donutFields.forEach((f) => {
-            delete updated[f];
+            // Remove other filters
+            if (s.otherFilters) {
+                Object.keys(s.otherFilters).forEach((k) => {
+                    delete updated[k];
+                });
+            }
+
+            // Remove neq filters
+            if (s.neqFilter) {
+                Object.keys(s.neqFilter).forEach((k) => {
+                    delete updated[k];
+                });
+            }
         });
 
-        // If clicked donut already active,
-        // just clear donut filters
-        if (
-            filters?.[key] === value
-        ) {
+        // Check whether this exact status is already applied
+        const isAlreadyApplied = (() => {
+            if (filters?.[key] !== status.value) {
+                return false;
+            }
+
+            if (status.otherFilters) {
+                for (const [k, v] of Object.entries(status.otherFilters)) {
+                    if (filters?.[k] !== v) {
+                        return false;
+                    }
+                }
+            }
+
+            if (status.neqFilter) {
+                for (const [k, v] of Object.entries(status.neqFilter)) {
+                    if (filters?.[k]?.neq !== v) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        })();
+
+        // Toggle OFF
+        if (isAlreadyApplied) {
             setFilters(updated);
             return;
         }
 
-        // Apply selected donut filter
-        updated[key] = value;
+        // Apply main filter
+        updated[key] = status.value;
+
+        // Apply normal extra filters
+        if (status.otherFilters) {
+            Object.assign(updated, status.otherFilters);
+        }
+
+        // Apply neq filters
+        if (status.neqFilter) {
+            Object.entries(status.neqFilter).forEach(([field, value]) => {
+                updated[field] = {
+                    neq: value,
+                };
+            });
+        }
 
         setFilters(updated);
     };
@@ -130,6 +164,7 @@ function StatusRow({ statusCount }) {
                                                 ? status.amount
                                                 : null
                                         }
+                                        showAmount={status.showAmount}
                                         onClick={() => {
                                             if (
                                                 status?.handleStatusClick
@@ -137,9 +172,7 @@ function StatusRow({ statusCount }) {
                                                 status.handleStatusClick();
                                             } else {
                                                 toggleStatus(
-                                                    status.value,
-                                                    status.filter ||
-                                                    status.field
+                                                    status
                                                 );
                                             }
                                         }}

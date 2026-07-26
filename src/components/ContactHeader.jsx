@@ -23,6 +23,8 @@ import { PageContext } from "../context/pageContext";
 import { useContact } from "../queries/contact.queries";
 import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail, useInfiniteDeals } from "../queries/deals.queries";
+import he from "he"
+import { useCrmUsers } from "../queries/users.queries";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -38,6 +40,8 @@ function HashTag({ text, color }) {
 const ContactHeader = () => {
   const sidebarRef = useRef(null);
   const { currentEmail } = useTimeline()
+  const { data: users, isPending: loading } = useCrmUsers();
+
   const navigate = useNavigate();
   const { data, isPending } = useContact(currentEmail);
   const contactInfo = data?.contact
@@ -116,7 +120,7 @@ const ContactHeader = () => {
     { Icon: Hourglass, label: "Status", value: data?.status },
     { Icon: Lock, label: "Category", value: data?.customer_type },
     { Icon: ArrowBigDown, label: "Direction", value: contactInfo?.direction ?? "-" },
-    { Icon: Flame, label: "Assign To", value: contactInfo?.gpc_assigned_to ?? "-" },
+    { Icon: Flame, label: "Assign To", value: users?.find((user) => user.id === contactInfo?.gpc_assigned_to)?.name || "Unassigned" },
     { Icon: Signature, label: "Last Activity", value: contactInfo?.last_activity ?? "-" },
     { Icon: CircleUser, label: "Last Activity By", value: contactInfo?.last_user ?? "-" },
     { Icon: Clock, label: "Last Updated At", value: contactInfo?.last_activity_date ?? "-" },
@@ -197,10 +201,15 @@ const ContactHeader = () => {
           {!isPending && (
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <Link to={`/contacts?email=${currentEmail}`} className="text-lg font-extrabold">
-                  {contactInfo?.full_name?.trim()
-                    ? contactInfo?.full_name
-                    : email}
+                <Link
+                  to={`/contacts?email=${currentEmail ?? ""}`}
+                  className="text-lg font-extrabold"
+                >
+                  {he.decode(
+                    contactInfo?.full_name?.trim()
+                      ? contactInfo.full_name
+                      : email ?? ""
+                  )}
                 </Link>
 
                 {/* {isBrand && (

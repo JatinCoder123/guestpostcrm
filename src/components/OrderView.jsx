@@ -177,6 +177,7 @@ export const OrderView = ({ data, setSend, email }) => {
             </div>
             {data.seo_backlinks.length > 0 ? (
               <SeoBacklinkList
+                email={email}
                 seo_backlink={data.seo_backlinks}
                 id={data.id}
                 orderId={data.order_id}

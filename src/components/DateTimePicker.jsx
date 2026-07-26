@@ -202,7 +202,7 @@ export function DateTimePicker({
             {/* ── TIME ── */}
             {step === "time" && (
                 <div className="p-4 flex flex-col items-center gap-3">
-                    <div className="w-44 h-44">
+                   <div className="w-52 h-52">
                         <ClockFace
                             hour={value?.hour ?? defaultHour}
                             min={value?.min ?? defaultMin}
@@ -245,17 +245,22 @@ function ClockFace({ hour, min, pickingHour, onPickHour, onPickMin }) {
         cy = 90,
         R = 76;
     const items = pickingHour
-        ? Array.from({ length: 24 }, (_, i) => {
-           const ang = (i / 24) * 360 - 90;
-            const [x, y] = polar(cx, cy, R - 14, ang);
-            return {
-                x,
-                y,
-                lbl: pad(i),
-                sel: hour === i,
-                onClick: () => onPickHour(i),
-            };
-        })
+       ? Array.from({ length: 24 }, (_, i) => {
+    const displayHour = i === 0 ? 12 : i > 12 ? i - 12 : i;
+    const ang = (displayHour / 12) * 360 - 90;
+
+    // 1–12 on outer ring; 13–23 and 00 on inner ring
+    const radius = i >= 1 && i <= 12 ? R - 14 : 38;
+    const [x, y] = polar(cx, cy, radius, ang);
+
+    return {
+        x,
+        y,
+        lbl: pad(i),
+        sel: hour === i,
+        onClick: () => onPickHour(i),
+    };
+})
         : [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((mv, i) => {
             const ang = (i / 12) * 360 - 90;
             const [x, y] = polar(cx, cy, R - 14, ang);
@@ -268,7 +273,25 @@ function ClockFace({ hour, min, pickingHour, onPickHour, onPickMin }) {
             };
         });
 
-    const [hx, hy] = polar(cx, cy, 44, ((hour ?? 0) / 24) * 360 - 90);
+    const selectedHour = hour ?? 0;
+const hourDisplay =
+    selectedHour === 0
+        ? 12
+        : selectedHour > 12
+            ? selectedHour - 12
+            : selectedHour;
+
+const hourRadius =
+    selectedHour >= 1 && selectedHour <= 12
+        ? R - 14
+        : 38;
+
+const [hx, hy] = polar(
+    cx,
+    cy,
+    hourRadius,
+    (hourDisplay / 12) * 360 - 90
+);
     const [mx, my] = polar(cx, cy, 60, (min / 60) * 360 - 90);
 
     return (

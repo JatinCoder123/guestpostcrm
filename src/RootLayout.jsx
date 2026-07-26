@@ -20,6 +20,7 @@ import { queryClient } from "./lib/queryClient"
 
 const RootLayout = () => {
   const { message, error } = useSelector((state) => state.viewEmail);
+
   const { crmEndpoint, currentScore, } =
     useSelector((state) => state.user);
   const {
@@ -27,7 +28,7 @@ const RootLayout = () => {
     setActivePage,
     collapsed,
   } = useContext(PageContext);
-
+  const [showRechargeWarn, setShowRechargeWarn] = useState(Number(currentScore) <= 0)
   const { setCrm } = useContext(SocketContext);
   useTimeline()
 
@@ -60,22 +61,26 @@ const RootLayout = () => {
   useEffect(() => {
     if (message) {
       dispatch(viewEmailAction.clearAllMessage());
-      toast.success(message,{ style: {
-      borderRadius: '10px',
-      background: '#333',
-      color: '#fff',
-    },});
+      toast.success(message, {
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      });
       queryClient.invalidateQueries({ queryKey: ["emails"] });
       queryClient.invalidateQueries({ queryKey: ["threads"] });
     }
 
     if (error) {
       dispatch(viewEmailAction.clearAllErrors());
-      toast.error(error,{ style: {
-      borderRadius: '10px',
-      background: '#333',
-      color: '#fff',
-    },});
+      toast.error(error, {
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      });
     }
   }, [message, error]);
 
@@ -83,7 +88,6 @@ const RootLayout = () => {
   useEffect(() => {
     setActivePage(location);
   }, [location, setActivePage]);
-  const isLowCredit = Number(currentScore) <= 0;
 
   if (displayIntro) {
     return <DisplayIntro key="intro" />;
@@ -105,8 +109,7 @@ const RootLayout = () => {
             }`}
         >
           <div className="p-3" data-tour="main-workspace">
-            {isLowCredit && <LowCreditWarning score={currentScore} />}
-
+            <LowCreditWarning open={showRechargeWarn} score={currentScore} onClose={() => setShowRechargeWarn(false)} />
             <div className="p-3">
               <WelcomeHeader />
               <Outlet />

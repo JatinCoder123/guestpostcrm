@@ -29,19 +29,19 @@ const fieldConfig = [
     label: "DR",
     type: "text",
   },
-   {
+  {
     key: "minimum_price",
     label: "Final (Brand)",
     type: "number",
     icon: DollarSign,
   },
   {
-  key: "average_amount",
-  label: "Closure (Brand)",
-  type: "number",
-  icon: DollarSign,
-},
- {
+    key: "average_amount",
+    label: "Closure (Brand)",
+    type: "number",
+    icon: DollarSign,
+  },
+  {
     key: "amount",
     label: "Start (Brand)",
     type: "number",
@@ -54,11 +54,11 @@ const fieldConfig = [
     icon: DollarSign,
   },
   {
-  key: "non_brand_average_amount",
-  label: "Closure (Non-Brand)",
-  type: "number",
-  icon: DollarSign,
-}, 
+    key: "non_brand_average_amount",
+    label: "Closure (Non-Brand)",
+    type: "number",
+    icon: DollarSign,
+  },
   {
     key: "non_brand_maximum_amount",
     label: "Start (Non-Brand)",
@@ -145,13 +145,17 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
     }
   }, [item]);
 
-const updateField = (key, value) => {
-  setForm((prev) => ({
-    ...prev,
-    [key]: value,
-    ...(key === "name" ? { description: value } : {}),
-  }));
-};
+  const updateField = (key, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+
+      // Keep description synchronized with website name
+      ...(key === "name" && {
+        description: value,
+      }),
+    }));
+  };
 
   const handleSave = () => {
     if (!form.name?.trim()) {
@@ -161,10 +165,11 @@ const updateField = (key, value) => {
     console.log(form);
 
     const updated = {
-  ...item,
-  ...form,
-  description: form.name,
-};
+      ...item, ...form, name: form.name?.trim(),
+      description: form.name?.trim(),
+    };
+
+    console.log("Submitted website:", updated);
 
     if (item.type === "new") {
       props.handleCreate(updated);
@@ -239,34 +244,32 @@ const updateField = (key, value) => {
                       {(field.type === "text" ||
                         field.type === "number" ||
                         field.type === "url") && (
-                        <input
-                          type={field.type}
-                          value={form[field.key] || ""}
-                          onChange={(e) =>
-  updateField(field.key, e.target.checked ? 1 : 0)
-}
-                          placeholder={`Enter ${field.label}`}
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      )}
+                          <input
+                            type={field.type}
+                            value={form[field.key] ?? ""}
+                            onChange={(e) => updateField(field.key, e.target.value)}
+                            placeholder={`Enter ${field.label}`}
+                            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        )}
 
                       {/* CHECKBOX */}
                       {field.type === "checkbox" && (
-  <label className="flex items-center gap-3">
-    <input
-      type="checkbox"
-      checked={Number(form[field.key]) === 1}
-      onChange={(e) =>
-        updateField(field.key, e.target.checked ? 1 : 0)
-      }
-      className="w-5 h-5"
-    />
+                        <label className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={Number(form[field.key]) === 1}
+                            onChange={(e) =>
+                              updateField(field.key, e.target.checked ? 1 : 0)
+                            }
+                            className="w-5 h-5"
+                          />
 
-    <span className="text-gray-700 font-medium">
-      Enable {field.label}
-    </span>
-  </label>
-)}
+                          <span className="text-gray-700 font-medium">
+                            Enable {field.label}
+                          </span>
+                        </label>
+                      )}
 
                       {/* DROPDOWN */}
                       {field.type === "dropdown" && (

@@ -29,7 +29,6 @@ import { DeepReplyBtn } from "../../DeepReplyBtn";
 import { SmallTinyEditor } from "../../TinyEditor";
 import IconButton from "../../ui/Buttons/IconButton";
 import { BiSolidMessageCheck } from "react-icons/bi";
-import { editContact } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { useNext } from "../../../hooks/useNext";
 import {
@@ -38,10 +37,11 @@ import {
   useTemplateByEmail,
   useTemplateByName,
 } from "../../../queries/template.queries";
-import { useContact } from "../../../queries/contact.queries";
+import { useContact, useUpdateContact } from "../../../queries/contact.queries";
 import { applyHashtag, updateActivity } from "../../../services/utils";
 import { queryClient } from "../../../lib/queryClient";
 import { movedEmailsKeys } from "../../../queries/movedEmail.queries";
+import { emailKeys } from "../../../queries/email.queries";
 
 const TOOLBAR_BTN =
   "inline-flex items-center gap-2 h-9 px-4 rounded-xl border text-[13px] font-medium whitespace-nowrap transition-all duration-200";
@@ -84,7 +84,7 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
   const [templateId, setTemplateId] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [stopLoading, setStopLoading] = useState(false);
-
+  const { mutate: updateContact } = useUpdateContact()
   const [showHtmlEditor, setShowHtmlEditor] = useState(false);
   const [tempHtml, setTempHtml] = useState(htmlfile || "");
   const [editorReadyLocal, setEditorReadyLocal] = useState(false);
@@ -104,7 +104,6 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
   const { isPending: contactLoading, data: contact } = useContact(email);
   const { data: template } = useTemplate(templateId);
   const { data: defaultTemplate } = useDefaultTemplate(email);
-  const { data: priceTemp } = useTemplateByName("PRICE_LIST");
 
   /* ── effects ─────────────────────────────────────────────── */
   useEffect(() => {
@@ -127,29 +126,11 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
     }
   }, [message, aiResponse, dispatch]);
 
-  /* ── helpers ─────────────────────────────────────────────── */
-  const insertTextAtCursor = () => {
-    if (editorRef.current) {
-      editorRef.current.focus();
-      editorRef.current.insertContent(
-        priceTemp?.[0]?.body_html ?? "No Content Available"
-      );
-    }
-  };
+
 
   const handleConvDone = () => {
-    dispatch(
-      editContact(
-        {
-          contact: {
-            ...contact.contact,
-            conversation_complete: "1",
-          },
-          account: { ...contact.account },
-        },
-        null
-      )
-    );
+    updateContact({ id: contact.contact?.id, payload: { ...contact?.contact, conversation_complete: "1" } })
+
     toast.success(`Conversion Complete with ${email}`);
     moveToNext(email);
   };

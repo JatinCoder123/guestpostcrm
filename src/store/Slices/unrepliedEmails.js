@@ -82,31 +82,6 @@ const unrepliedSlice = createSlice({
   },
 });
 
-export const getUnrepliedEmail = ({ page = 1, loading = true, type = null }) => {
-  return async (dispatch, getState) => {
-    dispatch(unrepliedSlice.actions.getEmailRequest({ type, loading }));
-
-    try {
-      const data = await fetchGpc({ params: { type: type ?? getState().unreplied.emailType, filter: "all", page } });
-      showConsole && console.log(`Unreplied emails`, data);
-      dispatch(
-        unrepliedSlice.actions.getEmailSucess({
-          count: data.total ?? 0,
-          emails: data.data ?? [],
-          pageCount: data.total_pages ?? 1,
-          pageIndex: data.page ?? 1,
-        })
-      );
-      dispatch(unrepliedSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        unrepliedSlice.actions.getEmailFailed(
-          "Fetching Unreplied Emails Failed"
-        )
-      );
-    }
-  };
-};
 export const getEmailsCount = ({ loading = true }) => {
   return async (dispatch, getState) => {
     dispatch(unrepliedSlice.actions.getEmailsCountRequest({ loading }));

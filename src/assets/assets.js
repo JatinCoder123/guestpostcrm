@@ -1,4 +1,4 @@
-import logo from "./logo.png";
+import logo from "./logo.webp";
 import loginImg from "./loginPage.jpg";
 import duplicateImg from "./duplicate.png";
 import headingLogoImg from "./headingLogo.webp";

@@ -78,9 +78,9 @@ export function ReminderPage() {
   const preferences = useTablePreference("reminders");
   const location = useLocation();
 
-const effectivePreferences =
-  location.state?.reminderFilter === "today-payment"
-    ? {
+  const effectivePreferences =
+    location.state?.reminderFilter === "today-payment"
+      ? {
         ...preferences,
         date_filter: {
           date_range: "today",
@@ -94,10 +94,10 @@ const effectivePreferences =
           status: "Pending",
         },
       }
-    : preferences;
+      : preferences;
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
-  useInfiniteReminders({ preferences: effectivePreferences, email });
-  const { data: summary } = useReminderStats({ email });
+    useInfiniteReminders({ preferences: effectivePreferences, email });
+  const { data: summary } = useReminderStats({ email, filters: effectivePreferences });
   const { handleDateClick, enteredEmail } =
     useContext(PageContext);
   const dispatch = useDispatch();
@@ -137,7 +137,7 @@ const effectivePreferences =
     {
       label: "Created At",
       accessor: "date_entered",
-      sortable:true,
+      sortable: true,
       headerClasses: "",
       icon: Calendar,
 
@@ -188,14 +188,14 @@ const effectivePreferences =
 
       render: (row) => (
         <span
-          className={`px-2 py-1 rounded-full text-xs ${row.status?.toLowerCase() === "pending"
+          className={`px-2 py-1 rounded-full text-xs ${row?.status?.toLowerCase() === "pending"
             ? "bg-yellow-100 text-yellow-800"
-            : row.status?.toLowerCase() === "sent"
+            : row?.status?.toLowerCase() === "sent"
               ? "bg-green-100 text-green-800"
               : "bg-red-100 text-red-800"
             }`}
         >
-          {row.status}
+          {row?.status}
         </span>
       )
     },
@@ -206,11 +206,11 @@ const effectivePreferences =
       icon: BadgeDollarSign,
       classes: "truncate max-w-[300px] ",
 
-     render: (row) => (
-  <span className="font-medium text-gray-700 cursor-pointer">
-    {getLeftTime(row.scheduled_time)}
-  </span>
-)
+      render: (row) => (
+        <span className="font-medium text-gray-700 cursor-pointer">
+          {getLeftTime(row.scheduled_time)}
+        </span>
+      )
     },
 
     {
@@ -220,7 +220,7 @@ const effectivePreferences =
       icon: Clapperboard,
       classes: "truncate max-w-[300px] ml-auto",
       render: (row) => {
-        const valid = row.status?.toLowerCase() === "sent" || row.status?.toLowerCase() === "cancel"
+        const valid = row?.status?.toLowerCase() === "sent" || row?.status?.toLowerCase() === "cancel"
         return <div className="flex items-center justify-center gap-2">
           {sending && sendReminderId === row.id ? (
             <LoadingChase size="20" color="blue" />

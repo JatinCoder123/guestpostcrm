@@ -24,6 +24,7 @@ import { FaBtc } from "react-icons/fa";
 import { IoIosMailUnread } from "react-icons/io";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
 import { useEmailStats, useInfiniteEmails, useUnreadCount } from "../../queries/email.queries.js";
+import he from "he";
 const STATUS_CONFIG = [
   {
     value: "unread",
@@ -37,7 +38,10 @@ const STATUS_CONFIG = [
     label: "Unreplied",
     icon: Mails,
     color: "#2563eb", // blue
-    filter: 'direction'
+    filter: 'direction',
+    neqFilter: {
+      conversation_complete: '1'
+    }
   },
   {
     value: "outbound",
@@ -45,7 +49,7 @@ const STATUS_CONFIG = [
     icon: MessageCircleReply,
     color: "#16a34a", // green
     emailType: "email_outbound",
-    filter: 'direction'
+    filter: 'direction',
 
   },
 
@@ -100,7 +104,7 @@ const STATUS_CONFIG = [
   },
   {
     value: "1",
-    key: "is_stop",
+    key: "stop",
     label: "Stop",
     icon: GiGoldBar,
     color: "#ab9e11", // purple
@@ -168,8 +172,7 @@ export function UnrepliedEmailsPage() {
       render: (row) => (
         <div className="flex items-center gap-2 cursor-pointer">
           <span className="font-medium text-gray-800">
-            {row?.first_name || ""} {row?.last_name || ""}
-          </span>
+            {he.decode(`${row?.first_name || ""} ${row?.last_name || ""}`)}          </span>
 
           {row.type === "Brand" && (
             <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">
@@ -194,7 +197,7 @@ export function UnrepliedEmailsPage() {
         }),
       render: (row) => (
         <span className="px-6 py-4 text-green-600 cursor-pointer">
-          {row.subject}
+          {he.decode(row?.subject ?? "")}
         </span>
       ),
     },
@@ -332,41 +335,3 @@ export function UnrepliedEmailsPage() {
     </>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//  🔥 LOADING OVERLAY
-//       {loading && (
-//         <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] flex items-center justify-center z-50">
-//           <div className="flex flex-col items-center gap-3">
-//             {/* Spinner */}
-//             <div className="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
-
-//             {/* Dynamic Text */}
-//             <p className="text-gray-700 font-medium">
-//               {STATUS_CONFIG.find((s) => s.emailType === emailType)
-//                 ?.label || "Emails"}{" "}
-//               Emails Loading...
-//             </p>
-//           </div>
-//         </div>
-//       )}
