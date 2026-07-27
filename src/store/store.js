@@ -5,6 +5,8 @@ import favReducer from "./Slices/favEmailSlice.js";
 import forwarededReducer from "./Slices/forwardedEmailSlice.js";
 import dealsReducer from "./Slices/deals.js";
 import offersReducer from "./Slices/offers.js";
+import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
+
 import orderReducer from "./Slices/orders.js";
 import viewEmailReducer from "./Slices/viewEmail.js";
 import aiReplyReducer from "./Slices/aiReply.js";
@@ -26,6 +28,8 @@ export const store = configureStore({
     ladger: ladgerReducer,
     unreplied: unrepliedReducer,
     fav: favReducer,
+    duplicateEmails: duplicateEmailReducer,
+
     forwarded: forwarededReducer,
     deals: dealsReducer,
     orders: orderReducer,

@@ -415,10 +415,10 @@ export const createOrder3 = (email, orders = [], send) => {
   };
 };
 
-export const updateOrder = ({ order }) => {
+export const updateOrder = ({ order, email }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
-    const email = extractEmail(order.real_name ?? order.email);
+    email = email ?? extractEmail(order.real_name ?? order.email);
     showConsole && console.log("Order To Be Update", order);
     showConsole && console.log("Update Order Email", email);
 
