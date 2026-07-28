@@ -67,6 +67,7 @@ import Recharge from "./components/pages/Recharge";
 import PlansPage from "./components/pages/PlansPage";
 import BillingSettings from "./components/pages/BillingSettings";
 import InternetStatus from "./components/InternetStatus";
+import DynamicResourceHandler from "./components/routing/DynamicResourceHandler";
 
 const router = createBrowserRouter([
   {
@@ -98,6 +99,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <TimelinePage />,
+      },
+      {
+        path: ":resource/*",
+        element: <DynamicResourceHandler />,
       },
       {
         path: "unreplied-emails",

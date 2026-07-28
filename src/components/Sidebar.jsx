@@ -9,36 +9,17 @@ import {
   ChevronRight,
   Settings,
   Radio,
-  Forward,
-  Heart,
-  RectangleEllipsis,
-  Link,
-  BellRing,
-  Contact2Icon,
-  CircleX,
-  Layers,
-  BellElectric,
   PanelLeft,
   Circle,
 } from "lucide-react";
+import Skeleton from "react-loading-skeleton";
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
 import { motion, } from "framer-motion";
-import { LoadingSpin } from "./Loading";
-import { BarChart3 } from "lucide-react";
-import { useEmailStats } from "../queries/email.queries";
-import { useContactStats } from "../queries/contact.queries";
-import { useOrderStats } from "../queries/orders.queries";
 import { useForwardedStats } from "../queries/forwarded.queries";
-import { useDealStats } from "../queries/deals.queries";
-import { useOfferStats } from "../queries/offers.queries";
-import { useExchangeStats } from "../queries/exchange.queries";
-import { useInvoiceStats } from "../queries/invoice.queries";
-import { useFavoriteStats } from "../queries/favourite.queries";
-import { useReminderStats } from "../queries/reminder.queries";
 import { useQuery } from "@tanstack/react-query";
 import { userKeys } from "../queries/users.queries";
 import { getAllUsers } from "../api/users.api";
@@ -46,21 +27,21 @@ import logo, { headingLogo } from "../assets/assets";
 import { useGpcController } from "../queries/controller.queries";
 import { useLayoutPreferences } from "../queries/prefrences.queries";
 import Icon from "./ui/Icon/Icon";
+import { useSidebarStats } from "../queries/sidebar.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
   const { enteredEmail: email } = useContext(PageContext)
+  const [sidebarStatsQuery, setSidebarStatsQuery] = useState()
   const [expandedGroups, setExpandedGroups] = useState({});
-  const { data: sidebarData, isPending: sidebarLoading } = useLayoutPreferences()
-  console.log("SIDEBAR", sidebarData)
+  const { data: layoutData, isPending: layoutLoading } = useLayoutPreferences()
+  const sidebarSections = layoutData?.data?.Sidebar ?? []
   const { user } = useSelector(s => s.user)
   const { data: usersData, isPending: usersPending } = useQuery({ queryKey: userKeys.lists, queryFn: getAllUsers })
   const { data } = useGpcController();
   const summary = data?.summary ?? {}
   const currentUser = usersData?.find((u) => u.description === user.email);
   const currentUserId = currentUser?.id;
-
-
   const { activePage, setActivePage, collapsed, setSidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } =
     useContext(PageContext);
 
@@ -78,16 +59,8 @@ export function Sidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const { isPending: contactStatLoading, data: contactStats } = useContactStats()
-  const { isPending: emailStatsLoading, data: emailsStats } = useEmailStats()
   const { isPending: forwardStatLoading, data: forwardStats } = useForwardedStats(currentUserId)
-  const { isPending: favStatLoading, data: favStats } = useFavoriteStats()
-  const { isPending: exchangeStatLoading, data: exchangeStats } = useExchangeStats()
-  const { isPending: offerStatLoading, data: offerStats } = useOfferStats({ email })
-  const { isPending: dealStatLoading, data: dealStats } = useDealStats({ email })
-  const { isPending: orderStatsLoading, data: ordersStats } = useOrderStats({ email })
-  const { isPending: invoiceStatLoading, data: invoiceStats } = useInvoiceStats({ email })
-  const { isPending: reminderStatLoading, data: reminderStats } = useReminderStats({ email })
+  const { isPending: sidebarCountPending, data: sidebarCounts } = useSidebarStats({ email, queries: sidebarStatsQuery })
 
   const toggleGroup = (groupName) => {
     setExpandedGroups(prev => ({
@@ -96,169 +69,26 @@ export function Sidebar() {
     }));
   };
 
-  // MENU ITEMS WITH COLORS
-  const menuItems = [
-    {
-      id: "unreplied-emails",
-      label: "Unreplied ",
-      icon: Mail,
-      loading: emailStatsLoading,
-      count: emailsStats?.stats?.inbound?.count,
-      color: "text-rose-600",
-      hover: "hover:bg-rose-50",
-      countBg: "bg-rose-500 text-white",
-    },
-    {
-      id: "contacts",
-      label: "Contacts",
-      icon: Contact2Icon,
-      loading: contactStatLoading,
-      count: contactStats?.stats?.all?.count,
-      color: "text-fuchsia-600",
-      hover: "hover:bg-fuchsia-50",
-      countBg: "bg-fuchsia-500 text-white",
-    },
-    {
-      id: "forwarded-emails",
-      label: "Assigned",
-      icon: Forward,
-      loading: forwardStatLoading || usersPending,
-      count: forwardStats?.stats?.forwarded?.count,
-      color: "text-sky-600",
-      hover: "hover:bg-sky-50",
-      countBg: "bg-sky-500 text-white",
-    },
-    {
-      id: "favourite-emails",
-      label: "Favourite ",
-      icon: Heart,
-      loading: favStatLoading,
-      count: favStats?.stats?.favorite?.count,
-      color: "text-pink-600",
-      hover: "hover:bg-pink-50",
-      countBg: "bg-pink-500 text-white",
-    },
-    {
-      id: "link-exchange",
-      label: "Links Exchange",
-      icon: Link,
-      loading: exchangeStatLoading,
-      count: exchangeStats?.stats?.exchange?.count,
-      color: "text-violet-600",
-      hover: "hover:bg-violet-50",
-      countBg: "bg-violet-500 text-white",
-    },
-    {
-      id: "offers",
-      label: "Offers",
-      icon: Gift,
-      loading: offerStatLoading,
-      count: offerStats?.stats?.active?.count,
-      color: "text-green-600",
-      hover: "hover:bg-green-50",
-      countBg: "bg-green-500 text-white",
-    },
-    {
-      id: "deals",
-      label: "Deals",
-      icon: Handshake,
-      loading: dealStatLoading,
-      count: dealStats?.stats?.active?.count,
-      color: "text-blue-600",
-      hover: "hover:bg-blue-50",
-      countBg: "bg-blue-500 text-white",
-    },
-    {
-      id: "orders",
-      label: "Orders",
-      icon: ShoppingCart,
-      loading: orderStatsLoading,
-      count: ordersStats?.stats?.new?.count,
-      color: "text-cyan-600",
-      hover: "hover:bg-cyan-50",
-      countBg: "bg-cyan-500 text-white",
-    },
-    {
-      id: "invoices",
-      label: "Invoices",
-      icon: FileText,
-      loading: invoiceStatLoading,
-      count: invoiceStats?.stats?.all?.count,
-      color: "text-orange-600",
-      hover: "hover:bg-orange-50",
-      countBg: "bg-orange-500 text-white",
-    },
 
-    {
-      id: "reminders",
-      label: "Reminders",
-      icon: BellRing,
-      loading: reminderStatLoading,
-      count: reminderStats?.stats?.all?.count,
-      color: "text-lime-600",
-      hover: "hover:bg-lime-50",
-      countBg: "bg-lime-500 text-white",
-    },
-    {
-      id: "Duplicate Rejected",
-      label: "Duplicate Rejected",
-      icon: CircleX,
-      loading: false,
-      count: null,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-red-500 text-white",
-    },
-    {
-      id: "Listicle",
-      label: "Listicle",
-      icon: Layers,
-      loading: false,
-      count: null,
-      color: "text-blue-600",
-      hover: "hover:bg-blue-50",
-      countBg: "bg-blue-500 text-white",
-    },
-    {
-      id: "reminder-management",
-      label: "Reminder Management",
-      icon: BellElectric,
-      loading: null,
-      count: null,
-      color: "text-lime-600",
-      hover: "hover:bg-lime-50",
-      countBg: "bg-lime-500 text-white",
-    },
-    {
-      id: "other",
-      label: "Others",
-      icon: RectangleEllipsis,
-      count: null,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-blue-500 text-white",
-    },
-
-    {
-      id: "view-reports",
-      label: "Reports",
-      icon: BarChart3,
-      loading: false,
-      count: null,
-      color: "text-teal-600",
-      hover: "hover:bg-teal-50",
-      countBg: "bg-teal-500 text-white ",
-    }
-  ];
   useEffect(() => {
-    if (!sidebarData?.data) return;
+    if (!sidebarSections?.data) return;
 
     setExpandedGroups(
       Object.fromEntries(
-        sidebarData.data.map(group => [group.group_name, true])
+        sidebarSections.data.map(group => [group.group_name, true])
       )
     );
-  }, [sidebarData]);
+
+    setSidebarStatsQuery(
+      sidebarSections.data?.flatMap(group =>
+        (group.data ?? []).map(item => ({
+          key: item.key,
+          module: item.module_name,
+          filters: item.count_filters ?? {},
+        }))
+      ) ?? null
+    );
+  }, [sidebarSections]);
   // const isMobile = useMediaQuery("(max-width: 1023px)");
   return (
     <>
@@ -292,7 +122,7 @@ to-[#033081]
 text-white
 shadow-2xl"
       >
-        {sidebarLoading ?
+        {layoutLoading ?
           <div className="animate-pulse space-y-5 p-3">
             {[1, 2, 3].map((group) => (
               <div key={group}>
@@ -415,7 +245,7 @@ shadow-2xl"
     border-t border-sidebar-border rounded-lg 
   "
             >
-              {sidebarData?.data
+              {sidebarSections?.data
                 ?.sort((a, b) => a.group_priority - b.group_priority)
                 .map((group) => (
                   <div key={group.group_name} className="mb-3">
@@ -482,10 +312,10 @@ shadow-2xl"
                                   <span className="flex-1 truncate text-left">
                                     {item.name}
                                   </span>
+                                  {item.key && sidebarCounts?.stats?.[item.key] && sidebarCountPending ? <Skeleton count={3} /> : <span className="rounded-full bg-[#7657ff]/20 px-2 py-0.5 text-xs">
+                                    {sidebarCounts?.stats?.[item.key]?.count || 0}
+                                  </span>}
 
-                                  <span className="rounded-full bg-[#7657ff]/20 px-2 py-0.5 text-xs">
-                                    {100}
-                                  </span>
                                 </>
                               )}
                             </button>
@@ -496,7 +326,7 @@ shadow-2xl"
                 ))
               }
             </div>
-            {sidebarData?.sidebar_footer &&
+            {sidebarSections?.sidebar_footer &&
               <div onClick={() => navigateTo("/settings/controller")}
                 className="my-6 flex items-center justify-center cursor-pointer border-t border-sidebar-border p-2 rounded-full shadow-lg shadow-black">
                 {/* Progress Circle */}
@@ -531,7 +361,7 @@ shadow-2xl"
       "
                   >
                     <p className="text-sm font-medium leading-5 text-white">
-                      {sidebarData?.sidebar_footer[0]?.name}
+                      {sidebarSections?.sidebar_footer?.description}
 
                     </p>
                   </div>
