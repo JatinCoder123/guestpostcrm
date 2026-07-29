@@ -12,7 +12,7 @@ export const getAllOffers = ({
         body: {
             action: "fetch",
             module: "outr_offer",
-            contact_information:"name",
+            contact_information: "name",
             fields: [
                 "name",
                 "email_c",
@@ -47,7 +47,7 @@ export const getOfferStats = (
         params: { ...params },
         body: {
             action: "get_stats",
-            ...filters,
+            ...buildTableRequestBody(filters),
 
             queries: [
                 {

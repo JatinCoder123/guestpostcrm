@@ -81,7 +81,6 @@ function TemplateEditorModal({
 
         <div className="min-h-0 flex-1">
           <Editor
-            apiKey={tinyKey}
             value={content}
             onEditorChange={setContent}
             init={TINY_INIT}

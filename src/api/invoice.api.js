@@ -31,11 +31,12 @@ export const getInvoiceStats = ({ filters, email }) => {
         params: { ...params },
         body: {
             action: "get_stats",
-            ...filters,
+            ...buildTableRequestBody(filters),
             queries: [
                 {
                     "key": "SENT",
                     "module": "outr_paypal_invoice_links",
+                    sum_of: ['amount_c'],
                     "filters": {
                         "status_c": "SENT"
                     }
@@ -43,6 +44,8 @@ export const getInvoiceStats = ({ filters, email }) => {
                 {
                     "key": "PAID",
                     "module": "outr_paypal_invoice_links",
+                    sum_of: ['amount_c'],
+
                     "filters": {
                         "status_c": "PAID"
                     }
@@ -50,6 +53,8 @@ export const getInvoiceStats = ({ filters, email }) => {
                 {
                     "key": "DRAFT",
                     "module": "outr_paypal_invoice_links",
+                    sum_of: ['amount_c'],
+
                     "filters": {
                         "status_c": "DRAFT"
                     }

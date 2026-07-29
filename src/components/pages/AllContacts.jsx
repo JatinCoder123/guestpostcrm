@@ -26,6 +26,7 @@ import {
 import { contactKeys, useContactStats, useCreateContact, useInfiniteContacts } from "../../queries/contact.queries.js";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
 import { queryClient } from "../../lib/queryClient.js";
+import he from "he";
 
 const STATUS_CONFIG = [
     {
@@ -128,7 +129,7 @@ export default function AllContacts() {
             accessor: "date_entered_time_ago",
             headerClasses: "",
             icon: Calendar,
-            sortable:true,
+            sortable: true,
 
             onClick: (row) => handleDateClick({ email: row?.email1 ?? `${row?.first_name} ${row?.last_name} `, navigate: "/" }),
             classes: "truncate max-w-[200px]",
@@ -150,7 +151,8 @@ export default function AllContacts() {
 
             render: (row) => (
                 <span className="font-medium text-gray-700 cursor-pointer">
-                    {row?.first_name || ""} {row?.last_name || ""}                </span>
+                    {he.decode(`${row?.first_name || ""} ${row?.last_name || ""}`)}
+                </span>
             ),
         },
         {

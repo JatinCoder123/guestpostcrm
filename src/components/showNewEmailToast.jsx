@@ -47,14 +47,7 @@ export const showNewEmailToast = ({
                             navigate("/");
                             toast.dismiss(t.id);
                         }}
-                        className="
-            text-xs font-medium
-            px-2.5 py-1.5
-            rounded-md
-            bg-gray-100
-            hover:bg-gray-200
-            transition-colors
-          "
+                        className="text-xs font-medium px-2.5 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
                     >
                         Open
                     </button>

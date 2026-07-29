@@ -62,7 +62,7 @@ export default function ThreadDeals({ email, id }) {
         return !usedInOffers && !usedInDeals;
       });
     })
-    let activeDeals = id ? currentDeals.filter((o) => o.id == id) : currentDeals.filter((o) => o.status == "active");
+    let activeDeals = id ? currentDeals.filter((o) => o.id == id) : currentDeals.filter((o) => o?.status == "active");
     setValidWebsite(valid);
     setCurrentDeals(activeDeals);
   }, [offersData, dealsData, editingIds, email, id]);

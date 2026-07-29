@@ -23,7 +23,8 @@ import { MdOutlineWorkspacePremium } from "react-icons/md";
 import { FaBtc } from "react-icons/fa";
 import { IoIosMailUnread } from "react-icons/io";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
-import { useEmailStats, useInfiniteEmails } from "../../queries/email.queries.js";
+import { useEmailStats, useInfiniteEmails, useUnreadCount } from "../../queries/email.queries.js";
+import he from "he";
 const STATUS_CONFIG = [
   {
     value: "unread",
@@ -33,19 +34,22 @@ const STATUS_CONFIG = [
     emailType: "email_unread",
   },
   {
-    value: "unreplied",
+    value: "inbound",
     label: "Unreplied",
     icon: Mails,
     color: "#2563eb", // blue
-    filter: 'status'
+    filter: 'direction',
+    neqFilter: {
+      conversation_complete: '1'
+    }
   },
   {
-    value: "replied",
+    value: "outbound",
     label: "Replied",
     icon: MessageCircleReply,
     color: "#16a34a", // green
     emailType: "email_outbound",
-    filter: 'status'
+    filter: 'direction',
 
   },
 
@@ -90,15 +94,17 @@ const STATUS_CONFIG = [
     filter: 'customer_type'
   },
   {
-    value: "completed",
+    value: "1",
+    key: "completed",
     label: "Completed",
     icon: MdOutlineWorkspacePremium,
     color: "#56cd1f", // purple
     emailType: "email_completed",
-    filter: 'is_complete'
+    filter: 'conversation_complete'
   },
   {
-    value: "stop",
+    value: "1",
+    key: "stop",
     label: "Stop",
     icon: GiGoldBar,
     color: "#ab9e11", // purple
@@ -109,13 +115,15 @@ const STATUS_CONFIG = [
 ];
 export function UnrepliedEmailsPage() {
   const preferences = useTablePreference("emails");
+  const { data: unreadCount, isPending: unreadLoading } = useUnreadCount()
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isPending,
-  } = useInfiniteEmails(preferences);
+  } = useInfiniteEmails(preferences)
+
   const { data: summary } = useEmailStats();
   const { handleMove } = useThreadContext();
   const { handleDateClick } = useContext(PageContext);
@@ -136,9 +144,9 @@ export function UnrepliedEmailsPage() {
   const columns = [
     {
       label: "Created At",
-      accessor: "date_entered_time_ago",
+      accessor: "date_modified",
       headerClasses: "",
-            sortable:true,
+      sortable: true,
 
       icon: Calendar,
       onClick: (row, index) =>
@@ -146,7 +154,7 @@ export function UnrepliedEmailsPage() {
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered_time_ago}
+          {unread ? row?.date_entered : row.date_modified_time_ago}
         </span>
       ),
     },
@@ -164,8 +172,7 @@ export function UnrepliedEmailsPage() {
       render: (row) => (
         <div className="flex items-center gap-2 cursor-pointer">
           <span className="font-medium text-gray-800">
-            {row?.first_name || ""} {row?.last_name || ""}
-          </span>
+            {he.decode(`${row?.first_name || ""} ${row?.last_name || ""}`)}          </span>
 
           {row.type === "Brand" && (
             <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">
@@ -190,7 +197,7 @@ export function UnrepliedEmailsPage() {
         }),
       render: (row) => (
         <span className="px-6 py-4 text-green-600 cursor-pointer">
-          {row.subject}
+          {he.decode(row?.subject ?? "")}
         </span>
       ),
     },
@@ -273,10 +280,11 @@ export function UnrepliedEmailsPage() {
   const statusList = STATUS_CONFIG.map((config) => {
     return {
       ...config,
-      count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
+      count: config.value == 'unread' ? (unreadLoading ? 0 : Number(unreadCount)) : Number(summary?.stats?.[`${config?.key ?? config?.value}`]?.count || 0),
     };
   });
   const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
+  const unread = preferences.filters?.status == 'unread'
 
   return (
     <>
@@ -284,7 +292,11 @@ export function UnrepliedEmailsPage() {
         tableData={emails}
         tableName={"Unreplied"}
         columns={columns}
-        filterColumns={filterColumns}
+        filterColumns={!unread && filterColumns}
+        searching={!unread}
+        sortingFilter={!unread}
+        timefilter={!unread}
+        timefilterField="date_modified"
         slice={"emails"}
         statusList={statusList}
         statusCount={statusCount}
@@ -323,41 +335,3 @@ export function UnrepliedEmailsPage() {
     </>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//  🔥 LOADING OVERLAY
-//       {loading && (
-//         <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] flex items-center justify-center z-50">
-//           <div className="flex flex-col items-center gap-3">
-//             {/* Spinner */}
-//             <div className="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
-
-//             {/* Dynamic Text */}
-//             <p className="text-gray-700 font-medium">
-//               {STATUS_CONFIG.find((s) => s.emailType === emailType)
-//                 ?.label || "Emails"}{" "}
-//               Emails Loading...
-//             </p>
-//           </div>
-//         </div>
-//       )}

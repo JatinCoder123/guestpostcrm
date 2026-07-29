@@ -2,8 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { SocketContext } from "../context/SocketContext";
 import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
-import { getLadger } from "../store/Slices/ladger";
-import {  viewEmailAction } from "../store/Slices/viewEmail";
+
 
 
 function useIdle({ idle }) {
@@ -17,7 +16,7 @@ function useIdle({ idle }) {
     const [firstEmail, setFirstEmail] = useState(null);
 
     const refreshLadger = () => {
-      
+
     };
     useEffect(() => {
         if (emails?.length > 0) {

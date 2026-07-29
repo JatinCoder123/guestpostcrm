@@ -523,9 +523,9 @@ const FieldChips = ({ fields, selected, onToggle, loading }) => {
   const [filter, setFilter] = useState("");
   const visible = filter
     ? fields.filter(f =>
-        f.name.toLowerCase().includes(filter.toLowerCase()) ||
-        (f.label || "").toLowerCase().includes(filter.toLowerCase())
-      )
+      f.name.toLowerCase().includes(filter.toLowerCase()) ||
+      (f.label || "").toLowerCase().includes(filter.toLowerCase())
+    )
     : fields;
 
   if (loading) return <div className="dm-chip-loading">Loading fields…</div>;
@@ -565,7 +565,7 @@ const JsonBox = ({ value, onChange, rows = 6, placeholder = "{}" }) => {
     onChange(v);
   };
   const format = () => {
-    try { onChange(JSON.stringify(JSON.parse(value), null, 2)); setErr(""); } catch {}
+    try { onChange(JSON.stringify(JSON.parse(value), null, 2)); setErr(""); } catch { }
   };
   return (
     <div>
@@ -661,7 +661,7 @@ function PaneCreate({ modules, fieldCache, loadFields, onSend, loading }) {
         setSelected(prev => [...prev, name]);
       }
       setData(JSON.stringify(obj, null, 2));
-    } catch {}
+    } catch { }
   };
 
   const send = () => {
@@ -741,7 +741,7 @@ function PaneUpdate({ modules, fieldCache, loadFields, onSend, loading }) {
         setSelected(prev => [...prev, name]);
       }
       setData(JSON.stringify(obj, null, 2));
-    } catch {}
+    } catch { }
   };
 
   const send = () => {
@@ -856,7 +856,7 @@ function PaneFetch({ modules, fieldCache, loadFields, onSend, loading }) {
       payload.date_field = dateField || "date_entered";
       if (dateRange === "custom") { payload.date_from = customFrom; payload.date_to = customTo; }
     }
-    try { const f = JSON.parse(filters); if (Object.keys(f).length) payload.filters = f; } catch {}
+    try { const f = JSON.parse(filters); if (Object.keys(f).length) payload.filters = f; } catch { }
     if (search.trim()) {
       payload.search = search.trim();
       if (searchFields.trim()) payload.search_fields = searchFields.split(",").map(s => s.trim());
@@ -990,7 +990,7 @@ function PaneFetchRelated({ modules, fieldCache, loadFields, onSend, loading }) 
       payload.date_field = dateField || "date_entered";
       if (dateRange === "custom") { payload.date_from = customFrom; payload.date_to = customTo; }
     }
-    try { const f = JSON.parse(filters); if (Object.keys(f).length) payload.filters = f; } catch {}
+    try { const f = JSON.parse(filters); if (Object.keys(f).length) payload.filters = f; } catch { }
     if (search.trim()) {
       payload.search = search.trim();
       if (searchFields.trim()) payload.search_fields = searchFields.split(",").map(s => s.trim());
@@ -1212,7 +1212,7 @@ function PaneSchema() {
           <div className="dm-schema-label">Request</div>
           <div style={{ position: "relative" }}>
             <button className="dm-copy-btn"
-              onClick={() => navigator.clipboard.writeText(s.req).catch(() => {})}>Copy</button>
+              onClick={() => navigator.clipboard.writeText(s.req).catch(() => { })}>Copy</button>
             <pre className="dm-schema-code" dangerouslySetInnerHTML={{ __html: syntaxHighlight(s.req) }} />
           </div>
           {s.res && (
@@ -1231,16 +1231,16 @@ function PaneSchema() {
 
 const SIDEBAR = [
   { section: "Actions" },
-  { key: "create",              label: "Create Record",       pill: "POST", icon: "➕" },
-  { key: "update",              label: "Update Record",       pill: "POST", icon: "✏️" },
-  { key: "delete",              label: "Delete Record",       pill: "DEL",  icon: "🗑" },
-  { key: "fetch",               label: "Fetch / Search",      pill: "GET",  icon: "🔍" },
-  { key: "fetch_related",       label: "Fetch Related",       pill: "GET",  icon: "🔗" },
+  { key: "create", label: "Create Record", pill: "POST", icon: "➕" },
+  { key: "update", label: "Update Record", pill: "POST", icon: "✏️" },
+  { key: "delete", label: "Delete Record", pill: "DEL", icon: "🗑" },
+  { key: "fetch", label: "Fetch / Search", pill: "GET", icon: "🔍" },
+  { key: "fetch_related", label: "Fetch Related", pill: "GET", icon: "🔗" },
   { section: "Relationships" },
-  { key: "add_relationship",    label: "Add Relationship",    pill: "POST", icon: "＋" },
-  { key: "remove_relationship", label: "Remove Relationship", pill: "DEL",  icon: "✖" },
+  { key: "add_relationship", label: "Add Relationship", pill: "POST", icon: "＋" },
+  { key: "remove_relationship", label: "Remove Relationship", pill: "DEL", icon: "✖" },
   { section: "Reference" },
-  { key: "schema",              label: "JSON Schemas",        pill: null,   icon: "📄" },
+  { key: "schema", label: "JSON Schemas", pill: null, icon: "📄" },
 ];
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
@@ -1248,14 +1248,14 @@ const SIDEBAR = [
 export default function DataModellingPage() {
   const { crmEndpoint } = useSelector(s => s.user);
 
-  const [active, setActive]         = useState("create");
-  const [modules, setModules]       = useState([]);
+  const [active, setActive] = useState("create");
+  const [modules, setModules] = useState([]);
   const [fieldCache, setFieldCache] = useState({});
-  const [sending, setSending]       = useState(false);
-  const [resp, setResp]             = useState({ html: "", status: "IDLE", ms: "" });
+  const [sending, setSending] = useState(false);
+  const [resp, setResp] = useState({ html: "", status: "IDLE", ms: "" });
 
   const baseUrl = crmEndpoint ? crmEndpoint.split("index.php")[0] : "";
-  const apiUrl  = baseUrl ? `${baseUrl}index.php?entryPoint=smart_gateway` : "";
+  const apiUrl = baseUrl ? `${baseUrl}index.php?entryPoint=smart_gateway` : "";
 
   useEffect(() => {
     if (!baseUrl) return;
@@ -1281,14 +1281,14 @@ export default function DataModellingPage() {
       let fields = [];
       if (Array.isArray(data)) {
         fields = data.map(f => ({
-          name:  f.name  || f.field_name || String(f),
-          type:  f.type  || "varchar",
+          name: f.name || f.field_name || String(f),
+          type: f.type || "varchar",
           label: f.label || f.name || "",
         }));
       } else if (data && typeof data === "object") {
         fields = Object.entries(data).map(([name, meta]) => ({
           name,
-          type:  (meta && meta.type)  || "varchar",
+          type: (meta && meta.type) || "varchar",
           label: (meta && meta.label) || name,
         }));
       }
@@ -1338,7 +1338,7 @@ export default function DataModellingPage() {
 
   const copyResp = () => {
     const el = document.getElementById("dm-resp-body");
-    if (el) navigator.clipboard.writeText(el.innerText).catch(() => {});
+    if (el) navigator.clipboard.writeText(el.innerText).catch(() => { });
   };
   const clearResp = () => setResp({
     html: '<span style="color:#7eb6f6;opacity:0.5;font-style:italic">Cleared.</span>',
@@ -1349,8 +1349,8 @@ export default function DataModellingPage() {
   const sharedProps = { modules, fieldCache, loadFields, onSend: handleSend, loading: sending };
 
   const respStatusClass =
-    resp.status === "SUCCESS" ? "dm-resp-ok" :
-    resp.status === "ERROR"   ? "dm-resp-err" : "dm-resp-idle";
+    resp?.status === "SUCCESS" ? "dm-resp-ok" :
+      resp?.status === "ERROR" ? "dm-resp-err" : "dm-resp-idle";
 
   return (
     <div className="dm-wrap">
@@ -1399,14 +1399,14 @@ export default function DataModellingPage() {
 
         {/* MAIN */}
         <main className="dm-main">
-          {active === "create"              && <PaneCreate          {...sharedProps} />}
-          {active === "update"              && <PaneUpdate          {...sharedProps} />}
-          {active === "delete"              && <PaneDelete          {...sharedProps} />}
-          {active === "fetch"               && <PaneFetch           {...sharedProps} />}
-          {active === "fetch_related"       && <PaneFetchRelated    {...sharedProps} />}
-          {active === "add_relationship"    && <PaneRelationship    action="add_relationship"    {...sharedProps} />}
-          {active === "remove_relationship" && <PaneRelationship    action="remove_relationship" {...sharedProps} />}
-          {active === "schema"              && <PaneSchema />}
+          {active === "create" && <PaneCreate          {...sharedProps} />}
+          {active === "update" && <PaneUpdate          {...sharedProps} />}
+          {active === "delete" && <PaneDelete          {...sharedProps} />}
+          {active === "fetch" && <PaneFetch           {...sharedProps} />}
+          {active === "fetch_related" && <PaneFetchRelated    {...sharedProps} />}
+          {active === "add_relationship" && <PaneRelationship action="add_relationship"    {...sharedProps} />}
+          {active === "remove_relationship" && <PaneRelationship action="remove_relationship" {...sharedProps} />}
+          {active === "schema" && <PaneSchema />}
 
           {/* RESPONSE PANEL */}
           {active !== "schema" && (
@@ -1414,7 +1414,7 @@ export default function DataModellingPage() {
               <div className="dm-resp-head">
                 <span style={{ fontSize: 14 }}>⌨</span>
                 <span className="dm-resp-title">Response</span>
-                <span className={`dm-resp-status ${respStatusClass}`}>{resp.status}</span>
+                <span className={`dm-resp-status ${respStatusClass}`}>{resp?.status}</span>
                 {resp.ms && <span className="dm-resp-time">{resp.ms}</span>}
                 <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
                   <button className="dm-btn" onClick={copyResp}>Copy</button>
@@ -1422,14 +1422,14 @@ export default function DataModellingPage() {
                 </div>
               </div>
               <pre
-  id="dm-resp-body"
-  className="dm-resp-body h-[300px] min-h-[120px] max-h-[80vh] resize-y overflow-auto box-border p-3 border border-gray-700"
-  dangerouslySetInnerHTML={{
-    __html:
-      resp.html ||
-      '<span style="color:#7eb6f6;opacity:0.5;font-style:italic">Waiting for request…</span>',
-  }}
-/>
+                id="dm-resp-body"
+                className="dm-resp-body h-[300px] min-h-[120px] max-h-[80vh] resize-y overflow-auto box-border p-3 border border-gray-700"
+                dangerouslySetInnerHTML={{
+                  __html:
+                    resp.html ||
+                    '<span style="color:#7eb6f6;opacity:0.5;font-style:italic">Waiting for request…</span>',
+                }}
+              />
             </div>
           )}
         </main>

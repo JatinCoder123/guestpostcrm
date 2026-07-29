@@ -1,5 +1,5 @@
-import { apiRequest } from "../services/api";
-import { getCRM } from "../services/utils";
+import { apiRequest, fetchGpc } from "../services/api";
+import { getCRM, getCurrentUser } from "../services/utils";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
 
 /**
@@ -7,26 +7,28 @@ import { CREATE_DEAL_API_KEY } from "../store/constants";
  */
 export const getTemplates =
     async () => {
-        const { data } =
-            await api.get(
-                "/templates"
-            );
-
+        const data = await apiRequest({
+            endpoint: `${getCRM()}?entryPoint=get_post_all&action_type=get_data`,
+            method: "POST",
+            headers: {
+                "x-api-key": CREATE_DEAL_API_KEY,
+                "Content-Type": "application/json",
+            },
+            body: {
+                module: "EmailTemplates",
+                where: { status: "Active" },
+            },
+        });
         return data;
     };
+export const getDefaultTemplateByEmail = ({ email }) => apiRequest({ endpoint: `${getCRM()}?entryPoint=updateOffer&email=${email}` })
+export const getTemplateStages = () => fetchGpc({ params: { type: "templates" }, body: { stages: 2 }, method: "POST" })
 
 /**
  * Get Templates By Stage
  */
 export const getTemplatesByStage =
-    async (stage) => {
-        const { data } =
-            await api.get(
-                `/templates/stage/${stage}`
-            );
-
-        return data;
-    };
+    async (stage) => fetchGpc({ method: "POST", params: { type: 'templates' }, body: { assigned_user_id: getCurrentUser()?.id, stage_type: stage } })
 
 /**
  * Get Template By Id

@@ -12,7 +12,6 @@ import { useNext } from "../../../hooks/useNext";
 const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { context: { currentEmail: email, currentThread: threadId } } = useThreadContext()
   const { state } = useLocation();
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -82,6 +81,11 @@ const Thread = () => {
       dispatch(viewEmailAction.clearAllErrors());
     }
   }, [sendError]);
+  useEffect(() => {
+    if (state?.initialContent) {
+      setEditorContent(state?.initialContent)
+    }
+  }, [state]);
   useEffect(() => {
     const processFiles = async () => {
       if (!htmlfile) return;

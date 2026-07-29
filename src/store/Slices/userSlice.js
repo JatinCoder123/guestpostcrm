@@ -93,7 +93,7 @@ export const getUser = (email = null) => {
           id: data.id,
         })
       );
-      setConfig(data.crmEndpoint, data.db_name, data.businessEmail);
+      setConfig(data.crmEndpoint, data.db_name, data.user.email);
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
       console.log("Full Error:", error.response);
@@ -103,7 +103,7 @@ export const getUser = (email = null) => {
       let message = "Something went wrong. Please try again.";
 
       if (error.response) {
-        const status = error.response.status;
+        const status = error.response?.status;
         const backendError = error.response.data?.error || "";
 
         switch (status) {

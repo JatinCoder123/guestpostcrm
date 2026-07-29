@@ -89,7 +89,7 @@ const MessageModal = ({
     setMessageContent(
       htmlBody
         ? cleanHtmlContent(htmlBody)
-        : "No content available"
+        : "Thread Is Either Missing Or Deleted."
     );
   }, [showMessageModal, messageId, isModal, data, isError, isMessageLoading]);
 
@@ -194,9 +194,18 @@ const MessageModal = ({
             </p>
           </div>
         ) : messageContent ? (
-          <div className="w-full max-w-4xl mx-auto rounded-xl border border-white/50 bg-gradient-to-br from-[#fdfcfb] to-[#e2d1c3] shadow-inner p-5">
+          <div className="w-full max-w-4xl min-w-0 mx-auto rounded-xl border border-white/50 bg-gradient-to-br from-[#fdfcfb] to-[#e2d1c3] shadow-inner p-5 overflow-hidden">
             <div
-              className="prose max-w-none"
+              className="
+          prose
+          max-w-none
+          break-words
+          whitespace-pre-wrap
+          [&_*]:max-w-full
+          [&_*]:break-words
+          [&_*]:overflow-wrap-anywhere
+          [&_a]:break-all
+        "
               dangerouslySetInnerHTML={{
                 __html: messageContent,
               }}

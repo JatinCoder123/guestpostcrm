@@ -20,7 +20,7 @@ const TinyEditor = ({
         className="h-full w-full"
       >
         <Editor
-          apiKey={TINY_EDITOR_API_KEY}
+          // apiKey={TINY_EDITOR_API_KEY}
           value={editorContent}
           onEditorChange={setEditorContent}
           onInit={(e, editor) => {
@@ -28,8 +28,8 @@ const TinyEditor = ({
             setEditorReady(true);
           }}
           init={{
+            license_key: 'gpl',
             height: "100%",
-            menubar: true,
             branding: false,
             statusbar: true,
 
@@ -40,8 +40,8 @@ const TinyEditor = ({
           fullscreen preview searchreplace
           insertdatetime lists link image media
           table charmap pagebreak nonbreaking
-          anchor code codesample help
-          emoticons quickbars
+          anchor code codesample  
+           quickbars
         `,
 
             /* ================= TOOLBAR ================= */
@@ -51,20 +51,20 @@ const TinyEditor = ({
           alignleft aligncenter alignright alignjustify |
           bullist numlist outdent indent |
           link image media table |
-          emoticons charmap insertdatetime |
+           charmap insertdatetime |
           preview fullscreen |
-          code help
+          code  
         `,
 
             toolbar_mode: "sliding",
 
             /* ================= MENUBAR ================= */
-            menubar: "file edit view insert format tools table help",
+            menubar: "file edit view insert format tools table ",
 
             /* ================= QUICKBARS ================= */
             quickbars_selection_toolbar:
-              "bold italic underline | quicklink h2 h3 blockquote",
-            quickbars_insert_toolbar: "image media table",
+              "bold  italic underline | quicklink h2 h3 blockquote",
+            quickbars_insert_toolbar: "image media table ",
 
 
 
@@ -158,7 +158,7 @@ export const SmallTinyEditor = ({
         animate={{ opacity: 1, y: 0 }}
       >
         <Editor
-          apiKey={TINY_EDITOR_API_KEY}
+          // apiKey={TINY_EDITOR_API_KEY}
           value={editorContent}
           onEditorChange={setEditorContent}
           onInit={(e, editor) => {
@@ -166,17 +166,18 @@ export const SmallTinyEditor = ({
             setEditorReady(true);
           }}
           init={{
+            license_key: 'gpl',
             height: "100vh",
             menubar: false,
             branding: false,
             statusbar: false,
 
             // ✅ Add emoticons plugin
-            plugins: `link lists emoticons`,
+            plugins: `link lists `,
 
             // ✅ Add emoji button in toolbar
             toolbar: `
-             emoticons bold italic underline link |
+              bold italic underline link | 
    
     bullist numlist |
     
@@ -187,7 +188,7 @@ export const SmallTinyEditor = ({
 
             content_style: `
     html, body {
-      height: 100%;
+      height: 100vh;
       margin: 0;
       padding: 0;
     }
@@ -195,7 +196,7 @@ export const SmallTinyEditor = ({
     body {
       font-family: -apple-system, BlinkMacSystemFont,
         'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      font-size: 14px;
+      font-size: 12px;
       line-height: 1.5;
       color: #18181cff;
 

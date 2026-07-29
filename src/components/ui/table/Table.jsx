@@ -79,10 +79,12 @@ const TableView = ({
   statusList = [],
   statusKey = "status",
   statusCount = null,
-  searchType = "date_entered",
   filterColumns = [],
   preferences,
-  defaultStatus,
+  searching = true,
+  sortingFilter = true,
+  timefilter = true,
+  timefilterField = "date_entered",
   fetchNextPage,
   children,
   pageCount,
@@ -107,7 +109,7 @@ const TableView = ({
     search_fields: preferences?.search_filter?.search_fields || [],
   };
   const [showStatus, setShowStatus] = useState(true);
-  const [showFilterColumn, setShowFilterColumn] = useState(true);
+  const [showFilterColumn, setShowFilterColumn] = useState(false);
   const dispatch = useDispatch();
 
 
@@ -155,7 +157,7 @@ const TableView = ({
           date_range: "custom",
           date_from,
           date_to,
-          date_field: "date_entered"
+          date_field: timefilterField
         },
       })
     );
@@ -195,6 +197,9 @@ const TableView = ({
     slice,
     sorting,
     fetchNextPage,
+    searching,
+    sortingFilter,
+    timefilter,
     filterColumns,
     loading,
     selectedRows,
@@ -264,10 +269,10 @@ const TableView = ({
               label={showStatus ? "Hide Stats" : "Show Stats"}
             />}
 
-            <SortDropdown />
+            {sortingFilter && <SortDropdown />}
 
           </div>
-          <DateRangeFilter
+          {timefilter && <DateRangeFilter
             fromDate={fromDate}
             fromTime={fromTime}
             toDate={toDate}
@@ -285,8 +290,8 @@ const TableView = ({
               )
             }
             onReset={handleResetFilter}
-          />
-          <SearchBar />
+          />}
+          {searching && <SearchBar />}
           <div className="ml-auto flex gap-2">
             {canAdd && <IconButton
               onClick={handleAddClick}

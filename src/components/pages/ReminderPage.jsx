@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 import { reminderKeys, useInfiniteReminders, useReminderStats } from "../../queries/reminder.queries.js";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
 import { queryClient } from "../../lib/queryClient.js";
+import { useLocation } from "react-router-dom";
 const STATUS_CONFIG = [
   {
     value: "Sent",
@@ -75,8 +76,28 @@ export function ReminderPage() {
   );
   const { enteredEmail: email } = useContext(PageContext)
   const preferences = useTablePreference("reminders");
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } = useInfiniteReminders({ preferences, email });
-  const { data: summary } = useReminderStats({ email });
+  const location = useLocation();
+
+  const effectivePreferences =
+    location.state?.reminderFilter === "today-payment"
+      ? {
+        ...preferences,
+        date_filter: {
+          date_range: "today",
+          date_field: "scheduled_time",
+          date_from: "",
+          date_to: "",
+        },
+        filters: {
+          ...preferences.filters,
+          ui_name: "payment",
+          status: "Pending",
+        },
+      }
+      : preferences;
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
+    useInfiniteReminders({ preferences: effectivePreferences, email });
+  const { data: summary } = useReminderStats({ email, filters: effectivePreferences });
   const { handleDateClick, enteredEmail } =
     useContext(PageContext);
   const dispatch = useDispatch();
@@ -116,7 +137,7 @@ export function ReminderPage() {
     {
       label: "Created At",
       accessor: "date_entered",
-      sortable:true,
+      sortable: true,
       headerClasses: "",
       icon: Calendar,
 
@@ -167,14 +188,14 @@ export function ReminderPage() {
 
       render: (row) => (
         <span
-          className={`px-2 py-1 rounded-full text-xs ${row.status?.toLowerCase() === "pending"
+          className={`px-2 py-1 rounded-full text-xs ${row?.status?.toLowerCase() === "pending"
             ? "bg-yellow-100 text-yellow-800"
-            : row.status?.toLowerCase() === "sent"
+            : row?.status?.toLowerCase() === "sent"
               ? "bg-green-100 text-green-800"
               : "bg-red-100 text-red-800"
             }`}
         >
-          {row.status}
+          {row?.status}
         </span>
       )
     },
@@ -185,11 +206,11 @@ export function ReminderPage() {
       icon: BadgeDollarSign,
       classes: "truncate max-w-[300px] ",
 
-     render: (row) => (
-  <span className="font-medium text-gray-700 cursor-pointer">
-    {getLeftTime(row.scheduled_time)}
-  </span>
-)
+      render: (row) => (
+        <span className="font-medium text-gray-700 cursor-pointer">
+          {getLeftTime(row.scheduled_time)}
+        </span>
+      )
     },
 
     {
@@ -199,7 +220,7 @@ export function ReminderPage() {
       icon: Clapperboard,
       classes: "truncate max-w-[300px] ml-auto",
       render: (row) => {
-        const valid = row.status?.toLowerCase() === "sent" || row.status?.toLowerCase() === "cancel"
+        const valid = row?.status?.toLowerCase() === "sent" || row?.status?.toLowerCase() === "cancel"
         return <div className="flex items-center justify-center gap-2">
           {sending && sendReminderId === row.id ? (
             <LoadingChase size="20" color="blue" />
@@ -268,7 +289,7 @@ export function ReminderPage() {
         tableName={"Reminders"}
         columns={columns}
         slice={"reminders"}
-        preferences={preferences}
+        preferences={effectivePreferences}
         statusKey={"status"}
         statusCount={statusCount}
         statusList={statusList}

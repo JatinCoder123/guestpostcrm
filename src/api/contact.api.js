@@ -15,7 +15,7 @@ export const getContactStats = async (
         method: "POST",
         body: {
             action: "get_stats",
-            ...filters,
+            ...buildTableRequestBody(filters),
             queries: [
                 {
                     "key": "new",
@@ -71,17 +71,20 @@ export const getContactStats = async (
                     }
                 },
                 {
-                    "key": "replied",
+                    "key": "inbound",
                     "module": "Contacts",
                     "filters": {
-                        "status": "replied"
+                        "direction": "inbound",
+                        "conversation_complete": {
+                            "neq": "1"
+                        }
                     }
                 },
                 {
-                    "key": "unreplied",
+                    "key": "outbound",
                     "module": "Contacts",
                     "filters": {
-                        "status": "unreplied"
+                        "direction": "outbound",
                     }
                 },
                 {
@@ -109,14 +112,16 @@ export const getContactStats = async (
                     "key": "forwarded",
                     "module": "Contacts",
                     "filters": {
-                        "forwarded": "1"
+                        "forwarded": "1",
+                        "direction": "inbound"
                     }
                 },
                 {
                     "key": "favorite",
                     "module": "Contacts",
                     "filters": {
-                        "favorite": "1"
+                        "favorite": "1",
+                        "direction": "inbound"
                     }
                 },
                 {
@@ -151,6 +156,18 @@ export const getAllContacts = async ({
         }
     });
     return data;
+};
+export const getAllUnreadEmails = async ({
+    page = 1,
+    per_page = 20
+} = {}) => {
+    const data = await fetchGpc({ params: { type: 'email_unread', page, per_page } })
+    return data;
+};
+export const getUnreadCount = async () => {
+    const data = await fetchGpc({ params: { type: "email_stats" } });
+    console.log("UNREAD COUNT", data?.data?.unread)
+    return data?.data?.unread;
 };
 
 /**
@@ -187,10 +204,29 @@ export const updateContact = async ({
     id,
     payload,
 }) => {
+    console.log("ID", id)
+    console.log("PAYLOAD", payload)
     const response = await http({
         method: "POST",
         body: {
             module: "Contacts",
+            action: "update",
+            id,
+            data: { ...payload }
+        },
+    });
+
+    return response;
+};
+export const updateAccount = async ({
+    id,
+    payload,
+}) => {
+    const response = await http({
+        method: "POST",
+        body: {
+            module: "Accounts",
+            action: "update",
             id,
             data: { ...payload }
         },

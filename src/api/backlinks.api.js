@@ -29,15 +29,13 @@ export const getAllBacklinks = ({
         },
     });
 
-export const getBacklinkStats = (
-    filters = {}
-) =>
+export const getBacklinkStats = (filters = {}) =>
     http({
         method: "POST",
         body: {
             action: "get_stats",
 
-            ...filters,
+            ...buildTableRequestBody(filters),
 
             queries: [
                 {

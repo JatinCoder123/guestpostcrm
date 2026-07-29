@@ -9,6 +9,8 @@ import {
     getTemplateById,
     getTemplateByName,
     getTemplateByEmail,
+    getDefaultTemplateByEmail,
+    getTemplateStages,
 } from "../api/template.api";
 export const templateKeys = {
     all: ["templates"],
@@ -40,12 +42,38 @@ export const templateKeys = {
         "email",
         email,
     ],
+    defaultTemplateByEmail: (email) => [
+        "templates",
+        "defaultTemplateByEmail",
+        email,
+    ],
+    templateStages: () => [
+        "templates",
+        "stages",
+    ],
 };
 export const useTemplates =
     () => {
         return useQuery({
             queryKey: templateKeys.lists(),
             queryFn: getTemplates,
+            staleTime: 10 * 60 * 1000,
+        });
+    };
+export const useDefaultTemplate =
+    (email) => {
+        return useQuery({
+            queryKey: templateKeys.defaultTemplateByEmail(email),
+            queryFn: () => getDefaultTemplateByEmail({ email }),
+            enabled: !!email,
+            staleTime: 10 * 60 * 1000,
+        });
+    };
+export const useTemplateStages =
+    () => {
+        return useQuery({
+            queryKey: templateKeys.templateStages(),
+            queryFn: () => getTemplateStages(),
             staleTime: 10 * 60 * 1000,
         });
     };

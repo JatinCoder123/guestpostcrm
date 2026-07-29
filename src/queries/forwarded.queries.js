@@ -9,6 +9,11 @@ import {
     getAllContacts,
     getContactStats,
 } from "../api/contact.api";
+import { getForwardStats } from "../api/forward.api";
+
+import { useCrmUsers } from "./users.queries";
+import { store } from "../store/store";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 /**
  * Query Keys
@@ -22,26 +27,29 @@ export const forwardedKeys = {
         filters,
     ],
 
-    stats: (filters = {}) => [
+    stats: (filters = {}, userId) => [
         "forwarded",
         "stats",
         filters,
+        userId
     ],
 };
 
 
-export const useForwardedStats = (
-    filters = {}
-) => {
+export const useForwardedStats = (userId) => {
+    const preferences =
+        useTablePreference(
+            "forwarded"
+        );
     return useQuery({
         queryKey:
             forwardedKeys.stats(
-                filters
+                preferences, userId
             ),
 
         queryFn: () =>
-            getContactStats(
-                filters
+            getForwardStats(
+                preferences, userId
             ),
 
         staleTime:
@@ -52,16 +60,37 @@ export const useForwardedStats = (
 export const useInfiniteForwarded = (
     preferences = {}
 ) => {
+    const { data: users = [] } = useCrmUsers();
+
+    const currentEmail =
+        store.getState().user.user.email;
+
+    const currentGpcUser =
+        users.find(
+            (user) =>
+                user.description === currentEmail
+        );
+
+    const assignedUserId =
+        currentGpcUser?.id;
+
     return useInfiniteQuery({
         queryKey:
-            forwardedKeys.lists(preferences),
+            forwardedKeys.lists({
+                preferences,
+                assignedUserId,
+            }),
 
         queryFn: ({ pageParam = 1 }) =>
             getAllContacts({
                 preferences,
                 page: pageParam,
-                defaults: { forwarded: "1" }
+                defaults: {
+                    gpc_assigned_to: assignedUserId,
+                }
             }),
+
+        enabled: Boolean(assignedUserId),
 
         initialPageParam: 1,
 

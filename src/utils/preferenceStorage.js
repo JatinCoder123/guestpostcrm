@@ -74,7 +74,11 @@ export const buildTableRequestBody = (
 };
 export const INITIAL_TABLE_FILTERS = {
     emails: {
-        status: "unreplied",
+        direction: "inbound",
+        conversation_complete: { 'neq': '1' }
+    },
+    orders: {
+        order_status: 'new'
     },
 
     deals: {
@@ -82,4 +86,10 @@ export const INITIAL_TABLE_FILTERS = {
     },
 
 
+};
+export const INITIAL_TABLE_SORTING = {
+    emails: {
+        order_by: "date_modified",
+        order_dir: "DESC",
+    },
 };

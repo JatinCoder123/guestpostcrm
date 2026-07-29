@@ -1,12 +1,20 @@
-import { apiRequest } from "../services/api";
+import { apiRequest, http } from "../services/api";
 import { getCRM } from "../services/utils";
 
 /**
  * Get all tags
  */
 export const getMarkTags = async () => {
-    const data = await apiRequest({ endpoint: `${getCRM()}?entryPoint=add_tag`, params: { get_tag: 1 } })
+    const data = await http({
+        method: "POST",
+        body: {
+            action: "fetch",
+            module: "outr_hashtag",
+            page: 1,
+            per_page: 50
 
+        },
+    });
     return data;
 };
 

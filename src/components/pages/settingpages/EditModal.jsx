@@ -4,10 +4,10 @@ import { toast } from "react-toastify";
 import { useState, useEffect } from "react";
 
 const TABS = [
-  { key: "description", label: "Manual Prompt" },
-  { key: "role_prompt", label: "Role Prompt" },
+  { key: "description", label: "Current Prompt" },
+  { key: "role_prompt", label: "System Prompt" },
   { key: "output_format", label: "Output Prompt" },
-  { key: "overwrite_prompt", label: "Overwrite Prompt" },
+  { key: "overwrite_prompt", label: "Default Prompt" },
 ];
 
 export default function EditModal({ item, onClose, handleUpdate, stages }) {
@@ -135,11 +135,10 @@ export default function EditModal({ item, onClose, handleUpdate, stages }) {
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={`relative z-10 w-1/2 py-2 text-sm font-medium transition-colors duration-300 cursor-pointer
-                  ${
-                    activeTab === tab.key
+                  ${activeTab === tab.key
                       ? "text-purple-600 bg-white rounded-xl"
                       : "text-gray-600 bg-gray-200 rounded-xl"
-                  }`}
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -152,9 +151,8 @@ export default function EditModal({ item, onClose, handleUpdate, stages }) {
                 value={form[activeTab]}
                 onChange={(e) => updateField(activeTab, e.target.value)}
                 className="w-full h-120 p-3 border rounded-xl bg-gray-50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={`Enter ${
-                  TABS.find((t) => t.key === activeTab)?.label
-                }`}
+                placeholder={`Enter ${TABS.find((t) => t.key === activeTab)?.label
+                  }`}
               />
             </div>
 

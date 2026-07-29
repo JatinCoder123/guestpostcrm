@@ -33,7 +33,7 @@ export function TimelinePage() {
   const { viewEmail, threadId, count, contactInfo, } = useSelector(
     (state) => state.viewEmail,
   );
-  if (((((Array.isArray(ladger) && ladger.length == 0) || !ladger)) && !ledgerLoading && !emailsLoading)) {
+  if ((!ledgerLoading && !emailsLoading && (((Array.isArray(ladger) && ladger.length == 0) || !ladger)))) {
     return <NoSearchFoundPage />;
   }
 

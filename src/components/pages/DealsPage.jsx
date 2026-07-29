@@ -12,8 +12,8 @@ import {
   Eye,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useContext } from "react";
-import { deleteDeal } from "../../store/Slices/deals.js";
+import { useContext, useEffect } from "react";
+import { dealsAction, deleteDeal } from "../../store/Slices/deals.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import TableView, { Table } from "../ui/table/Table";
@@ -21,6 +21,7 @@ import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingChase } from "../Loading.jsx";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
 import { useDealStats, useDeleteDeal, useInfiniteDeals } from "../../queries/deals.queries.js";
+import toast from "react-hot-toast";
 const STATUS_CONFIG = [
   {
     value: "active",
@@ -31,15 +32,18 @@ const STATUS_CONFIG = [
     filter: 'status'
   },
   {
-    value: "expiry",
-    label: "Expiry",
+    value: "expire",
+    label: "Expire",
     icon: ShieldAlert,
+    showAmount: true,
+
     color: "#EF4444", // red (red-500)
     filter: 'status'
 
   },
 ];
 export function DealsPage() {
+  const { deleting, deleteDealId, message, error } = useSelector(s => s.deals)
   const preferences =
     useTablePreference(
       "deals"
@@ -58,13 +62,23 @@ export function DealsPage() {
   const {
     data: summary,
   } = useDealStats({ email });
+  useEffect(() => {
+    if (message) {
+      dispatch(dealsAction.clearAllMessages())
+      toast.success(message)
+    }
+    if (error) {
+      dispatch(dealsAction.clearAllErrors())
+      toast.error(error)
+    }
 
-  const {
-    mutate: deleteDeal,
-    isPending: deleting,
-    variables:
-    deleteDealId,
-  } = useDeleteDeal();
+  }, [message, error])
+  // const {
+  //   mutate: deleteDeal,
+  //   isPending: deleting,
+  //   variables:
+  //   deleteDealId,
+  // } = useDeleteDeal();
   const { handleDateClick } =
     useContext(PageContext);
   const navigateTo = useNavigate();
@@ -73,7 +87,7 @@ export function DealsPage() {
     {
       label: "Created At",
       accessor: "date_entered",
-      sortable:true,
+      sortable: true,
       headerClasses: "",
       icon: Calendar,
 
@@ -116,7 +130,7 @@ export function DealsPage() {
       label: "Amount",
       accessor: "dealamount",
       searchable: true,
-      sortable:true,
+      sortable: true,
 
       headerClasses: "",
       icon: BadgeDollarSign,
@@ -140,17 +154,6 @@ export function DealsPage() {
         </span>
       ),
     },
-    // {
-    //   label: "Expiry Date",
-    //   accessor: "expiry_date",
-    //   headerClasses: "",
-    //   icon: Calendar,
-    //   classes: "truncate max-w-[300px]",
-
-    //   render: (row) => (
-    //     <span className="font-medium text-green-700 ">{row?.expiry_date}</span>
-    //   ),
-    // },
     {
       label: "Action",
       accessor: "action",
@@ -178,7 +181,7 @@ export function DealsPage() {
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
               onClick={() =>
-                deleteDeal(row.id)
+                dispatch(deleteDeal(row, row.id))
               }
             >
               <Trash className="w-5 h-5 text-red-600" />
@@ -224,6 +227,7 @@ export function DealsPage() {
     return {
       ...config,
       count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
+      amount: Number(summary?.stats?.[`${config.value}`]?.sum_of?.dealamount || 0),
     };
   });
   const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)

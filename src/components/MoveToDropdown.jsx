@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
-import { addEvent } from "../store/Slices/eventSlice";
-import { useDispatch, useSelector } from "react-redux";
 import { SocketContext } from "../context/SocketContext";
 
 const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
@@ -11,8 +9,6 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
   const [loading, setLoading] = useState(false);
   const { getMoveOptions, moveData } = useContext(SocketContext);
   const [moveLoading, setMoveLoading] = useState(null);
-  const dispatch = useDispatch();
-  const { email } = useSelector((state) => state.ladger);
   const dropdownRef = useRef(null);
 
   // Click outside to close
@@ -64,13 +60,6 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
       await moveData(currentThreadId, labelId);
 
       toast.success(`Moved to ${labelName} successfully!`);
-      dispatch(
-        addEvent({
-          email,
-          thread_id: currentThreadId,
-          recent_activity: "moved",
-        }),
-      );
       onMoveSuccess?.();
       setIsOpen(false);
     } catch (error) {

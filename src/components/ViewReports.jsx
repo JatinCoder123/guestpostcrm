@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import {
   BarChart3,
   Calendar,
@@ -22,17 +22,15 @@ import { memo } from "react";
 import { fetchGpc } from "../services/api.js";
 import {
   setStagesLoading, setStagesData,
-  setCategoriesLoading, setCategoriesData, setCategoriesPage,
-  setDetailsLoading, setDetailsData, setDetailsPage,
-  toggleStage, toggleCategory,
+  setCategoriesLoading, setCategoriesData,
+  toggleStage,
   setError, clearError, resetReport,
   selectStages, selectCategories, selectDetails,
   selectReportStats,
   selectStagesLoading, selectCatsLoading, selectDetsLoading,
   selectReportError,
 } from "../store/Slices/reportSlice.js";
-import { preferencesAction } from "../store/Slices/preferencesSlice.js";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { DateRangeFilter } from "./DateRangeFilter.jsx";
 import { useCrmUsers } from "../queries/users.queries.js";
 import CustomDropdown from "./ui/CustomDropdown.jsx";
@@ -103,8 +101,46 @@ const getDateRange = (preset) => {
 };
 
 const getCount = (row) => Number(row?.total_count ?? row?.total ?? row?.count ?? 0);
-const getUserLabel = (u) =>
-  u?.name || u?.user_name || u?.username || u?.first_name || u?.description || u?.email || u?.id || "Unnamed";
+
+const getStoredReportFilter = () => {
+  try {
+    const preferences = JSON.parse(localStorage.getItem("preferences") || "{}");
+    const reportPreference = preferences?.tables?.report || {};
+    const filters = reportPreference?.filters || {};
+    const dateFilter = reportPreference?.date_filter || {};
+
+    return {
+      ...filters,
+      from: dateFilter.date_from?.split(" ")[0] || "",
+      from_time: dateFilter.date_from?.split(" ")[1] || "00:00:00",
+      to: dateFilter.date_to?.split(" ")[0] || "",
+      to_time: dateFilter.date_to?.split(" ")[1] || "23:59:59",
+    };
+  } catch {
+    return {};
+  }
+};
+
+const getInitialDateFilter = () => {
+  const storedFilter = getStoredReportFilter();
+  const hasStoredRange = storedFilter.from || storedFilter.to;
+
+  return {
+    filterActive: Boolean(hasStoredRange),
+    fromDate: storedFilter.from || "",
+    fromTime: storedFilter.from_time || "00:00:00",
+    toDate: storedFilter.to || "",
+    toTime: storedFilter.to_time || "23:59:59",
+  };
+};
+
+const getUserOptions = (users = []) => [
+  { value: "", label: "All users" },
+  ...users.map((user) => ({
+    value: user.id,
+    label: user.name,
+  })),
+];
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
 
@@ -182,7 +218,7 @@ const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false
           <ChevronLeft size={14} /> Prev
         </button>
         <div className="flex items-center gap-1">
-          {pagesToShow.map((p, idx) =>
+          {pagesToShow?.map((p, idx) =>
             p === "ellipsis" ? (
               <span key={idx} className="w-9 text-center text-sm text-slate-400">…</span>
             ) : (
@@ -256,17 +292,13 @@ const EmptyState = ({ title, subtitle }) => (
 
 export default function ViewReports() {
   const dispatch = useDispatch();
-  const { data: users, isPending: usersLoading } = useCrmUsers();
-  const [dateFilter, setDateFilter] =
-    useState({
-      filterActive: false,
+  const [searchParams] = useSearchParams();
 
-      fromDate: "",
-      fromTime: "00:00:00",
-
-      toDate: "",
-      toTime: "23:59:59",
-    });
+  const email = searchParams.get("email");
+  console.log(email)
+  const { data: users } = useCrmUsers();
+  const storedReportFilter = useMemo(() => getStoredReportFilter(), []);
+  const [dateFilter, setDateFilter] = useState(() => getInitialDateFilter());
   const stages = useSelector(selectStages);
   const categories = useSelector(selectCategories);
   const details = useSelector(selectDetails);
@@ -292,8 +324,8 @@ export default function ViewReports() {
   const buildBody = useCallback(
     (overrides = {}) => ({
       phase: activeSection, stage: "", category: "",
-      report_user_id: appliedFilters.user,
       page: "", size: String(PAGE_SIZE),
+      ...(appliedFilters.user ? { report_user_id: appliedFilters.user } : {}),
       ...(dateFilter.filterActive
         ? {
           from:
@@ -312,7 +344,7 @@ export default function ViewReports() {
       ),
       ...overrides,
     }),
-    [activeSection, appliedFilters],
+    [activeSection, appliedFilters, dateFilter],
   );
 
   const callReport = useCallback(
@@ -330,7 +362,7 @@ export default function ViewReports() {
         records: data?.records || [], pagination: data?.pagination || {},
         stats: data?.stats || {}, total_records: data?.total_records ?? 0,
       }));
-    } catch (e) {
+    } catch {
       dispatch(setError("Unable to fetch report stages."));
     } finally {
       dispatch(setStagesLoading(false));
@@ -349,7 +381,7 @@ export default function ViewReports() {
         stageName, records: data?.records || [],
         pagination: data?.pagination || {}, total_records: data?.total_records ?? 0,
       }));
-    } catch (e) {
+    } catch {
       dispatch(setError("Unable to fetch categories."));
     } finally {
       dispatch(setCategoriesLoading(false));
@@ -379,39 +411,40 @@ export default function ViewReports() {
         );
 
     const reportFilter = {
-      phase:
-        activeSection,
+      filters: {
+        phase:
+          activeSection,
 
-      stage,
+        stage,
 
-      category,
+        category,
 
-      report_user_id:
-        appliedFilters.user,
 
-      ...range,
+      },
+      date_filter: {
+        date_range: 'custom',
+        date_from: `${dateFilter.fromDate} ${dateFilter.fromTime}`,
+        date_to: `${dateFilter.toDate} ${dateFilter.toTime}`,
+        date_field: 'date_entered'
+      }
     };
 
-    localStorage.setItem(
-      "reportFilter",
-      JSON.stringify(
-        reportFilter
-      )
-    );
+    if (appliedFilters.user) {
+      reportFilter.filters.report_user_id = appliedFilters.user;
+    }
 
-    navigate(
-      `/view-reports/${category}`,
-      {
-        state:
-          reportFilter,
-      }
-    );
+    dispatch(preferencesAction.updateMultipleTablePreferences({
+      table: 'report',
+      data: reportFilter
+    }))
+
+    navigate(`/view-reports/${category}`);
   };
 
 
   const navigate = useNavigate();
 
-
+  const restoredStageRef = useRef(false);
 
   useEffect(() => {
     dispatch(resetReport());
@@ -544,21 +577,28 @@ export default function ViewReports() {
               filterActive={
                 dateFilter.filterActive
               }
-              onApply={({
-                fromDate,
-                fromTime,
-                toDate,
-                toTime,
-              }) => {
+              onApply={({ fromDate, fromTime, toDate, toTime }) => {
                 setDateFilter({
                   filterActive: true,
-
                   fromDate,
                   fromTime,
-
                   toDate,
                   toTime,
                 });
+
+                dispatch(
+                  preferencesAction.updateMultipleTablePreferences({
+                    table: "report",
+                    data: {
+                      date_filter: {
+                        date_range: "custom",
+                        date_field: "date_entered",
+                        date_from: `${fromDate} ${fromTime}`,
+                        date_to: `${toDate} ${toTime}`,
+                      },
+                    },
+                  })
+                );
               }}
               onReset={() => {
                 setDateFilter({
@@ -572,19 +612,31 @@ export default function ViewReports() {
                   toTime:
                     "23:59:59",
                 });
+                dispatch(
+                  preferencesAction.updateMultipleTablePreferences({
+                    table: "report",
+                    data: {
+                      date_filter: {
+                        date_range: "",
+                        date_field: "",
+                        date_from: "",
+                        date_to: "",
+                      },
+                    },
+                  })
+                );
               }}
             />
-            <button
-              onClick={() => setAppliedFilters({ user: selectedUser, date: selectedDate })}
-              disabled={stagesLoading || usersLoading}
-              className="h-9 px-5 bg-slate-900 hover:bg-slate-700 active:scale-95 disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm"
-            >
-              {(stagesLoading || usersLoading)
-                ? <Loader2 size={13} className="animate-spin" />
-                : <Search size={13} />
-              }
-              Apply
-            </button>
+
+            <CustomDropdown
+              value={selectedUser}
+              options={getUserOptions(users ?? [])}
+              onChange={(user) => {
+                setSelectedUser(user);
+                setAppliedFilters((prev) => ({ ...prev, user }));
+              }}
+              placeholder="Select User"
+            />
           </div>
         </div>
       </div>
@@ -593,7 +645,7 @@ export default function ViewReports() {
 
         {/* ── Phase switcher ── */}
         <div className="grid grid-cols-2 gap-3">
-          {PHASES.map((phase) => {
+          {PHASES?.map((phase) => {
             const Icon = phase.icon;
             const isActive = activeSection === phase.key;
             return (
@@ -624,9 +676,9 @@ export default function ViewReports() {
         </div>
 
         {/* ── Stats strip ── */}
-        {statsEntries.length > 0 && (
+        {statsEntries?.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {statsEntries.map(([key, value], i) => {
+            {statsEntries?.map(([key, value], i) => {
               const t = STAT_THEMES[i % STAT_THEMES.length];
               return (
                 <div key={key} className={`${t.bg} border ${t.border} rounded-2xl p-4`}>
