@@ -59,15 +59,28 @@ const DealDetectionModal = ({
      * -----------------------------------------
      */
 
-    const deals = useMemo(() => {
-        return (
+    const [deals, setDeals] = useState([]);
+
+    useEffect(() => {
+        setDeals(
             data?.websites?.map((site) => ({
                 website_c: site.name,
                 dealamount: site.amount,
             })) || []
         );
     }, [data]);
-
+    const handleAmountChange = (index, value) => {
+        setDeals((prev) =>
+            prev.map((deal, i) =>
+                i === index
+                    ? {
+                        ...deal,
+                        dealamount: value,
+                    }
+                    : deal
+            )
+        );
+    };
     /**
      * -----------------------------------------
      * Copy Website
@@ -341,11 +354,17 @@ const DealDetectionModal = ({
                                         </label>
 
                                         <div className="rounded-xl border bg-white px-4 py-3">
-
-                                            <span className="text-2xl font-bold text-emerald-600">
-                                                ${deal.dealamount}
-                                            </span>
-
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={deal.dealamount}
+                                                onChange={(e) =>
+                                                    handleAmountChange(index, e.target.value)
+                                                }
+                                                className="w-full bg-transparent text-2xl font-bold text-emerald-600 outline-none"
+                                                placeholder="Enter amount"
+                                            />
                                         </div>
 
                                     </div>
