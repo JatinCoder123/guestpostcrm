@@ -1,16 +1,8 @@
 import {
-  Mail,
-  Handshake,
-  Gift,
-  ShoppingCart,
-  FileText,
-  ChevronLeft,
   ChevronDown,
   ChevronRight,
-  Settings,
   Radio,
   PanelLeft,
-  Circle,
 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 
@@ -31,8 +23,7 @@ import { useSidebarStats } from "../queries/sidebar.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
-  const { enteredEmail: email } = useContext(PageContext)
-  const [sidebarStatsQuery, setSidebarStatsQuery] = useState()
+  const { enteredEmail: email, activePage, setActivePage, collapsed, setSidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useContext(PageContext); const [sidebarStatsQuery, setSidebarStatsQuery] = useState()
   const [expandedGroups, setExpandedGroups] = useState({});
   const { data: layoutData, isPending: layoutLoading } = useLayoutPreferences()
   const sidebarSections = layoutData?.data?.Sidebar ?? []
@@ -42,8 +33,7 @@ export function Sidebar() {
   const summary = data?.summary ?? {}
   const currentUser = usersData?.find((u) => u.description === user.email);
   const currentUserId = currentUser?.id;
-  const { activePage, setActivePage, collapsed, setSidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } =
-    useContext(PageContext);
+
 
   const [openSettingsCard, setOpenSettingsCard] = useState(false);
   const cardRef = useRef(null);
@@ -312,7 +302,7 @@ shadow-2xl"
                                   <span className="flex-1 truncate text-left">
                                     {item.name}
                                   </span>
-                                  {item.key && sidebarCounts?.stats?.[item.key] && sidebarCountPending ? <Skeleton count={3} /> : <span className="rounded-full bg-[#7657ff]/20 px-2 py-0.5 text-xs">
+                                  {item.key && sidebarCounts?.stats?.[item.key] && sidebarCountPending ? <Skeleton count={1} /> : <span className="rounded-full bg-[#7657ff]/20 px-2 py-0.5 text-xs">
                                     {sidebarCounts?.stats?.[item.key]?.count || 0}
                                   </span>}
 

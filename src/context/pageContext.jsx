@@ -16,7 +16,7 @@ export const PageContextProvider = (props) => {
   const [displayIntro, setDisplayIntro] = useState(
     localStorage.getItem("displayIntro") === "true",
   );
-  const [collapsed, setSidebarCollapsed] = useState(true);
+  const [collapsed, setSidebarCollapsed] = useState(false);
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
