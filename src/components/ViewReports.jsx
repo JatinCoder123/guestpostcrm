@@ -7,9 +7,12 @@ import {
   ChevronRight,
   ChevronUp,
   Filter,
+  Inbox,
   Loader2,
   MessageSquare,
   Search,
+  Send,
+  ShieldAlert,
   Users,
   Activity,
   Layers,
@@ -33,6 +36,7 @@ import { useNavigate } from "react-router-dom";
 import { DateRangeFilter } from "./DateRangeFilter.jsx";
 import { useCrmUsers } from "../queries/users.queries.js";
 import CustomDropdown from "./ui/CustomDropdown.jsx";
+import { FETCH_GPC_X_API_KEY } from "../store/constants.js";
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const PHASES = [
@@ -72,6 +76,12 @@ const STAT_THEMES = [
   { bg: "bg-teal-50", border: "border-teal-200", text: "text-teal-700", label: "text-teal-500" },
   { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700", label: "text-orange-500" },
 ];
+
+const LABEL_CONFIG = {
+  INBOX: { icon: Inbox, label: "Inbox", accent: "text-blue-600", iconBg: "bg-blue-50" },
+  SENT: { icon: Send, label: "Sent", accent: "text-emerald-600", iconBg: "bg-emerald-50" },
+  SPAM: { icon: ShieldAlert, label: "Spam", accent: "text-rose-600", iconBg: "bg-rose-50" },
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -270,6 +280,9 @@ export default function ViewReports() {
   const [selectedDate, setSelectedDate] = useState("today");
   const [appliedFilters, setAppliedFilters] = useState({ user: "", date: "today" });
   const [activeSection, setActiveSection] = useState("filtration");
+  const [labelCounts, setLabelCounts] = useState([]);
+  const [labelCountsLoading, setLabelCountsLoading] = useState(true);
+  const [labelCountsError, setLabelCountsError] = useState(false);
 
   const phaseConfig = useMemo(
     () => PHASES.find((p) => p.key === activeSection) || PHASES[0],
@@ -405,6 +418,41 @@ export default function ViewReports() {
     loadStages(1);
   }, [activeSection, appliedFilters]); // eslint-disable-line
 
+  useEffect(() => {
+    let active = true;
+
+    const loadLabelCounts = async () => {
+      try {
+        const response = await fetch(
+          "https://anshik.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=label_count",
+          {
+          method: "GET",
+          headers: { "X-Api-Key": FETCH_GPC_X_API_KEY },
+          },
+        );
+        if (!response.ok) throw new Error(`Label count request failed: ${response.status}`);
+        const data = await response.json();
+        const labels = Array.isArray(data) ? data : data?.records || data?.data || [];
+        if (active) {
+          setLabelCounts(labels);
+          setLabelCountsError(false);
+        }
+      } catch {
+        if (active) {
+          setLabelCounts([]);
+          setLabelCountsError(true);
+        }
+      } finally {
+        if (active) setLabelCountsLoading(false);
+      }
+    };
+
+    loadLabelCounts();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const grandTotal = stages.rows.reduce((s, r) => s + getCount(r), 0);
   const statsEntries = Object.entries(stats);
 
@@ -413,6 +461,52 @@ export default function ViewReports() {
 
       {/* ── Sticky top nav ── */}
       <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-6 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {labelCountsLoading
+              ? [...Array(3)].map((_, index) => (
+                <div key={index} className="h-[92px] rounded-2xl border border-slate-200 bg-slate-50 animate-pulse" />
+              ))
+              : ["INBOX", "SENT", "SPAM"].map((labelId) => {
+                const count = labelCounts.find(
+                  (label) => String(label.id || label.name).toUpperCase() === labelId,
+                );
+                const config = LABEL_CONFIG[labelId];
+                const Icon = config.icon;
+
+                return (
+                  <div key={labelId} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${config.iconBg}`}>
+                          <Icon size={16} className={config.accent} />
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">{config.label}</p>
+                          <p className="text-xs text-slate-400">
+                            {labelCountsError || !count
+                              ? "Count unavailable"
+                              : `${Number(count.messages_unread ?? 0).toLocaleString()} unread messages`}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-2xl font-bold tracking-tight text-slate-800 tabular-nums">
+                        {labelCountsError || !count
+                          ? "—"
+                          : Number(count.messages_total ?? 0).toLocaleString()}
+                      </span>
+                    </div>
+                    {!labelCountsError && count && (
+                      <p className="mt-2 text-right text-xs text-slate-400">
+                        {Number(count.threads_total ?? 0).toLocaleString()} threads ·{" "}
+                        {Number(count.threads_unread ?? 0).toLocaleString()} unread
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        </div>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
           <div className="flex items-center gap-3 shrink-0">
@@ -424,7 +518,14 @@ export default function ViewReports() {
 
           <div className="flex items-center gap-2 flex-1 justify-end">
 
-            <CustomDropdown options={users.map(user => ({ value: user.id, label: user.name }))} onChange={(user) => setSelectedUser(user)} placeholder="Select User" />
+            <CustomDropdown
+              options={(Array.isArray(users) ? users : []).map((user) => ({
+                value: user.id,
+                label: user.name,
+              }))}
+              onChange={(user) => setSelectedUser(user)}
+              placeholder="Select User"
+            />
 
 
             <DateRangeFilter
