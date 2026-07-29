@@ -4,11 +4,11 @@ import { useEffect, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 // Pages
-import ResourceListPage from "../pages/resource/ResourceListPage";
-import ResourceCreatePage from "../pages/resource/ResourceCreatePage";
-import ResourceViewPage from "../pages/resource/ResourceViewPage";
-import ResourceEditPage from "../pages/resource/ResourceEditPage";
-import ResourceNotFoundPage from "../pages/resource/ResourceNotFoundPage";
+import EntityListPage from "../pages/entity/EntityListPage";
+import EntityCreatePage from "../pages/entity/EntityCreatePage";
+import EntityViewPage from "../pages/entity/EntityViewPage";
+import EntityEditPage from "../pages/entity/EntityEditPage";
+import EntityNotFoundPage from "../pages/entity/EntityNotFoundPage";
 
 // Queries
 // import { useResourceDefinition } from "@/queries/resource.query";
@@ -65,37 +65,37 @@ export default function DynamicResourceHandler() {
     /**
      * Load resource metadata
      */
-    // const { data, isLoading } = useResourceDefinition(resource);
+    const { data, isLoading } = useEntityDefinition(resource);
 
-    // if (isLoading) {
-    //     return <PageLoader />;
-    // }
+    if (isLoading) {
+        return <PageLoader />;
+    }
 
-    // if (!data) {
-    //     return <ResourceNotFoundPage />;
-    // }
+    if (!data) {
+        return <EntityNotFoundPage />;
+    }
 
     switch (route.mode) {
         case "list":
             return (
-                <ResourceListPage resource={resource} />
+                <EntityListPage resource={resource} />
             );
 
         case "create":
             return (
-                <ResourceCreatePage resource={resource} />
+                <EntityCreatePage resource={resource} />
             );
 
         case "view":
             return (
-                <ResourceViewPage
+                <EntityViewPage
                     resource={resource}
                     id={route.id} />
             );
 
         case "edit":
             return (
-                <ResourceEditPage
+                <EntityEditPage
                     resource={resource}
                     id={route.id}
                 />
@@ -103,7 +103,7 @@ export default function DynamicResourceHandler() {
 
         case "custom":
             return (
-                <ResourceViewPage
+                <EntityViewPage
                     resource={resource}
                     id={route.id}
                     section={route.section}
@@ -111,6 +111,6 @@ export default function DynamicResourceHandler() {
             );
 
         default:
-            return <ResourceNotFoundPage />;
+            return <EntityNotFoundPage />;
     }
 }
