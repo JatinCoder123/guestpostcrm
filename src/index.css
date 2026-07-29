@@ -2,7 +2,7 @@
 @import "tailwindcss";
 :root {
   --font-size: 16px;
-  --background: #ddf2ff;
+  --background: #DAF3FF;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
   --card-foreground: oklch(0.145 0 0);
@@ -35,10 +35,12 @@
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: #010a1b;
   --sidebar-secondary: #033081;
+  --topbtn-primary: #0B6BF7;
+  --topbtn-secondary: #063F91;
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-border: #3973c9;
   --sidebar-ring: oklch(0.708 0 0);
 }
 
@@ -99,6 +101,8 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-search-primary: var(--topbtn-primary);
+  --color-search-secondary: var(--topbtn-secondary);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
   --color-switch-background: var(--switch-background);

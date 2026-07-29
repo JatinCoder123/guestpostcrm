@@ -123,7 +123,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         aria-label={`${onlineCount} online users`}
         aria-expanded={open}
         aria-haspopup="true"
-        className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 transition hover:bg-indigo-100 active:scale-95"
+        className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-background px-2.5 py-1.5 transition hover:bg-indigo-100 active:scale-95"
       >
         {/* Pulsing green dot */}
         <span className="relative flex h-2 w-2 shrink-0">
@@ -142,7 +142,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               <span
                 key={u.email}
                 title={isMe ? "You" : name || u.email}
-                className={`relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white
+                className={`relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white 
                   ${c.bg} ${c.text}
                   ${i > 0 ? "-ml-1.5" : ""}
                   ${isMe ? "ring-indigo-300" : ""}
@@ -473,7 +473,7 @@ export function TopNav() {
           icon={Menu}
         />
         <div
-          className="flex  items-center gap-2 min-w-0 justify-center"
+          className="flex  items-center gap-2 min-w-0 justify-center p-1"
           data-tour="top-nav-search"
         >
           <AnimatePresence mode="wait">
@@ -486,7 +486,7 @@ export function TopNav() {
                 transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
                 role="status"
                 aria-live="polite"
-                className="flex items-center gap-2.5 rounded-2xl border px-4 py-2 max-w-[440px]"
+                className="flex items-center gap-2.5 rounded-2xl border px-4 py-2 max-w-[400px]"
                 style={{
                   background: "linear-gradient(100deg,#eef2ff 0%,#e0f2fe 100%)",
                   border: "1px solid rgba(99,102,241,0.22)",

@@ -197,10 +197,9 @@ return (
         ref={searchRef}
         data-tour="top-nav-search"
         className="
-            relative flex w-[520px] max-w-[60vw]
+            relative flex w-[450px] max-w-[60vw] p-1
             items-center rounded-full
             border border-gray-300 bg-white
-            p-1.5
             shadow-[0_4px_8px_rgba(0,0,0,0.22)]
         "
     >
@@ -223,7 +222,7 @@ return (
             className="
                 min-w-0 flex-1
                 bg-transparent
-                px-1
+                px-2
                 text-base text-gray-700
                 placeholder:text-gray-400
                 focus:outline-none
@@ -278,8 +277,8 @@ return (
             onClick={handleSearch}
             className="
                 shrink-0 rounded-full
-                bg-sidebar-secondary
-                px-6 py-2
+                bg-gradient-to-r from-search-primary to-search-secondary
+                px-4 py-1
                 text-base font-small text-white
                 transition
                 hover:bg-blue-700
