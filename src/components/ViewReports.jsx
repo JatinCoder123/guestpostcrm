@@ -529,12 +529,7 @@ export default function ViewReports() {
                           : Number(count.messages_total ?? 0).toLocaleString()}
                       </span>
                     </div>
-                    {!labelCountsError && count && (
-                      <p className="mt-2 text-right text-xs text-slate-400">
-                        {Number(count.threads_total ?? 0).toLocaleString()} threads ·{" "}
-                        {Number(count.threads_unread ?? 0).toLocaleString()} unread
-                      </p>
-                    )}
+                    
                   </div>
                 );
               })}
