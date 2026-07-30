@@ -266,13 +266,7 @@ shadow-2xl"
                               onClick={() => {
                                 setSidebarCollapsed(true);
                                 setActivePage(item.id);
-
-                                navigateTo(
-                                  item.endpoint ||
-                                  item.module_name
-                                    ?.toLowerCase()
-                                    .replace(/\s+/g, "-")
-                                );
+                                navigateTo(`/entity/${item.module_name}/table`)
                               }}
                               className={`
                       flex w-full items-center gap-3 rounded-lg p-2
