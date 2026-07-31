@@ -1,25 +1,4 @@
-// contact.query.js
-
-import {
-    useInfiniteQuery,
-    useMutation,
-    useQuery,
-    useQueryClient,
-} from "@tanstack/react-query";
-
-import {
-    getAllContacts,
-    getContactByEmail,
-    createContact,
-    updateContact,
-    getContactStats,
-    updateAccount,
-} from "../api/contact.api";
-import toast from "react-hot-toast";
-import { useContext } from "react";
-import { PageContext } from "../context/pageContext";
-import { useTablePreference } from "../hooks/useTablePreference";
-import { emailKeys } from "./email.queries";
+import { useQuery } from "@tanstack/react-query";
 import { getSidebarStats } from "../api/sidebar.api";
 
 /**
@@ -44,7 +23,7 @@ export const sidebarKeys = {
 
 
 export const useSidebarStats = ({ email, queries }) => {
-    queries && console.log("QUER", queries)
+    // queries && console.log("QUER", queries)
     return useQuery({
         queryKey: sidebarKeys.stats({ email, queries }),
         queryFn: () => getSidebarStats({ email, queries }),

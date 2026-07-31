@@ -111,7 +111,7 @@ const RootLayout = () => {
           ref={mainRef}
           className="flex-1 overflow-y-auto hide-scrollbar"
         >
-          <div className="p-3">
+          <div className="p-1">
             <LowCreditWarning
               open={showRechargeWarn}
               score={currentScore}
@@ -120,7 +120,7 @@ const RootLayout = () => {
 
             {/* <WelcomeHeader /> */}
 
-            <div className="mt-3">
+            <div className="m-3">
               <Outlet />
             </div>
           </div>

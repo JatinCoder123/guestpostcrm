@@ -43,6 +43,7 @@
     "@reduxjs/toolkit": "^2.10.1",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-query": "^5.101.0",
+    "@tanstack/react-virtual": "^3.14.9",
     "@tinymce/tinymce-react": "^6.3.0",
     "axios": "^1.13.2",
     "canvas-confetti": "^1.9.4",
