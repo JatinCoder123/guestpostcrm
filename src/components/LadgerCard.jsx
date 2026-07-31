@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { MailCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Visualization from "./Visualization";
@@ -15,25 +15,24 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto mt-4 space-y-6 relative">
+        <div className="relative px-4 pb-1 pt-3 sm:px-5">
             {timelineData.map((parent) => {
                 const ParentIcon = MailCheck;
                 const isOpen = activeParent === parent.id;
 
                 return (
-                    <div key={parent.id} className="flex gap-5">
+                    <div key={parent.id} className="relative flex gap-4 pb-3 sm:gap-5">
                         {/* LEFT SIDE */}
-                        <div className="relative flex flex-col items-center mt-4">
-                            <div className="w-12 h-12 rounded-full bg-indigo-100 border border-indigo-200 shadow-sm flex items-center justify-center z-20">
-                                <ParentIcon className="w-5 h-5 text-indigo-600" />
+                        <div className="relative flex w-10 shrink-0 flex-col items-center pt-1">
+                            <div className="z-20 flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm ring-4 ring-white">
+                                <ParentIcon className="h-4 w-4" />
                             </div>
 
-                            <div className="border-l-2 border-dashed border-gray-300 flex-1 mt-1"></div>
+                            <div className="absolute bottom-[-13px] top-9 border-l border-dashed border-gray-500"></div>
                         </div>
 
                         {/* RIGHT */}
-                        <div className="flex-1 relative">
-                            <div className="absolute -left-[38px] top-[36px] w-10 h-1 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+                        <div className="relative min-w-0 flex-1">
                             <ParentCard parent={parent} toggleParent={toggleParent} />
                             {isOpen && <ChildCard parentId={parent.id} handleMessageClick={handleMessageClick} />}
                         </div>
@@ -48,17 +47,17 @@ function ParentCard({ parent, toggleParent }) {
     return (
         <div
             onClick={() => toggleParent(parent.id)}
-            className="group bg-white border border-gray-200 rounded-2xl px-6 py-5 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+            className="group min-h-[56px] cursor-pointer rounded-lg border border-sky-300 bg-sky-50 px-4 py-3 transition hover:border-blue-400 hover:bg-sky-100/70 hover:shadow-sm"
         >
-            <div className="flex justify-between items-start">
-                <div>
-                    <h2 className="text-[18px] font-semibold text-gray-800">
+            <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                    <h2 className="truncate text-sm font-medium text-gray-900">
                         {parent.description}
                     </h2>
                 </div>
 
-                <div className="text-right">
-                    <p className="text-xs text-gray-500">
+                <div className="shrink-0 text-right">
+                    <p className="whitespace-nowrap text-[11px] text-gray-500">
                         {parent.date_entered}
                     </p>
                 </div>
@@ -79,8 +78,8 @@ function ChildCard({ parentId, handleMessageClick }) {
     const childLoading = isPending || isFetchingNextPage;
     const navigateTo = useNavigate();
 
-    const [activeVisualizationId, setActiveVisualizationId] = useState(null);
-    const [activePromptId, setActivePromptId] = useState(null);
+    const [, setActiveVisualizationId] = useState(null);
+    const [, setActivePromptId] = useState(null);
     const [openChildId, setOpenChildId] = useState(null);
     const observer = useRef();
     const lastChildRef = useCallback(

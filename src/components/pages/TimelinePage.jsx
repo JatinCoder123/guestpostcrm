@@ -5,7 +5,6 @@ import LoadingSkeleton from "../LoadingSkeleton";
 import TimelineEvent from "../TimelineEvent";
 import MailerSummaryHeader from "../MailerSummaryHeader";
 import ContactHeader from "../ContactHeader";
-import ActionButton from "../ActionButton";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 
 import MessageModal from "../MessageModal";
@@ -50,18 +49,22 @@ export function TimelinePage() {
         count={count}
       />
 
-      <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
+      <div className="min-h-[400px] p-0">
         {(isTimelineLoading) ? <LoadingSkeleton /> : <>
-          <div className="flex flex-col  border-b border-gray-200">
+          <div className="flex flex-col gap-4">
             <ContactHeader />
 
-            <div className="mt-2 p-2 grid grid-cols-1 md:grid-cols-2 gap-4 ">
-              <MailerSummaryHeader />
-              <LatestMessage handleMessageClick={handleMessageClick} />
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)] gap-4 items-start">
+              <div className="min-w-0 bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
+                <TimelineEvent handleMessageClick={handleMessageClick} />
+              </div>
+
+              <aside className="min-w-0 flex flex-col gap-4">
+                <LatestMessage handleMessageClick={handleMessageClick} />
+                <MailerSummaryHeader />
+              </aside>
             </div>
-            <ActionButton />
           </div>
-          <TimelineEvent handleMessageClick={handleMessageClick} />
 
         </>}
 

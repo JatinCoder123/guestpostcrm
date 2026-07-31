@@ -70,7 +70,7 @@ const LatestMessage = ({ handleMessageClick }) => {
         <div className="flex flex-col gap-2 justify-center mb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h3 className="text-blue-700 font-semibold">Latest Message</h3>
+              <h3 className="text-black-700 font-medium text-lg">Latest Message</h3>
               <button
                 onClick={() =>
                   handleMove({ email: email1, threadId })
@@ -247,8 +247,6 @@ const LatestMessage = ({ handleMessageClick }) => {
 
 export default LatestMessage;
 
-
-
 function QuickBtn({
   icon,
   onClick,
@@ -268,7 +266,7 @@ function QuickBtn({
           onClick?.();
         }}
         disabled={disabled}
-        className="flex items-center justify-center w-12 h-12
+        className="flex items-center justify-center w-9 h-9
         bg-cyan-100 text-blue-600 rounded-xl shadow-md border border-gray-200 cursor-pointer
         hover:shadow-lg active:scale-95 hover:-translate-y-1
         transition-all"

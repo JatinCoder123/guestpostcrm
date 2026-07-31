@@ -26,6 +26,8 @@ import { useDealsByEmail, useInfiniteDeals } from "../queries/deals.queries";
 import he from "he";
 import { useCrmUsers } from "../queries/users.queries";
 import ActionButton from "./ActionButton";
+import { useMailerSummary } from "../queries/mailerSummary.queries";
+import { Titletooltip } from "./TitleTooltip";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -45,7 +47,10 @@ const ContactHeader = () => {
 
   const navigate = useNavigate();
   const { data, isPending } = useContact(currentEmail);
+  const { data: summaryData, isPending: summaryLoading } =
+    useMailerSummary(currentEmail);
   const contactInfo = data?.contact;
+  const mailersSummary = summaryData?.mailers_summary;
   const hashtags = contactInfo?.hashtag?.data?.hashtags;
   const email = contactInfo?.email1;
   const { showNextPrev, handleDateClick } = useContext(PageContext);
@@ -222,7 +227,6 @@ const ContactHeader = () => {
       )}
 
       {/* HEADER */}
-      {/* HEADER */}
       <div className="w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
         <div className="flex items-center min-h-[86px]">
           {/* LEFT */}
@@ -308,10 +312,14 @@ const ContactHeader = () => {
             </p>
 
             <p className="text-[15px] font-semibold text-gray-900 mt-1">
-              14 Jul 26 - 04:30 PM
+              {summaryLoading
+                ? "Loading..."
+                : mailersSummary?.date_entered_formatted || "N/A"}
             </p>
 
-            <p className="text-xs text-gray-500 mt-1">23 hrs 20 min ago</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {mailersSummary?.date_entered || ""}
+            </p>
           </div>
 
           <div className="w-px h-12 bg-gray-200" />
@@ -321,9 +329,13 @@ const ContactHeader = () => {
               SUBJECT
             </p>
 
-            <p className="text-[15px] font-semibold text-gray-900 mt-1">
-              Re: Paid Collaboration
-            </p>
+            <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+              <p className="text-[15px] font-semibold text-gray-900 mt-1 truncate max-w-[230px]">
+                {summaryLoading
+                  ? "Loading..."
+                  : mailersSummary?.subject || "No Subject"}
+              </p>
+            </Titletooltip>
           </div>
 
           <div className="w-px h-12 bg-gray-200" />
@@ -333,9 +345,13 @@ const ContactHeader = () => {
               MOTIVE
             </p>
 
-            <p className="text-[15px] font-semibold text-gray-900 mt-1">
-              Deal Discount
-            </p>
+            <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
+              <p className="text-[15px] font-semibold text-gray-900 mt-1 truncate max-w-[200px]">
+                {summaryLoading
+                  ? "Loading..."
+                  : mailersSummary?.correct_motive || "N/A"}
+              </p>
+            </Titletooltip>
           </div>
 
           <div className="ml-auto flex items-center gap-3 px-5">
@@ -359,10 +375,10 @@ const ContactHeader = () => {
         </div>
       </div>
 
-      <div className="w-full grid grid-cols-[70%_30%]">
+      <div className="w-full grid grid-cols-1 xl:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)] gap-4 h-[200px]">
         {/* STATUS */}
         {!isPending && (
-          <div className="gap-3 p-2 flex flex-wrap items-center  bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="gap-2 p-2 flex flex-wrap items-center  bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
             {statusItems.map((item, index) => (
               <StatusCard
                 key={index}
@@ -373,7 +389,7 @@ const ContactHeader = () => {
             ))}
           </div>
         )}
-        <div className="w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="relative z-40 w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-visible">
           <ActionButton />
         </div>
       </div>

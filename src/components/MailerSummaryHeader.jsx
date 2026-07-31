@@ -88,12 +88,9 @@ const MailerSummaryHeader = () => {
       )}
 
       <div className=" p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-3">
-        {/* TOP INFO */}
-        <MailerSummary />
-
         {/* STATS CARDS */}
-        <div className="rounded-3xl shadow-sm p-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-3xl shadow-sm p-1">
+          <div className="grid grid-cols-1 gap-3">
             <SummaryCard
               type="offers"
               title="NO OFFERS"
