@@ -383,7 +383,7 @@ export default function App() {
       {isAuthenticated && !loading && (
         <>
           <MeetingWidget />
-          <TwakChat />
+          {/* <TwakChat /> */}
           <RouterProvider router={router} />
         </>
       )}
