@@ -5,17 +5,17 @@ import { useNavigate } from "react-router-dom";
 const SocialButtons = ({ displayCount, trust_score }) => {
   const navigate = useNavigate();
   return (
-    <div className="flex gap-3 ml-1">
+    <div className="flex gap-3 ml-0">
 
       {/* DUPLICATE BUTTON WITH BADGE */}
       {displayCount > 0 && (
         <button
-          className="cursor-pointer hover:scale-105 rounded-full p-2 relative"
+          className="cursor-pointer hover:scale-105 rounded-full p-1 relative"
           onClick={() => navigate("/duplicates")}
         >
           <img
-            width="48"
-            height="48"
+            width="42"
+            height="42"
             src={images.duplicateImg}
             alt="duplicate count"
           />
@@ -50,10 +50,10 @@ const SocialButtons = ({ displayCount, trust_score }) => {
         </button>
       )}
 
-      <button className="group cursor-pointer flex items-center justify-center gap-2 px-4 py-2 mt-3 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
-        <span className="text-sm font-semibold tracking-wide">Trust Score</span>
+      <button className="group cursor-pointer flex items-center justify-center gap-2 px-2 py-3 mt-4 h-6 rounded-full bg-[#F7890B] text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
+        <span className="text-sm font-small tracking-wide">Trust Score:</span>
 
-        <span className="bg-white/20 px-2 py-0.5 rounded-full text-sm font-bold backdrop-blur-sm">
+        <span className="rounded-full text-sm font-small backdrop-blur-sm">
           {trust_score == "unverified"
             ? "50%"
             : trust_score}

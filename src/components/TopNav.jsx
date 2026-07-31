@@ -304,7 +304,6 @@ const StatBadge = ({
   value,
   colorClass,
   bgClass,
-  borderClass,
 }) => {
   const [animate, setAnimate] = useState(false);
 
@@ -315,24 +314,30 @@ const StatBadge = ({
   }, [value]);
 
   return (
-    <div
-      className={`group flex items-center gap-3 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border ${borderClass} ${bgClass} transition-all duration-400 cursor-default`}
-    >
-      {createElement(icon, {
-        className: `w-4 h-4 ${colorClass} group-hover:scale-125 transition-transform duration-300`,
-      })}
-      <div className="flex flex-col">
-        <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
+    <div className="group flex items-center gap-3 px-3 py-2 cursor-default">
+      {/* Icon Circle */}
+      <div
+        className={`flex h-8 w-8 items-center justify-center rounded-full ${bgClass} transition-all duration-300`}
+      >
+        {createElement(icon, {
+          className: `h-4 w-4 ${colorClass} group-hover:scale-110 transition-transform duration-300`,
+        })}
+      </div>
+
+      {/* Text */}
+      <div className="flex flex-col leading-tight">
+        <span className="text-[15px] font-medium text-gray-700 whitespace-nowrap">
           {label}
         </span>
+
         <span
-          className={`text-xs font-bold ${colorClass} transition-all duration-300 ${animate ? "scale-125 opacity-100" : "scale-100 opacity-90"
-            } inline-block`}
+          className={`text-[18px] font-medium text-gray-900 transition-all duration-300 ${
+            animate ? "scale-110" : "scale-100"
+          }`}
         >
           {value ?? "—"}
         </span>
       </div>
-
     </div>
   );
 };
@@ -552,36 +557,37 @@ export function TopNav() {
         />
 
         {/* Thin divider between activity panel and icon buttons */}
-        <div className="mx-1 h-6 w-px bg-blue-500" aria-hidden="true" />
+        <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
         <div className="flex-shrink-0 flex items-center gap-2 pr-2">
           {/* Vertical Divider */}
-          <StatBadge
-            icon={MailOpen}
-            label="Received"
-            value={stats.reply_recieved}
-            colorClass="text-emerald-400"
-            bgClass="hover:bg-emerald-50"
-            borderClass="border-gray-200 hover:border-emerald-300"
-          />
+         <StatBadge
+  icon={MailOpen}
+  label="Received"
+  value={stats.reply_recieved}
+  colorClass="text-emerald-500"
+  bgClass="bg-emerald-100 group-hover:bg-emerald-200"
+/>
 
-          <StatBadge
-            icon={Send}
-            label="Sent"
-            value={stats.reply_sent}
-            colorClass="text-blue-600"
-            bgClass="hover:bg-blue-50"
-            borderClass="border-gray-200 hover:border-blue-300"
-          />
+<div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
 
-          <StatBadge
-            icon={Bell}
-            label="Reminders"
-            value={stats.reminder_sent}
-            colorClass="text-amber-600"
-            bgClass="hover:bg-amber-50"
-            borderClass="border-gray-200 hover:border-amber-300"
-          />
+<StatBadge
+  icon={Send}
+  label="Sent"
+  value={stats.reply_sent}
+  colorClass="text-blue-600"
+  bgClass="bg-blue-100 group-hover:bg-blue-200"
+/>
+
+<div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
+
+<StatBadge
+  icon={Bell}
+  label="Reminders"
+  value={stats.reminder_sent}
+  colorClass="text-amber-500"
+  bgClass="bg-amber-100 group-hover:bg-amber-200"
+/>
 
           {/* SUMMARY */}
 
@@ -593,7 +599,7 @@ export function TopNav() {
 
 
         {/* Divider */}
-        <div className="mx-1.5 h-6 w-px bg-slate-200" aria-hidden="true" />
+       <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
         {/* ── Profile chip (unchanged) ── */}
         <div ref={profileMenuRef} className="relative">

@@ -23,14 +23,15 @@ import { PageContext } from "../context/pageContext";
 import { useContact } from "../queries/contact.queries";
 import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail, useInfiniteDeals } from "../queries/deals.queries";
-import he from "he"
+import he from "he";
 import { useCrmUsers } from "../queries/users.queries";
+import ActionButton from "./ActionButton";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
   return (
     <span
-      className={`px-2.5 py-1 rounded-full text-md font-semibold bg-gradient-to-r ${color} text-white shadow-sm hover:scale-105 hover:shadow-md transition-all duration-200`}
+      className={`px-3 py-1 rounded-full text-xs font-medium ${color} text-white`}
     >
       #{text}
     </span>
@@ -39,18 +40,20 @@ function HashTag({ text, color }) {
 
 const ContactHeader = () => {
   const sidebarRef = useRef(null);
-  const { currentEmail } = useTimeline()
+  const { currentEmail } = useTimeline();
   const { data: users, isPending: loading } = useCrmUsers();
 
   const navigate = useNavigate();
   const { data, isPending } = useContact(currentEmail);
-  const contactInfo = data?.contact
-  const hashtags = contactInfo?.hashtag?.data?.hashtags
+  const contactInfo = data?.contact;
+  const hashtags = contactInfo?.hashtag?.data?.hashtags;
   const email = contactInfo?.email1;
   const { showNextPrev, handleDateClick } = useContext(PageContext);
   const { data: dealsData } = useDealsByEmail(currentEmail);
-  const emailDeals = dealsData?.data ?? []
-  const { showBrandTimeline, contacts = [] } = useSelector((state) => state.brandTimeline);
+  const emailDeals = dealsData?.data ?? [];
+  const { showBrandTimeline, contacts = [] } = useSelector(
+    (state) => state.brandTimeline,
+  );
   const [showSidebar, setShowSidebar] = useState(false);
 
   const CountUpWithBlast = ({ value, email }) => {
@@ -101,17 +104,15 @@ const ContactHeader = () => {
     return <span ref={amountRef}>{count.toLocaleString()}</span>;
   };
 
-
-
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-        ...emailDeals.map((d) =>
-          Number(
-            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+          ...emailDeals.map((d) =>
+            Number(
+              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+            ),
           ),
-        ),
-      )
+        )
       : 0;
 
   const statusItems = [
@@ -119,18 +120,37 @@ const ContactHeader = () => {
     { Icon: Rocket, label: "Stage", value: data?.stage },
     { Icon: Hourglass, label: "Status", value: data?.status },
     { Icon: Lock, label: "Category", value: data?.customer_type },
-    { Icon: ArrowBigDown, label: "Direction", value: contactInfo?.direction ?? "-" },
-    { Icon: Flame, label: "Assign To", value: users?.find((user) => user.id === contactInfo?.gpc_assigned_to)?.name || "Unassigned" },
-    { Icon: Signature, label: "Last Activity", value: contactInfo?.last_activity ?? "-" },
-    { Icon: CircleUser, label: "Last Activity By", value: contactInfo?.last_user ?? "-" },
-    { Icon: Clock, label: "Last Updated At", value: contactInfo?.last_activity_date ?? "-" },
+    {
+      Icon: ArrowBigDown,
+      label: "Direction",
+      value: contactInfo?.direction ?? "-",
+    },
+    {
+      Icon: Flame,
+      label: "Assign To",
+      value:
+        users?.find((user) => user.id === contactInfo?.gpc_assigned_to)?.name ||
+        "Unassigned",
+    },
+    {
+      Icon: Signature,
+      label: "Last Activity",
+      value: contactInfo?.last_activity ?? "-",
+    },
+    {
+      Icon: CircleUser,
+      label: "Last Activity By",
+      value: contactInfo?.last_user ?? "-",
+    },
+    {
+      Icon: Clock,
+      label: "Last Updated At",
+      value: contactInfo?.last_activity_date ?? "-",
+    },
   ];
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target)
-      ) {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setShowSidebar(false);
       }
     };
@@ -161,8 +181,9 @@ const ContactHeader = () => {
 
           {/* Content */}
           <div
-            className={`ml-10 h-[300px] bg-white border border-gray-200 shadow-2xl rounded-l-2xl overflow-hidden ${showSidebar ? "block" : "hidden"
-              }`}
+            className={`ml-10 h-[300px] bg-white border border-gray-200 shadow-2xl rounded-l-2xl overflow-hidden ${
+              showSidebar ? "block" : "hidden"
+            }`}
           >
             <div className="p-4 border-b bg-blue-50 font-bold text-gray-700">
               Brand Contacts ({contacts?.length || 0})
@@ -174,7 +195,13 @@ const ContactHeader = () => {
                   <div
                     key={index}
                     className="px-4 py-3 border-b hover:bg-gray-50 transition cursor-pointer"
-                    onClick={() => handleDateClick({ email: item?.email1, navigate: "/", showNextPrev: false })}
+                    onClick={() =>
+                      handleDateClick({
+                        email: item?.email1,
+                        navigate: "/",
+                        showNextPrev: false,
+                      })
+                    }
                   >
                     <p className="font-semibold text-sm text-gray-800">
                       {item?.name || "No Name"}
@@ -195,92 +222,161 @@ const ContactHeader = () => {
       )}
 
       {/* HEADER */}
-      <div className="flex items-center justify-between w-full py-4 px-4 rounded-t-xl bg-gradient-to-r from-sky-600 via-cyan-500 to-cyan-400 text-white shadow-lg">
-        {/* LEFT */}
-        <div className="flex items-center gap-4">
-          {!isPending && (
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <Link
-                  to={`/contacts?email=${currentEmail ?? ""}`}
-                  className="text-lg font-extrabold"
-                >
-                  {he.decode(
-                    contactInfo?.full_name?.trim()
-                      ? contactInfo.full_name
-                      : email ?? ""
-                  )}
-                </Link>
+      {/* HEADER */}
+      <div className="w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="flex items-center min-h-[86px]">
+          {/* LEFT */}
+          <div className="flex items-center gap-4 px-5 py-1 min-w-[360px]">
+            {!isPending && (
+              <>
+                <img
+                  src={"Rectangle.png"}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/contacts?email=${currentEmail ?? ""}`}
+                      className="text-[18px] font-semibold text-gray-900 hover:text-blue-600 mt-3"
+                      title={he.decode(
+                        contactInfo?.full_name?.trim()
+                          ? contactInfo.full_name
+                          : (email ?? ""),
+                      )}
+                    >
+                      {(() => {
+                        const text = he.decode(
+                          contactInfo?.full_name?.trim()
+                            ? contactInfo.full_name
+                            : (email ?? ""),
+                        );
 
-                {/* {isBrand && (
-                  <IconButton
-                    icon={showBrandTimeline ? Eye : EyeOff}
-                    variant="glass"
-                    label={
-                      showBrandTimeline
-                        ? "Hide Brand Timeline"
-                        : "Show Brand Timeline"
-                    }
-                    onClick={handleBrandTimeline}
-                  />
-                )} */}
-              </div>
-            </div>
-          )}
+                        return text.length > 8
+                          ? `${text.slice(0, 9)}...`
+                          : text;
+                      })()}
+                    </Link>
 
-          <SocialButtons displayCount={contactInfo?.duplicate_threads ?? 0} trust_score={contactInfo?.trust_score} />
-        </div>
+                    <SocialButtons
+                      displayCount={contactInfo?.duplicate_threads ?? 0}
+                      trust_score={contactInfo?.trust_score}
+                    />
+                  </div>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-3">
-          <div className="flex gap-2 flex-wrap">
-            {hashtags?.map((tag) => (
-              <HashTag
-                key={tag.id}
-                text={tag.name}
-                color={
-                  tag.type === "dynamic"
-                    ? "from-emerald-500 to-teal-500"
-                    : "from-amber-500 to-orange-500"
-                }
-              />
-            ))}
+                  <div className="flex gap-2 mb-1 flex-wrap">
+                    {/* Mobile */}
+                    <div className="flex gap-2 flex-wrap lg:hidden">
+                      {hashtags?.slice(0, 2).map((tag) => (
+                        <HashTag
+                          key={tag.id}
+                          text={tag.name}
+                          color="bg-gradient-to-r from-search-primary to-search-secondary"
+                        />
+                      ))}
+
+                      {hashtags?.length > 1 && (
+                        <button
+                          className="px-2 py-1 rounded-full text-xs font-medium bg-gray-200"
+                          onClick={() => setShowAllTags(true)}
+                        >
+                          ...
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Desktop */}
+                    <div className="hidden lg:flex gap-2 flex-wrap mt-1">
+                      {hashtags?.map((tag) => (
+                        <HashTag
+                          key={tag.id}
+                          text={tag.name}
+                          color="bg-gradient-to-r from-search-primary to-search-secondary"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {emailDeals?.length > 0 && (
-            <div
-              onClick={() => navigate("/deals")}
-              className="flex items-center gap-4 p-1 rounded-4xl bg-cyan-300 shadow-sm cursor-pointer hover:shadow-md transition-all"
-            >
-              <div className="flex items-center justify-center w-8 h-8 rounded-4xl bg-blue-500">
-                <Handshake size={20} className="text-white" />
+          <div className="w-px h-12 bg-gray-200" />
+
+          <div className="px-6 min-w-[180px]">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-600">
+              CREATED AT
+            </p>
+
+            <p className="text-[15px] font-semibold text-gray-900 mt-1">
+              14 Jul 26 - 04:30 PM
+            </p>
+
+            <p className="text-xs text-gray-500 mt-1">23 hrs 20 min ago</p>
+          </div>
+
+          <div className="w-px h-12 bg-gray-200" />
+
+          <div className="px-6 min-w-[200px]">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-600">
+              SUBJECT
+            </p>
+
+            <p className="text-[15px] font-semibold text-gray-900 mt-1">
+              Re: Paid Collaboration
+            </p>
+          </div>
+
+          <div className="w-px h-12 bg-gray-200" />
+
+          <div className="px-6 min-w-[180px]">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-600">
+              MOTIVE
+            </p>
+
+            <p className="text-[15px] font-semibold text-gray-900 mt-1">
+              Deal Discount
+            </p>
+          </div>
+
+          <div className="ml-auto flex items-center gap-3 px-5">
+            {emailDeals?.length > 0 && (
+              <div
+                onClick={() => navigate("/deals")}
+                className="flex items-center gap-3 rounded-full bg-slate-100 px-3 py-1.5 cursor-pointer hover:bg-slate-200 transition"
+              >
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                  <Handshake size={16} className="text-white" />
+                </div>
+
+                <span className="font-semibold text-gray-900">
+                  $<CountUpWithBlast value={maxDeal} email={email} />
+                </span>
               </div>
+            )}
 
-              <span className="text-lg font-bold text-slate-800">
-                $<CountUpWithBlast value={maxDeal} />
-              </span>
-            </div>
-          )}
-
-          {/* TAGS */}
-
-          {showNextPrev && <NextPrev />}
+            {showNextPrev && <NextPrev />}
+          </div>
         </div>
       </div>
 
-      {/* STATUS */}
-      {!isPending && (
-        <div className="gap-3 p-2 flex flex-wrap items-center">
-          {statusItems.map((item, index) => (
-            <StatusCard
-              key={index}
-              Icon={item.Icon}
-              label={item.label}
-              value={item.value}
-            />
-          ))}
+      <div className="w-full grid grid-cols-[70%_30%]">
+        {/* STATUS */}
+        {!isPending && (
+          <div className="gap-3 p-2 flex flex-wrap items-center  bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
+            {statusItems.map((item, index) => (
+              <StatusCard
+                key={index}
+                Icon={item.Icon}
+                label={item.label}
+                value={item.value}
+              />
+            ))}
+          </div>
+        )}
+        <div className="w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
+          <ActionButton />
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -289,7 +385,7 @@ export default ContactHeader;
 
 function StatusCard({ Icon, label, value }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl p-3 bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md transition-all min-w-[150px]">
+    <div className="flex items-start gap-3 rounded-xl p-3 bg-background border-gray-200 shadow-sm hover:shadow-md transition-all min-w-[100px]">
       <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100">
         <Icon className="text-blue-500" size={18} />
       </div>
@@ -299,7 +395,9 @@ function StatusCard({ Icon, label, value }) {
           {label}
         </p>
 
-        <p className="text-sm font-bold text-gray-800 mt-1">{value || "N/A"}</p>
+        <p className="text-sm font-semibold text-black-800 mt-1">
+          {value || "N/A"}
+        </p>
       </div>
     </div>
   );
