@@ -67,6 +67,7 @@ import Recharge from "./components/pages/Recharge";
 import PlansPage from "./components/pages/PlansPage";
 import BillingSettings from "./components/pages/BillingSettings";
 import InternetStatus from "./components/InternetStatus";
+import DynamicEntityHandler from "./components/routing/DynamicEntityHandler";
 
 const router = createBrowserRouter([
   {
@@ -98,6 +99,23 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <TimelinePage />,
+      },
+
+      {
+        path: "entity/:entity/:view",
+        element: <DynamicEntityHandler mode="list" />,
+      },
+      {
+        path: "entity/:entity/view",
+        element: <DynamicEntityHandler mode="list" />,
+      },
+      {
+        path: "entity/:entity/create",
+        element: <DynamicEntityHandler mode="create" />,
+      },
+      {
+        path: "entity/:entity/edit",
+        element: <DynamicEntityHandler mode="edit" />,
       },
       {
         path: "unreplied-emails",

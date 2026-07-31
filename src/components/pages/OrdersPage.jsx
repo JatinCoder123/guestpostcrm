@@ -131,16 +131,100 @@ export function OrdersPage() {
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const columns = [
+
+    {
+      label: "Action",
+      accessor: "action",
+      icon: Clapperboard,
+
+      width: 220,
+      minWidth: 180,
+      maxWidth: 300,
+
+      sticky: true,
+      sortable: false,
+      searchable: false,
+      resizable: true,
+
+      headerClasses: "justify-center",
+      classes: " ",
+
+      render: (row) => (
+        <div className="flex  gap-2">
+          <button
+            onClick={() =>
+              navigateTo(
+                `/orders/edit?email=${row.client_email}&id=${row.id}`
+              )
+            }
+            className="rounded-full p-2 transition hover:bg-blue-100"
+          >
+            <Pen className="h-5 w-5 text-blue-600" />
+          </button>
+
+          <button
+            onClick={() =>
+              navigateTo(
+                `/orders/view?email=${row.client_email}&id=${row.id}`
+              )
+            }
+            className="rounded-full p-2 transition hover:bg-blue-100"
+          >
+            <Eye className="h-5 w-5 text-blue-600" />
+          </button>
+
+          {row.order_type?.toLowerCase() === "marketplace" &&
+            row.order_status !== "completed" && (
+              <button
+                disabled={updating}
+                onClick={() => {
+                  dispatch(
+                    updateOrder({
+                      order: {
+                        ...row,
+                        order_status: "completed",
+                      },
+                    })
+                  );
+
+                  setUpdateOrderId(row.order_id);
+                }}
+                className="rounded-full p-1 transition hover:bg-green-500"
+              >
+                {updating &&
+                  updateOrderId === row.order_id ? (
+                  <LoadingAll />
+                ) : (
+                  <IoCheckmarkDoneCircleOutline className="h-8 w-8 text-green-600 hover:text-white" />
+                )}
+              </button>
+            )}
+        </div>
+      ),
+    },
     {
       label: "Created At",
       accessor: "date_entered",
-      headerClasses: "",
       icon: Calendar,
+
+      width: 180,
+      minWidth: 150,
+      maxWidth: 300,
+
+      sticky: true,
       sortable: true,
+      searchable: false,
+      resizable: true,
+
+      headerClasses: "",
+      classes: "truncate",
 
       onClick: (row) =>
-        handleDateClick({ email: row?.client_email, navigate: "/" }),
-      classes: "truncate max-w-[200px]",
+        handleDateClick({
+          email: row?.client_email,
+          navigate: "/",
+        }),
+
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
           {row.date_entered_time_ago}
@@ -150,94 +234,122 @@ export function OrdersPage() {
     {
       label: "Contact",
       accessor: "client_email",
-      headerClasses: "",
       icon: User2,
-      classes: "truncate max-w-[200px]",
+
+      width: 260,
+      minWidth: 100,
+      maxWidth: 450,
+
+      sticky: true,
+      sortable: true,
+      searchable: true,
+      resizable: true,
+
+      headerClasses: "",
+      classes: "truncate",
+
       onClick: (row) =>
         handleDateClick({
           email: row?.client_email,
           navigate: "/contacts",
         }),
-      searchable: true,
 
       render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
+        <span className="font-medium text-gray-700 cursor-pointer truncate">
           {row?.name}
         </span>
       ),
     },
+
     {
       label: "Amount",
       accessor: "total_amount_c",
-      headerClasses: "",
       icon: DollarSign,
+
+      width: 140,
+      minWidth: 120,
+      maxWidth: 220,
+
+      sticky: false,
       sortable: true,
-      classes: "truncate  max-w-[100px]",
+      searchable: true,
+      resizable: true,
+
+      headerClasses: "",
+      classes: "",
+
       render: (row) => (
-        <span className="font-medium text-blue-700 ">
-          ${row.total_amount_c || "0.00"}{" "}
+        <span className="font-medium text-blue-700">
+          ${row.total_amount_c || "0.00"}
         </span>
       ),
-      searchable: true,
-
     },
+
     {
       label: "Status",
       accessor: "order_status",
-      headerClasses: "",
       icon: BarChart,
-      classes: "truncate max-w-[200px]",
+
+      width: 180,
+      minWidth: 150,
+      maxWidth: 260,
+
+      sticky: false,
+      sortable: true,
+      searchable: true,
+      resizable: true,
+
+      headerClasses: "",
+      classes: "",
 
       render: (row) => (
-        <span
-          className={`px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700`}
-        >
+        <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700">
           {row.order_status || "Unknown"}
         </span>
       ),
     },
+
     {
       label: "Type",
       accessor: "order_type",
-      headerClasses: "",
       icon: BarChart3,
-      classes: "truncate max-w-[200px]",
 
-      render: (row) => (
-        <span className="font-medium text-gray-700 ">{row?.order_type}</span>
-      ),
-    },
-    {
-      label: "Modified At",
-      accessor: "date_modified",
-      headerClasses: "",
-      icon: Calendar,
-      classes: "truncate max-w-[200px]",
+      width: 180,
+      minWidth: 150,
+      maxWidth: 260,
 
-      render: (row) => (
-        <span className="px-3 py-1  rounded-full ">{row?.date_modified}</span>
-      ),
-    },
-    {
-      label: "Order Id",
-      accessor: "order_id",
-      headerClasses: "",
-      icon: IdCardIcon,
-      classes: "truncate max-w-[200px]",
+      sticky: false,
+      sortable: true,
       searchable: true,
+      resizable: true,
+
+      headerClasses: "",
+      classes: "",
 
       render: (row) => (
-        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-          {row?.order_id}
+        <span className="font-medium text-gray-700">
+          {row.order_type}
         </span>
       ),
     },
+
     {
-      label: "Action",
-      accessor: "action",
-      headerClasses: "ml-auto",
-      icon: Clapperboard,
-      classes: "truncate max-w-[200px] ml-auto",
+      label: "Modified At",
+      accessor: "date_modified",
+      icon: Calendar,
+
+      width: 200,
+      minWidth: 180,
+      maxWidth: 320,
+
+      sticky: false,
+      sortable: true,
+      searchable: false,
+      resizable: true,
+
+      headerClasses: "",
+      classes: "",
+
       render: (row) => (
         <div className="flex items-center justify-center gap-2">
           <button
@@ -284,6 +396,32 @@ export function OrdersPage() {
         </div>
       ),
     },
+
+    {
+      label: "Order Id",
+      accessor: "order_id",
+      icon: IdCardIcon,
+
+      width: 180,
+      minWidth: 150,
+      maxWidth: 300,
+
+      sticky: false,
+      sortable: true,
+      searchable: true,
+      resizable: true,
+
+      headerClasses: "",
+      classes: "",
+
+      render: (row) => (
+        <span className="rounded-full bg-orange-100 px-3 py-1 text-sm text-orange-700">
+          {row.order_id}
+        </span>
+      ),
+    },
+
+
   ];
   const filterColumns = [
     {
@@ -360,14 +498,17 @@ export function OrdersPage() {
       preferences={preferences}
       filterColumns={filterColumns}
       refreshKey={["orders"]}
-      fetchNextPage={() => {
-        if (
-          hasNextPage &&
-          !isFetchingNextPage
-        ) {
-          fetchNextPage();
-        }
-      }}
+      fetchNextPage={fetchNextPage}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+    // fetchNextPage={() => {
+    //   if (
+    //     hasNextPage &&
+    //     !isFetchingNextPage
+    //   ) {
+    //     fetchNextPage();
+    //   }
+    // }}
     >
       <TableTitleBar
         Icon={ShoppingCart}

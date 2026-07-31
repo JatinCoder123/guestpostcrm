@@ -27,6 +27,7 @@ import SortDropdown from "./SortDropDown";
 import FilterColumn from "./FilterColumn";
 import { getPreference, preferencesAction } from "../../../store/Slices/preferencesSlice";
 import { queryClient } from "../../../lib/queryClient";
+import TableViewport from "./TableViewport";
 const TableContext = createContext();
 export const useTableContext = () => {
   const ctx = useContext(TableContext);
@@ -86,6 +87,8 @@ const TableView = ({
   timefilter = true,
   timefilterField = "date_entered",
   fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
   children,
   pageCount,
   pageIndex,
@@ -119,14 +122,64 @@ const TableView = ({
   const [selectedRows, setSelectedRows] =
     useState([]);
 
-  const [visibleColumns, setVisibleColumns] =
-    useState([]);
-
+  const [visibleColumns, setVisibleColumns] = useState([]);
+  const [columnWidths, setColumnWidths] = useState({});
   useEffect(() => {
     setVisibleColumns(columns);
   }, [columns]);
+  useEffect(() => {
+    const widths = {};
 
+    columns.forEach((column) => {
+      widths[column.accessor] = {
+        width: column.width ?? 220,
+        minWidth: column.minWidth ?? 120,
+        maxWidth: column.maxWidth ?? 700,
+        sticky: column.sticky ?? false,
+      };
+    });
 
+    setColumnWidths(widths);
+  }, [columns]);
+
+  const resizeColumn = (accessor, width) => {
+    setColumnWidths((prev) => ({
+      ...prev,
+      [accessor]: {
+        ...prev[accessor],
+        width: Math.max(
+          prev[accessor].minWidth,
+          Math.min(width, prev[accessor].maxWidth)
+        ),
+      },
+    }));
+  };
+  const gridTemplate = useMemo(() => {
+    return visibleColumns
+      .map(
+        (column) =>
+          `${columnWidths[column.accessor]?.width || 220}px`
+      )
+      .join(" ");
+
+  }, [visibleColumns, columnWidths]);
+  const stickyColumns = useMemo(() => {
+    let left = 0;
+
+    return visibleColumns.map((column) => {
+      const current = {
+        ...column,
+        width: columnWidths[column.accessor]?.width || 220,
+        left,
+      };
+
+      if (column.sticky) {
+        left += current.width;
+      }
+
+      return current;
+    });
+  }, [visibleColumns, columnWidths]);
   const updateSearch = (value) => {
     dispatch(
       preferencesAction.updateTablePreference({
@@ -183,38 +236,64 @@ const TableView = ({
   }
   const value = {
     tableName,
+
     columns,
-    statusList,
-    statusKey,
+
     visibleColumns,
     setVisibleColumns,
+
+    columnWidths,
+    resizeColumn,
+
+    gridTemplate,
+    stickyColumns,
+
     showStatus,
     setShowStatus,
+
     search,
     setSearch: updateSearch,
+
     filters,
     setFilters: updateFilters,
+
     slice,
+
     sorting,
+
     fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+
     searching,
+
     sortingFilter,
+
     timefilter,
+
     filterColumns,
+
     loading,
+
     selectedRows,
     setSelectedRows,
+
     pageIndex,
     pageCount,
+
     count,
+
     data: tableData,
+
+    statusList,
+    statusKey,
   };
 
   return (
     <TableContext.Provider value={value}>
       <motion.div
         layout
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-3 mb-10"
       >
         {/* FILTER ROW */}
         <FilterRow />
@@ -347,12 +426,18 @@ const TableView = ({
   );
 };
 
-export const Table = (props) => {
+export const Table = ({
+  className = "",
+  style = {},
+  ...props
+}) => {
   return (
-    <table className="w-full">
-      <TableHeader {...props} />
-      <TableBody {...props} />
-    </table>
+    <div
+      className={`relative flex max-h-[500px] w-full flex-col overflow-hidden ${className} `}
+      style={style}
+    >
+      <TableViewport />
+    </div>
   );
 };
 function EmptyCard() {
