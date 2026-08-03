@@ -9,16 +9,15 @@ export const getAllBacklinks = ({
         method: "POST",
         body: {
             action: "fetch",
-            module: "outr_seo_backlinks",
+            module: "outr_seo_backlinksmain",
 
             fields: [
-                "post_author_name_c",
-                "post_author_email_c",
-                "target_url_c",
+                "id",
+                "gp_li_date_c",
+                "name",
                 "anchor_text_c",
-                "expiry_date_c",
-                "link_type",
-                "date_entered",
+                "source_url_c",
+                "status_c",
             ],
 
             page,
@@ -84,9 +83,9 @@ export const updateBacklink =
             method: "POST",
             body: {
                 "action": "update",
-                "module": "outr_seo_backlinks",
+                "module": "outr_seo_backlinksmain",
                 id: backlink.id,
-                data: { ...backlink },
+                data: { status_c: backlink.status_c },
             },
         });
 
@@ -96,7 +95,7 @@ export const getBacklinkById =
             method: "POST",
             body: {
                 action: "fetch",
-                module: "outr_seo_backlinks",
+                module: "outr_seo_backlinksmain",
                 filter: { id }
             },
         });

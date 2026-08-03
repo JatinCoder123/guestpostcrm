@@ -17,6 +17,7 @@ import {
   CircleX,
   Layers,
   BellElectric,
+  Unlink
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -194,9 +195,9 @@ export function Sidebar() {
       countBg: "bg-red-500 text-white",
     },
     {
-      id: "Listicle",
-      label: "Listicle",
-      icon: Layers,
+      id: "link-removal",
+      label: "Links Removal",
+      icon: Unlink,
       loading: false,
       count: null,
       color: "text-blue-600",

@@ -67,6 +67,7 @@ import Recharge from "./components/pages/Recharge";
 import PlansPage from "./components/pages/PlansPage";
 import BillingSettings from "./components/pages/BillingSettings";
 import InternetStatus from "./components/InternetStatus";
+import { LinkRemovalPage } from "./components/pages/LinkRemovalpage";
 
 const router = createBrowserRouter([
   {
@@ -181,6 +182,11 @@ const router = createBrowserRouter([
       {
         path: "reminders/:id?",
         element: <ReminderPage />,
+      },
+
+      {
+        path: "link-removal",
+        element: <LinkRemovalPage />,
       },
 
       {
