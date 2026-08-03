@@ -306,6 +306,8 @@ const ContactHeader = () => {
 
           <div className="w-px h-12 bg-gray-200" />
 
+          <div className="flex items-top gap-1">
+
           <div className="px-6 min-w-[180px]">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-600">
               CREATED AT
@@ -352,6 +354,7 @@ const ContactHeader = () => {
                   : mailersSummary?.correct_motive || "N/A"}
               </p>
             </Titletooltip>
+          </div>
           </div>
 
           <div className="ml-auto flex items-center gap-3 px-5">

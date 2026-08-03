@@ -109,7 +109,7 @@ const RootLayout = () => {
         {/* Scrollable Content */}
         <main
           ref={mainRef}
-          className="flex-1 overflow-y-auto hide-scrollbar"
+          className="flex-1 overflow-y-auto hide-scrollbar w-full"
         >
           <div className="p-0">
             <LowCreditWarning
