@@ -44,6 +44,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const topRef = useRef(null);
   const headerRef = useRef(null);
   const bottomRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   // Prevent scroll jumping when ledger updates
   const previousScrollTop = useRef(0);
@@ -108,9 +109,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
 
   // Preserve scroll position on ledger load
   useEffect(() => {
-    const scrollParent = document.querySelector(
-      ".hide-scrollbar"
-    );
+    const scrollParent = scrollContainerRef.current;
 
     if (!scrollParent) return;
 
@@ -120,9 +119,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
 
   // Track scroll position
   useEffect(() => {
-    const scrollParent = document.querySelector(
-      ".hide-scrollbar"
-    );
+    const scrollParent = scrollContainerRef.current;
 
     if (!scrollParent) return;
 
@@ -147,7 +144,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
     };
   }, []);
   useEffect(() => {
-    const scrollParent = document.querySelector(".hide-scrollbar");
+    const scrollParent = scrollContainerRef.current;
 
     if (!scrollParent || !bottomRef.current) return;
 
@@ -241,9 +238,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
   };
 
   const scrollToBottom = () => {
-    const scrollParent = document.querySelector(
-      ".hide-scrollbar"
-    );
+    const scrollParent = scrollContainerRef.current;
 
     if (!scrollParent) return;
 
@@ -281,7 +276,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
 
   return (
     <div
-      className={`bg-white transition-all duration-300 ${
+      className={`h-full min-h-0 bg-white transition-all duration-300 ${
         isExpanded
           ? "fixed inset-0 z-[9998] flex flex-col p-4 sm:p-7"
           : "relative"
@@ -289,7 +284,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
       role={isExpanded ? "dialog" : undefined}
       aria-modal={isExpanded ? "true" : undefined}
     >
-      <div ref={topRef} className={`flex min-h-0 flex-col ${isExpanded ? "h-full" : ""}`}>
+      <div ref={topRef} className="flex h-full min-h-0 flex-col">
         <div ref={headerRef} className="flex items-center justify-between px-3 pb-3 pt-4 sm:px-6 sm:pt-5">
           <h1 className="text-base font-medium text-blue-600">
             {showBrandTimeline && "Brand "}Timeline
@@ -335,7 +330,10 @@ const TimelineEvent = ({ handleMessageClick }) => {
           </div>
         </div>
 
-        <div className={`mx-3 mb-3 mt-4 min-h-0 rounded-xl border border-gray-200 bg-white sm:mx-6 ${isExpanded ? "flex-1 overflow-y-auto" : ""}`}>
+        <div
+          ref={scrollContainerRef}
+          className="mx-3 mb-3 mt-4 min-h-0 flex-1 overflow-y-auto rounded-xl border border-gray-200 bg-white sm:mx-6"
+        >
           <LadgerCard
             timelineData={visibleTimelineData}
             handleMessageClick={handleMessageClick}

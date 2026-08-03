@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
 import TimelineEvent from "../TimelineEvent";
@@ -17,6 +17,8 @@ export function TimelinePage() {
   const [selectedMessage, setSelectedMessage] = useState(null);
   const { isTimelineLoading, emailsLoading, ledgerLoading } = useTimelineLoading()
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const summaryColumnRef = useRef(null);
+  const [summaryColumnHeight, setSummaryColumnHeight] = useState(null);
   const { currentEmail } = useTimeline()
   const { data } = useInfiniteLedger(currentEmail);
   const ladger =
@@ -32,6 +34,21 @@ export function TimelinePage() {
   const { viewEmail, threadId, count, contactInfo, } = useSelector(
     (state) => state.viewEmail,
   );
+
+  useEffect(() => {
+    const summaryColumn = summaryColumnRef.current;
+    if (!summaryColumn) return;
+
+    const updateHeight = () => {
+      setSummaryColumnHeight(Math.ceil(summaryColumn.getBoundingClientRect().height));
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(summaryColumn);
+
+    return () => observer.disconnect();
+  }, [isTimelineLoading]);
   if ((!ledgerLoading && !emailsLoading && (((Array.isArray(ladger) && ladger.length == 0) || !ladger)))) {
     return <NoSearchFoundPage />;
   }
@@ -54,12 +71,15 @@ export function TimelinePage() {
           <div className="flex flex-col gap-4">
             <ContactHeader />
 
-            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)] gap-4 items-start">
-              <div className="min-w-0 bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)] gap-4 items-start pb-10">
+              <div
+                className="min-w-0 bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden xl:h-[var(--timeline-height)] xl:min-h-0 custom-scrollbar"
+                style={summaryColumnHeight ? { "--timeline-height": `${summaryColumnHeight}px` } : undefined}
+              >
                 <TimelineEvent handleMessageClick={handleMessageClick} />
               </div>
 
-              <aside className="min-w-0 flex flex-col gap-4">
+              <aside ref={summaryColumnRef} className="min-w-0 flex flex-col gap-4">
                 <LatestMessage handleMessageClick={handleMessageClick} />
                 <MailerSummaryHeader />
               </aside>

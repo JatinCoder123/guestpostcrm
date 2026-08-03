@@ -7,6 +7,7 @@ import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
 import { useContact } from "../queries/contact.queries";
 import { SocketContext } from "../context/SocketContext";
 import IconButton from "./ui/Buttons/IconButton";
+import { PageContext } from "../context/pageContext";
 const VARIANTS = {
   indigo: {
     wrap: "bg-indigo-50 hover:bg-indigo-100 border-indigo-200",
@@ -65,6 +66,7 @@ function NavBtn({ icon: Icon, label, onClick, count, color = "indigo" }) {
 export default function Footer() {
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
   const { notificationCount } = useContext(SocketContext);
+  const { collapsed } = useContext(PageContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
   const dispatch = useDispatch()
   const prevCountRef = useRef(0);
@@ -116,7 +118,11 @@ export default function Footer() {
     }
   }, [error, dispatch]);
   return (
-    <footer className="fixed right-0 bottom-0 left-[260px] z-20 flex h-12  items-center justify-between bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] max-[820px]:left-0">
+    <footer
+  className={`fixed bottom-0 right-0 z-20 flex h-12 items-center justify-between bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-[820px]:left-0 ${
+    collapsed ? "left-[80px]" : "left-[260px]"
+  }`}
+>
       <IconButton icon={Settings} label="Settings" onClick={() => navigate("/settings")} />
       <div className="flex gap-2">
         <IconButton
