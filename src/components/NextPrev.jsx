@@ -42,7 +42,7 @@ const NextPrev = ({ nextHandler, prevHandler }) => {
     };
     return (
 
-        <div className="flex items-center gap-3 ">
+        <div className="flex shrink-0 items-center gap-2 2xl:gap-3">
             <NextPrevButton first={true} onClick={handlePrev} disabled={currentIndex == 0} label={emails[currentIndex - 1]?.full_name ? emails[currentIndex - 1]?.full_name : emails[currentIndex - 1]?.email1} Icon={ChevronLeft} emails={emails} currentIndex={currentIndex} />
             <NextPrevButton onClick={handleNext} disabled={currentIndex === emails?.length - 1} label={emails[currentIndex + 1]?.full_name ? emails[currentIndex + 1]?.full_name : emails[currentIndex + 1]?.email1} Icon={ChevronRight} emails={emails} currentIndex={currentIndex} />
         </div>
@@ -57,7 +57,7 @@ function NextPrevButton({ onClick, disabled, label, Icon, ...props }) {
     return <button
         onClick={onClick}
         disabled={disabled}
-        className={`p-2 rounded-lg border bg-gradient-to-r from-search-primary to-search-secondary flex items-center gap-2 shadow-sm active:scale-95 transition
+        className={`flex shrink-0 items-center gap-1 rounded-lg border bg-gradient-to-r from-search-primary to-search-secondary p-2 shadow-sm transition active:scale-95 2xl:gap-2
                         ${disabled
                 ? "opacity-60 cursor-not-allowed"
                 : "hover:bg-gray-100 cursor-pointer"
@@ -66,8 +66,7 @@ function NextPrevButton({ onClick, disabled, label, Icon, ...props }) {
 
     >
         {props.first && <Icon className="w-5 h-5 text-white" />}
-        <p className=' relative text-sm font-semibold
-         text-white truncate max-w-[150px]
+        <p className='relative hidden max-w-[150px] truncate text-sm font-semibold text-white 2xl:block
       '>           {label ? he.decode(label) : ""}
         </p>
         {!props.first && <Icon className="w-5 h-5 text-white" />}

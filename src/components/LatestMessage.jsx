@@ -65,11 +65,11 @@ const LatestMessage = ({ handleMessageClick }) => {
 
   return (
     <>
-      <div className=" flex flex-col justify-between bg-slate-50 rounded-3xl shadow-xl border border-slate-200 p-4  overflow-y-auto custom-scrollbar ">
+      <div className="custom-scrollbar flex flex-col justify-between overflow-y-auto rounded-3xl border border-slate-200 bg-slate-50 p-3 shadow-xl sm:p-4">
         <PromptLadger activePromptId={activePromptId} setActivePromptId={setActivePromptId} />
         <div className="flex flex-col gap-2 justify-center mb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
               <h3 className="text-black-700 font-medium text-lg">Latest Message</h3>
               <button
                 onClick={() =>
@@ -154,8 +154,8 @@ const LatestMessage = ({ handleMessageClick }) => {
             )}
         </div>
 
-        <div className=" flex items-center justify-between rounded-2xl p-4 ">
-          <div className="flex  gap-4 ">
+        <div className="flex flex-wrap items-start justify-between gap-3 rounded-2xl px-1 py-4 sm:p-4">
+          <div className="flex min-w-0 flex-1 flex-wrap gap-3 sm:gap-4">
             <QuickBtn
               icon={<BsRobot size={24} />}
               onClick={() =>
