@@ -22,7 +22,7 @@ export const useTimelineLoading = () => {
     const ordersQuery = useOrdersByEmail(currentEmail);
     const isTimelineLoading =
         contactQuery.isLoading ||
-        mailerSummaryQuery.isLoading ||
+        // mailerSummaryQuery.isLoading ||
         threadQuery.isLoading ||
         emailQuery.isLoading ||
         ledgerQuery.isLoading;

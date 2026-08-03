@@ -27,8 +27,8 @@ import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail } from "../queries/deals.queries";
 import { useOrdersByEmail } from "../queries/orders.queries";
 import { useOffersByEmail } from "../queries/offers.queries";
-import { useInfiniteEmails } from "../queries/email.queries";
 import { useEmailInvoices } from "../queries/invoice.queries";
+import { useContact } from "../queries/contact.queries";
 
 const MailerSummaryHeader = () => {
   const { currentEmail } = useTimeline()
@@ -150,7 +150,10 @@ export default MailerSummaryHeader;
 
 function MailerSummary() {
   const { currentEmail } = useTimeline()
-  const { data, isPending, refetch } = useMailerSummary(currentEmail);
+  const { data: contactData, isPending: contactLoading } = useContact(currentEmail);
+  const threadId = contactData?.contact?.thread_id;
+
+  const { data, isPending, refetch } = useMailerSummary(threadId);
   const mailersSummary = data?.mailers_summary
   return (
     <>
@@ -177,11 +180,11 @@ function MailerSummary() {
             </div>
 
             <div className="font-semibold text-gray-900 mt-1">
-              {mailersSummary?.date_entered_formatted || ""}
+              {mailersSummary?.date_entered_uni_format || ""}
             </div>
 
             <div className="text-xs text-gray-500">
-              {mailersSummary?.date_entered || ""}
+              {mailersSummary?.date_entered_time_ago || ""}
             </div>
           </div>
 
@@ -202,9 +205,9 @@ function MailerSummary() {
               Motive
             </div>
 
-            <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
+            <Titletooltip content={mailersSummary?.motive || "N/A"}>
               <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
-                {mailersSummary?.correct_motive || ""}
+                {mailersSummary?.motive || ""}
               </div>
             </Titletooltip>
           </div>

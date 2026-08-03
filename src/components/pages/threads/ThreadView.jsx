@@ -55,7 +55,7 @@ export default function ThreadView() {
   const firstMessageRef = useRef(null);
   const lastMessageRef = useRef(null);
 
-  const { data, isPending: summaryLoading } = useMailerSummary(email);
+  const { data, isPending: summaryLoading } = useMailerSummary(threadId);
   const regenSummary = useRegenMailerSummary();
   const mailersSummary = data?.mailers_summary;
 
