@@ -14,7 +14,7 @@ export const useTimelineLoading = () => {
     const preferences = useTablePreference("emails");
     const emailQuery = useInfiniteEmails(preferences)
     const contactQuery = useContact(currentEmail);
-    const mailerSummaryQuery = useMailerSummary(currentEmail);
+    // const mailerSummaryQuery = useMailerSummary(currentEmail);
     const threadQuery = useThread(currentEmail);
     const ledgerQuery = useInfiniteLedger(currentEmail);
     const dealsQuery = useDealsByEmail(currentEmail);
@@ -32,8 +32,8 @@ export const useTimelineLoading = () => {
         contactLoading:
             contactQuery.isLoading,
 
-        mailerSummaryLoading:
-            mailerSummaryQuery.isLoading,
+        // mailerSummaryLoading:
+        //     mailerSummaryQuery.isLoading,
 
         threadLoading: threadQuery.isLoading,
         emailsLoading: emailQuery.isLoading

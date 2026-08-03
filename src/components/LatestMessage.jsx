@@ -40,7 +40,7 @@ const LatestMessage = ({ handleMessageClick }) => {
   const accountInfo = contactData?.account
   const email1 = contactInfo?.email1;
   const threadId = contactInfo?.thread_id;
-  const { data: summary, isPending: mail } = useMailerSummary(threadId);
+  const { data: summary, isPending: mail } = useMailerSummary({ email: currentEmail, threadId });
   console.log("SUMMARY", summary)
 
   const mailersSummary = summary?.mailers_summary
