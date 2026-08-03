@@ -1,48 +1,54 @@
-export default function TableCell({
+import { memo } from "react";
+import DynamicField from "../fields/DynamicField";
+
+function TableCell({
     row,
     column,
 }) {
-    const value =
-        row[column.accessor];
+    const sticky = column.sticky;
 
     return (
         <div
-            onClick={() =>
-                column.onClick?.(row)
-            }
+            onClick={() => column.onClick?.(row)}
             className={`
-        relative
-        flex
-        items-center
-        px-4
-        py-3
-        overflow-hidden
-        whitespace-nowrap
-        ${column.classes || ""}
-      `}
+                relative
+                flex
+                items-center
+                px-4
+                py-3
+                overflow-hidden
+                whitespace-nowrap
+                border-r
+                border-gray-100
+                transition-colors
+                ${column.classes ?? ""}
+            `}
             style={{
-                position: column.sticky
-                    ? "sticky"
-                    : "relative",
+                position: sticky ? "sticky" : "relative",
 
-                left: column.sticky
+                left: sticky
                     ? column.left
                     : undefined,
 
-                width: column.width,
+                zIndex: sticky ? 20 : 1,
 
-                background: column.sticky
-                    ? "white"
+                background: sticky
+                    ? "#fff"
                     : undefined,
 
-                zIndex: column.sticky
-                    ? 5
-                    : 1,
+                isolation: sticky
+                    ? "isolate"
+                    : undefined,
             }}
         >
-            {column.render
-                ? column.render(row)
-                : value}
+            <DynamicField
+                mode="table"
+                field={column}
+                value={row[column.accessor]}
+                record={row}
+            />
         </div>
     );
 }
+
+export default memo(TableCell);

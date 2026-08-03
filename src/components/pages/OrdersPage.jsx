@@ -131,297 +131,225 @@ export function OrdersPage() {
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const columns = [
-
     {
-      label: "Action",
       accessor: "action",
-      icon: Clapperboard,
+      label: "Action",
+      type: "actions",
 
       width: 220,
       minWidth: 180,
       maxWidth: 300,
 
       sticky: true,
-      sortable: false,
-      searchable: false,
       resizable: true,
 
+      sortable: false,
+      searchable: false,
+      editable: false,
+
+      actions: [
+        {
+          type: "edit",
+          icon: "edit",
+          tooltip: "Edit Order",
+        },
+        {
+          type: "view",
+          icon: "view",
+          tooltip: "View Order",
+        },
+        {
+          type: "complete",
+          icon: "check",
+          tooltip: "Complete Order",
+
+          visible(record) {
+            return (
+              record.order_type?.toLowerCase() === "marketplace" &&
+              record.order_status !== "completed"
+            );
+          },
+        },
+      ],
+
       headerClasses: "justify-center",
-      classes: " ",
-
-      render: (row) => (
-        <div className="flex  gap-2">
-          <button
-            onClick={() =>
-              navigateTo(
-                `/orders/edit?email=${row.client_email}&id=${row.id}`
-              )
-            }
-            className="rounded-full p-2 transition hover:bg-blue-100"
-          >
-            <Pen className="h-5 w-5 text-blue-600" />
-          </button>
-
-          <button
-            onClick={() =>
-              navigateTo(
-                `/orders/view?email=${row.client_email}&id=${row.id}`
-              )
-            }
-            className="rounded-full p-2 transition hover:bg-blue-100"
-          >
-            <Eye className="h-5 w-5 text-blue-600" />
-          </button>
-
-          {row.order_type?.toLowerCase() === "marketplace" &&
-            row.order_status !== "completed" && (
-              <button
-                disabled={updating}
-                onClick={() => {
-                  dispatch(
-                    updateOrder({
-                      order: {
-                        ...row,
-                        order_status: "completed",
-                      },
-                    })
-                  );
-
-                  setUpdateOrderId(row.order_id);
-                }}
-                className="rounded-full p-1 transition hover:bg-green-500"
-              >
-                {updating &&
-                  updateOrderId === row.order_id ? (
-                  <LoadingAll />
-                ) : (
-                  <IoCheckmarkDoneCircleOutline className="h-8 w-8 text-green-600 hover:text-white" />
-                )}
-              </button>
-            )}
-        </div>
-      ),
+      classes: "justify-center",
     },
+
     {
+      accessor: "date_entered_time_ago",
       label: "Created At",
-      accessor: "date_entered",
-      icon: Calendar,
+
+      type: "date",
 
       width: 180,
       minWidth: 150,
       maxWidth: 300,
 
       sticky: true,
-      sortable: true,
-      searchable: false,
       resizable: true,
 
-      headerClasses: "",
-      classes: "truncate",
+      sortable: true,
+      searchable: false,
+      editable: false,
 
-      onClick: (row) =>
-        handleDateClick({
-          email: row?.client_email,
-          navigate: "/",
-        }),
+      format: "timeAgo",
 
-      render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered_time_ago}
-        </span>
-      ),
+      navigate: "/",
     },
+
     {
+      accessor: "name",
       label: "Contact",
-      accessor: "client_email",
-      icon: User2,
+
+      type: "text",
 
       width: 260,
-      minWidth: 100,
+      minWidth: 180,
       maxWidth: 450,
 
       sticky: true,
-      sortable: true,
-      searchable: true,
       resizable: true,
 
-      headerClasses: "",
+      sortable: true,
+      searchable: true,
+      editable: true,
+
       classes: "truncate",
 
-      onClick: (row) =>
-        handleDateClick({
-          email: row?.client_email,
-          navigate: "/contacts",
-        }),
+      secondaryField: "client_email",
 
-      render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer truncate">
-          {row?.name}
-        </span>
-      ),
+      navigate: "/contacts",
+
+      placeholder: "No Contact",
     },
 
     {
-      label: "Amount",
       accessor: "total_amount_c",
-      icon: DollarSign,
+      label: "Amount",
+
+      type: "currency",
 
       width: 140,
       minWidth: 120,
       maxWidth: 220,
 
-      sticky: false,
       sortable: true,
       searchable: true,
+      editable: true,
       resizable: true,
 
-      headerClasses: "",
-      classes: "",
+      format: "currency",
 
-      render: (row) => (
-        <span className="font-medium text-blue-700">
-          ${row.total_amount_c || "0.00"}
-        </span>
-      ),
+      editor: "number",
+
+      props: {
+        currency: "USD",
+        precision: 2,
+      },
+
+      align: "right",
     },
 
     {
-      label: "Status",
       accessor: "order_status",
-      icon: BarChart,
+      label: "Status",
+
+      type: "select",
 
       width: 180,
       minWidth: 150,
       maxWidth: 260,
 
-      sticky: false,
       sortable: true,
       searchable: true,
+      editable: true,
       resizable: true,
 
-      headerClasses: "",
-      classes: "",
-
-      render: (row) => (
-        <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700">
-          {row.order_status || "Unknown"}
-        </span>
-      ),
+      options: [
+        {
+          label: "New",
+          value: "new",
+          color: "blue",
+        },
+        {
+          label: "Accepted",
+          value: "accepted",
+          color: "green",
+        },
+        {
+          label: "Pending",
+          value: "pending",
+          color: "yellow",
+        },
+        {
+          label: "Completed",
+          value: "completed",
+          color: "purple",
+        },
+        {
+          label: "Rejected",
+          value: "rejected_nontechnical",
+          color: "red",
+        },
+        {
+          label: "Wrong",
+          value: "wrong",
+          color: "gray",
+        },
+      ],
     },
 
     {
-      label: "Type",
       accessor: "order_type",
-      icon: BarChart3,
+      label: "Type",
+
+      type: "select",
 
       width: 180,
       minWidth: 150,
       maxWidth: 260,
 
-      sticky: false,
       sortable: true,
       searchable: true,
+      editable: true,
       resizable: true,
 
-      headerClasses: "",
-      classes: "",
-
-      render: (row) => (
-        <span className="font-medium text-gray-700">
-          {row.order_type}
-        </span>
-      ),
+      options: [
+        {
+          label: "Marketplace",
+          value: "marketplace",
+        },
+        {
+          label: "Guest Post",
+          value: "guest_post",
+        },
+        {
+          label: "Link Insertion",
+          value: "link_insertion",
+        },
+      ],
     },
 
     {
-      label: "Modified At",
-      accessor: "date_modified",
-      icon: Calendar,
-
-      width: 200,
-      minWidth: 180,
-      maxWidth: 320,
-
-      sticky: false,
-      sortable: true,
-      searchable: false,
-      resizable: true,
-
-      headerClasses: "",
-      classes: "",
-
-      render: (row) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() =>
-              navigateTo(`/orders/edit?email=${row?.client_email}&id=${row?.id}`)
-            }
-            className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
-            title="Update"
-          >
-            <Pen className="w-5 h-5 text-blue-600" />
-          </button>
-          <button
-            onClick={() =>
-              navigateTo(`/orders/view?email=${row?.client_email}&id=${row?.id}`)
-            }
-            className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
-            title="Update"
-          >
-            <Eye className="w-5 h-5 text-blue-600" />
-          </button>
-          {row.order_type?.toLowerCase() == "marketplace" &&
-            row.order_status !== "completed" && (
-              <button
-                onClick={() => {
-                  dispatch(
-                    updateOrder({
-                      order: { ...row, order_status: "completed" },
-                      email: row?.client_email,
-                    }),
-                  );
-                  setUpdateOrderId(row.order_id);
-                }}
-                disabled={updating}
-                className="p-1 hover:bg-green-500 rounded-full transition-colors cursor-pointer"
-                title="Complete"
-              >
-                {updating && updateOrderId == row.order_id ? (
-                  <LoadingAll />
-                ) : (
-                  <IoCheckmarkDoneCircleOutline className="w-8 h-8 text-green-600 hover:text-white   " />
-                )}
-              </button>
-            )}
-        </div>
-      ),
-    },
-
-    {
-      label: "Order Id",
       accessor: "order_id",
-      icon: IdCardIcon,
+      label: "Order Id",
+
+      type: "badge",
 
       width: 180,
       minWidth: 150,
       maxWidth: 300,
 
-      sticky: false,
       sortable: true,
       searchable: true,
+      editable: false,
       resizable: true,
 
-      headerClasses: "",
-      classes: "",
-
-      render: (row) => (
-        <span className="rounded-full bg-orange-100 px-3 py-1 text-sm text-orange-700">
-          {row.order_id}
-        </span>
-      ),
+      props: {
+        color: "orange",
+      },
     },
-
-
   ];
   const filterColumns = [
     {
@@ -501,26 +429,12 @@ export function OrdersPage() {
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}
-    // fetchNextPage={() => {
-    //   if (
-    //     hasNextPage &&
-    //     !isFetchingNextPage
-    //   ) {
-    //     fetchNextPage();
-    //   }
-    // }}
     >
       <TableTitleBar
         Icon={ShoppingCart}
         title={"Orders"}
-        titleClass={"text-cyan-700"}
       />
-      <Table
-        headerStyle={"  bg-cyan-600"}
-        layoutStyle={
-          "grid grid-cols-8"
-        }
-      />
+
     </TableView>
   );
 }

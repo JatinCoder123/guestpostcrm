@@ -403,6 +403,7 @@ const TableView = ({
             className="flex-1 rounded-xl border overflow-hidden relative bg-white"
           >
             {children}
+            <Table />
 
             {/* TABLE LOADING */}
             {loading &&
