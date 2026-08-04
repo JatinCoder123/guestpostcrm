@@ -549,13 +549,14 @@ export function TopNav() {
 
 
       <div className="justify-end flex shrink-0 items-center gap-1.5">
-
+        
         {/* ── 🆕 User Activity Panel — sits before the other nav buttons ── */}
+        <div className="flex-shrink-0 flex items-center gap-2">
         <UserActivityPanel
           activeUsers={activeUsers}
           currentUserEmail={user?.email}
         />
-
+</div>
         {/* Thin divider between activity panel and icon buttons */}
         <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
