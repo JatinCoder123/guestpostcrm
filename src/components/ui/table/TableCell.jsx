@@ -14,12 +14,12 @@ function TableCell({
                 relative
                 flex
                 items-center
-                px-4
-                py-3
+                 px-4
+                 py-3
                 overflow-hidden
                 whitespace-nowrap
-                border-r
-                border-gray-100
+                hover:border
+               hover:border-blue-300
                 transition-colors
                 ${column.classes ?? ""}
             `}

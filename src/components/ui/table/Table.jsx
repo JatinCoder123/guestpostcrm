@@ -23,7 +23,6 @@ import { DateRangeFilter } from "../../DateRangeFilter";
 import { todayStr } from "../../../services/dateRangeUtils";
 import IconButton from "../Buttons/IconButton"
 import SearchBar from "./SearchBar";
-import SortDropdown from "./SortDropDown";
 import FilterColumn from "./FilterColumn";
 import { getPreference, preferencesAction } from "../../../store/Slices/preferencesSlice";
 import { queryClient } from "../../../lib/queryClient";
@@ -99,7 +98,7 @@ const TableView = ({
   showLoading = true,
   refreshKey
 }) => {
-  const sorting = preferences?.sorting ?? {}
+  const sort = preferences?.sorting ?? {}
   const dateFilter = preferences?.date_filter || {};
   const fromDate = dateFilter?.date_from?.split(" ")[0] || todayStr();
   const fromTime = dateFilter.date_from?.split(" ")[1] || "00:01";
@@ -198,6 +197,15 @@ const TableView = ({
       })
     );
   };
+  const toggleSort = (value) => {
+    dispatch(
+      preferencesAction.updateTablePreference({
+        table: slice,
+        key: "sorting",
+        value: value
+      })
+    );
+  };
   const updateDateFilter = (
     date_from,
     date_to
@@ -259,7 +267,8 @@ const TableView = ({
 
     slice,
 
-    sorting,
+    sort,
+    toggleSort,
 
     fetchNextPage,
     hasNextPage,
@@ -348,7 +357,6 @@ const TableView = ({
               label={showStatus ? "Hide Stats" : "Show Stats"}
             />}
 
-            {sortingFilter && <SortDropdown />}
 
           </div>
           {timefilter && <DateRangeFilter

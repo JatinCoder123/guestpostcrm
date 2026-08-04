@@ -6,6 +6,8 @@ import SelectField from "./SelectField";
 import TextField from "./TextField";
 import PhoneField from "./PhoneField";
 import NumberField from "./NumberField";
+import ActionFeild from "./ActionFeild";
+import BadgeField from "./BadgeField";
 
 
 const FIELD_COMPONENTS = {
@@ -20,11 +22,11 @@ const FIELD_COMPONENTS = {
 
     select: SelectField,
 
-    // badge: BadgeField,
+    badge: BadgeField,
 
     checkbox: CheckboxField,
 
-    // actions: ActionField,
+    actions: ActionFeild,
 
     email: EmailField,
 

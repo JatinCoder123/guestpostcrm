@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "framer-motion";
-import StatusDonut from "./StatusDonut";
 import { useTableContext } from "./Table";
 
 function StatusRow({ statusCount }) {
@@ -17,173 +16,171 @@ function StatusRow({ statusCount }) {
 
         const updated = { ...filters };
 
-        // Remove every filter added by any status
         statusList.forEach((s) => {
-            // Remove main filter
             delete updated[s.filter || s.field || statusKey];
 
-            // Remove other filters
             if (s.otherFilters) {
-                Object.keys(s.otherFilters).forEach((k) => {
-                    delete updated[k];
-                });
+                Object.keys(s.otherFilters).forEach((k) => delete updated[k]);
             }
 
-            // Remove neq filters
             if (s.neqFilter) {
-                Object.keys(s.neqFilter).forEach((k) => {
-                    delete updated[k];
-                });
+                Object.keys(s.neqFilter).forEach((k) => delete updated[k]);
             }
         });
 
-        // Check whether this exact status is already applied
         const isAlreadyApplied = (() => {
-            if (filters?.[key] !== status.value) {
-                return false;
-            }
+            if (filters?.[key] !== status.value) return false;
 
             if (status.otherFilters) {
                 for (const [k, v] of Object.entries(status.otherFilters)) {
-                    if (filters?.[k] !== v) {
-                        return false;
-                    }
+                    if (filters?.[k] !== v) return false;
                 }
             }
 
             if (status.neqFilter) {
                 for (const [k, v] of Object.entries(status.neqFilter)) {
-                    if (filters?.[k]?.neq !== v) {
-                        return false;
-                    }
+                    if (filters?.[k]?.neq !== v) return false;
                 }
             }
 
             return true;
         })();
 
-        // Toggle OFF
         if (isAlreadyApplied) {
             setFilters(updated);
             return;
         }
 
-        // Apply main filter
         updated[key] = status.value;
 
-        // Apply normal extra filters
         if (status.otherFilters) {
             Object.assign(updated, status.otherFilters);
         }
 
-        // Apply neq filters
         if (status.neqFilter) {
             Object.entries(status.neqFilter).forEach(([field, value]) => {
-                updated[field] = {
-                    neq: value,
-                };
+                updated[field] = { neq: value };
             });
         }
 
         setFilters(updated);
     };
 
-    const isStatusActive = (
-        status
-    ) => {
-        const field =
-            status.filter ||
-            status.field ||
-            statusKey;
-
-        return (
-            filters?.[field] ===
-            status.value
-        );
+    const isStatusActive = (status) => {
+        const field = status.filter || status.field || statusKey;
+        return filters?.[field] === status.value;
     };
 
     return (
-        <div className="w-full">
-            <AnimatePresence>
-                {showStatus && (
-                    <motion.div
-                        key="status-row"
-                        initial={{
-                            y: -100,
-                            opacity: 0,
-                        }}
-                        animate={{
-                            y: 0,
-                            opacity: 1,
-                        }}
-                        exit={{
-                            y: 100,
-                            opacity: 0,
-                        }}
-                        transition={{
-                            duration: 0.4,
-                            ease: "easeInOut",
-                        }}
-                        className="flex flex-wrap items-end justify-center gap-4 py-2"
-                    >
-                        {statusList.map(
-                            (status) => {
-                                const Icon =
-                                    status.icon;
+        <AnimatePresence>
+            {showStatus && (
+                <motion.div
+                    key="status-row"
+                    initial={{ opacity: 0, y: -30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 30 }}
+                    transition={{ duration: 0.35 }}
+                    className="
+                        grid
+                        grid-cols-2
+                        sm:grid-cols-3
+                        md:grid-cols-4
+                        xl:grid-cols-6
+                        2xl:grid-cols-8
+                        gap-4
+                        py-3
+                    "
+                >
+                    {statusList.map((status) => {
+                        const Icon = status.icon;
 
-                                return (
-                                    <StatusDonut
-                                        key={
-                                            status.key || status.value
-                                        }
-                                        label={
-                                            status.label
-                                        }
-                                        value={
-                                            status.count
-                                        }
-                                        total={
-                                            statusCount ??
-                                            total
-                                        }
-                                        color={
-                                            status.color
-                                        }
-                                        icon={
-                                            Icon
-                                        }
-                                        active={
-                                            status?.checkActive
-                                                ? status.checkActive()
-                                                : isStatusActive(
-                                                    status
-                                                )
-                                        }
-                                        amount={
-                                            status.showAmount
-                                                ? status.amount
-                                                : null
-                                        }
-                                        showAmount={status.showAmount}
-                                        onClick={() => {
-                                            if (
-                                                status?.handleStatusClick
-                                            ) {
-                                                status.handleStatusClick();
-                                            } else {
-                                                toggleStatus(
-                                                    status
-                                                );
-                                            }
+                        const count = status.count ?? 0;
+                        const grandTotal = statusCount ?? total ?? 1;
+
+                        const percent = Math.round(
+                            (count / Math.max(grandTotal, 1)) * 100
+                        );
+
+                        const active = status?.checkActive
+                            ? status.checkActive()
+                            : isStatusActive(status);
+
+                        return (
+                            <motion.button
+                                whileHover={{
+                                    y: -4,
+                                    scale: 1.02,
+                                }}
+                                whileTap={{
+                                    scale: 0.98,
+                                }}
+                                key={status.key || status.value}
+                                onClick={() => {
+                                    if (status.handleStatusClick) {
+                                        status.handleStatusClick();
+                                    } else {
+                                        toggleStatus(status);
+                                    }
+                                }}
+                                className={`
+                                    relative
+                                    overflow-hidden
+                                    rounded-2xl
+                                    border
+                                    bg-white
+                                    p-4
+                                    text-left
+                                    transition-all
+                                    shadow-sm
+                                    hover:shadow-lg
+
+                                    ${active
+                                        ? "border-primary ring-2 ring-primary/20"
+                                        : "border-blue-200"
+                                    }
+                                `}
+                            >
+
+
+                                <div className="flex items-center justify-between">
+                                    <div
+                                        className="flex h-10 w-10 items-center justify-center rounded-xl"
+                                        style={{
+                                            background: `${status.color}15`,
+                                            color: status.color,
                                         }}
-                                    />
-                                );
-                            }
-                        )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+                                    >
+                                        {Icon && <Icon size={20} />}
+                                    </div>
+
+                                    <span
+                                        className="rounded-full px-2 py-1 text-xs font-semibold"
+                                        style={{
+                                            background: `${status.color}15`,
+                                            color: status.color,
+                                        }}
+                                    >
+                                        {status.label}                                    </span>
+                                </div>
+
+                                <div className="mt-5">
+                                    {status.showAmount && (
+                                        <div className="text-2xl font-bold">
+                                            ${status.amount}
+                                        </div>
+                                    )}
+
+                                    <div className="mt-1 text-xl font-semibold">
+                                        {count}
+                                    </div>
+
+                                </div>
+                            </motion.button>
+                        );
+                    })}
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }
 

@@ -12,11 +12,9 @@ import {
   ListFilter,
   X,
   ShoppingCart,
-  DollarSign,
-  BarChart,
-  BarChart3,
-  IdCardIcon,
-  Eye,
+  Copy,
+  Send,
+  Trash2,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
@@ -147,33 +145,101 @@ export function OrdersPage() {
       searchable: false,
       editable: false,
 
+      edit: {
+        tooltip: "Edit Order",
+
+        onClick: ({ record }) => {
+          navigateTo(
+            `/orders/edit?email=${record.client_email}&id=${record.id}`
+          );
+        },
+      },
+
+      view: {
+        tooltip: "View Order",
+
+        onClick: ({ record }) => {
+          navigateTo(
+            `/orders/view?email=${record.client_email}&id=${record.id}`
+          );
+        },
+      },
+
       actions: [
         {
-          type: "edit",
-          icon: "edit",
-          tooltip: "Edit Order",
-        },
-        {
-          type: "view",
-          icon: "view",
-          tooltip: "View Order",
-        },
-        {
-          type: "complete",
-          icon: "check",
-          tooltip: "Complete Order",
+          id: "complete",
 
-          visible(record) {
-            return (
-              record.order_type?.toLowerCase() === "marketplace" &&
-              record.order_status !== "completed"
+          label: "Complete Order",
+
+          icon: IoCheckmarkDoneCircleOutline,
+
+          visible: (record) =>
+            record.order_type?.toLowerCase() === "marketplace" &&
+            record.order_status !== "completed",
+
+          loading: () =>
+            updating && updateOrderId === record.order_id,
+
+          onClick: ({ record }) => {
+            dispatch(
+              updateOrder({
+                order: {
+                  ...record,
+                  order_status: "completed",
+                },
+              })
             );
+
+            setUpdateOrderId(record.order_id);
+          },
+        },
+
+        {
+          id: "duplicate",
+
+          label: "Duplicate",
+
+          icon: Copy,
+
+          onClick: ({ record }) => {
+            console.log("Duplicate", record);
+          },
+        },
+
+        {
+          id: "send-reminder",
+
+          label: "Send Reminder",
+
+          icon: Send,
+
+          onClick: ({ record }) => {
+            console.log("Send Reminder", record);
+          },
+        },
+
+        {
+          id: "delete",
+
+          label: "Delete",
+
+          icon: Trash2,
+
+          danger: true,
+
+          confirm: {
+            title: "Delete Order",
+            description:
+              "Are you sure you want to delete this order?",
+          },
+
+          onClick: ({ record }) => {
+            console.log("Delete", record);
           },
         },
       ],
 
       headerClasses: "justify-center",
-      classes: "justify-center",
     },
 
     {

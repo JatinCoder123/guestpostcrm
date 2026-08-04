@@ -324,6 +324,7 @@ function SearchBar() {
                                     flex-1
                                     min-w-[100px]
                                     bg-transparent
+                                    z-[999]
                                     text-sm
                                     text-gray-700
                                     placeholder:text-gray-400
@@ -411,7 +412,7 @@ function SearchBar() {
                             absolute
                             top-[115%]
                             right-0
-                            z-50
+                            z-[999]
                             w-[260px]
                         "
                     >

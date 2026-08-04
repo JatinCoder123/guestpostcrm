@@ -1,6 +1,6 @@
 import React from 'react'
 
-const EntityViewPage = () => {
+const EntityViewPage = ({ entity, id }) => {
     return (
         <div>EntityViewPage</div>
     )

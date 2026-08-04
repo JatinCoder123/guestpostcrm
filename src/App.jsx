@@ -102,12 +102,16 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "entity/:entity/:view",
+        path: "entity/:entity/list/:view",
         element: <DynamicEntityHandler mode="list" />,
       },
       {
         path: "entity/:entity/view",
         element: <DynamicEntityHandler mode="list" />,
+      },
+      {
+        path: "entity/:entity/:id",
+        element: <DynamicEntityHandler mode="detail" />,
       },
       {
         path: "entity/:entity/create",
