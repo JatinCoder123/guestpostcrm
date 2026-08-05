@@ -10,6 +10,7 @@ export const getMarkTags = async () => {
         body: {
             action: "fetch",
             module: "outr_hashtag",
+            filters: { isLocked: 0 },
             page: 1,
             per_page: 50
 
