@@ -1,4 +1,5 @@
 import axios from "axios";
+import { http } from "../services/api";
 
 const client = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL });
 
@@ -9,9 +10,14 @@ export async function fetchList(entity, params) {
 }
 
 export async function fetchOne(entity, id) {
-    const { endpoint } = getEntityConfig(entity);
-    const { data } = await client.get(`${endpoint}/${id}`);
-    return data;
+    // const { endpoint } = getEntityConfig(entity);
+    const data = await http({
+        method: "POST", body: {
+            filters: { id }, "action": "fetch",
+            "module": "Contacts",
+        }
+    });
+    return data?.records?.[0];
 }
 
 export async function createOne(entity, payload) {
