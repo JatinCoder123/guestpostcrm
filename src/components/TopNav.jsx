@@ -469,7 +469,7 @@ export function TopNav() {
   return (
     <div
       data-tour="top-nav"
-      className="sticky top-0 flex   items-center justify-between p-2 gap-3 bg-white border  rounded-md "
+      className="sticky top-0 z-[999] flex   items-center justify-between p-2 gap-3 bg-white border  rounded-md "
     >
       <div className="flex items-center justify-between">
         <IconButton
@@ -635,7 +635,7 @@ export function TopNav() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.96 }}
                 transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-                className="absolute right-0 mt-2.5 w-72 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10"
+                className="absolute right-0 mt-2.5 w-72 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10 z-9999"
               >
                 <button
                   type="button"
