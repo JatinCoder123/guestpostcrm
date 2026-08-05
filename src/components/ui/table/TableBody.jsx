@@ -104,12 +104,13 @@ export default function TableBody({
             row={data[v.index]}
           />
         ))}
+        {isFetchingNextPage && (
+          <div className="p-4 text-center text-gray-500">
+            Loading more...
+          </div>
+        )}
       </div>
-      {isFetchingNextPage && (
-        <div className="p-4 text-center text-gray-500">
-          Loading more...
-        </div>
-      )}
+
 
 
     </div>
