@@ -11,10 +11,14 @@ import MessageModal from "../../MessageModal";
 import { SendingOverlay } from "./SendingOverlay";
 import ReplyButtons from "./ReplyButtons";
 import RightThreadHeader from "./RightThreadHeader";
+import { PageContext } from "../../../context/pageContext";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
+  const { showRefreshReminder, setShowRefreshReminder } = useContext(PageContext)
+  const { user: currentUser } = useSelector(state => state.user)
+
   const {
     emails,
     editorContent,
@@ -22,6 +26,8 @@ const ThreadReply = () => {
     handleSendClick,
     checkingThreadId,
     email,
+    isThreadLocked,
+    threadUsers,
     threadId
   } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -71,10 +77,28 @@ const ThreadReply = () => {
         count={emails?.length || 0}
       />
       {/* {(aiLoading || templateLoading) && <PageLoader />} */}
+
       <motion.div
-        initial={{ x: 0, opacity: 1 }}
-        animate={{ x: 0, opacity: 1 }}
-        className="fixed inset-0 z-[999] bg-white w-screen h-screen flex flex-col overflow-hidden"
+        animate={{
+          top: showRefreshReminder ? 57 : 0,
+          height: showRefreshReminder
+            ? "calc(100vh - 57px)"
+            : "100vh",
+        }}
+        transition={{
+          duration: 0.35,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className="
+        fixed
+        left-0
+        right-0
+        z-[999]
+        bg-white
+        flex
+        flex-col
+        overflow-hidden
+    "
       >
         {/* HEADER */}
         <div className="flex gap-3 justify-between items-center px-6 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
@@ -118,7 +142,37 @@ const ThreadReply = () => {
           <RightThreadHeader />
 
         </div>
-        <div className="flex flex-col h-full w-full">
+        {isThreadLocked && (
+          <div className="flex items-center gap-2  border-b border-amber-200 bg-amber-50 px-5 py-3">
+            <div>
+              <p className="font-medium text-amber-900">
+                This thread is currently being handled by
+              </p>
+
+
+            </div>
+            <div className=" flex flex-wrap gap-2">
+              {threadUsers.filter(user => user.email != currentUser.email).map(user => (
+                <div
+                  key={user.id}
+                  className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm"
+                >
+                  {/* <img
+                    src={user.profile_image}
+                    className="h-7 w-7 rounded-full"
+                    alt=""
+                  /> */}
+
+                  <span className="text-sm font-medium">
+                    {user.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className={`flex flex-col h-full w-full ${isThreadLocked ? "pointer-events-none" : ""
+          }`}>
           <TinyEditor
             setEditorContent={setEditorContent}
             editorContent={editorContent}

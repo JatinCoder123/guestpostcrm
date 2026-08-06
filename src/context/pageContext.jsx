@@ -15,6 +15,8 @@ export const PageContextProvider = (props) => {
   const [displayIntro, setDisplayIntro] = useState(
     localStorage.getItem("displayIntro") === "true",
   );
+  const [showRefreshReminder, setShowRefreshReminder] = useState(false);
+
   const [collapsed, setSidebarCollapsed] = useState(true);
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -99,8 +101,8 @@ export const PageContextProvider = (props) => {
     setShowNextPrev(nextPrev);
 
     if (navigate === "/" || navigate === "") {
-  setActivePage("");
-}
+      setActivePage("");
+    }
 
     if (navigate != null) {
       navigateTo(navigate);
@@ -135,6 +137,7 @@ export const PageContextProvider = (props) => {
     showNextPrev,
     setShowNextPrev,
     setCurrentIndex,
+    showRefreshReminder, setShowRefreshReminder
   };
 
   return (
