@@ -78,19 +78,19 @@ const router = createBrowserRouter([
     path: "",
     element: (
       <ErrorBoundary>
-        <SocketContextProvider>
 
-          <ThreadContextProvider>
-            <PageContextProvider>
-              <TimelineProvider>
+        <ThreadContextProvider>
+          <PageContextProvider>
+            <TimelineProvider>
+              <SocketContextProvider>
 
                 <BootApp />
                 <RootLayout />
+              </SocketContextProvider>
+            </TimelineProvider>
+          </PageContextProvider>
+        </ThreadContextProvider>
 
-              </TimelineProvider>
-            </PageContextProvider>
-          </ThreadContextProvider>
-        </SocketContextProvider>
       </ErrorBoundary>
 
 
