@@ -9,7 +9,7 @@ export const getAllBacklinks = ({
         method: "POST",
         body: {
             action: "fetch",
-            module: "outr_seo_backlinksmain",
+            module: "outr_link_queue",
 
             fields: [
                 "id",
