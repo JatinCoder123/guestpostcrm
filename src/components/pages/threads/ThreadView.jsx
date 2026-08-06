@@ -5,7 +5,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useNavigate, useOutletContext } from "react-router-dom";
@@ -30,10 +30,11 @@ import {
   useRegenMailerSummary,
 } from "../../../queries/mailerSummary.queries.js";
 import { useThread } from "../../../queries/threads.queries.js";
+import { PageContext } from "../../../context/pageContext.jsx";
 
 export default function ThreadView() {
   const scrollRef = useRef();
-
+  const { showRefreshReminder, setShowRefreshReminder } = useContext(PageContext)
   const {
     loadAiReply = true,
     superfastReply,
@@ -42,7 +43,10 @@ export default function ThreadView() {
     checkingThreadId,
     email,
     threadId,
+    threadUsers,
+    isThreadLocked,
   } = useOutletContext() || [];
+  const { user: currentUser } = useSelector(state => state.user)
 
   const { data: emailsData, isPending: loading } = useThread(email, threadId);
   const emails = emailsData?.emails;
@@ -186,19 +190,31 @@ export default function ThreadView() {
     if (!scrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [emails?.length]);
-
   return (
     <>
       <SendingOverlay sending={sending || checkingThreadId} email={email} />
 
       <motion.div
+        animate={{
+          top: showRefreshReminder ? 57 : 0,
+          height: showRefreshReminder
+            ? "calc(100vh - 57px)"
+            : "100vh",
+        }}
+        transition={{
+          duration: 0.35,
+          ease: [0.22, 1, 0.36, 1],
+        }}
         className="
-          fixed inset-0 z-[999]
-          bg-white
-          w-full h-screen
-          flex flex-col
-          overflow-hidden
-        "
+        fixed
+        left-0
+        right-0
+        z-[999]
+        bg-white
+        flex
+        flex-col
+        overflow-hidden
+    "
       >
         {/* HEADER */}
         <div className="flex flex-wrap items-center justify-between bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-1 text-white shadow-lg">
@@ -236,7 +252,35 @@ export default function ThreadView() {
 
           <RightThreadHeader />
         </div>
+        {isThreadLocked && (
+          <div className="flex items-center gap-2  border-b border-amber-200 bg-amber-50 px-5 py-3">
+            <div>
+              <p className="font-medium text-amber-900">
+                This thread is currently being handled by
+              </p>
 
+
+            </div>
+            <div className=" flex flex-wrap gap-2">
+              {threadUsers.filter(user => user.email != currentUser.email).map(user => (
+                <div
+                  key={user.id}
+                  className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm"
+                >
+                  {/* <img
+                    src={user.profile_image}
+                    className="h-7 w-7 rounded-full"
+                    alt=""
+                  /> */}
+
+                  <span className="text-sm font-medium">
+                    {user.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {loading ? (
           <ThreadSkeleton />
         ) : (
@@ -248,7 +292,8 @@ export default function ThreadView() {
                   ref={leftPanelRef}
                   minSize={10}
                   maxSize={90}
-                  className="flex h-full flex-col overflow-hidden border-r border-gray-200 bg-slate-50"
+                  className={`flex h-full flex-col overflow-hidden border-r border-gray-200 bg-slate-50 ${isThreadLocked ? "pointer-events-none" : ""
+                    }`}
                 >
                   {/* AI Summary */}
                   <div className="flex-shrink-0 border-b border-gray-200 bg-white p-3">
