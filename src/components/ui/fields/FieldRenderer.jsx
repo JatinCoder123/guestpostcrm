@@ -7,7 +7,9 @@ function FieldRenderer({
     value,
 }) {
     const Component =
-        FIELD_COMPONENTS[column.type]
+        FIELD_COMPONENTS[column?.type]
+    console.log("COLUMN", column)
+    if (!Component) return;
 
     return (
         <Component

@@ -8,9 +8,10 @@ export default function useEditableField({
     disabled,
     mode = "table",
 }) {
+    // console.log("filed", field)
 
     const editable =
-        field.editable &&
+        field?.editable &&
         !disabled &&
         mode !== "view";
 

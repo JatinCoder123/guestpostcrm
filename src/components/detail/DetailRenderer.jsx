@@ -3,7 +3,7 @@ import blockRegistry from "./blocks/blockRegistry";
 const DetailRenderer = ({ layout, record, entity }) => {
     return (
         <div className="space-y-4">
-            {layout.blocks.map((block) => {
+            {layout?.blocks?.map((block) => {
                 const Component = blockRegistry[block.type];
 
                 if (!Component) return null;

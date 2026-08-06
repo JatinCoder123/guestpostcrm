@@ -8,7 +8,7 @@ const EntityViewPage = ({ entity, id }) => {
         isLoading: layoutLoading,
         error: layoutError,
     } = useDetailLayout(entity);
-
+    console.log("layout", layout)
     const {
         data: record,
         isLoading: recordLoading,

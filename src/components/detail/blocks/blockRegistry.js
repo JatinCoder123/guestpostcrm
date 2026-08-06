@@ -15,5 +15,6 @@ export default {
     related_list: Blocks.RelatedList,
 
     widget: Blocks.Widget,
+    tabs: Blocks.Tabs
 
 };

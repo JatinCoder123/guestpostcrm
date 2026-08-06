@@ -1,7 +1,7 @@
 import useEditableField from "./hooks/useEditableField";
 
 export default function TextField(props) {
-
+    console.log("PROPS", props)
     const {
 
         editing,
