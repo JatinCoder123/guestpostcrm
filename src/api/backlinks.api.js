@@ -9,7 +9,7 @@ export const getAllBacklinks = ({
         method: "POST",
         body: {
             action: "fetch",
-            module: "outr_seo_backlinksmain",
+            module: "outr_link_queue",
 
             fields: [
                 "id",
@@ -83,7 +83,7 @@ export const updateBacklink =
             method: "POST",
             body: {
                 "action": "update",
-                "module": "outr_seo_backlinksmain",
+                "module": "outr_link_queue",
                 id: backlink.id,
                 data: { status_c: backlink.status_c },
             },
@@ -95,7 +95,7 @@ export const getBacklinkById =
             method: "POST",
             body: {
                 action: "fetch",
-                module: "outr_seo_backlinksmain",
+                module: "outr_link_queue",
                 filter: { id }
             },
         });
