@@ -98,6 +98,14 @@ export function BacklinksPage({ title = "Backlinks", fixedFilters = null }) {
         <span className="font-medium text-slate-700">{row.gp_li_date_c || "—"}</span>
       ),
     },
+     {
+      label: "Link Expiry Date",
+      accessor: "expiry_date_c",
+      icon: Calendar,
+      render: (row) => (
+        <span className="font-medium text-slate-700">{row.expiry_date_c || "—"}</span>
+      ),
+    },
     {
       label: "Name",
       accessor: "name",
@@ -174,7 +182,7 @@ export function BacklinksPage({ title = "Backlinks", fixedFilters = null }) {
       }}
     >
       <TableTitleBar Icon={Link2} title={title} titleClass="text-teal-700" />
-      <Table headerStyle="bg-teal-600" layoutStyle="grid grid-cols-5" />
+      <Table headerStyle="bg-teal-600" layoutStyle="grid grid-cols-6" />
     </TableView>
   );
 }
