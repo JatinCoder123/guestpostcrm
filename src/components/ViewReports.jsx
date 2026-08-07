@@ -25,7 +25,7 @@ import {
   selectStagesLoading, selectCatsLoading, selectDetsLoading,
   selectReportError,
 } from "../store/Slices/reportSlice.js";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { DateRangeFilter } from "./DateRangeFilter.jsx";
 import { useCrmUsers } from "../queries/users.queries.js";
 import CustomDropdown from "./ui/CustomDropdown.jsx";
@@ -60,6 +60,11 @@ const DATE_OPTIONS = [
 
 const PAGE_SIZE = 20;
 const DETAIL_PAGE_SIZE = 50;
+
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
 const STAT_THEMES = [
   { bg: "bg-violet-50", border: "border-violet-200", text: "text-violet-700", label: "text-violet-500" },
@@ -398,23 +403,6 @@ export default function ViewReports() {
     category
   ) => {
 
-    const range =
-      dateFilter.filterActive
-        ? {
-          from:
-            dateFilter.fromDate,
-          from_time:
-            dateFilter.fromTime,
-
-          to:
-            dateFilter.toDate,
-          to_time:
-            dateFilter.toTime,
-        }
-        : getDateRange(
-          appliedFilters.date
-        );
-
     const reportFilter = {
       filters: {
         phase:
@@ -468,19 +456,53 @@ export default function ViewReports() {
 
   const grandTotal = stages.rows.reduce((s, r) => s + getCount(r), 0);
   const statsEntries = Object.entries(stats);
+  const today = new Date();
+  const [reportYear, setReportYear] = useState(today.getFullYear());
+  const selectedMonth = dateFilter.filterActive && dateFilter.fromDate && dateFilter.toDate
+    ? (() => {
+      const from = new Date(`${dateFilter.fromDate}T00:00:00`);
+      const to = new Date(`${dateFilter.toDate}T00:00:00`);
+      return from.getFullYear() === to.getFullYear() && from.getMonth() === to.getMonth()
+        ? from.getMonth()
+        : -1;
+    })()
+    : today.getMonth();
+
+  const applyMonth = (monthIndex) => {
+    const fromDate = `${reportYear}-${pad(monthIndex + 1)}-01`;
+    const toDate = fmtDate(new Date(reportYear, monthIndex + 1, 0));
+    setDateFilter({
+      filterActive: true,
+      fromDate,
+      fromTime: "00:00:00",
+      toDate,
+      toTime: "23:59:59",
+    });
+    dispatch(preferencesAction.updateMultipleTablePreferences({
+      table: "report",
+      data: {
+        date_filter: {
+          date_range: "custom",
+          date_field: "date_entered",
+          date_from: `${fromDate} 00:00:00`,
+          date_to: `${toDate} 23:59:59`,
+        },
+      },
+    }));
+  };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f3] font-sans">
+    <div className="min-h-screen bg-[#f4f6fa] font-sans text-slate-900">
 
       {/* ── Sticky top nav ── */}
-      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+      <div className="sticky top-0 z-30 bg-[#f4f6fa]/95 backdrop-blur-md border-b border-slate-200/70">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
           <div className="flex items-center gap-3 shrink-0">
-            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-[#17213d] flex items-center justify-center">
               <Activity size={15} className="text-white" />
             </div>
-            <span className="font-semibold text-slate-900 tracking-tight text-[15px]">Reports</span>
+            <span className="font-semibold text-slate-900 tracking-tight text-[15px]">Analytics &amp; Reports</span>
           </div>
 
           <div className="flex items-center gap-2 flex-1 justify-end mr-30">
@@ -564,10 +586,18 @@ export default function ViewReports() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-5">
+      <div className="max-w-7xl mx-auto px-6 py-7 space-y-5">
+
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <span>Dashboard</span><ChevronRight size={12} /><span className="text-slate-600">Analytics</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950">Analytics &amp; Reports</h1>
+          <p className="text-sm text-slate-500">Track records month by month and explore every subgroup.</p>
+        </div>
 
         {/* ── Phase switcher ── */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {PHASES?.map((phase) => {
             const Icon = phase.icon;
             const isActive = activeSection === phase.key;
@@ -575,14 +605,14 @@ export default function ViewReports() {
               <button
                 key={phase.key}
                 onClick={() => { if (phase.key !== activeSection) setActiveSection(phase.key); }}
-                className={`group text-left rounded-2xl p-5 border transition-all duration-200 ${isActive
-                  ? "bg-white border-slate-200 shadow-sm ring-1 ring-slate-900/5"
+                className={`group text-left rounded-xl p-4 border transition-all duration-200 ${isActive
+                  ? "bg-white border-orange-200 shadow-sm ring-1 ring-orange-100"
                   : "bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-sm"
                   }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${isActive ? "bg-slate-900" : "bg-slate-100 group-hover:bg-slate-200"
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${isActive ? "bg-[#17213d]" : "bg-slate-100 group-hover:bg-slate-200"
                       }`}>
                       <Icon size={16} className={isActive ? "text-white" : "text-slate-500"} />
                     </div>
@@ -599,6 +629,39 @@ export default function ViewReports() {
         </div>
 
         {/* ── Stats strip ── */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-[#17213d] text-white flex items-center justify-center">
+                <BarChart3 size={16} />
+              </div>
+              <div>
+                <h2 className="font-semibold text-slate-900">Monthly record performance</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Select a month to refresh all report totals below</p>
+              </div>
+            </div>
+            <select value={reportYear} onChange={(event) => setReportYear(Number(event.target.value))}
+              className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 outline-none focus:border-orange-300" aria-label="Report year">
+              {[today.getFullYear(), today.getFullYear() - 1, today.getFullYear() - 2].map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2">
+            {MONTHS.map((month, index) => {
+              const active = selectedMonth === index && Number(dateFilter.fromDate?.slice(0, 4) || reportYear) === reportYear;
+              return (
+                <button key={month} type="button" onClick={() => applyMonth(index)} aria-pressed={active}
+                  className={`group min-h-24 rounded-xl border px-2 py-3 flex flex-col items-center justify-end gap-2 transition-all ${active ? "border-orange-300 bg-orange-50 shadow-sm" : "border-slate-100 bg-slate-50/80 hover:border-slate-200 hover:bg-slate-50"}`}>
+                  <span className={`w-2 h-2 rounded-full ${active ? "bg-orange-500" : "bg-slate-300 group-hover:bg-orange-300"}`} />
+                  <span className={`h-8 w-px border-l border-dashed ${active ? "border-orange-300" : "border-slate-300"}`} />
+                  <span className={`text-xs font-medium ${active ? "text-orange-700" : "text-slate-500"}`}>{month}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {statsEntries?.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {statsEntries?.map(([key, value], i) => {
@@ -627,12 +690,12 @@ export default function ViewReports() {
         <div className="flex items-center justify-between pt-1">
           <div>
             <h2 className="text-[17px] font-semibold text-slate-900 tracking-tight">
-              {phaseConfig.label} breakdown
+              Stage &amp; subgroup breakdown
             </h2>
             <p className="text-sm text-slate-400 mt-0.5">
               {stages.totalRecords > 0
                 ? `${stages.totalRecords.toLocaleString()} total records · ${stages.rows.length} stage${stages.rows.length !== 1 ? "s" : ""}`
-                : "Records grouped by stage and category"
+                : "Records grouped by stage and subgroup"
               }
             </p>
           </div>
@@ -659,8 +722,8 @@ export default function ViewReports() {
             <>
               {/* Table header */}
               <div className="grid grid-cols-[1fr_auto] px-6 py-3 border-b border-slate-100 bg-slate-50/80">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Stage</span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Count</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Report group</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Records</span>
               </div>
 
               <div className="divide-y divide-slate-100">
@@ -716,8 +779,8 @@ export default function ViewReports() {
                             <>
                               {/* Category sub-header */}
                               <div className="grid grid-cols-[1fr_auto] px-6 py-2.5 border-b border-slate-100">
-                                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 pl-[calc(1rem+1px)]">Category</span>
-                                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Count</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 pl-[calc(1rem+1px)]">Subgroup</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Records</span>
                               </div>
 
                               {categories.rows.map((catRow) => {
