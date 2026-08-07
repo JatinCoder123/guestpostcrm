@@ -63,9 +63,9 @@ export function TimelinePage() {
 
             <div className="mt-2 p-2 grid grid-cols-1 md:grid-cols-2 gap-4 ">
               <MailerSummaryHeader />
-              <LatestMessage handleMessageClick={handleMessageClick} />
+              <LatestMessage handleMessageClick={handleMessageClick} classes={isLocked ? 'pointer-events-none opacity-50' : ''} />
             </div>
-            <ActionButton />
+            <ActionButton classes={isLocked ? 'pointer-events-none opacity-50' : ''} />
           </div>
           <TimelineEvent handleMessageClick={handleMessageClick} />
 
