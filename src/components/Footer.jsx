@@ -1,4 +1,4 @@
-import { Flame, List, MailWarning, Settings, Sparkles } from "lucide-react";
+import { BellIcon, Flame, List, MailWarning, Settings, Sparkles } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
