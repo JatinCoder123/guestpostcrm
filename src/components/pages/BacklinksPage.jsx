@@ -107,14 +107,14 @@ export function BacklinksPage({ title = "Backlinks", fixedFilters = null }) {
       ),
     },
     {
-      label: "Name",
-      accessor: "name",
+      label: "Client Email",
+      accessor: "client_email",
       icon: FileText,
       searchable: true,
       classes: "truncate max-w-[240px]",
       render: (row) => (
-        <span className="font-semibold text-slate-800" title={row.name}>
-          {row.name || "—"}
+        <span className="font-semibold text-slate-800" title={row.client_email}>
+          {row.client_email || "—"}
         </span>
       ),
     },
