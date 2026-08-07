@@ -39,7 +39,7 @@ const MEMO = {
 /* Separator */
 const Separator = () => <div className="h-6 w-[1px] bg-gray-600 mx-2" />;
 
-const ActionButton = () => {
+const ActionButton = ({ classes = '' }) => {
   const dispatch = useDispatch();
 
   const [showUsers, setShowUsers] = useState(false);
@@ -392,11 +392,11 @@ Open Contact
   return (
     <>
       <div
-        className="mt-4 flex items-center justify-center flex-wrap gap-10
+        className={`mt-4 flex items-center justify-center flex-wrap gap-10
   p-4 rounded-b-2xl
   bg-gradient-to-r from-cyan-50 via-orange-50 to-cyan-50
   border-t border-gray-300
-  shadow-[0_8px_25px_rgba(0,0,0,0.08)]"
+  shadow-[0_8px_25px_rgba(0,0,0,0.08)] ${classes}`}
       >
         {actionButtons.map((btn, i) => (
           <div key={i} className="flex items-center gap-8 relative">

@@ -31,6 +31,7 @@ import {
 } from "../../../queries/mailerSummary.queries.js";
 import { useThread } from "../../../queries/threads.queries.js";
 import { PageContext } from "../../../context/pageContext.jsx";
+import LockedBar from "../../LockedBar.jsx";
 
 export default function ThreadView() {
   const scrollRef = useRef();
@@ -43,8 +44,8 @@ export default function ThreadView() {
     checkingThreadId,
     email,
     threadId,
-    threadUsers,
-    isThreadLocked,
+    recordUsers,
+    isLocked,
   } = useOutletContext() || [];
   const { user: currentUser } = useSelector(state => state.user)
 
@@ -252,34 +253,8 @@ export default function ThreadView() {
 
           <RightThreadHeader />
         </div>
-        {isThreadLocked && (
-          <div className="flex items-center gap-2  border-b border-amber-200 bg-amber-50 px-5 py-3">
-            <div>
-              <p className="font-medium text-amber-900">
-                This thread is currently being handled by
-              </p>
-
-
-            </div>
-            <div className=" flex flex-wrap gap-2">
-              {threadUsers.filter(user => user.email != currentUser.email).map(user => (
-                <div
-                  key={user.id}
-                  className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm"
-                >
-                  {/* <img
-                    src={user.profile_image}
-                    className="h-7 w-7 rounded-full"
-                    alt=""
-                  /> */}
-
-                  <span className="text-sm font-medium">
-                    {user.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+        {isLocked && (
+          <LockedBar recordUsers={recordUsers} recordName="Thread" />
         )}
         {loading ? (
           <ThreadSkeleton />
@@ -292,7 +267,7 @@ export default function ThreadView() {
                   ref={leftPanelRef}
                   minSize={10}
                   maxSize={90}
-                  className={`flex h-full flex-col overflow-hidden border-r border-gray-200 bg-slate-50 ${isThreadLocked ? "pointer-events-none" : ""
+                  className={`flex h-full flex-col overflow-hidden border-r border-gray-200 bg-slate-50 ${isLocked ? "pointer-events-none opacity-20" : ""
                     }`}
                 >
                   {/* AI Summary */}

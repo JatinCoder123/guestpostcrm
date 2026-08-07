@@ -6,17 +6,15 @@ import { toast } from "react-toastify";
 import { PageContext } from "../../../context/pageContext";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
-import { generatePDF, getCurrentUser } from "../../../services/utils";
+import { generatePDF } from "../../../services/utils";
 import { useNext } from "../../../hooks/useNext";
-import { SocketContext } from "../../../context/SocketContext";
+import useRecordLock from "../../../hooks/useRecordLock";
 
 const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { context: { currentEmail: email, currentThread: threadId } } = useThreadContext()
-  const activeOwner = useRef();
-  const { user: currentUser } = useSelector(state => state.user)
-  const { activeUsers } = useContext(SocketContext)
+  const { recordUsers, isLocked } = useRecordLock({ email: email, compareTo: 'currentThread', page: ['/thread/view', '/thread/reply'] })
   const { state } = useLocation();
   const [pdfLoading, setPdfLoading] = useState(false);
   const { moveToNext } = useNext()
@@ -27,7 +25,6 @@ const Thread = () => {
   const [checkingThreadId, setCheckingTheadId] = useState(false);
   const { user } = useSelector((s) => s.user);
   const { error: sendError } = useSelector((s) => s.viewEmail);
-  const [threadUsers, setThreadUsers] = useState([]);
 
   const handleSendClick = async (forceSend = 1) => {
     try {
@@ -90,28 +87,7 @@ const Thread = () => {
       setEditorContent(state?.initialContent)
     }
   }, [state]);
-  useEffect(() => {
-    if (activeUsers) {
-      const threadUsers = activeUsers
-        .filter(
-          user =>
-            user.currentThread === email &&
-            user.status === "online"
-        ).sort(
-          (a, b) =>
-            new Date(b.last_active_at) -
-            new Date(a.last_active_at)
-        );
-      setThreadUsers(threadUsers)
-      activeOwner.current = threadUsers[0]?.email;
-    }
-  }, [activeUsers]);
 
-
-
-  const isThreadLocked =
-    activeOwner.current &&
-    activeOwner.current !== currentUser.email;
   useEffect(() => {
     const processFiles = async () => {
       if (!htmlfile) return;
@@ -148,8 +124,8 @@ const Thread = () => {
     pdfLoading, // ✅ added
     handleSendClick,
     checkingThreadId,
-    isThreadLocked,
-    threadUsers,
+    isLocked,
+    recordUsers,
     setCheckingTheadId,
   };
   return <Outlet context={value} />;

@@ -28,7 +28,7 @@ import { useQuickBtn } from "../queries/quickBtn.queries";
 import { useContact, useUpdateContact } from "../queries/contact.queries";
 import { queryClient } from "../lib/queryClient";
 import { emailKeys } from "../queries/email.queries";
-const LatestMessage = ({ handleMessageClick }) => {
+const LatestMessage = ({ handleMessageClick, classes = '' }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { handleMove } = useThreadContext();
@@ -65,7 +65,7 @@ const LatestMessage = ({ handleMessageClick }) => {
 
   return (
     <>
-      <div className=" flex flex-col justify-between bg-slate-50 rounded-3xl shadow-xl border border-slate-200 p-4  overflow-y-auto custom-scrollbar ">
+      <div className={` flex flex-col justify-between bg-slate-50 rounded-3xl shadow-xl border border-slate-200 p-4  overflow-y-auto custom-scrollbar ${classes}`}>
         <PromptLadger activePromptId={activePromptId} setActivePromptId={setActivePromptId} />
         <div className="flex flex-col gap-2 justify-center mb-2">
           <div className="flex items-center justify-between">

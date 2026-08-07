@@ -13,12 +13,15 @@ import LatestMessage from "../LatestMessage";
 import { useTimeline } from "../../context/TimelineContext";
 import { useTimelineLoading } from "../../hooks/useTimelineLoading";
 import { useInfiniteLedger } from "../../queries/ledger.queries";
+import useRecordLock from "../../hooks/useRecordLock";
+import LockedBar from "../LockedBar";
 export function TimelinePage() {
   const [showAvatar, setShowAvatar] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const { isTimelineLoading, emailsLoading, ledgerLoading } = useTimelineLoading()
   const [showMessageModal, setShowMessageModal] = useState(false);
   const { currentEmail } = useTimeline()
+  const { recordUsers, isLocked } = useRecordLock({ email: currentEmail, compareTo: 'currentTimeline', page: ["/"] })
   const { data } = useInfiniteLedger(currentEmail);
   const ladger =
     data?.pages?.flatMap(
@@ -53,6 +56,9 @@ export function TimelinePage() {
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(isTimelineLoading) ? <LoadingSkeleton /> : <>
           <div className="flex flex-col  border-b border-gray-200">
+            {isLocked && (
+              <LockedBar recordUsers={recordUsers} recordName="Timeline" />
+            )}
             <ContactHeader />
 
             <div className="mt-2 p-2 grid grid-cols-1 md:grid-cols-2 gap-4 ">
