@@ -26,7 +26,7 @@ import { useThread } from "../queries/threads.queries";
 import { useTemplateByName } from "../queries/template.queries";
 import { useQuickBtn } from "../queries/quickBtn.queries";
 import { useContact, useUpdateContact } from "../queries/contact.queries";
-const LatestMessage = ({ handleMessageClick }) => {
+const LatestMessage = ({ handleMessageClick, classes = '' }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { handleMove } = useThreadContext();
@@ -41,7 +41,6 @@ const LatestMessage = ({ handleMessageClick }) => {
   const email1 = contactInfo?.email1;
   const threadId = contactInfo?.thread_id;
   const { data: summary, isPending: mail } = useMailerSummary({ email: currentEmail, threadId });
-  console.log("SUMMARY", summary)
 
   const mailersSummary = summary?.mailers_summary
   const { data: buttons, isError: buttonsError, isLoading: buttonsLoading } = useQuickBtn();
@@ -66,7 +65,7 @@ const LatestMessage = ({ handleMessageClick }) => {
 
   return (
     <>
-      <div className=" flex flex-col justify-between bg-slate-50 rounded-3xl shadow-xl border border-slate-200 p-4  overflow-y-auto custom-scrollbar ">
+      <div className={` flex flex-col justify-between bg-slate-50 rounded-3xl shadow-xl border border-slate-200 p-4  overflow-y-auto custom-scrollbar ${classes}`}>
         <PromptLadger activePromptId={activePromptId} setActivePromptId={setActivePromptId} />
         <div className="flex flex-col gap-2 justify-center mb-2">
           <div className="flex items-center justify-between">

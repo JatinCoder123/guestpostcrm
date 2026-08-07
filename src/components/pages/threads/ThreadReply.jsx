@@ -12,6 +12,7 @@ import { SendingOverlay } from "./SendingOverlay";
 import ReplyButtons from "./ReplyButtons";
 import RightThreadHeader from "./RightThreadHeader";
 import { PageContext } from "../../../context/pageContext";
+import LockedBar from "../../LockedBar";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
@@ -26,8 +27,8 @@ const ThreadReply = () => {
     handleSendClick,
     checkingThreadId,
     email,
-    isThreadLocked,
-    threadUsers,
+    isLocked,
+    recordUsers,
     threadId
   } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -142,36 +143,10 @@ const ThreadReply = () => {
           <RightThreadHeader />
 
         </div>
-        {isThreadLocked && (
-          <div className="flex items-center gap-2  border-b border-amber-200 bg-amber-50 px-5 py-3">
-            <div>
-              <p className="font-medium text-amber-900">
-                This thread is currently being handled by
-              </p>
-
-
-            </div>
-            <div className=" flex flex-wrap gap-2">
-              {threadUsers.filter(user => user.email != currentUser.email).map(user => (
-                <div
-                  key={user.id}
-                  className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm"
-                >
-                  {/* <img
-                    src={user.profile_image}
-                    className="h-7 w-7 rounded-full"
-                    alt=""
-                  /> */}
-
-                  <span className="text-sm font-medium">
-                    {user.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+        {isLocked && (
+          <LockedBar recordUsers={recordUsers} recordName="Thread" />
         )}
-        <div className={`flex flex-col h-full w-full ${isThreadLocked ? "pointer-events-none" : ""
+        <div className={`flex flex-col h-full w-full ${isLocked ? "pointer-events-none opacity-20" : ""
           }`}>
           <TinyEditor
             setEditorContent={setEditorContent}
