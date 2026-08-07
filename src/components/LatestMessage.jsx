@@ -26,8 +26,6 @@ import { useThread } from "../queries/threads.queries";
 import { useTemplateByName } from "../queries/template.queries";
 import { useQuickBtn } from "../queries/quickBtn.queries";
 import { useContact, useUpdateContact } from "../queries/contact.queries";
-import { queryClient } from "../lib/queryClient";
-import { emailKeys } from "../queries/email.queries";
 const LatestMessage = ({ handleMessageClick }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -37,17 +35,20 @@ const LatestMessage = ({ handleMessageClick }) => {
   const { currentEmail } = useTimeline()
   const { mutate: updateContact, isPending: contactUpdateLoading, error: contactError } = useUpdateContact()
 
-  const { data: summary, isPending: mail } = useMailerSummary(currentEmail);
   const { data: contactData, isPending: contactLoading } = useContact(currentEmail);
   const contactInfo = contactData?.contact
   const accountInfo = contactData?.account
+  const email1 = contactInfo?.email1;
+  const threadId = contactInfo?.thread_id;
+  const { data: summary, isPending: mail } = useMailerSummary({ email: currentEmail, threadId });
+  console.log("SUMMARY", summary)
+
   const mailersSummary = summary?.mailers_summary
   const { data: buttons, isError: buttonsError, isLoading: buttonsLoading } = useQuickBtn();
   const { sending } = useSelector((state) => state.viewEmail);
   const { data, isPending } = useThread(currentEmail)
   const viewEmail = data?.emails
-  const email1 = contactInfo?.email1;
-  const threadId = contactInfo?.thread_id;
+
   const hanldeConvDone = () => {
     updateContact({ id: contactInfo?.id, payload: { ...contactInfo, conversation_complete: "1" } })
     toast.success(`Conversion Complete with ${email1}`)
