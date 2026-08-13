@@ -1,353 +1,1017 @@
-export const getDetailLayout = (entity) => {
-    return {
-        "module": "contacts",
-        "layout": "default",
-        "version": 1,
-        "blocks": [
-            {
-                "id": "header",
-                "type": "header",
-                "titleField": "full_name",
-                "imageField": "profile_image",
-                "subtitleField": "account_name",
-                "actions": [
-                    {
-                        "id": "edit",
-                        "label": "Edit",
-                        "icon": "Pencil"
-                    },
-                    {
-                        "id": "email",
-                        "label": "Send Email",
-                        "icon": "Mail"
-                    },
-                    {
-                        "id": "more",
-                        "icon": "MoreHorizontal"
-                    }
-                ]
-            },
-            {
-                "id": "tabs",
-                "type": "tabs",
-                "defaultTab": "contact",
-                "tabs": [
-                    {
-                        "id": "contact",
-                        "label": "Contact",
-                        "blocks": [
-                            {
-                                "id": "summary",
-                                "type": "summary",
-                                "columns": 2,
-                                "fields": [
-                                    "owner",
-                                    "email",
-                                    "phone",
-                                    "mobile"
-                                ]
-                            },
-                            {
-                                "id": "contact_information",
-                                "type": "section",
-                                "title": "Contact Information",
-                                "columns": 2,
-                                "editable": true,
-
-                                "fields": [
-
-                                    {
-                                        "accessor": "first_name",
-                                        "label": "First Name",
-
-                                        "type": "text",
-
-                                        "editable": true,
-                                        "visible": true,
-                                        "required": false,
-                                        "readonly": false,
-
-                                        "placeholder": "Enter First Name",
-
-                                        "validation": {
-                                            "minLength": 2,
-                                            "maxLength": 50
-                                        }
-                                    },
-
-                                    {
-                                        "accessor": "last_name",
-                                        "label": "Last Name",
-
-                                        "type": "text",
-
-                                        "editable": true,
-                                        "visible": true,
-                                        "required": true,
-                                        "readonly": false,
-
-                                        "placeholder": "Enter Last Name",
-
-                                        "validation": {
-                                            "minLength": 2,
-                                            "maxLength": 100
-                                        }
-                                    },
-
-                                    {
-                                        "accessor": "email",
-                                        "label": "Email",
-
-                                        "type": "email",
-
-                                        "editable": true,
-                                        "visible": true,
-                                        "required": false,
-                                        "readonly": false,
-
-                                        "placeholder": "example@gmail.com",
-
-                                        "actions": [
-                                            {
-                                                "icon": "Mail",
-                                                "action": "send_email"
-                                            }
-                                        ]
-                                    },
-
-                                    {
-                                        "accessor": "phone",
-                                        "label": "Phone",
-
-                                        "type": "phone",
-
-                                        "editable": true,
-                                        "visible": true,
-
-                                        "placeholder": "+91XXXXXXXXXX"
-                                    },
-
-                                    {
-                                        "accessor": "mobile",
-                                        "label": "Mobile",
-
-                                        "type": "phone",
-
-                                        "editable": true,
-                                        "visible": true
-                                    },
-
-                                    {
-                                        "accessor": "title",
-                                        "label": "Job Title",
-
-                                        "type": "text",
-
-                                        "editable": true,
-                                        "visible": true
-                                    },
-
-                                    {
-                                        "accessor": "department",
-                                        "label": "Department",
-
-                                        "type": "text",
-
-                                        "editable": true,
-                                        "visible": true
-                                    },
-
-                                    {
-                                        "accessor": "lead_source",
-                                        "label": "Lead Source",
-
-                                        "type": "select",
-
-                                        "editable": true,
-                                        "visible": true,
-
-                                        "options": [
-                                            {
-                                                "label": "Website",
-                                                "value": "website"
-                                            },
-                                            {
-                                                "label": "Facebook",
-                                                "value": "facebook"
-                                            },
-                                            {
-                                                "label": "Referral",
-                                                "value": "referral"
-                                            },
-                                            {
-                                                "label": "Cold Call",
-                                                "value": "cold_call"
-                                            }
-                                        ]
-                                    }
-
-                                ]
-                            },
-                            {
-                                "id": "address_information",
-                                "type": "section",
-                                "title": "Address Information",
-                                "columns": 2,
-                                "editable": true,
-
-                                "fields": [
-
-                                    {
-                                        "accessor": "mailing_street",
-                                        "label": "Street",
-
-                                        "type": "textarea",
-
-                                        "editable": true,
-                                        "visible": true
-                                    },
-
-                                    {
-                                        "accessor": "mailing_city",
-                                        "label": "City",
-
-                                        "type": "text",
-
-                                        "editable": true,
-                                        "visible": true
-                                    },
-
-                                    {
-                                        "accessor": "mailing_state",
-                                        "label": "State",
-
-                                        "type": "text",
-
-                                        "editable": true,
-                                        "visible": true
-                                    },
-
-                                    {
-                                        "accessor": "mailing_country",
-                                        "label": "Country",
-
-                                        "type": "text",
-
-                                        "editable": true,
-                                        "visible": true
-                                    },
-
-                                    {
-                                        "accessor": "mailing_zip",
-                                        "label": "Zip Code",
-
-                                        "type": "text",
-
-                                        "editable": true,
-                                        "visible": true
-                                    }
-
-                                ]
-                            },
-                            // {
-                            //     "id": "description",
-                            //     "type": "section",
-                            //     "title": "Description",
-                            //     "columns": 1,
-                            //     "editable": true,
-                            //     "fields": [
-                            //         {
-                            //             "field": "description",
-                            //             "component": "textarea",
-                            //             "editable": true
-                            //         }
-                            //     ]
-                            // }
-                        ]
-                    },
-                    {
-                        "id": "account",
-                        "label": "Account",
-                        "blocks": [
-                            {
-                                "id": "account_header",
-                                "type": "related_record",
-                                "module": "accounts",
-                                "relationshipField": "account_id"
-                            },
-                            {
-                                "id": "account_information",
-                                "type": "section",
-                                "title": "Account Information",
-                                "columns": 2,
-                                "editable": false,
-
-                                "fields": [
-
-                                    {
-                                        "accessor": "account_name",
-                                        "label": "Account Name",
-
-                                        "type": "text",
-
-                                        "editable": false
-                                    },
-
-                                    {
-                                        "accessor": "website",
-                                        "label": "Website",
-
-                                        "type": "url",
-
-                                        "editable": false
-                                    },
-
-                                    {
-                                        "accessor": "industry",
-                                        "label": "Industry",
-
-                                        "type": "text",
-
-                                        "editable": false
-                                    },
-
-                                    {
-                                        "accessor": "employees",
-                                        "label": "Employees",
-
-                                        "type": "number",
-
-                                        "editable": false
-                                    },
-
-                                    {
-                                        "accessor": "annual_revenue",
-                                        "label": "Annual Revenue",
-
-                                        "type": "currency",
-
-                                        "editable": false,
-
-                                        "props": {
-                                            "currency": "USD"
-                                        }
-                                    },
-
-                                    {
-                                        "accessor": "billing_city",
-                                        "label": "Billing City",
-
-                                        "type": "text",
-
-                                        "editable": false
-                                    }
-
-                                ]
-                            }
-                        ]
-                    }
-                ]
+export const getDetailLayout = () => ({
+    module: "contacts",
+    layout: "detail",
+    version: 3,
+    request: {
+        endpoint: "fetchgpc",
+        method: "GET",
+        params: { type: 'get_contact' },
+    },
+
+    navigation: {
+        enabled: true,
+
+        previous: {
+            enabled: true,
+        },
+
+        next: {
+            enabled: true,
+        },
+
+        source: "list",
+
+        idField: "id",
+    },
+
+    // ============================================================
+    // HEADER
+    // ============================================================
+
+    header: {
+        id: "contact_header",
+
+        type: "header",
+
+        module: "contacts",
+
+        titleField: {
+            accessor: "full_name",
+            source: {
+                module: "contacts",
+                path: "contact"
             }
-        ]
-    }
-}
+        },
+
+        subtitleField: {
+            accessor: "name",
+            source: {
+                module: "accounts",
+                path: "account"
+            }
+        },
+
+        descriptionField: {
+            accessor: "email1",
+            source: {
+                module: "contacts",
+                path: "contact"
+            }
+        },
+
+        actions: [
+            {
+                id: "edit",
+
+                label: "Edit",
+
+                icon: {
+                    library: "fi",
+                    name: "FiEdit2",
+                    color: "",
+                },
+
+                placement: "primary",
+
+                type: "navigate",
+
+                targetType: "relative",
+
+                target: "edit",
+            },
+
+
+
+            {
+                id: "send_email",
+
+                label: "Send Email",
+
+                icon: {
+                    library: "fi",
+                    name: "FiMail",
+                    color: "",
+                },
+
+                placement: "primary",
+
+                type: "navigate",
+
+
+                targetType: "absolute",
+
+                target: "/thread/view?email={contact.email1}&thread_id={contact.thread_id}"
+            },
+        ],
+    },
+
+    // ============================================================
+    // BLOCKS
+    // ============================================================
+
+    blocks: [
+        // ========================================================
+        // BLOCK 1
+        // CONTACT TAB
+        // ========================================================
+
+        {
+            id: "contact_tabs",
+
+            type: "tabs",
+            defaultTab: "contact",
+
+            title: "Contact",
+
+            weight: 10,
+
+            visible: true,
+
+            tabs: [
+                // ==================================================
+                // TAB 1 — CONTACT
+                // ==================================================
+
+                {
+                    id: "contact",
+
+                    label: "Contact",
+
+                    module: "contacts",
+
+
+                    sections: [
+                        // ==========================================
+                        // CONTACT INFORMATION
+                        // ==========================================
+
+                        {
+                            id: "contact_information",
+
+                            type: "section",
+
+                            title: "Contact Information",
+
+                            module: "contacts",
+
+                            columns: 2,
+                            source: {
+                                module: "contacts",
+                                path: "contact",
+                            },
+
+                            editable: true,
+
+                            fields: [
+                                {
+                                    accessor: "salutation",
+
+                                    label: "Salutation",
+
+                                    type: "select",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+
+                                    options: [
+                                        {
+                                            label: "Mr.",
+                                            value: "Mr.",
+                                        },
+
+                                        {
+                                            label: "Mrs.",
+                                            value: "Mrs.",
+                                        },
+
+                                        {
+                                            label: "Ms.",
+                                            value: "Ms.",
+                                        },
+
+                                        {
+                                            label: "Dr.",
+                                            value: "Dr.",
+                                        },
+                                    ],
+                                },
+
+                                {
+                                    accessor: "first_name",
+
+                                    label: "First Name",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+
+                                    required: false,
+
+                                    placeholder:
+                                        "Enter First Name",
+
+                                    validation: {
+                                        minLength: 2,
+                                        maxLength: 50,
+                                    },
+                                },
+
+                                {
+                                    accessor: "last_name",
+
+                                    label: "Last Name",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+
+                                    required: true,
+
+                                    placeholder:
+                                        "Enter Last Name",
+
+                                    validation: {
+                                        minLength: 2,
+                                        maxLength: 100,
+                                    },
+                                },
+
+                                {
+                                    accessor: "email1",
+
+                                    label: "Email",
+
+                                    type: "email",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+                                },
+
+                                {
+                                    accessor: "phone_home",
+
+                                    label: "Home Phone",
+
+                                    type: "phone",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+                                },
+
+                                {
+                                    accessor: "phone_mobile",
+
+                                    label: "Mobile",
+
+                                    type: "phone",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+                                },
+
+                                {
+                                    accessor: "phone_work",
+
+                                    label: "Work Phone",
+
+                                    type: "phone",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+                                },
+
+                                {
+                                    accessor: "phone_fax",
+
+                                    label: "Fax",
+
+                                    type: "phone",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+                                },
+
+                                {
+                                    accessor: "title",
+
+                                    label: "Job Title",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+                                },
+
+                                {
+                                    accessor: "department",
+
+                                    label: "Department",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    readonly: false,
+                                },
+
+                                {
+                                    accessor: "lead_source",
+
+                                    label: "Lead Source",
+
+                                    type: "select",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    options: [
+                                        {
+                                            label: "Website",
+                                            value: "website",
+                                        },
+
+                                        {
+                                            label: "Facebook",
+                                            value: "facebook",
+                                        },
+
+                                        {
+                                            label: "Referral",
+                                            value: "referral",
+                                        },
+
+                                        {
+                                            label: "Cold Call",
+                                            value: "cold_call",
+                                        },
+
+                                        {
+                                            label: "Other",
+                                            value: "other",
+                                        },
+                                    ],
+                                },
+
+                                {
+                                    accessor: "birthdate",
+
+                                    label: "Birthdate",
+
+                                    type: "date",
+
+                                    editable: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor: "description",
+
+                                    label: "Description",
+
+                                    type: "textarea",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    placeholder:
+                                        "Enter description...",
+                                },
+                            ],
+                        },
+
+                        // ==========================================
+                        // ADDRESS
+                        // ==========================================
+
+                        {
+                            id: "address_information",
+
+                            type: "section",
+
+                            title: "Address Information",
+
+                            module: "contacts",
+
+                            columns: 2,
+
+                            editable: true,
+                            source: {
+                                module: "contacts",
+                                path: "contact",
+                            },
+                            fields: [
+                                {
+                                    accessor:
+                                        "primary_address_street",
+
+                                    label: "Street",
+
+                                    type: "textarea",
+
+                                    editable: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "primary_address_street_2",
+
+                                    label: "Street 2",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "primary_address_city",
+
+                                    label: "City",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "primary_address_state",
+
+                                    label: "State",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "primary_address_postalcode",
+
+                                    label: "Postal Code",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "primary_address_country",
+
+                                    label: "Country",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    visible: true,
+                                },
+                            ],
+                        },
+
+                        // ==========================================
+                        // CONTACT STATUS
+                        // ==========================================
+
+                        {
+                            id: "contact_status",
+
+                            type: "section",
+
+                            title: "Contact Status",
+
+                            module: "contacts",
+
+                            columns: 2,
+                            source: {
+                                module: "contacts",
+                                path: "contact",
+                            },
+                            editable: true,
+
+                            fields: [
+                                {
+                                    accessor: "status",
+
+                                    label: "Status",
+
+                                    type: "status",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    options: [
+                                        {
+                                            label:
+                                                "Not Accepted",
+
+                                            value:
+                                                "not_accepted",
+                                        },
+
+                                        {
+                                            label: "Accepted",
+
+                                            value: "accepted",
+                                        },
+
+                                        {
+                                            label: "Completed",
+
+                                            value: "completed",
+                                        },
+                                    ],
+                                },
+
+                                {
+                                    accessor: "stage",
+
+                                    label: "Stage",
+
+                                    type: "select",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    options: [
+                                        {
+                                            label: "Offer",
+                                            value: "offer",
+                                        },
+
+                                        {
+                                            label: "Order",
+                                            value: "order",
+                                        },
+
+                                        {
+                                            label:
+                                                "Completed",
+
+                                            value:
+                                                "completed",
+                                        },
+                                    ],
+                                },
+
+                                {
+                                    accessor:
+                                        "customer_type",
+
+                                    label:
+                                        "Customer Type",
+
+                                    type: "select",
+
+                                    editable: true,
+
+                                    visible: true,
+
+                                    options: [
+                                        {
+                                            label:
+                                                "Unverified",
+
+                                            value:
+                                                "unverified",
+                                        },
+
+                                        {
+                                            label:
+                                                "Verified",
+
+                                            value:
+                                                "verified",
+                                        },
+                                    ],
+                                },
+
+                                {
+                                    accessor:
+                                        "trust_score",
+
+                                    label:
+                                        "Trust Score",
+
+                                    type: "percent",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor: "favorite",
+
+                                    label: "Favorite",
+
+                                    type: "boolean",
+
+                                    editable: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor: "hot",
+
+                                    label: "Hot",
+
+                                    type: "boolean",
+
+                                    editable: true,
+
+                                    visible: true,
+                                },
+                            ],
+                        },
+                    ],
+                },
+
+                // ==================================================
+                // TAB 2 — ACCOUNT
+                // ==================================================
+
+                {
+                    id: "account",
+
+                    label: "Account",
+
+                    module: "accounts",
+
+
+
+                    sections: [
+                        // ==========================================
+                        // ACCOUNT INFORMATION
+                        // ==========================================
+
+                        {
+                            id: "account_information",
+
+                            type: "section",
+
+                            title: "Account Information",
+
+                            module: "accounts",
+
+                            columns: 2,
+                            source: {
+                                module: "accounts",
+                                path: "account",
+                            },
+                            editable: true,
+
+                            fields: [
+                                {
+                                    accessor: "name",
+
+                                    label: "Account Name",
+
+                                    type: "text",
+
+                                    editable: true,
+
+                                    readonly: false,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor: "website",
+
+                                    label: "Website",
+
+                                    type: "url",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor: "industry",
+
+                                    label: "Industry",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor: "employees",
+
+                                    label: "Employees",
+
+                                    type: "number",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "annual_revenue",
+
+                                    label:
+                                        "Annual Revenue",
+
+                                    type: "currency",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor: "ownership",
+
+                                    label: "Ownership",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor: "rating",
+
+                                    label: "Rating",
+
+                                    type: "rating",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+                            ],
+                        },
+
+                        // ==========================================
+                        // BILLING ADDRESS
+                        // ==========================================
+
+                        {
+                            id: "billing_address",
+
+                            type: "section",
+
+                            title: "Billing Address",
+
+                            module: "accounts",
+
+                            columns: 2,
+                            source: {
+                                module: "accounts",
+                                path: "account",
+                            },
+                            editable: false,
+
+                            fields: [
+                                {
+                                    accessor:
+                                        "billing_address_street",
+
+                                    label: "Street",
+
+                                    type: "textarea",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "billing_address_city",
+
+                                    label: "City",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "billing_address_state",
+
+                                    label: "State",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "billing_address_postalcode",
+
+                                    label: "Postal Code",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "billing_address_country",
+
+                                    label: "Country",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+                            ],
+                        },
+
+                        // ==========================================
+                        // SHIPPING ADDRESS
+                        // ==========================================
+
+                        {
+                            id: "shipping_address",
+
+                            type: "section",
+
+                            title: "Shipping Address",
+
+                            module: "accounts",
+
+                            columns: 2,
+                            source: {
+                                module: "accounts",
+                                path: "account",
+                            },
+                            editable: false,
+
+                            fields: [
+                                {
+                                    accessor:
+                                        "shipping_address_street",
+
+                                    label: "Street",
+
+                                    type: "textarea",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "shipping_address_city",
+
+                                    label: "City",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "shipping_address_state",
+
+                                    label: "State",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "shipping_address_postalcode",
+
+                                    label: "Postal Code",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+
+                                {
+                                    accessor:
+                                        "shipping_address_country",
+
+                                    label: "Country",
+
+                                    type: "text",
+
+                                    editable: false,
+
+                                    readonly: true,
+
+                                    visible: true,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+});

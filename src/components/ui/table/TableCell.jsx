@@ -1,11 +1,13 @@
 import { memo } from "react";
 import DynamicField from "../fields/DynamicField";
+import { useTableContext } from "./Table";
 
 function TableCell({
     row,
     column,
 }) {
     const sticky = column.sticky;
+    const { actionContext } = useTableContext()
 
     return (
         <div
@@ -46,6 +48,7 @@ function TableCell({
                 field={column}
                 value={row[column.accessor]}
                 record={row}
+                actionContext={actionContext}
             />
         </div>
     );

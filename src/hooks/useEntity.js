@@ -10,11 +10,11 @@ export function useEntityList(entity, params) {
 }
 
 // SINGLE RECORD
-export function useEntityRecord(entity, id) {
+export function useEntityRecord({ request, entity, recordInfo }) {
     return useQuery({
-        queryKey: ["entity", entity, "detail", id],
-        queryFn: () => api.fetchOne(entity, id),
-        enabled: !!id,
+        queryKey: ["entity", entity, "detail", recordInfo],
+        queryFn: () => api.fetchOne({ request, entity, recordInfo }),
+        enabled: !!recordInfo && !!request,
     });
 }
 

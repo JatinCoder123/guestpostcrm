@@ -16,6 +16,7 @@ import OnBoarding from "./components/OnBoarding";
 import { useTimeline } from "./context/TimelineContext";
 import toast from "react-hot-toast";
 import { queryClient } from "./lib/queryClient"
+import Breadcrumbs from "./components/Breadcrumbs";
 
 
 const RootLayout = () => {
@@ -105,7 +106,9 @@ const RootLayout = () => {
 
         {/* Top Navigation */}
         <TopNav />
-
+        {/* <div className="p-4">
+          <Breadcrumbs />
+        </div> */}
         {/* Scrollable Content */}
         <main
           ref={mainRef}

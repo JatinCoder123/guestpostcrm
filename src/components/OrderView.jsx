@@ -453,7 +453,7 @@ function LinkStatsRow({ stats }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
       {items.map((item, i) => (
-        <Field label={item.label} value={item.value}></Field>
+        <Field key={i} label={item.label} value={item.value}></Field>
       ))}
     </div>
   );

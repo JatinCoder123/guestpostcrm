@@ -14,7 +14,7 @@ import EntityNotFoundPage from "../pages/entity/EntityNotFoundPage";
 // import { useResourceDefinition } from "@/queries/resource.query";
 
 export default function DynamicEntityHandler({ mode = "list" }) {
-    const { entity, id, view } = useParams();
+    const { entity, email, view } = useParams();
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -49,14 +49,14 @@ export default function DynamicEntityHandler({ mode = "list" }) {
             return (
                 <EntityViewPage
                     entity={entity}
-                    id={id} />
+                    email={email} />
             );
 
         case "edit":
             return (
                 <EntityEditPage
                     entity={entity}
-                // id={route.id}
+                    email={email}
                 />
             );
 

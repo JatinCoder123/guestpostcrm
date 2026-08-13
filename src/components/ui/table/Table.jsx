@@ -27,6 +27,9 @@ import FilterColumn from "./FilterColumn";
 import { getPreference, preferencesAction } from "../../../store/Slices/preferencesSlice";
 import { queryClient } from "../../../lib/queryClient";
 import TableViewport from "./TableViewport";
+import useActionMutation from "../../fields/actions/useActionMutation";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 const TableContext = createContext();
 export const useTableContext = () => {
   const ctx = useContext(TableContext);
@@ -113,6 +116,7 @@ const TableView = ({
   const [showStatus, setShowStatus] = useState(true);
   const [showFilterColumn, setShowFilterColumn] = useState(false);
   const dispatch = useDispatch();
+  const navigateTo = useNavigate();
 
 
 
@@ -241,7 +245,28 @@ const TableView = ({
     queryClient.resetQueries({
       queryKey: refreshKey,
     });
-  }
+  };
+  const actionMutation =
+    useActionMutation();
+
+  const actionContext = {
+    navigate: navigateTo,
+
+    // user: currentUser,
+
+    mutateAsync:
+      actionMutation.mutateAsync,
+
+    queryClient,
+
+    toast,
+
+    // openModal,
+
+    onActionSuccess: () => { queryClient.invalidateQueries({ queryKey: refreshKey }) },
+    // onActionError,
+  };
+
   const value = {
     tableName,
 
@@ -296,6 +321,7 @@ const TableView = ({
 
     statusList,
     statusKey,
+    actionContext
   };
 
   return (

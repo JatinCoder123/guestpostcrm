@@ -2,7 +2,7 @@ import DetailRenderer from "../../detail/DetailRenderer";
 import { useEntityRecord } from "../../../hooks/useEntity";
 import { useDetailLayout } from "../../../queries/layouts.queries";
 
-const EntityViewPage = ({ entity, id }) => {
+const EntityViewPage = ({ entity, email }) => {
     const {
         data: layout,
         isLoading: layoutLoading,
@@ -13,8 +13,8 @@ const EntityViewPage = ({ entity, id }) => {
         data: record,
         isLoading: recordLoading,
         error: recordError,
-    } = useEntityRecord(entity, id);
-
+    } = useEntityRecord({ request: layout?.request, entity, recordInfo: { email } });
+    console.log("RECORD", record)
     if (layoutLoading || recordLoading) {
         return <div>Loading...</div>;
     }

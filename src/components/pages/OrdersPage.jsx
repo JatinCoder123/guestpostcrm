@@ -28,7 +28,7 @@ const STATUS_CONFIG = [
   {
     value: "new",
     label: "New",
-    icon: Package,
+    icon: { library: "fi", name: "FiPackage", color: "" },
     color: "#2563eb", // blue
     filter: 'order_status',
     showAmount: true
@@ -36,7 +36,7 @@ const STATUS_CONFIG = [
   {
     value: "accepted",
     label: "Accepted",
-    icon: CheckCircle,
+    icon: { library: "fi", name: "FiPackage", color: "" },
     color: "#16a34a", // green
     filter: 'order_status',
     showAmount: true
@@ -45,7 +45,7 @@ const STATUS_CONFIG = [
   {
     value: "rejected_nontechnical",
     label: "Rejected",
-    icon: XCircle,
+    icon: { library: "fi", name: "FiPackage", color: "" },
     color: "#dc2626", // red
     filter: 'order_status',
     showAmount: true
@@ -54,7 +54,7 @@ const STATUS_CONFIG = [
   {
     value: "wrong",
     label: "Wrong",
-    icon: X,
+    icon: { library: "fi", name: "FiPackage", color: "" },
     color: "#662744", // red
     filter: 'order_status',
     showAmount: true
@@ -63,7 +63,7 @@ const STATUS_CONFIG = [
   {
     value: "pending",
     label: "Pending",
-    icon: PauseCircle,
+    icon: { library: "fi", name: "FiPackage", color: "" },
     color: "#ca8a04", // yellow
     filter: 'order_status',
     showAmount: true
@@ -72,7 +72,7 @@ const STATUS_CONFIG = [
   {
     value: "completed",
     label: "Completed",
-    icon: BadgeCheck,
+    icon: { library: "fi", name: "FiPackage", color: "" },
     color: "#7c3aed", // purple
     filter: 'order_status',
     showAmount: true
@@ -81,7 +81,7 @@ const STATUS_CONFIG = [
   {
     value: "Marketplace",
     label: "Marketplace",
-    icon: StoreIcon,
+    icon: { library: "fi", name: "FiPackage", color: "" },
     color: "#ed3ab7", // purple
     filter: 'order_type',
     showAmount: true
@@ -90,7 +90,7 @@ const STATUS_CONFIG = [
   {
     value: "listacle",
     label: "Listacle",
-    icon: ListFilter,
+    icon: { library: "fi", name: "FiPackage", color: "" },
     color: "#56cd1f", // purple
     filter: 'order_type',
     showAmount: true
@@ -145,102 +145,102 @@ export function OrdersPage() {
       searchable: false,
       editable: false,
 
-      edit: {
-        tooltip: "Edit Order",
-
-        onClick: ({ record }) => {
-          navigateTo(
-            `/orders/edit?email=${record.client_email}&id=${record.id}`
-          );
-        },
-      },
-
-      view: {
-        tooltip: "View Order",
-
-        onClick: ({ record }) => {
-          navigateTo(
-            `/orders/view?email=${record.client_email}&id=${record.id}`
-          );
-        },
-      },
-
       actions: [
         {
+          id: "edit",
+          label: "Edit",
+
+          icon: {
+            library: "fi",
+            name: "FiEdit2",
+            color: "",
+          },
+
+          placement: "primary",
+
+          type: "navigate",
+
+          target:
+            "/orders/edit?email={client_email}&id={id}",
+        },
+
+        {
+          id: "view",
+          label: "View",
+
+          icon: {
+            library: "fa",
+            name: "FaRegEye",
+            color: "",
+          },
+
+          placement: "primary",
+
+          type: "navigate",
+
+          target:
+            "/orders/view?email={client_email}&id={id}",
+        },
+
+        {
           id: "complete",
+          label: "Complete",
 
-          label: "Complete Order",
-
-          icon: IoCheckmarkDoneCircleOutline,
-
-          visible: (record) =>
-            record.order_type?.toLowerCase() === "marketplace" &&
-            record.order_status !== "completed",
-
-          loading: () =>
-            updating && updateOrderId === record.order_id,
-
-          onClick: ({ record }) => {
-            dispatch(
-              updateOrder({
-                order: {
-                  ...record,
-                  order_status: "completed",
-                },
-              })
-            );
-
-            setUpdateOrderId(record.order_id);
+          icon: {
+            library: "io5",
+            name: "IoCheckmarkDoneCircleOutline",
+            color: "green",
           },
-        },
 
-        {
-          id: "duplicate",
+          placement: "menu",
 
-          label: "Duplicate",
+          type: "mutation",
 
-          icon: Copy,
+          request: {
+            method: "POST",
+            endpoint: "smartgateway",
 
-          onClick: ({ record }) => {
-            console.log("Duplicate", record);
+            params: [],
+
+            body: {
+              action: "update",
+              module: "outr_order_gp_li",
+              id: "{id}",
+
+              data: {
+                order_status: "completed",
+              },
+            },
           },
-        },
 
-        {
-          id: "send-reminder",
-
-          label: "Send Reminder",
-
-          icon: Send,
-
-          onClick: ({ record }) => {
-            console.log("Send Reminder", record);
-          },
-        },
-
-        {
-          id: "delete",
-
-          label: "Delete",
-
-          icon: Trash2,
-
-          danger: true,
+          visibility: [
+            {
+              field: "order_status",
+              operator: "neq",
+              value: "completed",
+            },
+            {
+              field: "order_type",
+              operator: "eq",
+              value: "MarketPlace",
+            },
+          ],
 
           confirm: {
-            title: "Delete Order",
-            description:
-              "Are you sure you want to delete this order?",
-          },
+            enabled: true,
 
-          onClick: ({ record }) => {
-            console.log("Delete", record);
+            title: "Complete Order?",
+
+            description:
+              "Are you sure you want to complete this order?",
           },
         },
       ],
-
-      headerClasses: "justify-center",
     },
+
+    // --------------------------------------------------
+    // CREATED AT
+    // --------------------------------------------------
 
     {
       accessor: "date_entered_time_ago",
@@ -261,8 +261,21 @@ export function OrdersPage() {
 
       format: "timeAgo",
 
-      navigate: "/",
+      actionable: true,
+
+      action: {
+        id: "open-timeline",
+
+        type: "navigate",
+
+        target:
+          "/redirect?email={client_email}",
+      },
     },
+
+    // --------------------------------------------------
+    // CONTACT
+    // --------------------------------------------------
 
     {
       accessor: "name",
@@ -285,10 +298,22 @@ export function OrdersPage() {
 
       secondaryField: "client_email",
 
-      navigate: "/contacts",
-
       placeholder: "No Contact",
+      actionable: true,
+
+      action: {
+        id: "open-contact",
+
+        type: "navigate",
+
+        target:
+          "/contacts/view?email={client_email}&id={contact_id}",
+      },
     },
+
+    // --------------------------------------------------
+    // AMOUNT
+    // --------------------------------------------------
 
     {
       accessor: "total_amount_c",
@@ -316,6 +341,10 @@ export function OrdersPage() {
 
       align: "right",
     },
+
+    // --------------------------------------------------
+    // STATUS
+    // --------------------------------------------------
 
     {
       accessor: "order_status",
@@ -366,6 +395,10 @@ export function OrdersPage() {
       ],
     },
 
+    // --------------------------------------------------
+    // TYPE
+    // --------------------------------------------------
+
     {
       accessor: "order_type",
       label: "Type",
@@ -397,6 +430,10 @@ export function OrdersPage() {
       ],
     },
 
+    // --------------------------------------------------
+    // ORDER ID
+    // --------------------------------------------------
+
     {
       accessor: "order_id",
       label: "Order Id",
@@ -414,6 +451,20 @@ export function OrdersPage() {
 
       props: {
         color: "orange",
+      },
+
+      /*
+       * Clicking the badge can also perform an action.
+       */
+      actionable: true,
+
+      action: {
+        id: "open-order",
+
+        type: "navigate",
+
+        target:
+          "/orders/view?email={client_email}&id={id}",
       },
     },
   ];

@@ -31,6 +31,9 @@ export default function ThreadOrders({ email, id }) {
   const { handleMove } = useThreadContext();
   useEffect(() => {
     let activeOrders = [];
+    if (orders.length == 0) {
+      return
+    }
     if (id) {
       activeOrders = orders.filter((o) => o.id == id);
     } else {

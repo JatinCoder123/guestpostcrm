@@ -16,7 +16,6 @@ export default function TableHeader() {
         columnWidths,
         resizeColumn,
     });
-    console.log("SROT", sort)
     const handleToggleSort = (column) => {
         if (!column.sortable) return;
         const getNewSort = (sort) => {

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useTableContext } from "./Table";
+import Icon from "../Icon/Icon";
 
 function StatusRow({ statusCount }) {
     const {
@@ -92,8 +93,6 @@ function StatusRow({ statusCount }) {
                     "
                 >
                     {statusList.map((status) => {
-                        const Icon = status.icon;
-
                         const count = status.count ?? 0;
                         const grandTotal = statusCount ?? total ?? 1;
 
@@ -150,7 +149,7 @@ function StatusRow({ statusCount }) {
                                             color: status.color,
                                         }}
                                     >
-                                        {Icon && <Icon size={20} />}
+                                        {Icon({ ...status.icon })}
                                     </div>
 
                                     <span
