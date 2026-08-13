@@ -11,15 +11,6 @@ export const getAllBacklinks = ({
             action: "fetch",
             module: "outr_link_queue",
 
-            fields: [
-                "id",
-                "gp_li_date_c",
-                "name",
-                "anchor_text_c",
-                "source_url_c",
-                "status_c",
-            ],
-
             page,
 
             ...buildTableRequestBody(
