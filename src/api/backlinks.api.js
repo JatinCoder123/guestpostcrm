@@ -1,5 +1,10 @@
 import { http } from "../services/api";
 import { buildTableRequestBody } from "../utils/preferenceStorage";
+import axios from "axios";
+
+const BLOG_LINK_EXTRACTOR_API_KEY =
+    import.meta.env.VITE_BLOG_LINK_EXTRACTOR_API_KEY ||
+    "KYUiWrzGeTKbttVn54g1ekiaoZ59ueIqJWF8ZCvH";
 
 export const getAllBacklinks = ({
     preferences,
@@ -10,15 +15,6 @@ export const getAllBacklinks = ({
         body: {
             action: "fetch",
             module: "outr_link_queue",
-
-            fields: [
-                "id",
-                "gp_li_date_c",
-                "name",
-                "anchor_text_c",
-                "source_url_c",
-                "status_c",
-            ],
 
             page,
 
@@ -96,6 +92,35 @@ export const getBacklinkById =
             body: {
                 action: "fetch",
                 module: "outr_link_queue",
-                filter: { id }
+                filters: { id }
             },
         });
+
+/**
+ * Loads the links currently present in a published post. The WordPress API is
+ * hosted by the same domain as the source URL, so no domain needs to be stored
+ * separately on the CRM record.
+ */
+export const getExtractedBlogLinks = async (sourceUrl) => {
+    console.log("getExtractedBlogLinks", sourceUrl);
+    if (!sourceUrl) {
+        throw new Error("This record does not have a source URL.");
+    }
+
+    let domainUrl;
+    try {
+        domainUrl = new URL(sourceUrl).origin;
+    } catch {
+        throw new Error("The source URL is not valid.");
+    }
+
+    const response = await axios.get(
+        `${domainUrl}/wp-json/blog-link-extractor/v2/links`,
+        {
+            params: { url: sourceUrl },
+            headers: { "X-BLE-API-Key": BLOG_LINK_EXTRACTOR_API_KEY },
+        },
+    );
+
+    return response.data;
+};

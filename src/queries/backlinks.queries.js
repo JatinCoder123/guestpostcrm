@@ -10,6 +10,7 @@ import {
     getBacklinkStats,
     updateBacklink,
     getBacklinkById,
+    getExtractedBlogLinks,
 } from "../api/backlinks.api";
 
 import toast from "react-hot-toast";
@@ -39,6 +40,8 @@ export const backlinkKeys = {
         "id",
         id,
     ],
+
+    extractedLinks: (sourceUrl) => ["backlinks", "extracted-links", sourceUrl],
 };
 
 export const useBacklinkStats = () => {
@@ -140,3 +143,15 @@ export const useBacklink =
             enabled:
                 Boolean(id),
         });
+
+export const useExtractedBlogLinks = (sourceUrl) =>{
+    console.log("useExtractedBlogLinks", sourceUrl);
+    return  useQuery({
+        queryKey: backlinkKeys.extractedLinks(sourceUrl),
+        queryFn: () => getExtractedBlogLinks(sourceUrl),
+        enabled: Boolean(sourceUrl),
+    });
+    
+}
+
+     
