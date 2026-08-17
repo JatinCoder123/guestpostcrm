@@ -152,6 +152,46 @@ export const useLayoutPreferences = () =>
                     },
                 ],
             },
+            {
+                group_name: "Other",
+                group_priority: 6,
+                count: 1,
+                data: [
+                    {
+                        route: "/market-place",
+                        weight: "1",
+                        color: "",
+                        icon: "IoStorefrontOutline",
+                        library: "io5",
+                        name: "Market Place",
+                    },
+                    {
+                        route: "/moved-emails",
+                        weight: "1",
+                        color: "",
+                        icon: "CgMoveDown",
+                        library: "cg",
+                        name: "Moved Emails",
+                    },
+                    {
+                        route: "/tag-manager",
+                        weight: "1",
+                        color: "",
+                        icon: "IoPricetagOutline",
+                        library: "io5",
+                        name: "Tag Manager",
+                    },
+
+                    {
+                        route: "/ip-manager",
+                        weight: "1",
+                        color: "",
+                        icon: "CiGlobe",
+                        library: "ci",
+                        name: "IP Manager",
+                    },
+                ],
+            },
         ],
         staleTime:
             5 * 60 * 1000,
