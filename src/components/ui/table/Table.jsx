@@ -213,7 +213,6 @@ const TableView = ({
   return (
     <TableContext.Provider value={value}>
       <motion.div
-        layout
         className="flex flex-col gap-3"
       >
         {/* FILTER ROW */}
@@ -221,7 +220,6 @@ const TableView = ({
 
         {/* STATUS ROW */}
         <motion.div
-          layout
           initial={false}
           animate={{
             height: showStatus ? "auto" : 0,
@@ -315,7 +313,6 @@ const TableView = ({
 
           {/* TABLE */}
           <motion.div
-            layout
             transition={{
               type: "spring",
               stiffness: 120,

@@ -27,8 +27,8 @@ import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail } from "../queries/deals.queries";
 import { useOrdersByEmail } from "../queries/orders.queries";
 import { useOffersByEmail } from "../queries/offers.queries";
+import { useInfiniteEmails } from "../queries/email.queries";
 import { useEmailInvoices } from "../queries/invoice.queries";
-import { useContact } from "../queries/contact.queries";
 
 const MailerSummaryHeader = () => {
   const { currentEmail } = useTimeline()
@@ -88,12 +88,9 @@ const MailerSummaryHeader = () => {
       )}
 
       <div className=" p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-3">
-        {/* TOP INFO */}
-        <MailerSummary />
-
         {/* STATS CARDS */}
-        <div className="rounded-3xl shadow-sm p-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-3xl shadow-sm p-1">
+          <div className="grid grid-cols-1 gap-3">
             <SummaryCard
               type="offers"
               title="NO OFFERS"
@@ -150,10 +147,7 @@ export default MailerSummaryHeader;
 
 function MailerSummary() {
   const { currentEmail } = useTimeline()
-  const { data: contactData, isPending: contactLoading } = useContact(currentEmail);
-  const threadId = contactData?.contact?.thread_id;
-
-  const { data, isPending, refetch } = useMailerSummary({ email: currentEmail, threadId });
+  const { data, isPending, refetch } = useMailerSummary(currentEmail);
   const mailersSummary = data?.mailers_summary
   return (
     <>

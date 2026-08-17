@@ -3,35 +3,41 @@ import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { AnimatePresence, motion } from "framer-motion";
-
 import { viewEmailAction } from "./store/Slices/viewEmail";
 import { PageContext } from "./context/pageContext";
-import { SocketContext } from "./context/SocketContext";
-import { useTimeline } from "./context/TimelineContext";
-
 import DisplayIntro from "./components/DisplayIntro";
-import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
-import LowCreditWarning from "./components/LowCreditWarning";
-import RefreshReminder from "./components/RefreshReminder";
-import OnBoarding from "./components/OnBoarding";
-
+import { SocketContext } from "./context/SocketContext";
 import { getDomain } from "./assets/assets";
+import LowCreditWarning from "./components/LowCreditWarning";
 import useRefresh from "./hooks/useRefresh";
+import OnBoarding from "./components/OnBoarding";
+import { useTimeline } from "./context/TimelineContext";
 import toast from "react-hot-toast";
 import { queryClient } from "./lib/queryClient";
+import { motion } from "framer-motion";
+import RefreshReminder from "./components/RefreshReminder";
 
 const RootLayout = () => {
-  const { message, error } = useSelector((state) => state.viewEmail);
-  const { crmEndpoint, currentScore } = useSelector((state) => state.user);
+  const { message, error } = useSelector(
+    (state) => state.viewEmail
+  );
+
+  const {
+    crmEndpoint,
+    currentScore,
+  } = useSelector((state) => state.user);
 
   const {
     displayIntro,
     setActivePage,
     collapsed,
-    showRefreshReminder, setShowRefreshReminder
+    showRefreshReminder,
   } = useContext(PageContext);
+
+  const [showRechargeWarn, setShowRechargeWarn] = useState(
+    Number(currentScore) <= 0
+  );
 
   const { setCrm } = useContext(SocketContext);
 
@@ -39,32 +45,38 @@ const RootLayout = () => {
   useRefresh();
 
   const dispatch = useDispatch();
+  const location = useLocation();
 
-  const location = useLocation().pathname.split("/")[2];
-  const pathname = useLocation().pathname;
+  const pathname = location.pathname;
+  const activePage = pathname.split("/")[2];
 
   const mainRef = useRef(null);
 
-  const [showRechargeWarn, setShowRechargeWarn] = useState(
-    Number(currentScore) <= 0
-  );
-
-
+  /* -------------------------------------------------------
+   * Scroll main content to top when route changes
+   * ----------------------------------------------------- */
   useEffect(() => {
     if (mainRef.current) {
       mainRef.current.scrollTo({
         top: 0,
+        left: 0,
         behavior: "smooth",
       });
     }
   }, [pathname]);
 
+  /* -------------------------------------------------------
+   * Set CRM endpoint
+   * ----------------------------------------------------- */
   useEffect(() => {
     if (crmEndpoint) {
       setCrm(getDomain(crmEndpoint));
     }
-  }, [crmEndpoint]);
+  }, [crmEndpoint, setCrm]);
 
+  /* -------------------------------------------------------
+   * Toast messages
+   * ----------------------------------------------------- */
   useEffect(() => {
     if (message) {
       dispatch(viewEmailAction.clearAllMessage());
@@ -99,64 +111,91 @@ const RootLayout = () => {
     }
   }, [message, error, dispatch]);
 
+  /* -------------------------------------------------------
+   * Active sidebar page
+   * ----------------------------------------------------- */
   useEffect(() => {
-    setActivePage(location);
-  }, [location, setActivePage]);
+    setActivePage(activePage);
+  }, [activePage, setActivePage]);
 
+  /* -------------------------------------------------------
+   * Intro screen
+   * ----------------------------------------------------- */
   if (displayIntro) {
-    return <DisplayIntro />;
+    return <DisplayIntro key="intro" />;
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] overflow-hidden">
-
+    <div className="flex h-screen w-full overflow-hidden bg-background">
+      {/* Refresh reminder */}
       <RefreshReminder />
 
+      {/* Main application wrapper */}
       <motion.div
         animate={{
-          paddingTop: showRefreshReminder ? 57 : 0,
+          paddingTop: showRefreshReminder ? 60 : 0,
         }}
         transition={{
           duration: 0.35,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="min-h-screen"
+        className="flex min-h-0 w-full flex-1"
       >
-        <TopNav />
+        {/* =====================================================
+            LEFT SIDEBAR
+        ====================================================== */}
+        <Sidebar />
 
-        <div className="flex h-[calc(100vh-100px)]">
+        {/* =====================================================
+            RIGHT CONTENT
+        ====================================================== */}
+        <div
+          className={`
+            flex
+            min-w-0
+            flex-1
+            flex-col
+            overflow-hidden
+            p-2
+          `}
+        >
+          {/* Top Navigation */}
+          <TopNav />
 
-          <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
-            <Sidebar />
-          </div>
-
+          {/* ===================================================
+              MAIN CONTENT
+          ==================================================== */}
           <main
             ref={mainRef}
-            className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-              }`}
+            className="
+              min-h-0
+              flex-1
+              w-full
+              overflow-y-auto
+              hide-scrollbar
+            "
           >
-            <div
-              className="p-3"
-              data-tour="main-workspace"
-            >
+            <div className="w-full">
+              {/* Low credit warning */}
               <LowCreditWarning
                 open={showRechargeWarn}
                 score={currentScore}
-                onClose={() =>
-                  setShowRechargeWarn(false)
-                }
+                onClose={() => setShowRechargeWarn(false)}
               />
 
-              <div className="p-3">
-                <WelcomeHeader />
+              {/* Page content */}
+              <div className="m-3">
                 <Outlet />
               </div>
             </div>
-
-            <OnBoarding />
-
-            <Footer />
           </main>
+
+          {/* ===================================================
+              BOTTOM
+          ==================================================== */}
+          <OnBoarding />
+
+          <Footer />
         </div>
       </motion.div>
     </div>

@@ -10,11 +10,15 @@ import {
   Camera,
   Users,
   Copy,
-  Check
+  Check,
+  MailOpen,
+  Send,
+  Bell,
+  Menu
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState, useRef, createElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,65 +32,14 @@ import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
 import { useCrmUsers } from "../queries/users.queries";
+import { fetchGpc } from "../services/api";
+import IconButton from "./ui/Buttons/IconButton";
 
 /* ─────────────────────────────────────────────────────────────
    Reusable icon button — coloured tint + badge + tooltip
 ───────────────────────────────────────────────────────────── */
-const VARIANTS = {
-  indigo: {
-    wrap: "bg-indigo-50 hover:bg-indigo-100 border-indigo-200",
-    icon: "text-indigo-600",
-  },
-  purple: {
-    wrap: "bg-purple-50 hover:bg-purple-100 border-purple-200",
-    icon: "text-purple-600",
-  },
-  orange: {
-    wrap: "bg-orange-50 hover:bg-orange-100 border-orange-200",
-    icon: "text-orange-500",
-  },
-  green: {
-    wrap: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
-    icon: "text-emerald-600",
-  },
-  red: {
-    wrap: "bg-red-50 hover:bg-red-100 border-red-200",
-    icon: "text-red-500",
-  },
-};
 
-function NavBtn({ icon: Icon, label, onClick, count, color = "indigo" }) {
-  const v = VARIANTS[color] ?? VARIANTS.indigo;
-  return (
-    <div className="group relative">
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={label}
-        className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-150 active:scale-95 ${v.wrap}`}
-      >
-        <Icon size={16} className={v.icon} strokeWidth={1.9} />
-        {count > 0 && (
-          <span
-            className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-0.5 text-[9px] font-bold leading-none text-white"
-            aria-label={`${count} notifications`}
-          >
-            {count > 99 ? "99+" : count}
-          </span>
-        )}
-      </button>
 
-      {/* Tooltip */}
-      <div
-        role="tooltip"
-        className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-slate-100 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 shadow-xl opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-      >
-        {label}
-        <span className="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 border-l border-t border-slate-100 bg-white" />
-      </div>
-    </div>
-  );
-}
 
 /* ─────────────────────────────────────────────────────────────
    Avatar colour palette — cycles through 8 distinct combos
@@ -170,7 +123,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         aria-label={`${onlineCount} online users`}
         aria-expanded={open}
         aria-haspopup="true"
-        className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 transition hover:bg-indigo-100 active:scale-95"
+        className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-background px-2.5 py-1.5 transition hover:bg-indigo-100 active:scale-95"
       >
         {/* Pulsing green dot */}
         <span className="relative flex h-2 w-2 shrink-0">
@@ -189,7 +142,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               <span
                 key={u.email}
                 title={isMe ? "You" : name || u.email}
-                className={`relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white
+                className={`relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white 
                   ${c.bg} ${c.text}
                   ${i > 0 ? "-ml-1.5" : ""}
                   ${isMe ? "ring-indigo-300" : ""}
@@ -345,15 +298,84 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
     </div>
   );
 }
+const StatBadge = ({
+  icon,
+  label,
+  value,
+  colorClass,
+  bgClass,
+}) => {
+  const [animate, setAnimate] = useState(false);
 
+  useEffect(() => {
+    setAnimate(true);
+    const t = setTimeout(() => setAnimate(false), 400);
+    return () => clearTimeout(t);
+  }, [value]);
+
+  return (
+    <div className="group flex items-center gap-3 px-3 py-2 cursor-default">
+      {/* Icon Circle */}
+      <div
+        className={`flex h-8 w-8 items-center justify-center rounded-full ${bgClass} transition-all duration-300`}
+      >
+        {createElement(icon, {
+          className: `h-4 w-4 ${colorClass} group-hover:scale-110 transition-transform duration-300`,
+        })}
+      </div>
+
+      {/* Text */}
+      <div className="flex flex-col leading-tight">
+        <span className="text-[15px] font-medium text-gray-700 whitespace-nowrap">
+          {label}
+        </span>
+
+        <span
+          className={`text-[18px] font-medium text-gray-900 transition-all duration-300 ${animate ? "scale-110" : "scale-100"
+            }`}
+        >
+          {value ?? "—"}
+        </span>
+      </div>
+    </div>
+  );
+};
 /* ─────────────────────────────────────────────────────────────
    Main TopNav
 ───────────────────────────────────────────────────────────── */
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
+  const [stats, setStats] = useState({
+    reply_recieved: null,
+    reply_sent: null,
+    reminder_sent: null,
+  });
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const data = await fetchGpc({
+          method: "GET",
+          params: { type: "statscount" },
+        });
 
+        if (data?.success && data?.stats) {
+          setStats({
+            reply_recieved: data.stats.reply_recieved,
+            reply_sent: data.stats.reply_sent,
+            reminder_sent: data.stats.reminder_sent,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
+      }
+    };
+
+    loadStats();
+  }, []);
   /* ── Data ── */
+
+  const { activeUsers = [] } = useContext(SocketContext);
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
   const { data } = useCrmUsers()
   const {
@@ -362,15 +384,10 @@ export function TopNav() {
   } = useTodayPaymentReminderStats();
   const { enteredEmail, handleClear } = useContext(PageContext);
   // ↓ activeUsers added alongside existing notificationCount
-  const { notificationCount, activeUsers = [] } = useContext(SocketContext);
   const { user, error } = useSelector((s) => s.user);
-  const { timeline } = useSelector((s) => s.ladger);
-  const { count: hotCount } = useSelector((s) => s.hot);
 
   /* ── Local state ── */
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [animate, setAnimate] = useState(false);
-  const [errorLogCount, setErrorLogCount] = useState(0);
   const [copied, setCopied] = useState(false);
   const [profilePreview, setProfilePreview] = useState(
     () => sessionStorage.getItem("userProfileImage") || user?.profileImage || ""
@@ -379,22 +396,10 @@ export function TopNav() {
   const [cropImage, setCropImage] = useState(null);
 
   const profileMenuRef = useRef(null);
-  const prevCountRef = useRef(0);
 
   /* ── Derived ── */
   const isSearchActive = Boolean(enteredEmail?.trim());
-  const outboxCount = outboxData?.stats?.all?.count ?? 0;
-  const paymentReminderCount =
-    paymentReminderData?.total ??
-    paymentReminderData?.total_records ??
-    paymentReminderData?.count ??
-    paymentReminderData?.records?.length ??
-    0;
 
-  const showPaymentReminders =
-    paymentReminderCount > 0 && !paymentReminderPending;
-  const showOutbox = outboxCount > 0 && !outboxPending;
-  const showErrorLog = Boolean(notificationCount?.error_log_created);
 
   /* ── Effects ── (unchanged) */
   useEffect(() => {
@@ -402,25 +407,7 @@ export function TopNav() {
     setProfilePreview(saved || user?.profileImage || "");
   }, [user?.profileImage]);
 
-  useEffect(() => {
-    if (notificationCount?.error_log_created)
-      setErrorLogCount((n) => n + 1);
-  }, [notificationCount?.error_log_created]);
 
-  useEffect(() => {
-    if (errorLogCount > prevCountRef.current) {
-      setAnimate(true);
-      setTimeout(() => setAnimate(false), 400);
-    }
-    prevCountRef.current = errorLogCount;
-  }, [errorLogCount]);
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(userAction.clearAllErrors());
-    }
-  }, [error, dispatch]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -430,7 +417,6 @@ export function TopNav() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
 
 
   const handleLogout = () => {
@@ -482,183 +468,134 @@ export function TopNav() {
   return (
     <div
       data-tour="top-nav"
-      className="sticky top-0 z-50 flex h-[70px] items-center px-3 gap-3"
-      style={{
-        background: "linear-gradient(135deg, #ddeaff 100%)",
-        borderRadius: "26px",
-        border: "1px solid rgba(99,102,241,0.16)",
-        borderBottom: "1.5px solid rgba(99,102,241,0.26)",
-        boxShadow: [
-          "inset 2px 3px 6px rgba(255,255,255,0.95)",
-          "inset -1px -2px 4px rgba(99,102,241,0.10)",
-          "0 5px 0 0 #c9cbe0",
-          "0 7px 20px rgba(60,63,120,0.16)",
-          "0 2px 4px rgba(0,0,0,0.06)",
-        ].join(","),
-      }}
+      className="sticky top-0 z-[999] flex   items-center justify-between p-2 gap-3 bg-white border  rounded-md "
     >
-      {/* ══════════════════════════════════════
-          LEFT — Logo (unchanged)
-      ══════════════════════════════════════ */}
-      <div className="flex shrink-0 items-center gap-3">
-        <img
-          src={headingLogo}
-          className="h-9 w-auto max-w-[160px] cursor-pointer object-contain"
-          alt="App logo"
-          onClick={() => navigateTo("")}
-          draggable={false}
-        />
-      </div>
+      <div className="flex items-center justify-between">
 
-      {/* ══════════════════════════════════════
-          CENTER — Search OR Active banner (unchanged)
-      ══════════════════════════════════════ */}
-      <div
-        className="flex flex-1 items-center gap-2 min-w-0 ml-5 justify-center"
-        data-tour="top-nav-search"
-      >
-        <AnimatePresence mode="wait">
-          {isSearchActive ? (
-            <motion.div
-              key="banner"
-              initial={{ opacity: 0, y: -6, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6, scale: 0.97 }}
-              transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-              role="status"
-              aria-live="polite"
-              className="flex items-center gap-2.5 rounded-2xl border px-4 py-2 max-w-[440px]"
-              style={{
-                background: "linear-gradient(100deg,#eef2ff 0%,#e0f2fe 100%)",
-                border: "1px solid rgba(99,102,241,0.22)",
-                boxShadow: "0 2px 12px rgba(99,102,241,0.12)",
-              }}
-            >
-              <span
-                aria-hidden="true"
-                className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-indigo-500"
-                style={{ animationDuration: "1.4s" }}
-              />
-              <span className="flex items-center gap-1.5 text-[16px] text-indigo-800 leading-none">
-                <span className="shrink-0 font-normal text-indigo-600">
-                  Viewing record for
-                </span>
+        <div
+          className="flex  items-center gap-2 min-w-0 justify-center p-1"
+          data-tour="top-nav-search"
+        >
+          <AnimatePresence mode="wait">
+            {isSearchActive ? (
+              <motion.div
+                key="banner"
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+                role="status"
+                aria-live="polite"
+                className="flex items-center gap-2.5 rounded-2xl border px-4 py-2 max-w-[400px]"
+                style={{
+                  background: "linear-gradient(100deg,#eef2ff 0%,#e0f2fe 100%)",
+                  border: "1px solid rgba(99,102,241,0.22)",
+                  boxShadow: "0 2px 12px rgba(99,102,241,0.12)",
+                }}
+              >
                 <span
-                  title={enteredEmail}
-                  className="max-w-[220px] truncate font-bold text-cyan-700 underline underline-offset-2 decoration-dashed cursor-default"
-                >
-                  {enteredEmail}
+                  aria-hidden="true"
+                  className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-indigo-500"
+                  style={{ animationDuration: "1.4s" }}
+                />
+                <span className="flex items-center gap-1.5 text-[16px] text-indigo-800 leading-none">
+                  <span className="shrink-0 font-normal text-indigo-600">
+                    Viewing record for
+                  </span>
+                  <span
+                    title={enteredEmail}
+                    className="max-w-[220px] truncate font-bold text-cyan-700 underline underline-offset-2 decoration-dashed cursor-default"
+                  >
+                    {enteredEmail}
+                  </span>
                 </span>
-              </span>
-              <div className="ml-1 flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  aria-label="Copy email"
-                  title={copied ? "Copied!" : "Copy email"}
-                  onClick={handleCopyEmail}
-                  className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 transition hover:bg-cyan-200 hover:text-cyan-700 active:scale-90"
-                >
-                  {copied ? (
-                    <Check size={11} strokeWidth={2.5} />
-                  ) : (
-                    <Copy size={11} strokeWidth={2.5} />
-                  )}
-                </button>
+                <div className="ml-1 flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    aria-label="Copy email"
+                    title={copied ? "Copied!" : "Copy email"}
+                    onClick={handleCopyEmail}
+                    className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 transition hover:bg-cyan-200 hover:text-cyan-700 active:scale-90"
+                  >
+                    {copied ? (
+                      <Check size={11} strokeWidth={2.5} />
+                    ) : (
+                      <Copy size={11} strokeWidth={2.5} />
+                    )}
+                  </button>
 
-                <button
-                  type="button"
-                  aria-label="Clear current record"
-                  onClick={handleClear}
-                  className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-indigo-100 text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-700 active:scale-90"
-                >
-                  <X size={11} strokeWidth={2.5} />
-                </button>
-              </div>
-            </motion.div>
-          ) : (
-            <GlobalSearch />
-          )}
-        </AnimatePresence>
+                  <button
+                    type="button"
+                    aria-label="Clear current record"
+                    onClick={handleClear}
+                    className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-indigo-100 text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-700 active:scale-90"
+                  >
+                    <X size={11} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <GlobalSearch />
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* ══════════════════════════════════════
-          RIGHT — Action buttons
-      ══════════════════════════════════════ */}
-      <div className="flex shrink-0 items-center gap-1.5">
+
+
+      <div className="justify-end flex shrink-0 items-center gap-1.5">
 
         {/* ── 🆕 User Activity Panel — sits before the other nav buttons ── */}
-        <UserActivityPanel
-          activeUsers={activeUsers}
-          currentUserEmail={user?.email}
-        />
-
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <UserActivityPanel
+            activeUsers={activeUsers}
+            currentUserEmail={user?.email}
+          />
+        </div>
         {/* Thin divider between activity panel and icon buttons */}
-        <div className="mx-1 h-6 w-px bg-blue-500" aria-hidden="true" />
+        <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
+        <div className="flex-shrink-0 flex items-center gap-2 pr-2">
+          {/* Vertical Divider */}
+          <StatBadge
+            icon={MailOpen}
+            label="Received"
+            value={stats.reply_recieved}
+            colorClass="text-emerald-500"
+            bgClass="bg-emerald-100 group-hover:bg-emerald-200"
+          />
 
+          <div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
+
+          <StatBadge
+            icon={Send}
+            label="Sent"
+            value={stats.reply_sent}
+            colorClass="text-blue-600"
+            bgClass="bg-blue-100 group-hover:bg-blue-200"
+          />
+
+          <div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
+
+          <StatBadge
+            icon={Bell}
+            label="Reminders"
+            value={stats.reminder_sent}
+            colorClass="text-amber-500"
+            bgClass="bg-amber-100 group-hover:bg-amber-200"
+          />
+
+          {/* SUMMARY */}
+
+        </div>
         {/* AI Credits */}
-        <NavBtn
-          icon={Sparkles}
-          label="AI Credits"
-          color="indigo"
-          onClick={() => navigateTo("ai-credits")}
-        />
+
 
         {/* Payment Reminders */}
-        {showPaymentReminders && (
-          <NavBtn
-            icon={BellIcon}
-            label="Payment Reminders"
-            color="purple"
-            count={paymentReminderCount}
-            onClick={() =>
-              navigateTo("/reminders", {
-                state: {
-                  reminderFilter: "today-payment",
-                },
-              })
-            }
-          />
-        )}
 
-        {/* Outbox — conditional */}
-        {showOutbox && (
-          <NavBtn
-            icon={MailWarning}
-            label="Outbox Emails"
-            color="green"
-            count={outboxCount}
-            onClick={() => navigateTo("/outbox")}
-          />
-        )}
-
-        {/* Hot Records */}
-        <NavBtn
-          icon={Flame}
-          label="Hot Records"
-          color="orange"
-          count={hotCount}
-          onClick={() => navigateTo("hot-records")}
-        />
-
-        {/* Error Logs — conditional + shake animation */}
-        {showErrorLog && (
-          <motion.div
-            animate={animate ? { x: [0, -3, 3, -3, 3, 0] } : {}}
-            transition={{ duration: 0.35 }}
-          >
-            <NavBtn
-              icon={CircleAlert}
-              label="Error Logs"
-              color="red"
-              count={errorLogCount}
-              onClick={() => navigateTo("/settings/debugging")}
-            />
-          </motion.div>
-        )}
 
         {/* Divider */}
-        <div className="mx-1.5 h-6 w-px bg-slate-200" aria-hidden="true" />
+        <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
         {/* ── Profile chip (unchanged) ── */}
         <div ref={profileMenuRef} className="relative">
@@ -693,7 +630,7 @@ export function TopNav() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.96 }}
                 transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-                className="absolute right-0 mt-2.5 w-72 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10"
+                className="absolute right-0 mt-2.5 w-72 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10 z-9999"
               >
                 <button
                   type="button"
