@@ -68,6 +68,7 @@ import PlansPage from "./components/pages/PlansPage";
 import BillingSettings from "./components/pages/BillingSettings";
 import InternetStatus from "./components/InternetStatus";
 import { LinkRemovalPage } from "./components/pages/LinkRemovalpage";
+import LinkRemovalDetailPage from "./components/pages/LinkRemovalDetailPage";
 
 const router = createBrowserRouter([
   {
@@ -187,6 +188,10 @@ const router = createBrowserRouter([
       {
         path: "link-removal",
         element: <LinkRemovalPage />,
+      },
+      {
+        path: "link-removal/:id",
+        element: <LinkRemovalDetailPage />,
       },
 
       {

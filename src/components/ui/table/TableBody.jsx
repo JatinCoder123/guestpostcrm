@@ -28,8 +28,9 @@ function TableBody(props) {
 
     return (
       <div
-        className={`${props.layoutStyle} border-b border-gray-100 hover:bg-gray-50 ${rowClass}`}
+        className={`${props.layoutStyle} border-b border-gray-100 hover:bg-gray-50 ${props.onRowClick ? "cursor-pointer" : ""} ${rowClass}`}
         style={style}
+        onClick={() => props.onRowClick?.(row, index)}
       >
         {visibleColumns.map((col) => {
           const value = row[col.accessor];

@@ -1,6 +1,7 @@
 import { Calendar, Cable, ExternalLink, FileText, Link2, Tag } from "lucide-react";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 import { useTablePreference } from "../../hooks/useTablePreference";
 import {
@@ -39,7 +40,7 @@ function StatusSelect({ row, updateStatus, savingId }) {
   );
 }
 
-export function BacklinksPage({ title = "Backlinks", fixedFilters = null }) {
+export function BacklinksPage({ title = "Backlinks", fixedFilters = null, onRecordClick }) {
   const storedPreferences = useTablePreference("backlinks");
   const preferences = useMemo(
     () => ({
@@ -52,6 +53,7 @@ export function BacklinksPage({ title = "Backlinks", fixedFilters = null }) {
     [storedPreferences, fixedFilters],
   );
   const [savingId, setSavingId] = useState(null);
+  const navigate = useNavigate();
 
   const {
     data,
@@ -61,6 +63,10 @@ export function BacklinksPage({ title = "Backlinks", fixedFilters = null }) {
     isPending,
   } = useInfiniteBacklinks(preferences);
   const { mutate: updateBacklink } = useUpdateBacklink();
+
+  const openRecord = (row) => {
+    if (onRecordClick) onRecordClick(row, navigate);
+  };
 
   const backlinks = data?.pages?.flatMap((page) => page.records || page.data || []) ?? [];
   const pages = data?.pages ?? [];
@@ -153,16 +159,9 @@ export function BacklinksPage({ title = "Backlinks", fixedFilters = null }) {
           <span className="text-slate-400">—</span>
         ),
     },
-    {
-      label: "Status",
-      accessor: "status_c",
-      icon: Cable,
-      render: (row) => (
-        <StatusSelect row={row} updateStatus={updateStatus} savingId={savingId} />
-      ),
-    },
+   
   ];
-
+ 
   return (
     <TableView
       tableData={backlinks}
@@ -182,7 +181,11 @@ export function BacklinksPage({ title = "Backlinks", fixedFilters = null }) {
       }}
     >
       <TableTitleBar Icon={Link2} title={title} titleClass="text-teal-700" />
-      <Table headerStyle="bg-teal-600" layoutStyle="grid grid-cols-6" />
+      <Table
+        headerStyle="bg-teal-600"
+        layoutStyle="grid grid-cols-5"
+        onRowClick={onRecordClick ? openRecord : undefined}
+      />
     </TableView>
   );
 }
