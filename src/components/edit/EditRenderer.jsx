@@ -1,10 +1,6 @@
 import React from "react";
 
-import blockRegistry
-    from "../detail/blocks/blockRegistry";
-
-import EditHeader
-    from "./components/EditHeader";
+import blockRegistry from "./blocks/blockRegistry";
 
 const EditRenderer = ({
     layout,
@@ -24,15 +20,17 @@ const EditRenderer = ({
                 (b.weight ?? 0)
         );
 
+    const Header =
+        blockRegistry.header;
+
     return (
         <div className="space-y-4">
-
             {/* =====================================================
                 HEADER
             ===================================================== */}
 
-            {layout?.header && (
-                <EditHeader
+            {layout?.header && Header && (
+                <Header
                     config={layout.header}
                     record={record}
                     entity={entity}
@@ -43,39 +41,30 @@ const EditRenderer = ({
                 BLOCKS
             ===================================================== */}
 
-            {blocks.map(
-                (block) => {
-                    const Component =
-                        blockRegistry[
-                        block.type
-                        ];
+            {blocks.map((block) => {
+                const Component =
+                    blockRegistry[
+                    block.type
+                    ];
 
-                    if (!Component) {
-                        console.warn(
-                            `Unknown block type: ${block.type}`
-                        );
-
-                        return null;
-                    }
-                    return (
-                        <Component
-                            key={
-                                block.id
-                            }
-                            config={
-                                block
-                            }
-                            record={
-                                record
-                            }
-                            entity={
-                                entity
-                            }
-                            mode="edit"
-                        />
+                if (!Component) {
+                    console.warn(
+                        `Unknown block type: ${block.type}`
                     );
+
+                    return null;
                 }
-            )}
+
+                return (
+                    <Component
+                        key={block.id}
+                        config={block}
+                        record={record}
+                        entity={entity}
+                        mode="edit"
+                    />
+                );
+            })}
         </div>
     );
 };

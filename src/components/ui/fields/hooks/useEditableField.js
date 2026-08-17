@@ -51,7 +51,6 @@ export default function useEditableField({
         setEditing(false);
 
         if (currentValue === value) return;
-
         onSave?.({
             field,
             record,

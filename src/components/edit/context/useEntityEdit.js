@@ -1,9 +1,5 @@
-import {
-    useContext,
-} from "react";
-
-import EntityEditContext
-    from "./EntityEditContext";
+import { useContext } from "react";
+import EntityEditContext from "./EntityEditContext";
 
 const useEntityEdit = () => {
     const context =

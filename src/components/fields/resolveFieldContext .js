@@ -63,6 +63,8 @@ export const resolveFieldValue = ({
         return undefined;
     }
 
+
+
     const sourceRecord =
         resolveSourceRecord({
             record,
@@ -75,7 +77,7 @@ export const resolveFieldValue = ({
 
     return getByPath(
         sourceRecord,
-        field.accessor
+        typeof field === "string" ? field : field.accessor
     );
 };
 

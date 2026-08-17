@@ -156,7 +156,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
           hasNextPage &&
           !isFetchingNextPage
         ) {
-          console.log("Fetching next page");
           fetchNextPage();
         }
       },
@@ -276,11 +275,10 @@ const TimelineEvent = ({ handleMessageClick }) => {
 
   return (
     <div
-      className={`h-full min-h-0 bg-white transition-all duration-300 ${
-        isExpanded
-          ? "fixed inset-0 z-[9998] flex flex-col p-4 sm:p-7"
-          : "relative"
-      }`}
+      className={`h-full min-h-0 bg-white transition-all duration-300 ${isExpanded
+        ? "fixed inset-0 z-[9998] flex flex-col p-4 sm:p-7"
+        : "relative"
+        }`}
       role={isExpanded ? "dialog" : undefined}
       aria-modal={isExpanded ? "true" : undefined}
     >
@@ -302,31 +300,31 @@ const TimelineEvent = ({ handleMessageClick }) => {
 
         <div className="px-3 sm:px-6">
           <div className="relative flex h-8 items-center rounded-full border border-gray-300 bg-white pl-3 pr-[72px] shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
-              <Search className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+            <Search className="h-3.5 w-3.5 shrink-0 text-gray-400" />
 
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) =>
-                  setSearchQuery(e.target.value)
-                }
-                placeholder="Search anything..."
-                className="min-w-0 flex-1 bg-transparent px-3 text-xs text-gray-700 outline-none"
-              />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) =>
+                setSearchQuery(e.target.value)
+              }
+              placeholder="Search anything..."
+              className="min-w-0 flex-1 bg-transparent px-3 text-xs text-gray-700 outline-none"
+            />
 
-              {searchQuery && (
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                  }}
-                  className="mr-1 text-gray-400 transition hover:text-gray-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-              <span className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-blue-600 px-4 py-1 text-[10px] font-medium text-white">
-                Search
-              </span>
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                }}
+                className="mr-1 text-gray-400 transition hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+            <span className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-blue-600 px-4 py-1 text-[10px] font-medium text-white">
+              Search
+            </span>
           </div>
         </div>
 

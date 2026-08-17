@@ -250,7 +250,6 @@ function ActionField({
     const renderMenuAction = (
         action
     ) => {
-        console.log("action", action)
         const Icon =
             getIcon(action);
 

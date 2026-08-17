@@ -24,18 +24,43 @@ function DynamicField({
 
     /*
      * ---------------------------------------------------------
-     * FIELD ACTION
+     * FIELD SAVE
      * ---------------------------------------------------------
      *
-     * Example:
+     * Pass the current:
      *
-     * actionable: true,
+     * field
+     * value
+     * rowId
+     * record
      *
-     * action: {
-     *     type: "navigate",
-     *     target: "/contacts/{id}"
-     * }
+     * to the parent onSave function.
      *
+     */
+
+    const handleSave =
+        ({ field, value, record }) => {
+            if (!onSave) {
+                return;
+            }
+
+            const rowId =
+                record?.id ??
+                record?._id ??
+                record?.ID;
+            onSave({
+                field,
+                value,
+                rowId,
+                record,
+            });
+        }
+
+
+    /*
+     * ---------------------------------------------------------
+     * FIELD ACTION
+     * ---------------------------------------------------------
      */
 
     const actionable =
@@ -48,10 +73,6 @@ function DynamicField({
                 return;
             }
 
-            /*
-             * Prevent the action from bubbling to
-             * TableRow / TableCell.
-             */
             event?.stopPropagation();
 
             try {
@@ -117,7 +138,7 @@ function DynamicField({
             disabled={disabled}
 
             onChange={onChange}
-            onSave={onSave}
+            onSave={handleSave}
             onCancel={onCancel}
 
             {...rest}
@@ -128,11 +149,6 @@ function DynamicField({
      * ---------------------------------------------------------
      * ACTIONABLE FIELD
      * ---------------------------------------------------------
-     *
-     * Only wrap the field when actionable.
-     *
-     * This prevents unnecessary wrapper divs for
-     * normal fields.
      */
 
     if (!actionable) {

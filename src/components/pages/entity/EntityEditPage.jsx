@@ -1,9 +1,9 @@
-import React from "react";
 import { useEntityRecord } from "../../../hooks/useEntity";
-import { useDetailLayout } from "../../../queries/layouts.queries";
+import { useLayout } from "../../../queries/layouts.queries";
 
 import EditRenderer from "../../edit/EditRenderer";
 import EntityEditProvider from "../../edit/context/EntityEditProvider";
+import { LoadingProgress } from "@/components/Loading";
 
 const EntityEditPage = ({
     entity,
@@ -13,7 +13,7 @@ const EntityEditPage = ({
         data: layout,
         isLoading: layoutLoading,
         error: layoutError,
-    } = useDetailLayout(entity);
+    } = useLayout(entity, 'detail');
 
     const {
         data: record,
@@ -28,10 +28,13 @@ const EntityEditPage = ({
         enabled: !!layout,
     });
 
+
     if (layoutLoading || recordLoading) {
         return (
-            <div className="flex min-h-[300px] items-center justify-center">
-                Loading...
+            <div className="flex h-full min-h-[70vh] items-center justify-center">
+                <div className="flex flex-col items-center">
+                    <LoadingProgress color="blue" size="100" stroke="5" />
+                </div>
             </div>
         );
     }

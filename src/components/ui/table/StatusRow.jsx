@@ -1,179 +1,370 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useTableContext } from "./Table";
 import Icon from "../Icon/Icon";
+import { useEntityStats } from "@/hooks/useEntity";
+import { useContext } from "react";
+import { PageContext } from "@/context/pageContext";
 
-function StatusRow({ statusCount }) {
+function StatusRow() {
     const {
-        statusList,
-        statusKey,
+        layout,
+        entity,
         filters,
         setFilters,
-        count: total,
         showStatus,
+        preferences
     } = useTableContext();
-
+    const STATUS_CONFIG = layout?.config?.statusConfig ?? []
+    const { enteredEmail: email } = useContext(PageContext)
+    const { data: summary, isPending: summaryLoading } = useEntityStats({ filters: preferences, email, entity, stats: STATUS_CONFIG });
+    const statusList = STATUS_CONFIG.map((config) => {
+        return {
+            ...config,
+            count: Number(summary?.stats?.[`${config.key}`]?.count || 0),
+            amount: Number(summary?.stats?.[`${config.key}`]?.sum_of?.total_amount_c || 0)
+        };
+    });
     const toggleStatus = (status) => {
-        const key = status.filter || status.field || statusKey;
-
         const updated = { ...filters };
 
+        /*
+         * Get all filter keys used by the status cards.
+         * These will be removed before applying the
+         * newly selected status.
+         */
+        const statusFilterKeys = new Set();
+
         statusList.forEach((s) => {
-            delete updated[s.filter || s.field || statusKey];
+            // New structure:
+            // filters: {
+            //     order_status: "new"
+            // }
+            if (s.filters) {
+                Object.keys(s.filters).forEach((key) => {
+                    statusFilterKeys.add(key);
+                });
+            }
+
+            // Backward compatibility
+            if (s.filter) {
+                statusFilterKeys.add(s.filter);
+            }
+
+            if (s.field) {
+                statusFilterKeys.add(s.field);
+            }
 
             if (s.otherFilters) {
-                Object.keys(s.otherFilters).forEach((k) => delete updated[k]);
+                Object.keys(s.otherFilters).forEach((key) => {
+                    statusFilterKeys.add(key);
+                });
             }
 
             if (s.neqFilter) {
-                Object.keys(s.neqFilter).forEach((k) => delete updated[k]);
+                Object.keys(s.neqFilter).forEach((key) => {
+                    statusFilterKeys.add(key);
+                });
             }
         });
 
-        const isAlreadyApplied = (() => {
-            if (filters?.[key] !== status.value) return false;
+        /*
+         * Remove all filters controlled by status cards.
+         */
+        statusFilterKeys.forEach((key) => {
+            delete updated[key];
+        });
 
-            if (status.otherFilters) {
-                for (const [k, v] of Object.entries(status.otherFilters)) {
-                    if (filters?.[k] !== v) return false;
+        /*
+         * Build the filters for the selected status.
+         */
+        const statusFilters = {
+            ...(status.filters || {}),
+        };
+
+        /*
+         * Backward compatibility with old configuration.
+         */
+        if (
+            !status.filters &&
+            (status.filter || status.field)
+        ) {
+            const key =
+                status.filter ||
+                status.field
+
+            statusFilters[key] = status.value;
+        }
+
+        /*
+         * Additional filters
+         */
+        if (status.otherFilters) {
+            Object.assign(
+                statusFilters,
+                status.otherFilters
+            );
+        }
+
+        /*
+         * NOT EQUAL filters
+         */
+        if (status.neqFilter) {
+            Object.entries(status.neqFilter).forEach(
+                ([field, value]) => {
+                    statusFilters[field] = {
+                        neq: value,
+                    };
                 }
-            }
+            );
+        }
 
-            if (status.neqFilter) {
-                for (const [k, v] of Object.entries(status.neqFilter)) {
-                    if (filters?.[k]?.neq !== v) return false;
+        /*
+         * Check whether the currently selected status
+         * is already active.
+         */
+        const isAlreadyApplied =
+            Object.entries(statusFilters).every(
+                ([key, value]) => {
+                    if (
+                        value &&
+                        typeof value === "object" &&
+                        value.neq !== undefined
+                    ) {
+                        return (
+                            filters?.[key]?.neq ===
+                            value.neq
+                        );
+                    }
+
+                    return filters?.[key] === value;
                 }
-            }
+            );
 
-            return true;
-        })();
-
+        /*
+         * If already active:
+         * remove the status filters.
+         */
         if (isAlreadyApplied) {
             setFilters(updated);
             return;
         }
 
-        updated[key] = status.value;
-
-        if (status.otherFilters) {
-            Object.assign(updated, status.otherFilters);
-        }
-
-        if (status.neqFilter) {
-            Object.entries(status.neqFilter).forEach(([field, value]) => {
-                updated[field] = { neq: value };
-            });
-        }
+        /*
+         * Apply selected status filters.
+         */
+        Object.assign(
+            updated,
+            statusFilters
+        );
 
         setFilters(updated);
     };
 
     const isStatusActive = (status) => {
-        const field = status.filter || status.field || statusKey;
+        if (status.filters) {
+            return Object.entries(status.filters).every(
+                ([key, value]) => filters?.[key] === value
+            );
+        }
+
+        const field =
+            status.field
+
         return filters?.[field] === status.value;
     };
-
     return (
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
             {showStatus && (
                 <motion.div
                     key="status-row"
-                    initial={{ opacity: 0, y: -30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 30 }}
-                    transition={{ duration: 0.35 }}
+                    initial={{
+                        opacity: 0,
+                        height: 0,
+                    }}
+                    animate={{
+                        opacity: 1,
+                        height: "auto",
+                    }}
+                    exit={{
+                        opacity: 0,
+                        height: 0,
+                    }}
+                    transition={{
+                        duration: 0.2,
+                        ease: "easeOut",
+                    }}
                     className="
                         grid
                         grid-cols-2
                         sm:grid-cols-3
                         md:grid-cols-4
+                        lg:grid-cols-5
                         xl:grid-cols-6
                         2xl:grid-cols-8
-                        gap-4
-                        py-3
+                        gap-2
+                        overflow-hidden
                     "
                 >
-                    {statusList.map((status) => {
-                        const count = status.count ?? 0;
-                        const grandTotal = statusCount ?? total ?? 1;
+                    {statusList.map((status, i) => {
+                        const count =
+                            status.count ?? 0;
 
-                        const percent = Math.round(
-                            (count / Math.max(grandTotal, 1)) * 100
-                        );
+                        const amount =
+                            status.amount ?? 0;
 
-                        const active = status?.checkActive
-                            ? status.checkActive()
-                            : isStatusActive(status);
+                        const active = isStatusActive(status)
+
+
+                        const color =
+                            status.color ||
+                            "#64748b";
+
+                        const countLabel =
+                            status.countLabel ||
+                            "items";
 
                         return (
                             <motion.button
-                                whileHover={{
-                                    y: -4,
-                                    scale: 1.02,
+                                key={
+                                    status.key ||
+                                    status.value
+                                }
+                                type="button"
+                                onClick={() => {
+                                    if (
+                                        status.handleStatusClick
+                                    ) {
+                                        status.handleStatusClick();
+                                    } else {
+                                        toggleStatus(
+                                            status
+                                        );
+                                    }
                                 }}
                                 whileTap={{
                                     scale: 0.98,
                                 }}
-                                key={status.key || status.value}
-                                onClick={() => {
-                                    if (status.handleStatusClick) {
-                                        status.handleStatusClick();
-                                    } else {
-                                        toggleStatus(status);
-                                    }
+                                transition={{
+                                    duration: 0.12,
                                 }}
                                 className={`
+                                    group
                                     relative
-                                    overflow-hidden
-                                    rounded-2xl
+                                    flex
+                                    min-w-0
+                                    items-center
+                                    gap-3
+                                    rounded-xl
                                     border
-                                    bg-white
-                                    p-4
+                                    px-3
+                                    py-2.5
                                     text-left
-                                    transition-all
-                                    shadow-sm
-                                    hover:shadow-lg
+                                    transition-colors
+                                    duration-150
 
                                     ${active
-                                        ? "border-primary ring-2 ring-primary/20"
-                                        : "border-blue-200"
+                                        ? "border-primary/40 "
+                                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
                                     }
                                 `}
                             >
+                                {/* ICON */}
+                                <div
+                                    className="
+                                        flex
+                                        h-8
+                                        w-8
+                                        shrink-0
+                                        items-center
+                                        justify-center
+                                        rounded-lg
+                                    "
+                                    style={{
+                                        backgroundColor: `${color}12`,
+                                        color: color,
+                                    }}
+                                >
+                                    <span className="text-[16px]">
+                                        {Icon({
+                                            ...status.icon,
+                                        })}
+                                    </span>
+                                </div>
 
+                                {/* CONTENT */}
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center justify-between gap-2">
+                                        {/* STATUS LABEL */}
+                                        <span
+                                            className={`
+                                                truncate
+                                                text-xs
+                                                font-medium
+                                                ${active
+                                                    ? "text-gray-900"
+                                                    : "text-gray-600"
+                                                }
+                                            `}
+                                        >
+                                            {
+                                                status.label
+                                            }
+                                        </span>
 
-                                <div className="flex items-center justify-between">
-                                    <div
-                                        className="flex h-10 w-10 items-center justify-center rounded-xl"
-                                        style={{
-                                            background: `${status.color}15`,
-                                            color: status.color,
-                                        }}
-                                    >
-                                        {Icon({ ...status.icon })}
+                                        {/* MAIN VALUE */}
+                                        {status.showAmount ? (
+                                            <span
+                                                className="
+                                                    shrink-0
+                                                    text-sm
+                                                    font-bold
+                                                "
+
+                                            >
+                                                $
+                                                {Number(
+                                                    amount
+                                                ).toLocaleString()}
+                                            </span>
+                                        ) : (
+                                            <span
+                                                className="
+                                                    shrink-0
+                                                    text-sm
+                                                    font-bold
+                                                    text-gray-900
+                                                "
+                                            >
+                                                {count.toLocaleString()}
+                                            </span>
+                                        )}
                                     </div>
 
+                                    {/* SECONDARY VALUE */}
+                                    <div className="mt-0.5 text-[13px] text-gray-500">
+                                        {status.showAmount
+                                            ? `${count.toLocaleString()} ${countLabel}`
+                                            : countLabel}
+                                    </div>
+                                </div>
+
+                                {/* ACTIVE INDICATOR */}
+                                {active && (
                                     <span
-                                        className="rounded-full px-2 py-1 text-xs font-semibold"
+                                        className="
+                                            absolute
+                                            bottom-0
+                                            left-3
+                                            right-3
+                                            h-0.5
+                                            rounded-full
+                                        "
                                         style={{
-                                            background: `${status.color}15`,
-                                            color: status.color,
+                                            backgroundColor:
+                                                color,
                                         }}
-                                    >
-                                        {status.label}                                    </span>
-                                </div>
-
-                                <div className="mt-5">
-                                    {status.showAmount && (
-                                        <div className="text-2xl font-bold">
-                                            ${status.amount}
-                                        </div>
-                                    )}
-
-                                    <div className="mt-1 text-xl font-semibold">
-                                        {count}
-                                    </div>
-
-                                </div>
+                                    />
+                                )}
                             </motion.button>
                         );
                     })}

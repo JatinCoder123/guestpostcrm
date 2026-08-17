@@ -1,23 +1,35 @@
 import {
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from "react";
 
-import EntityEditContext
-    from "./EntityEditContext";
+import EntityEditContext from "./EntityEditContext";
 
 import {
     buildEditState,
 } from "../utils/buildEditState";
+
+import {
+    buildMutationPayload,
+} from "../utils/buildMutationPayload";
+
+import { useUpdateEntity } from "@/hooks/useEntity";
 
 const EntityEditProvider = ({
     children,
     layout,
     record,
     entity,
-    id,
+    email,
 }) => {
+    /*
+     * ============================================================
+     * INITIAL STATE
+     * ============================================================
+     */
+
     const initialState = useMemo(
         () =>
             buildEditState({
@@ -27,29 +39,91 @@ const EntityEditProvider = ({
         [layout, record]
     );
 
+    /*
+     * ============================================================
+     * FORM STATE
+     * ============================================================
+     */
+
     const [
         formState,
         setFormState,
     ] = useState(initialState);
+    /*
+     * ============================================================
+     * DIRTY FIELDS
+     *
+     * {
+     *     contacts: {
+     *         first_name: true,
+     *         phone: true
+     *     },
+     *
+     *     accounts: {
+     *         name: true
+     *     }
+     * }
+     * ============================================================
+     */
 
     const [
         dirtyFields,
         setDirtyFields,
     ] = useState({});
 
+    /*
+     * ============================================================
+     * ERRORS
+     * ============================================================
+     */
+
     const [
         errors,
         setErrors,
     ] = useState({});
+
+    /*
+     * ============================================================
+     * SAVING
+     * ============================================================
+     */
 
     const [
         saving,
         setSaving,
     ] = useState(false);
 
-    // ============================================================
-    // UPDATE FIELD
-    // ============================================================
+    /*
+     * ============================================================
+     * UPDATE MUTATION
+     * ============================================================
+     */
+
+    const updateMutation =
+        useUpdateEntity();
+
+    /*
+     * ============================================================
+     * SYNC INITIAL STATE
+     * ============================================================
+     *
+     * If the record changes because of a refetch/navigation,
+     * rebuild the form.
+     *
+     * ============================================================
+     */
+
+    useEffect(() => {
+        setFormState(initialState);
+        setDirtyFields({});
+        setErrors({});
+    }, [initialState]);
+
+    /*
+     * ============================================================
+     * UPDATE FIELD
+     * ============================================================
+     */
 
     const updateField = useCallback(
         ({
@@ -70,6 +144,12 @@ const EntityEditProvider = ({
                 return;
             }
 
+            /*
+             * ----------------------------------------------------
+             * UPDATE FORM VALUE
+             * ----------------------------------------------------
+             */
+
             setFormState(
                 (previous) => ({
                     ...previous,
@@ -88,6 +168,12 @@ const EntityEditProvider = ({
                 })
             );
 
+            /*
+             * ----------------------------------------------------
+             * MARK FIELD DIRTY
+             * ----------------------------------------------------
+             */
+
             setDirtyFields(
                 (previous) => ({
                     ...previous,
@@ -95,12 +181,18 @@ const EntityEditProvider = ({
                     [module]: {
                         ...previous[module],
 
-                        [field.accessor]: true,
+                        [field.accessor]:
+                            true,
                     },
                 })
             );
 
-            // Clear field error
+            /*
+             * ----------------------------------------------------
+             * CLEAR FIELD ERROR
+             * ----------------------------------------------------
+             */
+
             setErrors(
                 (previous) => {
                     if (
@@ -110,30 +202,40 @@ const EntityEditProvider = ({
                     }
 
                     const moduleErrors = {
-                        ...previous[
-                        module
-                        ],
+                        ...previous[module],
                     };
 
                     delete moduleErrors[
                         field.accessor
                     ];
 
-                    return {
+                    const next = {
                         ...previous,
-
-                        [module]:
-                            moduleErrors,
                     };
+
+                    if (
+                        Object.keys(
+                            moduleErrors
+                        ).length > 0
+                    ) {
+                        next[module] =
+                            moduleErrors;
+                    } else {
+                        delete next[module];
+                    }
+
+                    return next;
                 }
             );
         },
         []
     );
 
-    // ============================================================
-    // GET FIELD VALUE
-    // ============================================================
+    /*
+     * ============================================================
+     * GET FIELD VALUE
+     * ============================================================
+     */
 
     const getFieldValue = useCallback(
         ({
@@ -144,6 +246,10 @@ const EntityEditProvider = ({
                 section?.source?.module ??
                 section?.module;
 
+            if (!module) {
+                return undefined;
+            }
+
             return formState?.[
                 module
             ]?.data?.[
@@ -153,9 +259,44 @@ const EntityEditProvider = ({
         [formState]
     );
 
-    // ============================================================
-    // RESET FIELD
-    // ============================================================
+    /*
+     * ============================================================
+     * GET CHANGES
+     * ============================================================
+     */
+
+    const getChanges = useCallback(() => {
+        return buildMutationPayload({
+            formState,
+            dirtyFields,
+        });
+    }, [
+        formState,
+        dirtyFields,
+    ]);
+
+    /*
+     * ============================================================
+     * IS DIRTY
+     * ============================================================
+     */
+
+    const isDirty = useMemo(() => {
+        return Object.values(
+            dirtyFields
+        ).some(
+            (module) =>
+                Object.keys(
+                    module ?? {}
+                ).length > 0
+        );
+    }, [dirtyFields]);
+
+    /*
+     * ============================================================
+     * RESET FIELD
+     * ============================================================
+     */
 
     const resetField = useCallback(
         ({
@@ -166,6 +307,10 @@ const EntityEditProvider = ({
                 section?.source?.module ??
                 section?.module;
 
+            if (!module) {
+                return;
+            }
+
             const originalValue =
                 initialState?.[
                     module
@@ -173,116 +318,263 @@ const EntityEditProvider = ({
                 field.accessor
                 ];
 
-            updateField({
-                section,
-                field,
-                value: originalValue,
-            });
+            /*
+             * Restore original value.
+             */
+            setFormState(
+                (previous) => ({
+                    ...previous,
 
+                    [module]: {
+                        ...previous[module],
+
+                        data: {
+                            ...previous[module]
+                                ?.data,
+
+                            [field.accessor]:
+                                originalValue,
+                        },
+                    },
+                })
+            );
+
+            /*
+             * Remove dirty flag.
+             */
             setDirtyFields(
                 (previous) => {
                     const moduleDirty = {
-                        ...previous[module],
+                        ...previous[
+                        module
+                        ],
                     };
 
                     delete moduleDirty[
                         field.accessor
                     ];
 
-                    return {
+                    const next = {
                         ...previous,
-
-                        [module]:
-                            moduleDirty,
                     };
+
+                    if (
+                        Object.keys(
+                            moduleDirty
+                        ).length > 0
+                    ) {
+                        next[module] =
+                            moduleDirty;
+                    } else {
+                        delete next[module];
+                    }
+
+                    return next;
+                }
+            );
+
+            /*
+             * Remove error.
+             */
+            setErrors(
+                (previous) => {
+                    const moduleErrors = {
+                        ...previous[
+                        module
+                        ],
+                    };
+
+                    delete moduleErrors[
+                        field.accessor
+                    ];
+
+                    const next = {
+                        ...previous,
+                    };
+
+                    if (
+                        Object.keys(
+                            moduleErrors
+                        ).length > 0
+                    ) {
+                        next[module] =
+                            moduleErrors;
+                    } else {
+                        delete next[module];
+                    }
+
+                    return next;
                 }
             );
         },
-        [
-            initialState,
-            updateField,
-        ]
+        [initialState]
     );
 
-    // ============================================================
-    // RESET ALL
-    // ============================================================
+    /*
+     * ============================================================
+     * RESET ALL
+     * ============================================================
+     */
 
     const resetAll = useCallback(() => {
-        setFormState(
-            initialState
-        );
-
+        setFormState(initialState);
         setDirtyFields({});
-
         setErrors({});
     }, [initialState]);
 
-    // ============================================================
-    // DIRTY CHECK
-    // ============================================================
+    /*
+     * ============================================================
+     * SAVE CHANGES
+     * ============================================================
+     */
 
-    const isDirty =
-        Object.values(
-            dirtyFields
-        ).some(
-            (module) =>
-                Object.keys(
-                    module ?? {}
-                ).length > 0
-        );
+    const saveChanges = useCallback(
+        async () => {
+            if (saving) {
+                return;
+            }
 
-    // ============================================================
-    // CONTEXT
-    // ============================================================
+            const changes =
+                buildMutationPayload({
+                    formState,
+                    dirtyFields,
+                });
+            console.log("changes", changes)
+
+            if (changes.length === 0) {
+                return;
+            }
+
+            try {
+                setSaving(true);
+
+                setErrors({});
+
+
+                await Promise.all(
+                    changes.map(
+                        (change) =>
+                            updateMutation.mutateAsync(
+                                {
+                                    entity:
+                                        change.module,
+
+                                    id:
+                                        change.id,
+
+                                    payload:
+                                        change.payload,
+                                }
+                            )
+                    )
+                );
+
+                /*
+                 * =================================================
+                 * SUCCESS
+                 * =================================================
+                 *
+                 * The current form state becomes the new
+                 * baseline.
+                 *
+                 * =================================================
+                 */
+
+                setDirtyFields({});
+
+                setErrors({});
+
+                /*
+                 * Make current state the new initial state
+                 * for future resetField operations.
+                 *
+                 * We cannot mutate initialState directly because
+                 * it is memoized.
+                 *
+                 * The server/query should normally refetch and
+                 * provide the updated record.
+                 */
+
+                return changes;
+            } catch (error) {
+                console.error(
+                    "Entity update failed:",
+                    error
+                );
+
+                /*
+                 * Keep dirty fields intact so the user can
+                 * retry.
+                 */
+
+                throw error;
+            } finally {
+                setSaving(false);
+            }
+        },
+        [
+            saving,
+            formState,
+            dirtyFields,
+            updateMutation,
+        ]
+    );
+
+    /*
+     * ============================================================
+     * CONTEXT VALUE
+     * ============================================================
+     */
 
     const value = useMemo(
         () => ({
             layout,
-
             record,
-
             entity,
-
-            id,
+            email,
 
             formState,
-
             initialState,
 
             dirtyFields,
-
             errors,
 
             saving,
-
             isDirty,
 
             updateField,
-
             getFieldValue,
 
-            resetField,
+            getChanges,
+            saveChanges,
 
+            resetField,
             resetAll,
 
             setSaving,
-
             setErrors,
         }),
         [
             layout,
             record,
             entity,
-            id,
+            email,
+
             formState,
             initialState,
+
             dirtyFields,
             errors,
+
             saving,
             isDirty,
+
             updateField,
             getFieldValue,
+
+            getChanges,
+            saveChanges,
+
             resetField,
             resetAll,
         ]

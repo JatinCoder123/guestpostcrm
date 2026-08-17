@@ -684,25 +684,13 @@ export default function FieldRenderer({
         }
 
 
-        // ----------------------------------------------------
-        // ENTER
-        // ----------------------------------------------------
-
-        /*
-         * Enter saves inline fields.
-         *
-         * In edit mode the global Save button handles
-         * the complete form.
-         */
-
         if (
             event.key === "Enter" &&
             type !== "textarea" &&
             !isEditMode
         ) {
             event.preventDefault();
-
-            save();
+            save()
         }
     };
 
@@ -716,6 +704,7 @@ export default function FieldRenderer({
             className={`
                 group
                 min-w-0
+                flex items-center gap-2
                 ${className}
             `}
         >
@@ -727,10 +716,10 @@ export default function FieldRenderer({
             {!hideLabel && (
                 <div
                     className="
-                        mb-1
                         text-[13px]
                         font-medium
                         text-slate-500
+                        w-[20%]
                     "
                 >
                     {label}

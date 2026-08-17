@@ -1,10 +1,7 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import blockRegistry from "./blockRegistry";
-import DynamicField from "../../ui/fields/DynamicField";
-import FieldRenderer from "../../fields/FieldRenderer";
 import { resolveFieldValue } from "../../fields/resolveFieldContext ";
 import ActionField from "../../fields/actions/ActionField";
-import EditSection from "../../edit/components/EditSection";
 
 import {
     Tabs as ShadcnTabs,
@@ -12,6 +9,11 @@ import {
     TabsTrigger,
     TabsContent,
 } from "@/components/ui/tabs";
+import { useUpdateEntity } from "@/queries/entity.queries";
+import toast from "react-hot-toast";
+import FieldRenderer from "@/components/fields2/FieldRenderer";
+import DetailField from "../DetailField";
+import { queryClient } from "@/lib/queryClient";
 
 const Tabs = ({ config, record, entity, mode }) => {
     const defaultTab =
@@ -183,9 +185,15 @@ const Summary = ({ config, record }) => {
 
 };
 
-const Section = ({ config, record, mode }) => {
-    console.log("CONFIG", config)
+const Section = ({
+    config,
+    record,
+    mode,
+    entity,
+}) => {
+    console.log("CONFIG", config);
     console.log("RECORD", record);
+
     const gridCols = {
         1: "grid-cols-1",
         2: "grid-cols-2",
@@ -194,9 +202,73 @@ const Section = ({ config, record, mode }) => {
         5: "grid-cols-5",
         6: "grid-cols-6",
     };
-    if (mode == "edit") {
-        return <EditSection config={config} record={record} />
-    }
+
+    /*
+     * ---------------------------------------------------------
+     * UPDATE ENTITY
+     * ---------------------------------------------------------
+     */
+
+    const updateMutation = useUpdateEntity();
+
+    const handleSave = useCallback(
+        async (
+            value,
+            field
+        ) => {
+            const rowId =
+                resolveFieldValue({
+                    record,
+                    section: config,
+                    field: "id",
+                });
+
+            if (!rowId) {
+                toast.error(
+                    "Record ID not found"
+                );
+                return;
+            }
+
+            try {
+                await updateMutation.mutateAsync({
+                    entity: config.module,
+                    id: rowId,
+                    payload: {
+                        [field.accessor]: value,
+                    },
+                });
+
+                toast.success(
+                    `${field?.label || accessor} updated`
+                );
+                queryClient.invalidateQueries({ queryKey: ['entity', entity] })
+            } catch (error) {
+                console.error(
+                    "Field update failed:",
+                    error
+                );
+
+                toast.error(
+                    "Failed to update field"
+                );
+
+                throw error;
+            }
+        },
+        [
+            entity,
+            record,
+            updateMutation,
+        ]
+    );
+
+
+    /*
+     * ---------------------------------------------------------
+     * VIEW MODE
+     * ---------------------------------------------------------
+     */
 
     return (
         <div className="mt-6 rounded-xl border bg-white p-6">
@@ -213,29 +285,39 @@ const Section = ({ config, record, mode }) => {
                     gap-4
                 `}
             >
+                {config.fields?.map(
+                    (field) => {
+                        const value =
+                            resolveFieldValue({
+                                record,
+                                section: config,
+                                field,
+                            });
 
-                {config.fields?.map((field) => {
-                    const value = resolveFieldValue({
-                        record,
-                        section: config,
-                        field,
-                    });
-                    return (
-                        <FieldRenderer
-                            value={value}
-                            key={field.accessor}
-                            field={field}
-                            mode="view"
-                            record={record}
-                        />
-                    )
-                })}
-
+                        return (
+                            <DetailField
+                                key={
+                                    field.accessor
+                                }
+                                value={value}
+                                updating={
+                                    updateMutation.isPending
+                                }
+                                field={field}
+                                fieldKey={field.accessor}
+                                record={record}
+                                onSave={
+                                    handleSave
+                                }
+                            />
+                        );
+                    }
+                )}
             </div>
-
         </div>
     );
 };
+
 
 
 const Timeline = () => {

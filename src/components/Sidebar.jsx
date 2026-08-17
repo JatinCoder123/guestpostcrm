@@ -95,10 +95,7 @@ export function Sidebar() {
           width: collapsed ? 80 : 260,
         }} transition={{ duration: 0.25 }}
         className="
-         fixed
-      left-0
-      top-0
-      z-50
+
       h-screen
 lg:static
  lg:translate-x-0
@@ -270,7 +267,7 @@ shadow-2xl"
                               onClick={() => {
                                 setSidebarCollapsed(true);
                                 setActivePage(item.id);
-                                navigateTo(`/entity/${item.module_name}/table`)
+                                navigateTo(`/${item.name.toLowerCase()}`)
                               }}
                               className={`
                       flex w-full items-center gap-3 rounded-lg p-2

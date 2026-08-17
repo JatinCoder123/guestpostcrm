@@ -1,5 +1,7 @@
+import { apiRequest } from "@/services/api";
+
 export const getDetailLayout = () => ({
-    module: "contacts",
+    module: "Contacts",
     layout: "detail",
     version: 3,
     request: {
@@ -152,11 +154,11 @@ export const getDetailLayout = () => ({
 
                             title: "Contact Information",
 
-                            module: "contacts",
+                            module: "Contacts",
 
                             columns: 2,
                             source: {
-                                module: "contacts",
+                                module: "Contacts",
                                 path: "contact",
                             },
 
@@ -424,13 +426,13 @@ export const getDetailLayout = () => ({
 
                             title: "Address Information",
 
-                            module: "contacts",
+                            module: "Contacts",
 
                             columns: 2,
 
                             editable: true,
                             source: {
-                                module: "contacts",
+                                module: "Contacts",
                                 path: "contact",
                             },
                             fields: [
@@ -525,11 +527,11 @@ export const getDetailLayout = () => ({
 
                             title: "Contact Status",
 
-                            module: "contacts",
+                            module: "Contacts",
 
                             columns: 2,
                             source: {
-                                module: "contacts",
+                                module: "Contacts",
                                 path: "contact",
                             },
                             editable: true,
@@ -1015,3 +1017,11 @@ export const getDetailLayout = () => ({
         },
     ],
 });
+
+export const getLayout = async (module = 'orders', view_key = "table") => {
+    const data = await apiRequest({
+        endpoint: "https://gagan.guestpostcrm.com/index.php?entryPoint=flexibility&api_version=v1",
+        params: { module_key: module, view_key },
+    })
+    return data;
+}

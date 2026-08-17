@@ -1,15 +1,12 @@
 import { getByPath } from "../../fields/resolveFieldContext ";
 
-
 export const buildEditState = ({
     layout,
     record,
 }) => {
     const state = {};
 
-    const processSection = (
-        section
-    ) => {
+    const processSection = (section) => {
         const module =
             section?.source?.module ??
             section?.module;
@@ -33,10 +30,23 @@ export const buildEditState = ({
         if (!state[module]) {
             state[module] = {
                 id:
-                    sourceRecord?.id ?? null,
+                    sourceRecord?.id ??
+                    null,
 
                 data: {},
             };
+        }
+
+        /*
+         * If another section uses the same module,
+         * don't recreate the module. Merge its fields.
+         */
+        if (
+            sourceRecord?.id &&
+            !state[module].id
+        ) {
+            state[module].id =
+                sourceRecord.id;
         }
 
         section.fields?.forEach(
@@ -60,21 +70,22 @@ export const buildEditState = ({
         );
     };
 
-    const processBlock = (
-        block
-    ) => {
+    const processBlock = (block) => {
+        if (!block) {
+            return;
+        }
+
         if (block.type === "section") {
             processSection(block);
+            return;
         }
 
         if (block.type === "tabs") {
-            block.tabs?.forEach(
-                (tab) => {
-                    tab.sections?.forEach(
-                        processSection
-                    );
-                }
-            );
+            block.tabs?.forEach((tab) => {
+                tab.sections?.forEach(
+                    processSection
+                );
+            });
         }
     };
 
