@@ -393,8 +393,8 @@ export default function App() {
 
       {isAuthenticated && !loading && (
         <>
-          <MeetingWidget />
-          <TwakChat />
+          {/* <MeetingWidget />
+          <TwakChat /> */}
           <RouterProvider router={router} />
         </>
       )}

@@ -175,7 +175,7 @@ export function AiCreditsPage() {
       }}
     >
       <TableTitleBar Icon={Gift} title={"AI Credits"} titleClass={"text-purple-700"} />
-      <Table headerStyle={"bg-purple-600"} layoutStyle={"grid grid-cols-5"} />
+      <Table layoutStyle={"grid grid-cols-5"} />
     </TableView>
   );
 }

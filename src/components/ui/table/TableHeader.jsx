@@ -28,7 +28,7 @@ function TableHeader(props) {
     return (
         <div
 
-            className={`${props.headerStyle} ${props.layoutStyle} `}
+            className={`bg-blue-600 ${props.layoutStyle} `}
 
         >
 
