@@ -331,9 +331,8 @@ const StatBadge = ({
         </span>
 
         <span
-          className={`text-[18px] font-medium text-gray-900 transition-all duration-300 ${
-            animate ? "scale-110" : "scale-100"
-          }`}
+          className={`text-[18px] font-medium text-gray-900 transition-all duration-300 ${animate ? "scale-110" : "scale-100"
+            }`}
         >
           {value ?? "—"}
         </span>
@@ -472,11 +471,7 @@ export function TopNav() {
       className="sticky top-0 z-[999] flex   items-center justify-between p-2 gap-3 bg-white border  rounded-md "
     >
       <div className="flex items-center justify-between">
-        <IconButton
-          onClick={() => setMobileSidebarOpen(true)}
-          className="lg:hidden p-2 rounded-md hover:bg-gray-100"
-          icon={Menu}
-        />
+
         <div
           className="flex  items-center gap-2 min-w-0 justify-center p-1"
           data-tour="top-nav-search"
@@ -549,46 +544,46 @@ export function TopNav() {
 
 
       <div className="justify-end flex shrink-0 items-center gap-1.5">
-        
+
         {/* ── 🆕 User Activity Panel — sits before the other nav buttons ── */}
         <div className="flex-shrink-0 flex items-center gap-2">
-        <UserActivityPanel
-          activeUsers={activeUsers}
-          currentUserEmail={user?.email}
-        />
-</div>
+          <UserActivityPanel
+            activeUsers={activeUsers}
+            currentUserEmail={user?.email}
+          />
+        </div>
         {/* Thin divider between activity panel and icon buttons */}
         <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
         <div className="flex-shrink-0 flex items-center gap-2 pr-2">
           {/* Vertical Divider */}
-         <StatBadge
-  icon={MailOpen}
-  label="Received"
-  value={stats.reply_recieved}
-  colorClass="text-emerald-500"
-  bgClass="bg-emerald-100 group-hover:bg-emerald-200"
-/>
+          <StatBadge
+            icon={MailOpen}
+            label="Received"
+            value={stats.reply_recieved}
+            colorClass="text-emerald-500"
+            bgClass="bg-emerald-100 group-hover:bg-emerald-200"
+          />
 
-<div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
+          <div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
 
-<StatBadge
-  icon={Send}
-  label="Sent"
-  value={stats.reply_sent}
-  colorClass="text-blue-600"
-  bgClass="bg-blue-100 group-hover:bg-blue-200"
-/>
+          <StatBadge
+            icon={Send}
+            label="Sent"
+            value={stats.reply_sent}
+            colorClass="text-blue-600"
+            bgClass="bg-blue-100 group-hover:bg-blue-200"
+          />
 
-<div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
+          <div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
 
-<StatBadge
-  icon={Bell}
-  label="Reminders"
-  value={stats.reminder_sent}
-  colorClass="text-amber-500"
-  bgClass="bg-amber-100 group-hover:bg-amber-200"
-/>
+          <StatBadge
+            icon={Bell}
+            label="Reminders"
+            value={stats.reminder_sent}
+            colorClass="text-amber-500"
+            bgClass="bg-amber-100 group-hover:bg-amber-200"
+          />
 
           {/* SUMMARY */}
 
@@ -600,7 +595,7 @@ export function TopNav() {
 
 
         {/* Divider */}
-       <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
+        <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
         {/* ── Profile chip (unchanged) ── */}
         <div ref={profileMenuRef} className="relative">

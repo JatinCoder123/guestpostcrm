@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowDownUp, ArrowUp } from "lucide-react";
 import { useTableContext } from "./Table";
 import useColumnResize from "./hooks/useColumnResize";
 
@@ -6,8 +6,8 @@ export default function TableHeader() {
     const {
         stickyColumns,
         gridTemplate,
-        sorting,
-        setSort,
+        sort,
+        toggleSort,
         columnWidths,
         resizeColumn,
     } = useTableContext();
@@ -16,26 +16,25 @@ export default function TableHeader() {
         columnWidths,
         resizeColumn,
     });
-
-    const toggleSort = (column) => {
+    const handleToggleSort = (column) => {
         if (!column.sortable) return;
-
-        setSort((prev) => {
-            if (prev.column === column.accessor) {
+        const getNewSort = (sort) => {
+            if (sort.order_by === column.accessor) {
                 return {
-                    column: column.accessor,
-                    direction:
-                        prev.direction === "asc"
-                            ? "desc"
-                            : "asc",
+                    order_by: column.accessor,
+                    order_dir:
+                        sort.order_dir === "ASC"
+                            ? "DESC"
+                            : "ASC",
                 };
             }
 
             return {
-                column: column.accessor,
-                direction: "asc",
+                order_by: column.accessor,
+                order_dir: "ASC",
             };
-        });
+        }
+        toggleSort(getNewSort(sort))
     };
 
     return (
@@ -50,12 +49,12 @@ export default function TableHeader() {
                 const Icon = column.icon;
 
                 const isSorted =
-                    sorting?.column === column.accessor;
+                    sort?.order_by === column.accessor;
 
                 return (
                     <div
                         key={column.accessor}
-                        onClick={() => toggleSort(column)}
+                        onClick={() => handleToggleSort(column)}
                         className={`
               relative
               flex
@@ -101,7 +100,7 @@ export default function TableHeader() {
                         {column.sortable && (
                             <>
                                 {isSorted ? (
-                                    sorting.direction === "asc" ? (
+                                    sort?.order_dir === "ASC" ? (
                                         <ArrowUp
                                             size={14}
                                             className="shrink-0"
@@ -113,9 +112,9 @@ export default function TableHeader() {
                                         />
                                     )
                                 ) : (
-                                    <ArrowUp
+                                    <ArrowDownUp
                                         size={12}
-                                        className="opacity-20"
+                                        className="opacity-50"
                                     />
                                 )}
                             </>

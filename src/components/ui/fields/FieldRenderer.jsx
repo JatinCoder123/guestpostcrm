@@ -1,8 +1,5 @@
 import { memo } from "react";
-import {
-    DEFAULT_FIELD,
-    FIELD_COMPONENTS,
-} from "./fieldRegistry";
+import FIELD_COMPONENTS from "./fieldRegistry.js";
 
 function FieldRenderer({
     row,
@@ -10,8 +7,9 @@ function FieldRenderer({
     value,
 }) {
     const Component =
-        FIELD_COMPONENTS[column.type] ??
-        DEFAULT_FIELD;
+        FIELD_COMPONENTS[column?.type]
+    console.log("COLUMN", column)
+    if (!Component) return;
 
     return (
         <Component

@@ -2,8 +2,10 @@ import { ArrowLeft, BadgeInfo } from "lucide-react";
 import TableFooter from "./TableFooter";
 import { useNavigate } from "react-router-dom";
 import IconButton from "../Buttons/IconButton";
+import { useTableContext } from "./Table";
 function TableTitleBar({ Icon, title, iconClass }) {
     const navigate = useNavigate();
+    const { tableName } = useTableContext()
 
     return (
         <div className="flex items-center justify-between px-5 py-4 border-b bg-white shadow-sm rounded-t-xl text-[#1553E6]">
@@ -18,8 +20,8 @@ function TableTitleBar({ Icon, title, iconClass }) {
                 />
                 <div className="p-2 rounded-lg flex items-center gap-3 ">
 
-                    <Icon className={`w-6 h-6 `} />
-                    <h2 className="text-xl font-semibold ">{title}</h2>
+                    {/* <Icon className={`w-6 h-6 `} /> */}
+                    <h2 className="text-xl font-semibold ">{tableName}</h2>
                 </div>
 
 

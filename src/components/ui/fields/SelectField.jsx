@@ -18,7 +18,7 @@ export default function SelectField(props) {
         save,
     } = useEditableField(props);
 
-    const options = field.options || [];
+    const options = field?.options || [];
 
     const selected = useMemo(() => {
         return (

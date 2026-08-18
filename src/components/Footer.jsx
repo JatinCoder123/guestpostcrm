@@ -119,10 +119,9 @@ export default function Footer() {
   }, [error, dispatch]);
   return (
     <footer
-  className={`fixed bottom-0 right-0 z-20 flex h-12 items-center justify-between bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-[820px]:left-0 ${
-    collapsed ? "left-[80px]" : "left-[260px]"
-  }`}
->
+      className={`fixed bottom-0 right-0 z-20 flex h-12 items-center justify-between bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-[820px]:left-0 ${collapsed ? "left-[80px]" : "left-[260px]"
+        }`}
+    >
       <IconButton icon={Settings} label="Settings" onClick={() => navigate("/settings")} />
       <div className="flex gap-2">
         <IconButton

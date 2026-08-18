@@ -75,7 +75,7 @@ const router = createBrowserRouter([
     element: <NotFoundPage />,
   },
   {
-    path: "",
+    path: "/",
     element: (
       <ErrorBoundary>
         <SocketContextProvider>
@@ -95,27 +95,103 @@ const router = createBrowserRouter([
 
 
     ),
+    handle: {
+      breadcrumb: "Timeline",
+    },
     children: [
       {
         index: true,
         element: <TimelinePage />,
+
       },
 
       {
-        path: "entity/:entity/:view",
+        path: "entity/:entity/list/:view",
         element: <DynamicEntityHandler mode="list" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: params.view,
+              type: "view",
+            },
+          ],
+        },
       },
+
       {
         path: "entity/:entity/view",
         element: <DynamicEntityHandler mode="list" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: "View",
+              type: "view",
+            },
+          ],
+        },
       },
+
+      {
+        path: "entity/:entity/:email",
+        element: <DynamicEntityHandler mode="detail" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: params.email,
+              type: "record",
+            },
+          ],
+        },
+      },
+
       {
         path: "entity/:entity/create",
         element: <DynamicEntityHandler mode="create" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: "Create",
+              type: "action",
+            },
+          ],
+        },
       },
+
       {
-        path: "entity/:entity/edit",
+        path: "entity/:entity/:email/edit",
         element: <DynamicEntityHandler mode="edit" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: params.email,
+              type: "record",
+            },
+            {
+              label: "Edit",
+              type: "action",
+            },
+          ],
+        },
       },
       {
         path: "unreplied-emails",
@@ -173,19 +249,42 @@ const router = createBrowserRouter([
 
       {
         path: ":type",
-        element: <DynamicRouteHandler mode="list" />,
-      },
-      {
-        path: ":type/view",
-        element: <DynamicRouteHandler mode="list" />,
-      },
-      {
-        path: ":type/create",
-        element: <DynamicRouteHandler mode="create" />,
-      },
-      {
-        path: ":type/edit",
-        element: <DynamicRouteHandler mode="edit" />,
+        element: <Outlet />,
+
+        handle: {
+          breadcrumb: ({ params }) => params.type,
+        },
+
+        children: [
+          {
+            index: true,
+            element: <DynamicRouteHandler mode="list" />,
+          },
+
+          {
+            path: "view",
+            element: <DynamicRouteHandler mode="list" />,
+            handle: {
+              breadcrumb: "View",
+            },
+          },
+
+          {
+            path: "create",
+            element: <DynamicRouteHandler mode="create" />,
+            handle: {
+              breadcrumb: "Create",
+            },
+          },
+
+          {
+            path: "edit",
+            element: <DynamicRouteHandler mode="edit" />,
+            handle: {
+              breadcrumb: "Edit",
+            },
+          },
+        ],
       },
       {
         path: "invoices",

@@ -1,11 +1,11 @@
-import { Mirage, Tailspin, TailChase, Ping, Hourglass } from "ldrs/react";
+import { Mirage, Tailspin, TailChase, Ping, Hourglass, Zoomies } from "ldrs/react";
 import "ldrs/react/Mirage.css";
 import "ldrs/react/Tailspin.css";
 import "ldrs/react/NewtonsCradle.css";
 import "ldrs/react/TailChase.css";
 import "ldrs/react/Ping.css";
 import "ldrs/react/Hourglass.css";
-
+import 'ldrs/react/Zoomies.css'
 export default function Loading({ text }) {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
@@ -20,6 +20,20 @@ export function LoadingSpin({ color = "white", size = "14", stroke = "1" }) {
     <>
       <Tailspin size={size} stroke={stroke} speed="0.9" color={color} />
     </>
+  );
+}
+export function LoadingProgress({ color = "black", size = "14", stroke = "1" }) {
+  return (
+
+
+    // Default values shown
+    <Zoomies
+      size={size}
+      stroke={stroke}
+      bgOpacity="0.1"
+      speed="1.4"
+      color={color}
+    />
   );
 }
 export function LoadingChase({ size = "40", color = "green" }) {

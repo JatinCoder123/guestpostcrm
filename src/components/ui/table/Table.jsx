@@ -6,8 +6,6 @@ import React, {
   useState,
 } from "react";
 import { motion } from "framer-motion";
-import TableHeader from "./TableHeader";
-import TableBody from "./TableBody";
 import FilterRow from "./FilterRow";
 import StatusRow from "./StatusRow";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,11 +21,15 @@ import { DateRangeFilter } from "../../DateRangeFilter";
 import { todayStr } from "../../../services/dateRangeUtils";
 import IconButton from "../Buttons/IconButton"
 import SearchBar from "./SearchBar";
-import SortDropdown from "./SortDropDown";
 import FilterColumn from "./FilterColumn";
 import { getPreference, preferencesAction } from "../../../store/Slices/preferencesSlice";
 import { queryClient } from "../../../lib/queryClient";
 import TableViewport from "./TableViewport";
+import useActionMutation from "../../fields/actions/useActionMutation";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import TableTitleBar from "./TableTitleBar";
+import { entityKeys } from "@/hooks/useEntity";
 const TableContext = createContext();
 export const useTableContext = () => {
   const ctx = useContext(TableContext);
@@ -73,33 +75,41 @@ const TableSkeleton = ({
 
 
 const TableView = ({
-  tableData = [],
-  tableName,
-  columns,
-  slice,
-  statusList = [],
-  statusKey = "status",
+  data,
+  layout,
+  entity,
   statusCount = null,
-  filterColumns = [],
   preferences,
   searching = true,
-  sortingFilter = true,
   timefilter = true,
-  timefilterField = "date_entered",
   fetchNextPage,
   hasNextPage,
   isFetchingNextPage,
   children,
-  pageCount,
-  pageIndex,
   canAdd = false,
   handleAddClick,
-  count,
   loading,
-  showLoading = true,
-  refreshKey
 }) => {
-  const sorting = preferences?.sorting ?? {}
+  const slice = entity
+  const STATUS_CONFIG = layout?.config?.statusConfig ?? []
+
+  const timefilterField = layout?.config?.filterColumns ? layout?.config?.filterColumns[0]?.name : 'date_entered';
+  const tableName = layout?.label;
+  const columns = layout?.config?.columns ?? []
+  const filterColumns = layout?.config?.filterColumns ?? []
+  const tableData =
+    data?.pages?.flatMap(
+      (page) => page.records || page.data || []
+    ) ?? [];
+  const pages = data?.pages ?? [];
+
+  const lastPage = pages[pages.length - 1] ?? {};
+  const firstPage = pages[0] ?? {};
+
+  const pageIndex = lastPage.page ?? 1;
+  const pageCount = firstPage.total_pages ?? 0;
+  const count = firstPage.total ?? 0;
+  const sort = preferences?.sorting ?? {}
   const dateFilter = preferences?.date_filter || {};
   const fromDate = dateFilter?.date_from?.split(" ")[0] || todayStr();
   const fromTime = dateFilter.date_from?.split(" ")[1] || "00:01";
@@ -114,6 +124,7 @@ const TableView = ({
   const [showStatus, setShowStatus] = useState(true);
   const [showFilterColumn, setShowFilterColumn] = useState(false);
   const dispatch = useDispatch();
+  const navigateTo = useNavigate();
 
 
 
@@ -183,7 +194,7 @@ const TableView = ({
   const updateSearch = (value) => {
     dispatch(
       preferencesAction.updateTablePreference({
-        table: slice,
+        table: entity,
         key: "search_filter",
         value,
       })
@@ -192,9 +203,18 @@ const TableView = ({
   const updateFilters = (value) => {
     dispatch(
       preferencesAction.updateTablePreference({
-        table: slice,
+        table: entity,
         key: "filters",
         value,
+      })
+    );
+  };
+  const toggleSort = (value) => {
+    dispatch(
+      preferencesAction.updateTablePreference({
+        table: entity,
+        key: "sorting",
+        value: value
       })
     );
   };
@@ -204,7 +224,7 @@ const TableView = ({
   ) => {
     dispatch(
       preferencesAction.updateTablePreference({
-        table: slice,
+        table: entity,
         key: "date_filter",
         value: {
           date_range: "custom",
@@ -218,7 +238,7 @@ const TableView = ({
   const handleResetFilter = () => {
     dispatch(
       preferencesAction.updateTablePreference({
-        table: slice,
+        table: entity,
         key: "date_filter",
         value: {
           date_from: "",
@@ -229,14 +249,36 @@ const TableView = ({
       })
     );
   };
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
+
     queryClient.resetQueries({
-      queryKey: refreshKey,
+      queryKey: entityKeys.allByEntity(entity),
     });
-  }
+  };
+  const actionMutation =
+    useActionMutation();
+
+  const actionContext = {
+    navigate: navigateTo,
+
+    // user: currentUser,
+
+    mutateAsync:
+      actionMutation.mutateAsync,
+
+    queryClient,
+
+    toast,
+
+    // openModal,
+
+    onActionSuccess: () => { queryClient.invalidateQueries({ queryKey: entityKeys.allByEntity(entity) }) },
+    // onActionError,
+  };
+
   const value = {
     tableName,
-
+    layout,
     columns,
 
     visibleColumns,
@@ -258,8 +300,10 @@ const TableView = ({
     setFilters: updateFilters,
 
     slice,
+    entity,
 
-    sorting,
+    sort,
+    toggleSort,
 
     fetchNextPage,
     hasNextPage,
@@ -267,7 +311,6 @@ const TableView = ({
 
     searching,
 
-    sortingFilter,
 
     timefilter,
 
@@ -282,17 +325,13 @@ const TableView = ({
     pageCount,
 
     count,
-
     data: tableData,
-
-    statusList,
-    statusKey,
+    actionContext
   };
 
   return (
     <TableContext.Provider value={value}>
       <motion.div
-        layout
         className="flex flex-col gap-3 mb-10"
       >
         {/* FILTER ROW */}
@@ -300,7 +339,6 @@ const TableView = ({
 
         {/* STATUS ROW */}
         <motion.div
-          layout
           initial={false}
           animate={{
             height: showStatus ? "auto" : 0,
@@ -313,11 +351,9 @@ const TableView = ({
           }}
           style={{ overflow: "hidden" }}
         >
-          {statusList.length > 0 &&
+          {STATUS_CONFIG.length > 0 &&
             count >= 0 && (
-              <StatusRow
-                statusCount={statusCount}
-              />
+              <StatusRow />
             )}
         </motion.div>
 
@@ -339,7 +375,7 @@ const TableView = ({
 
 
             {/* STATUS TOGGLE */}
-            {statusList.length > 0 && <IconButton
+            {STATUS_CONFIG.length > 0 && <IconButton
               onClick={() =>
                 setShowStatus((prev) => !prev)
               }
@@ -348,7 +384,6 @@ const TableView = ({
               label={showStatus ? "Hide Stats" : "Show Stats"}
             />}
 
-            {sortingFilter && <SortDropdown />}
 
           </div>
           {timefilter && <DateRangeFilter
@@ -394,21 +429,14 @@ const TableView = ({
 
           {/* TABLE */}
           <motion.div
-            layout
-            transition={{
-              type: "spring",
-              stiffness: 120,
-              damping: 18,
-            }}
             className="flex-1 rounded-xl border overflow-hidden relative bg-white"
           >
-            {children}
+            <TableTitleBar />
             <Table />
 
             {/* TABLE LOADING */}
             {loading &&
-              pageIndex === 1 && tableData.length == 0 &&
-              showLoading && (
+              pageIndex === 1 && tableData.length == 0 && (
                 <table className="w-full">
                   <TableSkeleton
                     columnsLength={
