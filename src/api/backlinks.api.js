@@ -4,7 +4,7 @@ import axios from "axios";
 
 const BLOG_LINK_EXTRACTOR_API_KEY =
     import.meta.env.VITE_BLOG_LINK_EXTRACTOR_API_KEY ||
-    "KYUiWrzGeTKbttVn54g1ekiaoZ59ueIqJWF8ZCvH";
+    "9lEMZM1wd9vBtoYDxpoYQRdTDPmwCBOClDiCxj06";
 
 export const getAllBacklinks = ({
     preferences,
