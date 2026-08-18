@@ -90,7 +90,7 @@ const RootLayout = () => {
     setActivePage(location);
   }, [location, setActivePage]);
 
-  if (displayIntro) {
+  if (!displayIntro) {
     return <DisplayIntro key="intro" />;
   }
 
@@ -103,13 +103,8 @@ const RootLayout = () => {
 
       {/* RIGHT */}
       <div className="flex flex-1 flex-col overflow-hidden p-2">
-
-        {/* Top Navigation */}
         <TopNav />
-        {/* <div className="p-4">
-          <Breadcrumbs />
-        </div> */}
-        {/* Scrollable Content */}
+        {/* <Breadcrumbs /> */}
         <main
           ref={mainRef}
           className="flex-1 overflow-y-auto hide-scrollbar w-full"
@@ -120,9 +115,6 @@ const RootLayout = () => {
               score={currentScore}
               onClose={() => setShowRechargeWarn(false)}
             />
-
-            {/* <WelcomeHeader /> */}
-
             <div className="m-3">
               <Outlet />
             </div>

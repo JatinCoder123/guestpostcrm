@@ -21,11 +21,12 @@ import {
 } from "@/hooks/useEntity";
 
 
-const EntityListPage = ({
-    entity,
-}) => {
-    const preferences =
-        useTablePreference(entity);
+const EntityListPage = ({ entity }) => {
+    // ------------------------------------------------------------
+    // Hooks — ALWAYS run in the same order
+    // ------------------------------------------------------------
+
+    const preferences = useTablePreference(entity);
 
     const {
         enteredEmail: email,
@@ -38,16 +39,25 @@ const EntityListPage = ({
         isError: layoutIsError,
         refetch: layoutRefetch,
     } = useLayout(
-        entity,
+        "orders",
         "table"
     );
 
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isPending,
+    } = useInfiniteEntity({
+        preferences,
+        email,
+        entity,
+    });
 
-    /*
-     * ============================================================
-     * LAYOUT LOADING
-     * ============================================================
-     */
+    // ------------------------------------------------------------
+    // Loading
+    // ------------------------------------------------------------
 
     if (layoutPending) {
         return (
@@ -63,22 +73,14 @@ const EntityListPage = ({
         );
     }
 
+    // ------------------------------------------------------------
+    // Error
+    // ------------------------------------------------------------
 
-    /*
-     * ============================================================
-     * LAYOUT ERROR
-     * ============================================================
-     */
-
-    if (
-        layoutIsError ||
-        layoutError
-    ) {
+    if (layoutIsError || layoutError) {
         return (
             <div className="flex min-h-[70vh] items-center justify-center px-6">
                 <div className="flex max-w-md flex-col items-center text-center">
-
-                    {/* Icon */}
 
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500">
                         <svg
@@ -112,24 +114,17 @@ const EntityListPage = ({
                         </svg>
                     </div>
 
-                    {/* Title */}
-
                     <h2 className="text-lg font-semibold text-gray-900">
                         Unable to load layout
                     </h2>
 
-                    {/* Description */}
-
                     <p className="mt-1 text-sm text-gray-500">
-                        We couldn't load the
-                        table configuration for{" "}
+                        We couldn't load the table configuration for{" "}
                         <span className="font-medium text-gray-700">
                             {entity}
                         </span>
                         .
                     </p>
-
-                    {/* Technical error */}
 
                     {layoutError?.message && (
                         <p className="mt-2 text-xs text-gray-400">
@@ -137,13 +132,9 @@ const EntityListPage = ({
                         </p>
                     )}
 
-                    {/* Retry */}
-
                     <button
                         type="button"
-                        onClick={() =>
-                            layoutRefetch()
-                        }
+                        onClick={() => layoutRefetch()}
                         className="
                             mt-5
                             rounded-lg
@@ -164,12 +155,9 @@ const EntityListPage = ({
         );
     }
 
-
-    /*
-     * ============================================================
-     * NO LAYOUT
-     * ============================================================
-     */
+    // ------------------------------------------------------------
+    // No layout
+    // ------------------------------------------------------------
 
     if (!layout) {
         return (
@@ -180,43 +168,24 @@ const EntityListPage = ({
                     </h2>
 
                     <p className="mt-1 text-sm text-gray-500">
-                        No table layout has been
-                        configured for this entity.
+                        No table layout has been configured for this entity.
                     </p>
                 </div>
             </div>
         );
     }
 
-
-    /*
-     * ============================================================
-     * ENTITY DATA
-     * ============================================================
-     */
-
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        isPending,
-    } = useInfiniteEntity({
-        preferences,
-        email,
-        entity,
-    });
+    // ------------------------------------------------------------
+    // Table loading
+    // ------------------------------------------------------------
 
     const loading =
         isPending ||
         isFetchingNextPage;
 
-
-    /*
-     * ============================================================
-     * TABLE
-     * ============================================================
-     */
+    // ------------------------------------------------------------
+    // Table
+    // ------------------------------------------------------------
 
     return (
         <TableView
@@ -225,15 +194,9 @@ const EntityListPage = ({
             entity={entity}
             loading={loading}
             preferences={preferences}
-            fetchNextPage={
-                fetchNextPage
-            }
-            hasNextPage={
-                hasNextPage
-            }
-            isFetchingNextPage={
-                isFetchingNextPage
-            }
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
         />
     );
 };

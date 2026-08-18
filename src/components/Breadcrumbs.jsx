@@ -18,8 +18,8 @@ const Breadcrumbs = () => {
         });
 
     return (
-        <nav className="flex items-center gap-2 text-sm">
-            {breadcrumbs.map((item, index) => {
+        <nav className="flex items-center gap-2 text-sm p-2">
+            {breadcrumbs.length >= 2 && breadcrumbs.map((item, index) => {
                 const isLast = index === breadcrumbs.length - 1;
 
                 return (
