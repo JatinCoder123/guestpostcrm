@@ -18,15 +18,13 @@ import {
   FiTrendingUp,
 } from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
-import { useEffect, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
 import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
 import GPCContentPopup from "./GPCContentPopup";
 import { apiRequest, fetchGpc } from "../services/api";
-import { toast } from "react-toastify";
 import PromptLadger from "./PromptLadger";
 import { getCurrentUser } from "../services/utils";
 
@@ -506,6 +504,8 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
   const [linkId, setLinkId] = useState(null);
+  const [activeType, setActiveType] = useState("GP");
+  const [activeGroupIndex, setActiveGroupIndex] = useState(0);
   const dispatch = useDispatch();
 
   const handleUpdate = (data) => {
@@ -536,6 +536,29 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
     acc[key].push(link);
     return acc;
   }, {});
+
+  const gpGroupEntries = Object.entries(gpLinkGroups);
+  const liGroupEntries = Object.entries(liLinkGroups);
+
+  useEffect(() => {
+    if (activeType === "GP" && !gpGroupEntries.length && liGroupEntries.length) {
+      setActiveType("LI");
+      setActiveGroupIndex(0);
+    }
+    if (activeType === "LI" && !liGroupEntries.length && gpGroupEntries.length) {
+      setActiveType("GP");
+      setActiveGroupIndex(0);
+    }
+  }, [activeType, gpGroupEntries.length, liGroupEntries.length]);
+
+  const activeGroups = activeType === "GP" ? gpGroupEntries : liGroupEntries;
+  const activeGroup = activeGroups[activeGroupIndex] || activeGroups[0];
+
+  useEffect(() => {
+    setActiveGroupIndex((index) =>
+      activeGroups.length ? Math.min(index, activeGroups.length - 1) : 0,
+    );
+  }, [activeType, activeGroups.length]);
 
   return (
     <>
@@ -609,64 +632,135 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
         />
       )}
 
-      <div className="flex flex-col gap-10 w-full min-w-0">
-        <div className="flex flex-col gap-3 group relative w-full min-w-0">
-          <div className="relative flex flex-col gap-3 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3 border border-slate-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] w-full min-w-0">
-            {/* GP LINKS: one card per unique doc URL */}
-            {Object.entries(gpLinkGroups).map(([docUrl, links], groupIndex) => (
-              <div key={docUrl} className="relative mb-4">
-                <span
-                  className="flex items-center justify-center w-7 h-7 rounded-full absolute top-0 left-0
-        bg-gradient-to-r from-indigo-500 to-purple-600
-        text-white text-xs font-bold shadow-md"
-                >
-                  #{groupIndex + 1}
-                </span>
-                <GPLinksTable
-                email={email}
-                  gpLinks={links}
-                  orderId={orderId}
-                  linkId={linkId}
-                  groupIndex={groupIndex}
-                  setItem={setItem}
-                  setOpen={setOpen}
-                  deleting={deleting}
-                  setLinkId={setLinkId}
-                  handleDelete={handleDelete}
-                />
-              </div>
+      <div className="w-full min-w-0 rounded-lg border border-blue-100 bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-blue-100 p-3">
+          <div className="flex rounded-full border border-blue-100 bg-white p-1 shadow-sm">
+            {[
+              { value: "GP", label: "Guest Post", count: gpLinks.length, groups: gpGroupEntries.length },
+              { value: "LI", label: "Link Insertion", count: liLinks.length, groups: liGroupEntries.length },
+            ].map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => {
+                  setActiveType(tab.value);
+                  setActiveGroupIndex(0);
+                }}
+                disabled={!tab.groups}
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${activeType === tab.value
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-blue-50"
+                  }`}
+              >
+                {tab.label}
+                <span className="ml-2 text-xs opacity-80">{tab.count}</span>
+              </button>
             ))}
-
-            {/* LI LINKS: one card per unique target URL */}
-            {Object.entries(liLinkGroups).map(
-              ([targetUrl, links], groupIndex) => (
-                <div key={targetUrl} className="relative mb-4">
-                  <span
-                    className="flex items-center justify-center w-7 h-7 rounded-full absolute top-0 left-0
-        bg-gradient-to-r from-indigo-500 to-purple-600
-        text-white text-xs font-bold shadow-md"
-                  >
-                    #{groupIndex + 1}
-                  </span>
-                  <LILinksTable
-                    liLinks={links}
-                    groupIndex={groupIndex}
-                    setItem={setItem}
-                    setOpen={setOpen}
-                    deleting={deleting}
-                    setLinkId={setLinkId}
-                    linkId={linkId}
-                    handleDelete={handleDelete}
-                    orderId={orderId}
-                  />
-                </div>
-              ),
-            )}
           </div>
+          {activeGroups.length > 1 && (
+            <div className="flex items-center gap-1">
+              <BacklinkPagerButton
+                disabled={activeGroupIndex === 0}
+                onClick={() => setActiveGroupIndex((index) => Math.max(index - 1, 0))}
+              >
+                {"<"}
+              </BacklinkPagerButton>
+              {pageItems(activeGroups.length, activeGroupIndex).map((item, index) =>
+                item === "ellipsis" ? (
+                  <span key={`ellipsis-${index}`} className="px-1 text-sm text-slate-400">...</span>
+                ) : (
+                  <button
+                    key={activeGroups[item][0]}
+                    onClick={() => setActiveGroupIndex(item)}
+                    className={`h-8 min-w-8 rounded-lg px-2 text-sm font-semibold transition ${item === activeGroupIndex
+                      ? "bg-blue-600 text-white"
+                      : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                      }`}
+                  >
+                    {item + 1}
+                  </button>
+                ),
+              )}
+              <BacklinkPagerButton
+                disabled={activeGroupIndex === activeGroups.length - 1}
+                onClick={() =>
+                  setActiveGroupIndex((index) =>
+                    Math.min(index + 1, activeGroups.length - 1),
+                  )
+                }
+              >
+                {">"}
+              </BacklinkPagerButton>
+            </div>
+          )}
+        </div>
+        <div className="p-3">
+          {activeGroup ? (
+            activeType === "GP" ? (
+              <GPLinksTable
+                email={email}
+                gpLinks={activeGroup[1]}
+                orderId={orderId}
+                linkId={linkId}
+                groupIndex={activeGroupIndex}
+                setItem={setItem}
+                setOpen={setOpen}
+                deleting={deleting}
+                setLinkId={setLinkId}
+                handleDelete={handleDelete}
+              />
+            ) : (
+              <LILinksTable
+                liLinks={activeGroup[1]}
+                groupIndex={activeGroupIndex}
+                setItem={setItem}
+                setOpen={setOpen}
+                deleting={deleting}
+                setLinkId={setLinkId}
+                linkId={linkId}
+                handleDelete={handleDelete}
+                orderId={orderId}
+              />
+            )
+          ) : (
+            <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 text-sm font-medium text-slate-500">
+              No backlinks found.
+            </div>
+          )}
         </div>
       </div>
     </>
   );
+}
+
+function BacklinkPagerButton({ children, disabled, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {children}
+    </button>
+  );
+}
+
+function pageItems(total, activeIndex) {
+  if (total <= 7) return Array.from({ length: total }, (_, index) => index);
+
+  const visible = new Set([0, total - 1, activeIndex - 1, activeIndex, activeIndex + 1]);
+  const items = [];
+  let previous = -1;
+
+  [...visible]
+    .filter((index) => index >= 0 && index < total)
+    .sort((a, b) => a - b)
+    .forEach((index) => {
+      if (index - previous > 1) items.push("ellipsis");
+      items.push(index);
+      previous = index;
+    });
+
+  return items;
 }
 
 /* ─────────────────────────────────────────────
@@ -1080,11 +1174,9 @@ function LinkTableRow({
   linkId,
   deleting,
   handleDelete,
-  orderId,
 }) {
   const spam = getSpamLabel(link.spam_score_c);
-  const navigateTo = useNavigate();
-  const [activePromptId, setActivePromptId] = useState(null)
+  const [activePromptId, setActivePromptId] = useState(null);
   return (
     <div
       className={`flex items-center gap-3 px-4 py-3 border-t border-slate-100 text-sm w-full min-w-0 ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
@@ -1233,7 +1325,6 @@ function LinkTableRow({
 function GPLinksTable({
   email,
   gpLinks,
-  groupIndex,
   setItem,
   setOpen,
   deleting,
@@ -1253,7 +1344,6 @@ function GPLinksTable({
         docNiche={rep.niche}
         ContentValid={rep.is_content_valid}
         DocName={rep.document_name}
-        DomainValid={rep.is_domain_valid}
         linkCount={gpLinks.length}
         linkId={rep.id}
         link={rep}
@@ -1283,7 +1373,6 @@ function GPLinksTable({
 ───────────────────────────────────────────── */
 function LILinksTable({
   liLinks,
-  groupIndex,
   setItem,
   setOpen,
   deleting,
@@ -1331,7 +1420,6 @@ function DocumentAnalysisCard({
   website,
   ContentValid,
   DocName,
-  DomainValid,
   linkCount,
   ContentVerdictPromptLedger,
   orderId,
@@ -1339,14 +1427,11 @@ function DocumentAnalysisCard({
   link,
   gpLinks = [],
 }) {
-  const navigateTo = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [activePromptId, setActivePromptId] = useState(null);
   const [analysisData, setAnalysisData] = useState(null);
   const [openPopup, setOpenPopup] = useState(false);
   const { updateLinkLoading } = useSelector((state) => state.orders);
-  const { crmEndpoint } = useSelector((state) => state.user);
-
-  const domain = crmEndpoint.split("?")[0];
   const isLoading = loading || updateLinkLoading;
   const postedUrl = link?.post_id || link?.assigned_user_link || "";
   const postStatus = usePostStatus(postedUrl, website);
@@ -1375,6 +1460,11 @@ function DocumentAnalysisCard({
   };
   return (
     <div className="overflow-hidden">
+      <PromptLadger
+        activePromptId={activePromptId}
+        setActivePromptId={setActivePromptId}
+        isModal={true}
+      />
       {/* HEADER */}
       <div className="flex items-center justify-center gap-2 bg-blue-300 px-4 py-2">
         <div className="text-white text-md font-bold flex items-center gap-2">
@@ -1921,10 +2011,10 @@ export function OurLink({ data }) {
   );
 }
 
-function Meta({ icon: Icon, label, value, valid }) {
+function Meta({ icon, label, value, valid }) {
   return (
     <div className="flex items-start gap-2">
-      <Icon className="text-slate-400 mt-0.5" size={14} />
+      {createElement(icon, { className: "text-slate-400 mt-0.5", size: 14 })}
       <div>
         <p className="text-xs text-slate-500">{label}</p>
         <p className="text-sm text-slate-700 font-medium break-all">

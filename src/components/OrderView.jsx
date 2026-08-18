@@ -1,6 +1,21 @@
-import { Plus, CheckCircle, XCircle, PackageCheck, Mail } from "lucide-react";
+import {
+  Building2,
+  CalendarDays,
+  CheckCircle,
+  CircleDollarSign,
+  CreditCard,
+  FileText,
+  Link2,
+  Mail,
+  PackageCheck,
+  Plus,
+  ReceiptText,
+  ShieldCheck,
+  ShieldOff,
+  XCircle,
+} from "lucide-react";
 import SeoBacklinkList from "./SeoBacklinks";
-import { useContext, useEffect, useState } from "react";
+import { createElement, useContext, useEffect, useState } from "react";
 import UpdatePopup from "./UpdatePopup";
 import { useDispatch } from "react-redux";
 import { createLink, orderAction, updateOrder } from "../store/Slices/orders";
@@ -12,20 +27,21 @@ import { useOrdersByEmail } from "../queries/orders.queries";
 export const OrderView = ({ data, setSend, email }) => {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
-  const { creatingLinkMessage, updating, updateLinkMessage } = useSelector((state) => state.orders);
+  const { creatingLinkMessage, updating } = useSelector((state) => state.orders);
   const { data: ordersData } = useOrdersByEmail(email);
   const statusLists = ordersData?.order_status_list ?? {}
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showConsent, setShowConsent] = useState(false);
   const { invoiceOrderId } = useContext(SocketContext);
   const dispatch = useDispatch();
+  const backlinks = data.seo_backlinks ?? [];
   const handleAddLink = (link) => {
     dispatch(createLink(item.id, link));
   };
   const onCompleteHandler = () => {
     setShowConsent(true);
   };
-  const stats = data.seo_backlinks.reduce(
+  const stats = backlinks.reduce(
     (acc, link) => {
       if (link.link_type === "dofollow") acc.dofollow += 1;
       if (link.link_type === "nofollow") acc.nofollow += 1;
@@ -118,72 +134,73 @@ export const OrderView = ({ data, setSend, email }) => {
       {/* PROCESSING PAYPAL */}
       {processingPayment && <ProcessingLoader />}
       {updating && <PageLoader />}
-      <div className="w-full min-w-0 relative p-6 overflow-hidden">
+      <div className="w-full min-w-0 relative p-4 sm:p-5 overflow-hidden">
         <OrderHeader
           data={data}
           updateStatus={(status, isSend) => updateStatus(status, isSend)}
           onCompleteHandler={onCompleteHandler}
         />
-        <div className="relative flex flex-col gap-3 min-w-0 rounded-3xl  p-2 ">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm min-w-0">
-            <Field label="Date" value={data.date_entered} />
-            <Field label="Type" value={data.order_type_value} />
-            <Field label="Amount" value={`$${data.total_amount_c}`} />
-            <Field label="Status">
-              <div className="relative inline-flex">
-                <span className="relative inline-flex items-center gap-2 px-2 py-2 rounded-xl bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(234,179,8,0.4)] ">
-                  {statusLists[data.order_status]}
-                </span>
-              </div>
-            </Field>
-            <Field
-              label="Invoice Link"
-              value={data.invoice_link_c}
-              link
-              title="View Invoice"
-            />
-            <Field
-              label="Payment Type"
-              value={data.invoice_type}
-              title="Payment Type"
-            />
-            <Field
-              label="Total Links"
-              value={data.seo_backlinks_count}
-              title="Total Links"
-            />
+        <div className="relative flex flex-col gap-4 min-w-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 rounded-lg border border-slate-200 bg-white p-4">
+            <InfoPanel icon={FileText} title="Order Information">
+              <InfoRow icon={CalendarDays} label="Date" value={data.date_entered} />
+              <InfoRow icon={Link2} label="Type" value={data.order_type_value} />
+              <InfoRow
+                icon={CircleDollarSign}
+                label="Amount"
+                value={`$${data.total_amount_c}`}
+                valueClassName="text-blue-600"
+              />
+              <InfoRow icon={CheckCircle} label="Status">
+                <StatusPill>
+                  {statusLists[data.order_status] || data.order_status || "-"}
+                </StatusPill>
+              </InfoRow>
+              <InfoRow
+                icon={ReceiptText}
+                label="Invoice Link"
+                value={data.invoice_link_c}
+                link
+                title="View Invoice"
+              />
+              <InfoRow icon={CreditCard} label="Payment Type" value={data.invoice_type} />
+            </InfoPanel>
+            <InfoPanel icon={Link2} title="Link Details">
+              <InfoRow icon={Link2} label="Total Links" value={data.seo_backlinks_count ?? backlinks.length} chip />
+              <InfoRow icon={Building2} label="Internal Links" value={stats.internal} chip />
+              <InfoRow icon={ShieldCheck} label="Authority Links" value={stats.authoritative} chip />
+              <InfoRow icon={ShieldOff} label="No Follow Links" value={stats.nofollow} chip />
+              <InfoRow icon={ShieldCheck} label="Do Follow Links" value={stats.dofollow} chip success={stats.dofollow > 0} />
+            </InfoPanel>
           </div>
-          <LinkStatsRow stats={stats} />
           <div>
-            <div className="flex items-center gap-3 ml-4 mt-6 mb-3">
-              {/* Title */}
-              <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wide">
+                <span className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Link2 size={16} />
+                </span>
                 SEO Backlinks
               </div>
-
-              {/* Add Button */}
               <button
                 onClick={() => {
                   setItem(data);
                   setOpen(true);
                 }}
-                className="flex items-center justify-center w-4 h-4
-      bg-blue-500 text-white rounded-lg text-sm
-      hover:bg-blue-600 transition"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm transition hover:bg-blue-700 active:scale-95"
+                title="Add backlink"
               >
-                <Plus size={16} />
+                <Plus size={17} />
               </button>
             </div>
-            {data.seo_backlinks.length > 0 ? (
+            {backlinks.length > 0 ? (
               <SeoBacklinkList
                 email={email}
-                seo_backlink={data.seo_backlinks}
+                seo_backlink={backlinks}
                 id={data.id}
                 orderId={data.order_id}
               />
             ) : (
-              <div className="flex items-center justify-center h-24">
+              <div className="flex items-center justify-center h-24 rounded-lg border border-dashed border-slate-200 bg-slate-50 text-sm font-medium text-slate-500">
                 No backlinks found
               </div>
             )}
@@ -193,6 +210,73 @@ export const OrderView = ({ data, setSend, email }) => {
     </>
   );
 };
+
+function InfoPanel({ icon, title, children }) {
+  return (
+    <section className="min-w-0">
+      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-800">
+        {createElement(icon, { size: 18, className: "text-blue-600" })}
+        <span>{title}</span>
+      </div>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
+}
+
+function InfoRow({
+  icon,
+  label,
+  value,
+  link,
+  children,
+  title,
+  chip,
+  success,
+  valueClassName = "text-slate-900",
+}) {
+  const content = children ?? value ?? "-";
+
+  return (
+    <div className="flex min-w-0 items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/70 px-3 py-2.5">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+        {createElement(icon, { size: 17 })}
+      </span>
+      <span className="min-w-0 flex-1 text-sm text-slate-500">{label}</span>
+      {link ? (
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 text-sm font-semibold text-blue-600 hover:underline"
+        >
+          {title}
+        </a>
+      ) : chip ? (
+        <span
+          className={`inline-flex min-w-8 justify-center rounded-lg border px-2 py-1 text-sm font-bold ${
+            success
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-slate-200 bg-white text-slate-700"
+          }`}
+        >
+          {content}
+        </span>
+      ) : (
+        <span className={`min-w-0 truncate text-sm font-semibold ${valueClassName}`}>
+          {content}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function StatusPill({ children }) {
+  return (
+    <span className="inline-flex items-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+      {children}
+    </span>
+  );
+}
 
 function Field({ label, value, link, children, title }) {
   const content = children || value;
@@ -258,92 +342,59 @@ function OrderHeader({ data, updateStatus, onCompleteHandler }) {
           }}
         />
       )}
-      <div className="w-full mb-3">
-        <div className="relative group">
-          <div className="relative rounded-2xl overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
-            <div className="relative z-10 flex flex-col items-center justify-center gap-3">
-              {/* Order Label */}
-              {showBrandTimeline && (
-                <div className=" flex items-center gap-4 ">
-                  <span className="text-md font-bold text-slate-700  ">
-                    <Mail />
-                  </span>
-
-                  <h2 className="text-lg  font-semibold">
-                    {extractEmail(data.real_name ?? data.email)}
-                  </h2>
-                </div>
-              )}
-
-              <div className=" flex items-center gap-4">
-                <span className="text-sm font-bold text-slate-700 uppercase ">
-                  # Order ID
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 pr-28">
+        <div className="flex min-w-0 flex-wrap items-center gap-4">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+            <FileText size={22} />
+          </span>
+          <div className="min-w-0">
+            {showBrandTimeline && (
+              <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-500">
+                <Mail size={15} />
+                <span className="truncate">
+                  {extractEmail(data.real_name ?? data.email)}
                 </span>
-
-                <h2 className="text-xl font-black bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight">
-                  {data.order_id}
-                </h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-black-500 uppercase tracking-widest">
-                    Order Proximity:
-                  </span>
-                  <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow">
-                    {data.order_proximity || "N/A"}
-                  </span>
-                </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 flex-wrap justify-center">
-                {/* Accept */}
-                {data.order_status == "new" && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setShowModel("accepted");
-                      }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-                           bg-emerald-500/90 text-white font-semibold
-                           shadow-md shadow-emerald-500/30
-                           hover:bg-emerald-500 hover:shadow-lg
-                           active:scale-95 transition-all cursor-pointer"
-                    >
-                      <CheckCircle size={18} />
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowModel("rejected_nontechnical");
-                      }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-                           bg-red-500/90 text-white font-semibold
-                           shadow-md shadow-red-500/30
-                           hover:bg-red-500 hover:shadow-lg
-                           active:scale-95 transition-all cursor-pointer"
-                    >
-                      <XCircle size={18} />
-                      Reject
-                    </button>
-                  </>
-                )}
-
-                {/* Complete */}
-                {data.order_status == "accepted" && (
-                  <button
-                    onClick={onCompleteHandler}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-              bg-blue-500/90 text-white font-semibold
-              shadow-md shadow-blue-500/30
-              hover:bg-blue-500 hover:shadow-lg
-              active:scale-95 transition-all cursor-pointer"
-                  >
-                    <PackageCheck size={18} />
-                    Complete
-                  </button>
-                )}
+            )}
+            <div className="flex min-w-0 flex-wrap items-center gap-4">
+              <h2 className="truncate text-xl font-bold text-slate-900">
+                # Order ID: {data.order_id}
+              </h2>
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
+                <span>Order Proximity:</span>
+                <span className="text-blue-600">{data.order_proximity || "N/A"}</span>
               </div>
             </div>
           </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {data.order_status == "new" && (
+            <>
+              <button
+                onClick={() => setShowModel("accepted")}
+                className="flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 active:scale-95"
+              >
+                <CheckCircle size={17} />
+                Accept
+              </button>
+              <button
+                onClick={() => setShowModel("rejected_nontechnical")}
+                className="flex items-center gap-2 rounded-full border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 active:scale-95"
+              >
+                <XCircle size={17} />
+                Reject
+              </button>
+            </>
+          )}
+          {data.order_status == "accepted" && (
+            <button
+              onClick={onCompleteHandler}
+              className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+            >
+              <PackageCheck size={17} />
+              Complete
+            </button>
+          )}
         </div>
       </div>
     </>
@@ -423,38 +474,6 @@ function Model({ setShowModel, showModel, handleSubmitConfirm }) {
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-function LinkStatsRow({ stats }) {
-  const items = [
-    {
-      label: "Internal Links",
-      value: stats.internal,
-      bg: "from-orange-300 to-orange-200",
-    },
-    {
-      label: "Authority Links",
-      value: stats.authoritative,
-      bg: "from-green-500 to-green-400",
-    },
-    {
-      label: "NoFollow Links",
-      value: stats.nofollow,
-      bg: "from-blue-500 to-blue-400",
-    },
-    {
-      label: "DoFollow Links",
-      value: stats.dofollow,
-      bg: "from-purple-500 to-purple-400",
-    },
-  ];
-
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-      {items.map((item, i) => (
-        <Field key={i} label={item.label} value={item.value}></Field>
-      ))}
     </div>
   );
 }
