@@ -632,9 +632,9 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
         />
       )}
 
-      <div className="w-full min-w-0 rounded-lg border border-blue-100 bg-white">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-blue-100 p-3">
-          <div className="flex rounded-full border border-blue-100 bg-white p-1 shadow-sm">
+      <div className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 p-3 sm:p-4">
+          <div className="flex rounded-lg border border-blue-100 bg-white p-1 shadow-sm">
             {[
               { value: "GP", label: "Guest Post", count: gpLinks.length, groups: gpGroupEntries.length },
               { value: "LI", label: "Link Insertion", count: liLinks.length, groups: liGroupEntries.length },
@@ -646,18 +646,19 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
                   setActiveGroupIndex(0);
                 }}
                 disabled={!tab.groups}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${activeType === tab.value
+                className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${activeType === tab.value
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-slate-600 hover:bg-blue-50"
                   }`}
               >
+                {tab.value === "GP" ? <LinkIcon size={15} /> : <Link size={15} />}
                 {tab.label}
-                <span className="ml-2 text-xs opacity-80">{tab.count}</span>
+                <span className={`rounded-md px-1.5 py-0.5 text-xs ${activeType === tab.value ? "bg-white/20" : "bg-slate-100 text-slate-500"}`}>{tab.count}</span>
               </button>
             ))}
           </div>
           {activeGroups.length > 1 && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
               <BacklinkPagerButton
                 disabled={activeGroupIndex === 0}
                 onClick={() => setActiveGroupIndex((index) => Math.max(index - 1, 0))}
@@ -693,7 +694,7 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
             </div>
           )}
         </div>
-        <div className="p-3">
+        <div className="bg-white p-3 sm:p-4">
           {activeGroup ? (
             activeType === "GP" ? (
               <GPLinksTable

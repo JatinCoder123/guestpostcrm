@@ -32,6 +32,7 @@ export const OrderView = ({ data, setSend, email }) => {
   const statusLists = ordersData?.order_status_list ?? {}
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showConsent, setShowConsent] = useState(false);
+  const [activeSection, setActiveSection] = useState("details");
   const { invoiceOrderId } = useContext(SocketContext);
   const dispatch = useDispatch();
   const backlinks = data.seo_backlinks ?? [];
@@ -140,8 +141,9 @@ export const OrderView = ({ data, setSend, email }) => {
           updateStatus={(status, isSend) => updateStatus(status, isSend)}
           onCompleteHandler={onCompleteHandler}
         />
-        <div className="relative flex flex-col gap-4 min-w-0">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 rounded-lg border border-slate-200 bg-white p-4">
+        <OrderSections activeSection={activeSection} setActiveSection={setActiveSection} backlinkCount={backlinks.length} />
+        {activeSection === "details" ? (
+          <div className="grid grid-cols-1 gap-4 rounded-lg border border-slate-200 bg-white p-4 lg:grid-cols-2">
             <InfoPanel icon={FileText} title="Order Information">
               <InfoRow icon={CalendarDays} label="Date" value={data.date_entered} />
               <InfoRow icon={Link2} label="Type" value={data.order_type_value} />
@@ -173,43 +175,64 @@ export const OrderView = ({ data, setSend, email }) => {
               <InfoRow icon={ShieldCheck} label="Do Follow Links" value={stats.dofollow} chip success={stats.dofollow > 0} />
             </InfoPanel>
           </div>
-          <div>
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wide">
-                <span className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Link2 size={16} />
-                </span>
-                SEO Backlinks
+        ) : (
+          <section className="rounded-lg border border-blue-100 bg-gradient-to-b from-blue-50/60 to-white p-4 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 text-base font-bold text-slate-900">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+                    <Link2 size={18} />
+                  </span>
+                  SEO Backlinks
+                </div>
+                <p className="mt-1 text-sm text-slate-500">Manage Guest Post and Link Insertion placements for this order.</p>
               </div>
               <button
                 onClick={() => {
                   setItem(data);
                   setOpen(true);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm transition hover:bg-blue-700 active:scale-95"
-                title="Add backlink"
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-95"
               >
                 <Plus size={17} />
+                Add backlink
               </button>
             </div>
             {backlinks.length > 0 ? (
-              <SeoBacklinkList
-                email={email}
-                seo_backlink={backlinks}
-                id={data.id}
-                orderId={data.order_id}
-              />
+              <SeoBacklinkList email={email} seo_backlink={backlinks} id={data.id} orderId={data.order_id} />
             ) : (
-              <div className="flex items-center justify-center h-24 rounded-lg border border-dashed border-slate-200 bg-slate-50 text-sm font-medium text-slate-500">
-                No backlinks found
+              <div className="flex h-36 flex-col items-center justify-center rounded-lg border border-dashed border-blue-200 bg-white text-sm font-medium text-slate-500">
+                <Link2 size={22} className="mb-2 text-blue-400" />
+                No backlinks have been added to this order yet.
               </div>
             )}
-          </div>
-        </div>
+          </section>
+        )}
       </div>
     </>
   );
 };
+
+function OrderSections({ activeSection, setActiveSection, backlinkCount }) {
+  return (
+    <div className="mb-4 flex justify-center">
+      <div className="inline-flex rounded-full border border-blue-200 bg-white p-1 shadow-sm">
+        <button
+          onClick={() => setActiveSection("details")}
+          className={`rounded-full px-5 py-1.5 text-sm font-semibold transition ${activeSection === "details" ? "bg-blue-600 text-white shadow-sm" : "text-slate-600 hover:bg-blue-50"}`}
+        >
+          Details
+        </button>
+        <button
+          onClick={() => setActiveSection("backlinks")}
+          className={`rounded-full px-5 py-1.5 text-sm font-semibold transition ${activeSection === "backlinks" ? "bg-blue-600 text-white shadow-sm" : "text-slate-600 hover:bg-blue-50"}`}
+        >
+          SEO Backlinks <span className="ml-1 text-xs opacity-80">{backlinkCount}</span>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function InfoPanel({ icon, title, children }) {
   return (
