@@ -23,7 +23,8 @@ import { useSidebarStats } from "../queries/sidebar.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
-  const { enteredEmail: email, activePage, setActivePage, collapsed, setSidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useContext(PageContext); const [sidebarStatsQuery, setSidebarStatsQuery] = useState()
+  const { enteredEmail: email, activePage, setActivePage, collapsed, setSidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useContext(PageContext);
+  const [sidebarStatsQuery, setSidebarStatsQuery] = useState()
   const [expandedGroups, setExpandedGroups] = useState({});
   const { data: layoutData, isPending: layoutLoading } = useLayoutPreferences()
   const sidebarSections = layoutData?.data?.Sidebar ?? []
@@ -74,6 +75,7 @@ export function Sidebar() {
         (group.data ?? []).map(item => ({
           key: item.key,
           module: item.module_name,
+          ignore_email: item.email_by_filter == "1" ? false : true,
           filters: item.count_filters ?? {},
         }))
       ) ?? null

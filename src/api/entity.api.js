@@ -72,16 +72,15 @@ export async function fetchOne({ request, entity, recordInfo }) {
     if (
         request.endpoint.toLowerCase() === "smartgateway"
     ) {
-        const data = http({
+        const data = await http({
             method: "POST",
+            params: { ...recordInfo },
             body: {
                 action: "fetch",
                 module: entity,
-                filters: {
-                    ...recordInfo
-                }
             },
         });
+        console.log("data", data)
         return data?.records || [];
     }
 

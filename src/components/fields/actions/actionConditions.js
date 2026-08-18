@@ -14,10 +14,10 @@ function evaluateSingleCondition(
     record
 ) {
     const value =
-        record?.[condition.field].toLowerCase();
+        record?.[condition.field]?.toLowerCase();
 
     const expected =
-        condition.value.toLowerCase();
+        condition.value?.toLowerCase();
 
     switch (condition.operator) {
         case "eq":
