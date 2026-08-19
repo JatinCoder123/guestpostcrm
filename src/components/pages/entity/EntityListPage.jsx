@@ -39,7 +39,7 @@ const EntityListPage = ({ entity }) => {
         isError: layoutIsError,
         refetch: layoutRefetch,
     } = useLayout(
-        "orders",
+        entity,
         "table"
     );
 
@@ -53,6 +53,7 @@ const EntityListPage = ({ entity }) => {
         preferences,
         email,
         entity,
+        module: layout?.module,
     });
 
     // ------------------------------------------------------------

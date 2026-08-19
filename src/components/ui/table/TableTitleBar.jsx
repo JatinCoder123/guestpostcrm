@@ -8,7 +8,7 @@ function TableTitleBar({ Icon, title, iconClass }) {
     const { tableName } = useTableContext()
 
     return (
-        <div className="flex items-center justify-between px-5 py-4 border-b bg-white shadow-sm rounded-t-xl text-[#1553E6]">
+        <div className="flex items-center justify-between px-5 py-4 border-b bg-white shadow-sm rounded-t-xl text-primary">
 
             <div className={`flex items-center gap-3 `}>
                 <IconButton

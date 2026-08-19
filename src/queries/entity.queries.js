@@ -8,11 +8,12 @@ export function useUpdateEntity() {
     return useMutation({
         mutationFn: async ({
             entity,
+            module,
             id,
             payload,
         }) => {
             return updateOne(
-                entity,
+                module,
                 id,
                 payload
             );

@@ -44,16 +44,16 @@ export function useEntityList(entity, params) {
         queryFn: () => api.fetchList(entity, params),
     });
 }
-export function useEntityStats({ filters, email, entity, stats }) {
+export function useEntityStats({ filters, email, entity, stats, module }) {
     return useQuery({
         queryKey: entityKeys.stats({ filters, entity, email }),
-        queryFn: () => api.getEntityStats({ entity, filters, email, stats }),
+        queryFn: () => api.getEntityStats({ filters, email, stats, module }),
         enabled: !!stats?.length
     });
 }
 export const useInfiniteEntity = (
     { preferences = {},
-        email = "", entity }
+        email = "", entity, module }
 ) => {
 
     return useInfiniteQuery({
@@ -62,7 +62,7 @@ export const useInfiniteEntity = (
             pageParam = 1,
         }) =>
             api.fetchInfiniteList({
-                entity,
+                module,
                 preferences,
                 page: pageParam,
                 email
@@ -83,6 +83,7 @@ export const useInfiniteEntity = (
 
             return undefined;
         },
+        enabled: !!module,
 
         staleTime:
             5 * 60 * 1000,

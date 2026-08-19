@@ -14,14 +14,14 @@ export const fetchInfiniteList = async ({
     preferences,
     page = 1,
     email = "",
-    entity,
+    module
 }) => {
     const params = email ? { email } : {}
     return http({
         method: "POST",
         body: {
             "action": "fetch",
-            "module": entity,
+            "module": module,
             page,
             ...buildTableRequestBody(
                 preferences
@@ -32,17 +32,17 @@ export const fetchInfiniteList = async ({
 
 }
 export const getEntityStats = ({
-    entity,
     stats = [],
     filters = {},
     email = "",
+    module
 }) => {
     const params = email ? { email } : {};
 
     const queries = stats.map((stat) => {
         const query = {
             key: stat.key,
-            module: entity,
+            module: module,
             filters: stat.filters ?? {},
         };
 

@@ -267,7 +267,7 @@ function QuickBtn({
         }}
         disabled={disabled}
         className="flex items-center justify-center w-9 h-9
-        bg-cyan-100 text-blue-600 rounded-xl shadow-md border border-gray-200 cursor-pointer
+        bg-primary text-white rounded-xl shadow-md border border-gray-200 cursor-pointer
         hover:shadow-lg active:scale-95 hover:-translate-y-1
         transition-all"
       >

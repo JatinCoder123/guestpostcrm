@@ -14,23 +14,41 @@ function StatusRow() {
         showStatus,
         preferences
     } = useTableContext();
-    const STATUS_CONFIG = layout?.config?.statusConfig ?? []
-    const { enteredEmail: email } = useContext(PageContext)
-    const { data: summary, isPending: summaryLoading } = useEntityStats({ filters: preferences, email, entity, stats: STATUS_CONFIG });
+
+    const STATUS_CONFIG = layout?.config?.statusConfig ?? [];
+
+    const { enteredEmail: email } = useContext(PageContext);
+
+    const {
+        data: summary,
+        isPending: summaryLoading
+    } = useEntityStats({
+        filters: preferences,
+        email,
+        entity,
+        stats: STATUS_CONFIG,
+        module: layout?.module
+    });
+
     const statusList = STATUS_CONFIG.map((config) => {
         return {
             ...config,
-            count: Number(summary?.stats?.[`${config.key}`]?.count || 0),
-            amount: Number(summary?.stats?.[`${config.key}`]?.sum_of?.total_amount_c || 0)
+            count: Number(
+                summary?.stats?.[`${config.key}`]?.count || 0
+            ),
+            amount: Number(
+                summary?.stats?.[`${config.key}`]?.sum_of?.total_amount_c || 0
+            )
         };
     });
+
     const toggleStatus = (status) => {
         const updated = { ...filters };
 
         /*
          * Get all filter keys used by the status cards.
-         * These will be removed before applying the
-         * newly selected status.
+         * These will be removed before applying
+         * the newly selected status.
          */
         const statusFilterKeys = new Set();
 
@@ -78,7 +96,7 @@ function StatusRow() {
          * Build the filters for the selected status.
          */
         const statusFilters = {
-            ...(status.filters || {}),
+            ...(status.filters || {})
         };
 
         /*
@@ -90,7 +108,7 @@ function StatusRow() {
         ) {
             const key =
                 status.filter ||
-                status.field
+                status.field;
 
             statusFilters[key] = status.value;
         }
@@ -112,7 +130,7 @@ function StatusRow() {
             Object.entries(status.neqFilter).forEach(
                 ([field, value]) => {
                     statusFilters[field] = {
-                        neq: value,
+                        neq: value
                     };
                 }
             );
@@ -163,15 +181,17 @@ function StatusRow() {
     const isStatusActive = (status) => {
         if (status.filters) {
             return Object.entries(status.filters).every(
-                ([key, value]) => filters?.[key] === value
+                ([key, value]) =>
+                    filters?.[key] === value
             );
         }
 
         const field =
-            status.field
+            status.field;
 
         return filters?.[field] === status.value;
     };
+
     return (
         <AnimatePresence initial={false}>
             {showStatus && (
@@ -179,19 +199,19 @@ function StatusRow() {
                     key="status-row"
                     initial={{
                         opacity: 0,
-                        height: 0,
+                        height: 0
                     }}
                     animate={{
                         opacity: 1,
-                        height: "auto",
+                        height: "auto"
                     }}
                     exit={{
                         opacity: 0,
-                        height: 0,
+                        height: 0
                     }}
                     transition={{
                         duration: 0.2,
-                        ease: "easeOut",
+                        ease: "easeOut"
                     }}
                     className="
                         grid
@@ -212,8 +232,8 @@ function StatusRow() {
                         const amount =
                             status.amount ?? 0;
 
-                        const active = isStatusActive(status)
-
+                        const active =
+                            isStatusActive(status);
 
                         const color =
                             status.color ||
@@ -242,10 +262,10 @@ function StatusRow() {
                                     }
                                 }}
                                 whileTap={{
-                                    scale: 0.98,
+                                    scale: 0.98
                                 }}
                                 transition={{
-                                    duration: 0.12,
+                                    duration: 0.12
                                 }}
                                 className={`
                                     group
@@ -256,14 +276,14 @@ function StatusRow() {
                                     gap-3
                                     rounded-xl
                                     border
-                                    px-3
-                                    py-2.5
+                                    px-3.5
+                                    py-3
                                     text-left
                                     transition-colors
                                     duration-150
 
                                     ${active
-                                        ? "border-primary/40 "
+                                        ? "border-primary/40 bg-white"
                                         : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
                                     }
                                 `}
@@ -272,8 +292,8 @@ function StatusRow() {
                                 <div
                                     className="
                                         flex
-                                        h-8
-                                        w-8
+                                        h-9
+                                        w-9
                                         shrink-0
                                         items-center
                                         justify-center
@@ -281,12 +301,12 @@ function StatusRow() {
                                     "
                                     style={{
                                         backgroundColor: `${color}12`,
-                                        color: color,
+                                        color: color
                                     }}
                                 >
-                                    <span className="text-[16px]">
+                                    <span className="text-[18px]">
                                         {Icon({
-                                            ...status.icon,
+                                            ...status.icon
                                         })}
                                     </span>
                                 </div>
@@ -298,17 +318,16 @@ function StatusRow() {
                                         <span
                                             className={`
                                                 truncate
-                                                text-xs
-                                                font-medium
+                                                text-sm
+                                                font-semibold
+                                                leading-5
                                                 ${active
                                                     ? "text-gray-900"
                                                     : "text-gray-600"
                                                 }
                                             `}
                                         >
-                                            {
-                                                status.label
-                                            }
+                                            {status.label}
                                         </span>
 
                                         {/* MAIN VALUE */}
@@ -316,10 +335,11 @@ function StatusRow() {
                                             <span
                                                 className="
                                                     shrink-0
-                                                    text-sm
+                                                    text-base
                                                     font-bold
+                                                    leading-5
+                                                    text-gray-900
                                                 "
-
                                             >
                                                 $
                                                 {Number(
@@ -330,8 +350,9 @@ function StatusRow() {
                                             <span
                                                 className="
                                                     shrink-0
-                                                    text-sm
+                                                    text-base
                                                     font-bold
+                                                    leading-5
                                                     text-gray-900
                                                 "
                                             >
@@ -341,7 +362,7 @@ function StatusRow() {
                                     </div>
 
                                     {/* SECONDARY VALUE */}
-                                    <div className="mt-0.5 text-[13px] text-gray-500">
+                                    <div className="mt-1 text-sm font-medium text-gray-500">
                                         {status.showAmount
                                             ? `${count.toLocaleString()} ${countLabel}`
                                             : countLabel}
@@ -361,7 +382,7 @@ function StatusRow() {
                                         "
                                         style={{
                                             backgroundColor:
-                                                color,
+                                                color
                                         }}
                                     />
                                 )}

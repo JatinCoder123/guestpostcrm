@@ -13,6 +13,7 @@ function TableCell({
     const {
         actionContext,
         entity,
+        layout,
     } = useTableContext();
 
     const updateMutation =
@@ -28,6 +29,7 @@ function TableCell({
             try {
                 await updateMutation.mutateAsync({
                     entity: entity,
+                    module: layout?.module,
                     id: rowId,
                     payload: {
                         [field.accessor]: value,
@@ -49,7 +51,7 @@ function TableCell({
             }
         },
         [
-            entity,
+            layout,
             updateMutation,
         ]
     );
