@@ -380,12 +380,8 @@ const router = createBrowserRouter([
 
       {
         path: "settings",
-        element: <Outlet />,
+        element: <SettingsPage />,
         children: [
-          {
-            index: true,
-            element: <SettingsPage />,
-          },
           {
             path: "machine-learning",
             element: <MachineLearningPage />,
