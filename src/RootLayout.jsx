@@ -123,7 +123,7 @@ const RootLayout = () => {
 
             {/* <WelcomeHeader /> */}
 
-            <div className="m-3">
+            <div className="m-0">
               <Outlet />
             </div>
           </div>

@@ -11,6 +11,9 @@ import {
   MessageSquare,
   Activity,
   Layers,
+  ArrowUpRight,
+  DatabaseZap,
+  Gauge,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { memo } from "react";
@@ -42,7 +45,7 @@ const PHASES = [
     badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
   {
-    key: "conversation",
+    key: "conversations",
     label: "Conversations",
     sublabel: "Workflow · Stages · Outcomes",
     icon: MessageSquare,
@@ -60,20 +63,6 @@ const DATE_OPTIONS = [
 
 const PAGE_SIZE = 20;
 const DETAIL_PAGE_SIZE = 50;
-
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
-const STAT_THEMES = [
-  { bg: "bg-violet-50", border: "border-violet-200", text: "text-violet-700", label: "text-violet-500" },
-  { bg: "bg-sky-50", border: "border-sky-200", text: "text-sky-700", label: "text-sky-500" },
-  { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700", label: "text-amber-500" },
-  { bg: "bg-rose-50", border: "border-rose-200", text: "text-rose-700", label: "text-rose-500" },
-  { bg: "bg-teal-50", border: "border-teal-200", text: "text-teal-700", label: "text-teal-500" },
-  { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700", label: "text-orange-500" },
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -282,6 +271,161 @@ const EmptyState = ({ title, subtitle }) => (
   </div>
 );
 
+const PhaseToggle = ({ activeSection, onChange }) => (
+  <div className="mx-auto flex w-full max-w-2xl rounded-2xl border border-border bg-card p-1.5 shadow-sm">
+    {PHASES.map((phase) => {
+      const Icon = phase.icon;
+      const isActive = activeSection === phase.key;
+      return (
+        <button
+          type="button"
+          key={phase.key}
+          onClick={() => onChange(phase.key)}
+          className={`group flex-1 rounded-xl px-4 py-3 text-left transition-all duration-200 ${isActive ? "bg-gradient-to-b from-sidebar-primary from-0% via-sidebar-primary via-2% to-sidebar-secondary to-100% text-white shadow-md" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all ${isActive ? "bg-white/15" : "bg-muted group-hover:bg-background"}`}><Icon size={16} /></div>
+              <div>
+                <p className="text-sm font-semibold">{phase.label}</p>
+                <p className={`mt-0.5 hidden text-xs sm:block ${isActive ? "text-white/60" : "text-muted-foreground"}`}>{phase.sublabel}</p>
+              </div>
+            </div>
+            <div className={`h-2 w-2 rounded-full transition-all ${isActive ? "bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.12)]" : "bg-border"}`} />
+          </div>
+        </button>
+      );
+    })}
+  </div>
+);
+
+const ReportOverview = memo(({
+  rows, stats, total, loading, phaseLabel, categories, onStageClick, onCategoryClick,
+}) => {
+  const chartRows = rows.slice(0, 8);
+  const values = chartRows.map(getCount);
+  const maxValue = Math.max(...values, 1);
+  const chartPoints = values.length > 1
+    ? values.map((value, index) => {
+      const x = 8 + (index * 84) / (values.length - 1);
+      const y = 88 - (value / maxValue) * 65;
+      return `${x},${y}`;
+    }).join(" ")
+    : "8,78 92,78";
+  const topStage = chartRows.reduce(
+    (best, row) => getCount(row) > getCount(best) ? row : best,
+    chartRows[0] || {},
+  );
+  const findMetric = (names) => Object.entries(stats).find(([key]) => {
+    const normalizedKey = key.toLowerCase().replace(/[_-]+/g, " ");
+    return names.some((name) => normalizedKey.includes(name));
+  });
+  const overviewMetrics = [
+    { label: "Email Received", entry: findMetric(["email received", "emails received", "received email"]) },
+    { label: "Email Reply Sent", entry: findMetric(["email reply sent", "reply sent", "replies sent"]) },
+  ];
+
+  return (
+    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-sidebar-primary from-0% via-sidebar-primary via-2% to-sidebar-secondary to-100% p-6 text-white shadow-xl shadow-sidebar-primary/15 lg:p-8">
+      <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-36 left-1/3 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
+      <div className="relative grid gap-7 xl:grid-cols-[1.35fr_0.65fr]">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
+                <Activity className="h-3.5 w-3.5" /> Live report overview
+              </div>
+              <h2 className="text-2xl font-semibold tracking-tight lg:text-3xl">{phaseLabel} performance</h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/65">A real-time summary of the records returned by your current report filters.</p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 backdrop-blur-sm">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]" /> Live data
+            </span>
+          </div>
+          <div className="mt-8 h-44 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm">
+            {loading ? (
+              <div className="h-full animate-pulse rounded-xl bg-white/10" />
+            ) : chartRows.length ? (
+              <div className="flex h-full flex-col">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="min-h-0 flex-1 overflow-visible" aria-label="Stage volume chart">
+                  <defs><linearGradient id="reportAreaGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="white" stopOpacity="0.3" /><stop offset="100%" stopColor="white" stopOpacity="0" /></linearGradient></defs>
+                  {[25, 50, 75].map((y) => <line key={y} x1="0" y1={y} x2="100" y2={y} stroke="white" strokeOpacity="0.1" strokeDasharray="2 3" />)}
+                  <polygon points={`8,94 ${chartPoints} 92,94`} fill="url(#reportAreaGradient)" />
+                  <polyline points={chartPoints} fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                  {chartPoints.split(" ").map((point, index) => { const [cx, cy] = point.split(","); return <circle key={index} cx={cx} cy={cy} r="1.5" fill="white" />; })}
+                </svg>
+                <div className="mt-2 grid grid-flow-col auto-cols-fr gap-2">
+                  {chartRows.map((row) => (
+                    <button
+                      type="button"
+                      key={row.stage}
+                      onClick={() => onStageClick(row.stage)}
+                      className={`truncate rounded-md px-1 py-1 text-center text-[10px] capitalize transition-colors ${categories.openStage === row.stage ? "bg-white text-sidebar-primary" : "text-white/55 hover:bg-white/10 hover:text-white"}`}
+                      title={`Explore ${row.stage}`}
+                    >
+                      {row.stage}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : <div className="flex h-full items-center justify-center text-sm text-white/55">No report activity for this selection</div>}
+          </div>
+        </div>
+        <div className="grid content-start gap-3 sm:grid-cols-2 xl:grid-cols-1">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-5 backdrop-blur-sm">
+            <div className="flex items-center justify-between text-white/60"><span className="text-xs font-semibold uppercase tracking-wider">Total records</span><DatabaseZap className="h-4 w-4" /></div>
+            <p className="mt-4 text-4xl font-semibold tracking-tight tabular-nums">{loading ? "—" : total.toLocaleString()}</p>
+            <p className="mt-2 text-xs text-white/55">Across {rows.length} visible stage{rows.length === 1 ? "" : "s"}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-5 backdrop-blur-sm">
+            <div className="flex items-center justify-between text-white/60"><span className="text-xs font-semibold uppercase tracking-wider">Highest volume</span><ArrowUpRight className="h-4 w-4" /></div>
+            <p className="mt-4 truncate text-xl font-semibold capitalize">{topStage?.stage || "No stage data"}</p>
+            <p className="mt-2 text-xs text-white/55">{getCount(topStage).toLocaleString()} records in this stage</p>
+          </div>
+          {overviewMetrics.map(({ label, entry }) => (
+            <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.08] p-5 backdrop-blur-sm">
+              <div className="flex items-center justify-between text-white/60"><span className="truncate text-xs font-semibold uppercase tracking-wider">{label}</span><Gauge className="h-4 w-4" /></div>
+              <p className="mt-4 text-2xl font-semibold tabular-nums">{loading ? "—" : Number(entry?.[1] || 0).toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {categories.openStage && (
+        <div className="relative mt-6 rounded-2xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/55">Subgroups in</p>
+              <p className="mt-1 text-sm font-semibold capitalize">{categories.openStage}</p>
+            </div>
+            <p className="text-xs text-white/45">Select a subgroup to open its records</p>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {categories.loading ? (
+              <span className="rounded-xl bg-white/10 px-4 py-2 text-xs text-white/60">Loading subgroups...</span>
+            ) : categories.rows.length ? categories.rows.map((row) => {
+              const categoryName = row.category;
+              return (
+                <button
+                  type="button"
+                  key={categoryName}
+                  onClick={() => onCategoryClick(categories.openStage, categoryName)}
+                  className="group inline-flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/10 px-3.5 py-2.5 text-left transition-all hover:-translate-y-0.5 hover:bg-white hover:text-sidebar-primary hover:shadow-lg"
+                >
+                  <span className="max-w-48 truncate text-xs font-medium capitalize">{categoryName}</span>
+                  <span className="rounded-lg bg-white/10 px-2 py-0.5 text-xs font-semibold tabular-nums group-hover:bg-sidebar-primary/10">{getCount(row).toLocaleString()}</span>
+                  <ArrowUpRight className="h-3.5 w-3.5 opacity-60" />
+                </button>
+              );
+            }) : <span className="text-xs text-white/55">No subgroups found for this stage.</span>}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+});
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function ViewReports() {
@@ -455,55 +599,21 @@ export default function ViewReports() {
   }, [activeSection, appliedFilters, dateFilter]);
 
   const grandTotal = stages.rows.reduce((s, r) => s + getCount(r), 0);
-  const statsEntries = Object.entries(stats);
-  const today = new Date();
-  const [reportYear, setReportYear] = useState(today.getFullYear());
-  const selectedMonth = dateFilter.filterActive && dateFilter.fromDate && dateFilter.toDate
-    ? (() => {
-      const from = new Date(`${dateFilter.fromDate}T00:00:00`);
-      const to = new Date(`${dateFilter.toDate}T00:00:00`);
-      return from.getFullYear() === to.getFullYear() && from.getMonth() === to.getMonth()
-        ? from.getMonth()
-        : -1;
-    })()
-    : today.getMonth();
-
-  const applyMonth = (monthIndex) => {
-    const fromDate = `${reportYear}-${pad(monthIndex + 1)}-01`;
-    const toDate = fmtDate(new Date(reportYear, monthIndex + 1, 0));
-    setDateFilter({
-      filterActive: true,
-      fromDate,
-      fromTime: "00:00:00",
-      toDate,
-      toTime: "23:59:59",
-    });
-    dispatch(preferencesAction.updateMultipleTablePreferences({
-      table: "report",
-      data: {
-        date_filter: {
-          date_range: "custom",
-          date_field: "date_entered",
-          date_from: `${fromDate} 00:00:00`,
-          date_to: `${toDate} 23:59:59`,
-        },
-      },
-    }));
-  };
-
   return (
-    <div className="min-h-screen bg-[#f4f6fa] font-sans text-slate-900">
+    <div className="min-h-screen bg-background font-sans text-foreground">
 
       {/* ── Sticky top nav ── */}
-      <div className="sticky top-0 z-30 bg-[#f4f6fa]/95 backdrop-blur-md border-b border-slate-200/70">
+      <div className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
           <div className="flex items-center gap-3 shrink-0">
-            <div className="w-8 h-8 rounded-full bg-[#17213d] flex items-center justify-center">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sidebar-primary to-sidebar-secondary shadow-sm">
               <Activity size={15} className="text-white" />
             </div>
-            <span className="font-semibold text-slate-900 tracking-tight text-[15px]">Analytics &amp; Reports</span>
+            <span className="text-[15px] font-semibold tracking-tight text-foreground">Analytics &amp; Reports</span>
           </div>
+
+          
 
           <div className="flex items-center gap-2 flex-1 justify-end mr-30">
             <DateRangeFilter
@@ -588,95 +698,29 @@ export default function ViewReports() {
 
       <div className="max-w-7xl mx-auto px-6 py-7 space-y-5">
 
+        <PhaseToggle
+          activeSection={activeSection}
+          onChange={(phase) => { if (phase !== activeSection) setActiveSection(phase); }}
+        />
+
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <span>Dashboard</span><ChevronRight size={12} /><span className="text-slate-600">Analytics</span>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Dashboard</span><ChevronRight size={12} /><span className="text-foreground">Analytics</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-950">Analytics &amp; Reports</h1>
-          <p className="text-sm text-slate-500">Track records month by month and explore every subgroup.</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">Analytics &amp; Reports</h1>
+          <p className="text-sm text-muted-foreground">Track real performance, compare stages, and explore every subgroup.</p>
         </div>
 
-        {/* ── Phase switcher ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {PHASES?.map((phase) => {
-            const Icon = phase.icon;
-            const isActive = activeSection === phase.key;
-            return (
-              <button
-                key={phase.key}
-                onClick={() => { if (phase.key !== activeSection) setActiveSection(phase.key); }}
-                className={`group text-left rounded-xl p-4 border transition-all duration-200 ${isActive
-                  ? "bg-white border-orange-200 shadow-sm ring-1 ring-orange-100"
-                  : "bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-sm"
-                  }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${isActive ? "bg-[#17213d]" : "bg-slate-100 group-hover:bg-slate-200"
-                      }`}>
-                      <Icon size={16} className={isActive ? "text-white" : "text-slate-500"} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-900 text-sm">{phase.label}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{phase.sublabel}</p>
-                    </div>
-                  </div>
-                  <div className={`w-2 h-2 rounded-full transition-all ${isActive ? phase.dot : "bg-slate-200"}`} />
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ── Stats strip ── */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#17213d] text-white flex items-center justify-center">
-                <BarChart3 size={16} />
-              </div>
-              <div>
-                <h2 className="font-semibold text-slate-900">Monthly record performance</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Select a month to refresh all report totals below</p>
-              </div>
-            </div>
-            <select value={reportYear} onChange={(event) => setReportYear(Number(event.target.value))}
-              className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 outline-none focus:border-orange-300" aria-label="Report year">
-              {[today.getFullYear(), today.getFullYear() - 1, today.getFullYear() - 2].map((year) => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </div>
-          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2">
-            {MONTHS.map((month, index) => {
-              const active = selectedMonth === index && Number(dateFilter.fromDate?.slice(0, 4) || reportYear) === reportYear;
-              return (
-                <button key={month} type="button" onClick={() => applyMonth(index)} aria-pressed={active}
-                  className={`group min-h-24 rounded-xl border px-2 py-3 flex flex-col items-center justify-end gap-2 transition-all ${active ? "border-orange-300 bg-orange-50 shadow-sm" : "border-slate-100 bg-slate-50/80 hover:border-slate-200 hover:bg-slate-50"}`}>
-                  <span className={`w-2 h-2 rounded-full ${active ? "bg-orange-500" : "bg-slate-300 group-hover:bg-orange-300"}`} />
-                  <span className={`h-8 w-px border-l border-dashed ${active ? "border-orange-300" : "border-slate-300"}`} />
-                  <span className={`text-xs font-medium ${active ? "text-orange-700" : "text-slate-500"}`}>{month}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {statsEntries?.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {statsEntries?.map(([key, value], i) => {
-              const t = STAT_THEMES[i % STAT_THEMES.length];
-              return (
-                <div key={key} className={`${t.bg} border ${t.border} rounded-2xl p-4`}>
-                  <span className={`text-2xl font-bold tracking-tight ${t.text}`}>{value}</span>
-                  <p className={`text-[11px] font-semibold uppercase tracking-wider mt-1 ${t.label}`}>
-                    {key.replace(/_/g, " ")}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <ReportOverview
+          rows={stages.rows}
+          stats={stats}
+          total={grandTotal}
+          loading={stagesLoading}
+          phaseLabel={phaseConfig.label}
+          categories={{ ...categories, loading: catsLoading }}
+          onStageClick={(stageName) => loadCategories(stageName, 1)}
+          onCategoryClick={loadDetails}
+        />
 
         {/* ── Error ── */}
         {error && (
@@ -892,7 +936,7 @@ export default function ViewReports() {
 
         {/* ── Grand total ── */}
         {!stagesLoading && stages.rows.length > 0 && (
-          <div className="rounded-2xl bg-slate-900 px-7 py-5 flex items-center justify-between">
+          <div className="flex items-center justify-between rounded-2xl bg-gradient-to-b from-sidebar-primary from-0% via-sidebar-primary via-2% to-sidebar-secondary to-100% px-7 py-5 text-white shadow-lg">
             <div className="flex items-center gap-4">
               <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
                 <Layers size={16} className="text-white" />
