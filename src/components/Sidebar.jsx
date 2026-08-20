@@ -40,7 +40,8 @@ export function Sidebar() {
   const { data: layoutData, isPending: layoutLoading } =
     useLayoutPreferences();
 
-  const sidebarSections = layoutData?.data?.Sidebar ?? [];
+  const sidebarSections = layoutData ?? [];
+
 
   const { user } = useSelector((s) => s.user);
 
@@ -354,7 +355,7 @@ export function Sidebar() {
               {sidebarSections?.data
                 ?.sort(
                   (a, b) =>
-                    a.group_priority - b.group_priority
+                    a.weight - b.weight
                 )
                 .map((group) => (
                   <div

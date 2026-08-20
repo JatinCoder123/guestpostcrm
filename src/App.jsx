@@ -68,6 +68,13 @@ import PlansPage from "./components/pages/PlansPage";
 import BillingSettings from "./components/pages/BillingSettings";
 import InternetStatus from "./components/InternetStatus";
 import DynamicEntityHandler from "./components/routing/DynamicEntityHandler";
+import Theme from "./components/theme/Theme";
+import Layout from "./components/layouts/Layout";
+import Sidebar from "./components/layouts/sidebar/Sidebar";
+import DetailView from "./components/layouts/detail-view/DetailView";
+import EditView from "./components/layouts/edit-view/EditView";
+import CreateView from "./components/layouts/create-view/CreateView";
+import TableView from "./components/layouts/table-view/TableView";
 
 const router = createBrowserRouter([
   {
@@ -377,7 +384,6 @@ const router = createBrowserRouter([
           },
         ],
       },
-
       {
         path: "settings",
         element: <SettingsPage />,
@@ -446,10 +452,47 @@ const router = createBrowserRouter([
             path: "backlinks",
             element: <BacklinksPage />,
           },
+          {
+            path: "theme",
+            element: <Theme />,
+          },
 
+          /* ================================================================
+             LAYOUT
+             ================================================================ */
 
+          {
+            path: "layout",
+            element: <Layout />,
+            children: [
+              {
+                index: true,
+                element: <Sidebar />,
+              },
+              {
+                path: "sidebar",
+                element: <Sidebar />,
+              },
+              {
+                path: "detail-view",
+                element: <DetailView />,
+              },
+              {
+                path: "edit-view",
+                element: <EditView />,
+              },
+              {
+                path: "create-view",
+                element: <CreateView />,
+              },
+              {
+                path: "table-view",
+                element: <TableView />,
+              },
+            ],
+          },
         ],
-      },
+      }
     ],
   },
 ]);

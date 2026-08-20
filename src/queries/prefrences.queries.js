@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchLayout } from "../api/prefrences.api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchLayout, updateLayout } from "../api/prefrences.api";
 
 
 export const preferenceKeys = {
@@ -20,3 +20,34 @@ export const useLayoutPreferences = () =>
         staleTime:
             5 * 60 * 1000,
     });
+export function useUpdateLayout() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({
+            module,
+            id,
+            payload,
+        }) => {
+            return updateLayout(
+                {
+                    module,
+                    id,
+                    payload
+                }
+            );
+        },
+
+        onSuccess: (
+            data,
+            variables
+        ) => {
+            const { } = variables;
+
+            // Refresh entity queries
+            queryClient.invalidateQueries({
+                queryKey: preferenceKeys.all,
+            });
+        },
+    });
+}

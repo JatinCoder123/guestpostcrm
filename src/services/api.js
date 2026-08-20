@@ -66,6 +66,7 @@ const generateToken = () => {
 };
 
 export const http = async ({
+  endpoint = '',
   method = "GET",
   rightee = false,
   body = null,
@@ -90,7 +91,7 @@ export const http = async ({
   }
 
   const response = await apiClient({
-    url: `${rightee ? 'https://crm.outrightsystems.org/index.php' : getCRM()}?entryPoint=smart_gateway`,
+    url: `${rightee ? 'https://crm.outrightsystems.org/index.php' : endpoint || getCRM()}?entryPoint=smart_gateway`,
     method,
     data: body,
     params: params1,
