@@ -7,11 +7,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { toast } from "react-toastify";
 import { LoadingChase } from "./Loading";
-import { Calendar, Eye, ScanSearch } from "lucide-react";
+import { Calendar, Eye, ScanSearch, UserPlus } from "lucide-react";
 import { useThreadContext } from "../hooks/useThreadContext";
 import { extractEmail } from "../assets/assets";
 import { useQuery } from "@tanstack/react-query";
 import { getLiveSearchData } from "../api/liveSearch.api";
+import { createContactFromEmail } from "../api/contact.api";
+import { useNavigate } from "react-router-dom";
 
 export const NoSearchFoundPage = () => {
   const {
@@ -21,13 +23,79 @@ export const NoSearchFoundPage = () => {
   } = useSelector((state) => state.ladger);
 
   const [currentMessageId, setCurrentMessageId] = useState(null);
+  const [creatingContact, setCreatingContact] = useState(false);
+  const [createError, setCreateError] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactSource, setContactSource] = useState("whatsapp");
 
   const { enteredEmail, setEnteredEmail } = useContext(PageContext);
   const { handleMove } = useThreadContext();
-  const { data, isPending: noSearchFoundLoading, isError } = useQuery({ queryKey: ['live-search', enteredEmail], queryFn: () => getLiveSearchData(enteredEmail) })
+  const { data, isPending: noSearchFoundLoading } = useQuery({ queryKey: ['live-search', enteredEmail], queryFn: () => getLiveSearchData(enteredEmail) })
   const noSearchResultData = data?.data
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const email = extractEmail(enteredEmail || "")?.trim() || "";
+    setContactEmail(email);
+    setContactName(email.split("@")[0] || "");
+    setCreateError("");
+  }, [enteredEmail]);
+
+  const handleCreateContact = async () => {
+    const normalizedEmail = contactEmail.trim();
+    const normalizedName = contactName.trim();
+
+    if (!normalizedEmail || !/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+      setCreateError("Enter a valid email address before creating a contact.");
+      return;
+    }
+
+    if (!normalizedName) {
+      setCreateError("Enter a contact name before creating the contact.");
+      return;
+    }
+
+    setCreatingContact(true);
+    setCreateError("");
+
+    try {
+      const response = await createContactFromEmail({
+        email: normalizedEmail,
+        name: normalizedName,
+        source: contactSource,
+      });
+      const result = response?.data ?? response;
+
+      if (!response?.success || result?.success === false) {
+        const message = response?.error || result?.error || "Unable to create contact.";
+        setCreateError(message);
+        return;
+      }
+
+      const contactId = result?.contact_id;
+      if (!contactId) {
+        setCreateError("Contact was created, but no contact ID was returned.");
+        return;
+      }
+
+      localStorage.setItem("searchTerm", normalizedEmail);
+      setEnteredEmail(normalizedEmail);
+      dispatch(ladgerAction.setTimeline(null));
+      toast.success("Contact created successfully");
+      navigate(`/contacts?email=${encodeURIComponent(normalizedEmail)}&id=${encodeURIComponent(contactId)}`);
+    } catch (requestError) {
+      setCreateError(
+        requestError?.response?.data?.error ||
+        requestError?.message ||
+        "Unable to create contact. Please try again."
+      );
+    } finally {
+      setCreatingContact(false);
+    }
+  };
 
 
 
@@ -60,8 +128,83 @@ export const NoSearchFoundPage = () => {
 
   if (!noSearchResultData?.length) {
     return (
-      <div className="flex justify-center items-center h-[60vh] text-gray-500">
-        No Search Found
+      <div className="flex min-h-[60vh] items-center justify-center p-4">
+        <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-sm">
+          <div className="bg-gradient-to-br from-sky-50 via-white to-indigo-50 px-6 py-8 text-center sm:px-10">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+              <UserPlus className="h-7 w-7" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900">Create a new contact</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-500">
+              We could not find a contact or live-search result for this email. Add it to your CRM to get started.
+            </p>
+
+            <div className="mt-6 space-y-4 text-left">
+              <div>
+                <label htmlFor="contact-email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Email address
+                </label>
+                <input
+                  id="contact-email"
+                  type="email"
+                  value={contactEmail}
+                  disabled={creatingContact}
+                  onChange={(event) => setContactEmail(event.target.value)}
+                  placeholder="contact@example.com"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-gray-50"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="contact-name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Name
+                </label>
+                <input
+                  id="contact-name"
+                  type="text"
+                  value={contactName}
+                  disabled={creatingContact}
+                  onChange={(event) => setContactName(event.target.value)}
+                  placeholder="Contact name"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-gray-50"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="contact-source" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Source
+                </label>
+                <select
+                  id="contact-source"
+                  value={contactSource}
+                  disabled={creatingContact}
+                  onChange={(event) => setContactSource(event.target.value)}
+                  className="w-full cursor-pointer rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-gray-50"
+                >
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="direct">Direct</option>
+                  <option value="email">Email</option>
+                </select>
+              </div>
+            </div>
+
+            {createError && (
+              <div role="alert" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-sm text-amber-800">
+                {createError}
+              </div>
+            )}
+
+            <button
+              type="button"
+              disabled={creatingContact || !contactEmail.trim() || !contactName.trim()}
+              onClick={handleCreateContact}
+              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {creatingContact ? <LoadingChase /> : <UserPlus className="h-4 w-4" />}
+              {creatingContact ? "Creating contact..." : "Create contact"}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
