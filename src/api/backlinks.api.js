@@ -73,6 +73,23 @@ export const getBacklinkStats = (filters = {}) =>
         },
     });
 
+export const getLinkRemovalCount = () =>
+    http({
+        method: "POST",
+        body: {
+            action: "get_stats",
+            date_range: "today",
+            date_field: "gp_li_date_c",
+            queries: [
+                {
+                    key: "all",
+                    module: "outr_link_queue",
+                    filters: { status_c: "Added" },
+                },
+            ],
+        },
+    });
+
 export const updateBacklink =
     (backlink) =>
         http({
@@ -81,7 +98,9 @@ export const updateBacklink =
                 "action": "update",
                 "module": "outr_link_queue",
                 id: backlink.id,
-                data: { status_c: backlink.status_c },
+                data: Object.fromEntries(
+                    Object.entries(backlink).filter(([key]) => key !== "id"),
+                ),
             },
         });
 

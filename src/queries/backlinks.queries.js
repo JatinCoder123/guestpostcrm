@@ -11,9 +11,9 @@ import {
     updateBacklink,
     getBacklinkById,
     getExtractedBlogLinks,
+    getLinkRemovalCount,
 } from "../api/backlinks.api";
 
-import toast from "react-hot-toast";
 import { useTablePreference } from "../hooks/useTablePreference";
 
 export const backlinkKeys = {
@@ -42,7 +42,16 @@ export const backlinkKeys = {
     ],
 
     extractedLinks: (sourceUrl) => ["backlinks", "extracted-links", sourceUrl],
+    linkRemovalCount: ["backlinks", "link-removal-count"],
 };
+
+export const useLinkRemovalCount = () =>
+    useQuery({
+        queryKey: backlinkKeys.linkRemovalCount,
+        queryFn: getLinkRemovalCount,
+        refetchInterval: 30 * 1000,
+        staleTime: 15 * 1000,
+    });
 
 export const useBacklinkStats = () => {
     const preferences =
@@ -112,12 +121,7 @@ export const useUpdateBacklink =
         return useMutation({
             mutationFn: updateBacklink,
 
-            onSuccess: (
-                response,
-                variables
-            ) => {
-
-
+            onSuccess: () => {
                 queryClient.invalidateQueries({
                     queryKey:
                         backlinkKeys.all,

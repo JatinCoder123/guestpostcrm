@@ -86,6 +86,9 @@ export default function LinkRemovalDetailPage() {
   const navigate = useNavigate();
 
   const [showOrderPopup, setShowOrderPopup] = useState(false);
+  const [preferencesConfirmed, setPreferencesConfirmed] = useState(false);
+  const [cancelOrder, setCancelOrder] = useState(1);
+  const [cancelInvoice, setCancelInvoice] = useState(1);
 
   const [checkingOrder, setCheckingOrder] = useState(false);
   const [orderChecked, setOrderChecked] = useState(false);
@@ -96,15 +99,17 @@ export default function LinkRemovalDetailPage() {
   const [invoiceChecked, setInvoiceChecked] = useState(false);
   const [invoiceSuccess, setInvoiceSuccess] = useState(false);
   const [invoiceStatus, setInvoiceStatus] = useState("");
-
-  const [invoiceId, setInvoiceId] = useState(null);
-
+  const [invoiceUrl, setInvoiceUrl] = useState("");
+  const [linksBeforeRemoval, setLinksBeforeRemoval] = useState(0);
+  const [latestLinkCount, setLatestLinkCount] = useState(null);
 
   const [processError, setProcessError] = useState("");
 
   const { data, isPending: isBacklinkLoading } = useBacklink(id);
 
   const backlink = data?.records?.[0];
+  const isDefaulter =
+    backlink?.defaulter === true || String(backlink?.defaulter) === "1";
 
   const sourceUrl = backlink?.source_url_c;
   const currentBacklinkUrl = backlink?.backlink_url_c;
@@ -113,6 +118,7 @@ export default function LinkRemovalDetailPage() {
     data: extraction,
     isPending: isExtractionLoading,
     error: extractionError,
+    refetch: refetchExtraction,
   } = useExtractedBlogLinks(sourceUrl);
 
   const { mutate: updateBacklink, isPending: isUpdating } =
@@ -125,12 +131,16 @@ export default function LinkRemovalDetailPage() {
   const links = Array.isArray(extraction?.links)
     ? extraction.links
     : [];
+  const currentLinkCount = extraction?.total_links ?? links.length;
 
   /**
    * Reset popup state
    */
   const resetPopupState = () => {
     setShowOrderPopup(false);
+    setPreferencesConfirmed(false);
+    setCancelOrder(1);
+    setCancelInvoice(1);
 
     setCheckingOrder(false);
     setOrderChecked(false);
@@ -141,8 +151,10 @@ export default function LinkRemovalDetailPage() {
     setInvoiceChecked(false);
     setInvoiceSuccess(false);
     setInvoiceStatus("");
+    setInvoiceUrl("");
+    setLinksBeforeRemoval(0);
+    setLatestLinkCount(null);
 
-    setInvoiceId(null);
     setProcessError("");
   };
 
@@ -161,11 +173,15 @@ export default function LinkRemovalDetailPage() {
    * This is called ONLY after the backlink has already
    * been successfully updated/deleted.
    */
-  const checkOrderAndInvoice = async () => {
-    setShowOrderPopup(true);
+  const checkOrderAndInvoice = async ({ checkOrder, checkInvoice }) => {
+    let orderVerificationCompleted = !checkOrder;
+    setCheckingOrder(Boolean(checkOrder));
+    setOrderChecked(!checkOrder);
+    setOrderSuccess(!checkOrder);
 
-    setCheckingOrder(true);
-    setOrderChecked(false);
+    setCheckingInvoice(false);
+    setInvoiceChecked(!checkInvoice);
+    setInvoiceSuccess(!checkInvoice);
 
     try {
       /**
@@ -173,40 +189,37 @@ export default function LinkRemovalDetailPage() {
        * STEP 1: GET ORDER
        * -----------------------------------------
        */
-      const orderResponse = await getOrderById(
-        backlink.order_id
-      );
+      if (checkOrder) {
+        const orderResponse = await getOrderById(backlink.order_id);
 
       console.log("Order response:", orderResponse);
 
-      const order = orderResponse?.records?.[0];
+        const order = orderResponse?.records?.[0];
 
       console.log("Order:", order);
 
-      if (!order) {
-        throw new Error("Order was not found.");
-      }
+        if (!order) throw new Error("Order was not found.");
 
-      const currentOrderStatus = String(
-        order?.order_status || ""
-      )
-        .trim()
-        .toLowerCase();
+        const currentOrderStatus = String(order?.order_status || "")
+          .trim()
+          .toLowerCase();
 
-      setOrderStatus(order?.order_status || "");
+        setOrderStatus(order?.order_status || "");
 
       /**
        * Change this if your actual expected value
        * is different.
        */
-      const isDefaultOrder =
-        currentOrderStatus === "default" ||
-        currentOrderStatus === "defaulter" ||
-        currentOrderStatus === "defauilt";
+        const isDefaultOrder =
+          currentOrderStatus === "default" ||
+          currentOrderStatus === "defaulter" ||
+          currentOrderStatus === "defauilt";
 
-      setOrderSuccess(isDefaultOrder);
-      setOrderChecked(true);
-      setCheckingOrder(false);
+        setOrderSuccess(isDefaultOrder);
+        setOrderChecked(true);
+        setCheckingOrder(false);
+        orderVerificationCompleted = true;
+      }
 
       /**
        * -----------------------------------------
@@ -220,22 +233,22 @@ export default function LinkRemovalDetailPage() {
         backlink?.invoice_record_id
 
       if (!foundInvoiceId) {
-        setCheckingInvoice(false);
-        setInvoiceChecked(true);
-        setInvoiceSuccess(false);
-        setInvoiceStatus("Invoice ID not found");
+        if (checkInvoice) {
+          setCheckingInvoice(false);
+          setInvoiceChecked(true);
+          setInvoiceSuccess(false);
+          setInvoiceStatus("Invoice ID not found");
+        }
 
         return;
       }
-
-      setInvoiceId(foundInvoiceId);
 
       /**
        * -----------------------------------------
        * STEP 3: GET INVOICE
        * -----------------------------------------
        */
-      setCheckingInvoice(true);
+      setCheckingInvoice(Boolean(checkInvoice));
 
       const invoiceResponse = await getInvoiceById(
         foundInvoiceId
@@ -251,6 +264,12 @@ export default function LinkRemovalDetailPage() {
       if (!invoice) {
         throw new Error("Invoice was not found.");
       }
+
+      setInvoiceUrl(
+        invoice?.preview
+      );
+
+      if (!checkInvoice) return;
 
       const currentInvoiceStatus = String(
         invoice?.status ||
@@ -289,42 +308,33 @@ export default function LinkRemovalDetailPage() {
           "Could not complete order/invoice verification."
       );
 
-      if (checkingOrder) {
-        setCheckingOrder(false);
+      setCheckingOrder(false);
+      setCheckingInvoice(false);
+      if (checkOrder && !orderVerificationCompleted) {
         setOrderChecked(true);
         setOrderSuccess(false);
       }
-
-      if (checkingInvoice) {
-        setCheckingInvoice(false);
+      if (checkInvoice) {
         setInvoiceChecked(true);
         setInvoiceSuccess(false);
       }
     }
   };
 
-  /**
-   * -----------------------------------------
-   * REMOVE LINK FIRST
-   * -----------------------------------------
-   *
-   * Popup is NOT opened here.
-   *
-   * First:
-   *   update backlink -> Removed
-   *
-   * Then:
-   *   open popup
-   *   check order
-   *   check invoice
-   */
-  const updateSelectedAnchorStatus = () => {
+  /** Save the selected defaulter preferences and remove the backlink. */
+  const removeBacklink = ({ orderPreference = 0, invoicePreference = 0 } = {}) => {
     if (!backlink || isUpdating) return;
 
     updateBacklink(
       {
         id,
         status_c: "Removed",
+        ...(isDefaulter
+          ? {
+              cancel_order: Number(orderPreference),
+              cancel_invoice: Number(invoicePreference),
+            }
+          : {}),
       },
       {
         onSuccess: async (response) => {
@@ -349,7 +359,24 @@ export default function LinkRemovalDetailPage() {
            */
           toast.success("Link removed successfully.");
 
-          await checkOrderAndInvoice();
+          if (isDefaulter) {
+            setPreferencesConfirmed(true);
+            const [, refreshedExtraction] = await Promise.all([
+              checkOrderAndInvoice({
+                checkOrder: Boolean(orderPreference),
+                checkInvoice: Boolean(invoicePreference),
+              }),
+              refetchExtraction(),
+            ]);
+            const refreshedLinks = Array.isArray(refreshedExtraction?.data?.links)
+              ? refreshedExtraction.data.links
+              : [];
+            setLatestLinkCount(
+              refreshedExtraction?.data?.total_links ?? refreshedLinks.length
+            );
+          } else {
+            navigate("/link-removal");
+          }
         },
 
         onError: (error) => {
@@ -366,6 +393,23 @@ export default function LinkRemovalDetailPage() {
         },
       }
     );
+  };
+
+  const updateSelectedAnchorStatus = () => {
+    if (!backlink || isUpdating) return;
+
+    if (isDefaulter) {
+      setCancelOrder(1);
+      setCancelInvoice(1);
+      setPreferencesConfirmed(false);
+      setLinksBeforeRemoval(currentLinkCount);
+      setLatestLinkCount(null);
+      setInvoiceUrl("");
+      setShowOrderPopup(true);
+      return;
+    }
+
+    removeBacklink();
   };
 
   if (isBacklinkLoading) {
@@ -559,57 +603,107 @@ export default function LinkRemovalDetailPage() {
                 Link Removal Verification
               </p>
               <h3 className="mt-1 text-xl font-bold tracking-tight">
-                Order & Invoice Validation
+                {preferencesConfirmed
+                  ? "Order & Invoice Validation"
+                  : "Choose status updates"}
               </h3>
               <p className="mt-2 max-w-md text-sm leading-6 text-slate-300">
-                Verifying the linked CRM order and invoice before completing
-                the removal process.
+                {preferencesConfirmed
+                  ? "Verifying only the CRM statuses you selected."
+                  : "Choose which linked CRM statuses should be handled when this backlink is removed."}
               </p>
             </div>
           </div>
 
           <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-indigo-100">
-            Verification
+            {preferencesConfirmed ? "Verification" : "Preferences"}
           </span>
         </div>
       </div>
 
       <div className="bg-slate-50 px-7 py-6">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        {!preferencesConfirmed ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Backlink URL
+              Current total links
             </p>
-            <a
-              href={currentBacklinkUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 block truncate text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
-              title={currentBacklinkUrl}
-            >
-              {currentBacklinkUrl || "Not available"}
-            </a>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Order ID
-            </p>
-            <p className="mt-2 truncate font-mono text-sm font-semibold text-slate-800">
-              {backlink?.order_id || "Not available"}
+            <p className="mt-2 text-3xl font-bold text-slate-900">
+              {linksBeforeRemoval}
             </p>
           </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Invoice ID
-            </p>
-            <p className="mt-2 truncate font-mono text-sm font-semibold text-slate-800">
-              {backlink?.invoice_record_id || "Not available"}
-            </p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Links before removal</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">{linksBeforeRemoval}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Latest backlink count</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">
+                {latestLinkCount === null ? "Checking..." : latestLinkCount}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Order ID</p>
+              <p className="mt-2 truncate font-mono text-sm font-semibold text-slate-800">
+                {backlink?.order_id || "Not available"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Backlink URL</p>
+              <Link href={currentBacklinkUrl}>{currentBacklinkUrl || "Not available"}</Link>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:col-span-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Invoice URL</p>
+              {invoiceUrl ? (
+                <Link href={invoiceUrl}>{invoiceUrl}</Link>
+              ) : (
+                <p className="mt-2 text-sm font-semibold text-slate-500">
+                  {checkingInvoice ? "Fetching invoice URL..." : "Not available"}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
+        {!preferencesConfirmed && (
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h4 className="font-semibold text-slate-900">Update preferences</h4>
+            <p className="mt-1 text-xs text-slate-500">
+              Checked options are saved as 1; unchecked options are saved as 0.
+            </p>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-indigo-300">
+                <input
+                  type="checkbox"
+                  checked={cancelOrder === 1}
+                  onChange={(event) => setCancelOrder(event.target.checked ? 1 : 0)}
+                  className="mt-0.5 h-4 w-4 accent-indigo-600"
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-slate-900">Update order status</span>
+                  <span className="mt-1 block text-xs text-slate-500">cancel_order: {cancelOrder}</span>
+                </span>
+              </label>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-indigo-300">
+                <input
+                  type="checkbox"
+                  checked={cancelInvoice === 1}
+                  onChange={(event) => setCancelInvoice(event.target.checked ? 1 : 0)}
+                  className="mt-0.5 h-4 w-4 accent-indigo-600"
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-slate-900">Update invoice status</span>
+                  <span className="mt-1 block text-xs text-slate-500">cancel_invoice: {cancelInvoice}</span>
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {preferencesConfirmed && (
         <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
@@ -636,7 +730,7 @@ export default function LinkRemovalDetailPage() {
               description="The backlink record was successfully removed."
             />
 
-            <TimelineStep
+            {cancelOrder === 1 && <TimelineStep
               title="Order Status Verification"
               status={
                 checkingOrder
@@ -656,9 +750,9 @@ export default function LinkRemovalDetailPage() {
                     : "Order status was not found."
                   : "Waiting for order verification..."
               }
-            />
+            />}
 
-            <TimelineStep
+            {cancelInvoice === 1 && <TimelineStep
               title="Invoice Status Verification"
               status={
                 checkingInvoice
@@ -678,9 +772,10 @@ export default function LinkRemovalDetailPage() {
                     : "Invoice status was not found."
                   : "Waiting for invoice verification..."
               }
-            />
+            />}
           </div>
         </div>
+        )}
 
         {processError && (
           <div className="mt-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -695,11 +790,35 @@ export default function LinkRemovalDetailPage() {
 
       <div className="flex items-center justify-between border-t border-slate-200 bg-white px-7 py-5">
         <p className="text-xs text-slate-400">
-          Order must be <span className="font-semibold">defaulter</span> and
-          invoice must be <span className="font-semibold">CANCELLED</span>.
+          {preferencesConfirmed
+            ? "Only the selected statuses were checked."
+            : "Both options are enabled by default. You can choose either, both, or neither."}
         </p>
 
-        {!checkingOrder &&
+        {!preferencesConfirmed ? (
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={resetPopupState}
+              disabled={isUpdating}
+              className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => removeBacklink({
+                orderPreference: cancelOrder,
+                invoicePreference: cancelInvoice,
+              })}
+              disabled={isUpdating}
+              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isUpdating ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              Delete
+            </button>
+          </div>
+        ) : (!checkingOrder &&
           !checkingInvoice &&
           (orderChecked || invoiceChecked) && (
             <button
@@ -709,7 +828,7 @@ export default function LinkRemovalDetailPage() {
             >
               Done
             </button>
-          )}
+          ))}
       </div>
     </div>
   </div>
