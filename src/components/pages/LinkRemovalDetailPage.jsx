@@ -496,10 +496,6 @@ export default function LinkRemovalDetailPage() {
                     </th>
 
                     <th className="px-5 py-3">
-                      Rel
-                    </th>
-
-                    <th className="px-5 py-3">
                       Action
                     </th>
                   </tr>
@@ -527,21 +523,26 @@ export default function LinkRemovalDetailPage() {
                         </td>
 
                         <td className="px-5 py-4">
-                          <Link href={link.target_url}>
-                            {link.target_url}
-                          </Link>
-                        </td>
+  <Link
+    href={link.target_url}
+    title={link.target_url}
+    className="text-blue-400 hover:text-blue-300 hover:underline"
+  >
+    {link.target_url.length > 35
+      ? `${link.target_url.substring(0, 35)}..`
+      : link.target_url}
+  </Link>
+</td>
 
                         <td className="px-5 py-4">
-                          <Link href={link.source_url}>
-                            {link.source_url}
+                          <Link href={link.source_url}
+                            className="text-blue-400 hover:text-blue-300 hover:underline"
+                          >
+                            {link.source_url.length > 35
+                              ? `${link.source_url.substring(0, 35)}..`
+                              : link.source_url}
                           </Link>
                         </td>
-
-                        <td className="px-5 py-4 text-slate-600">
-                          {link.rel || "—"}
-                        </td>
-
                         <td className="px-5 py-4">
                           <div className="flex">
                             {currentBacklinkUrl ===
