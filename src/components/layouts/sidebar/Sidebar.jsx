@@ -35,6 +35,11 @@ import {
 import * as LucideIcons from "lucide-react";
 
 import {
+    generateKeyBetween,
+    generateNKeysBetween,
+} from "fractional-indexing";
+
+import {
     useLayoutPreferences,
     useUpdateLayout,
 } from "@/queries/prefrences.queries";
@@ -67,6 +72,93 @@ function DynamicIcon({
 
 
 /* =========================================================================
+   FRACTIONAL INDEX HELPERS
+   ========================================================================= */
+
+/**
+ * Fractional indexes are strings.
+ *
+ * We NEVER use:
+ *
+ *      a.weight - b.weight
+ *
+ * because fractional indexes are lexicographical strings.
+ */
+const compareWeights = (a, b) => {
+    const first = String(a ?? "");
+    const second = String(b ?? "");
+
+    if (first < second) {
+        return -1;
+    }
+
+    if (first > second) {
+        return 1;
+    }
+
+    return 0;
+};
+
+
+/**
+ * Convert an existing numeric/string ordered list
+ * into fractional indexes while preserving its
+ * current order.
+ *
+ * IMPORTANT:
+ * This only happens locally during normalization.
+ * We do NOT call the update API here.
+ */
+const createInitialFractionalWeights = (
+    items,
+) => {
+    if (!items.length) {
+        return [];
+    }
+
+    const keys = generateNKeysBetween(
+        null,
+        null,
+        items.length,
+    );
+
+    return items.map((item, index) => ({
+        ...item,
+        weight: keys[index],
+    }));
+};
+
+
+/**
+ * Get the fractional weight for a moved item.
+ *
+ * Example:
+ *
+ * previous = a0
+ * next     = a1
+ *
+ * result:
+ *
+ * a0V
+ */
+const getNewFractionalWeight = (
+    items,
+    newIndex,
+) => {
+    const previous =
+        items[newIndex - 1]?.weight ?? null;
+
+    const next =
+        items[newIndex + 1]?.weight ?? null;
+
+    return generateKeyBetween(
+        previous,
+        next,
+    );
+};
+
+
+/* =========================================================================
    NORMALIZE RESPONSE
    ========================================================================= */
 
@@ -75,40 +167,128 @@ function normalizeSidebarResponse(response) {
         ? response
         : response?.data || [];
 
-    return groups
-        .map((group, groupIndex) => ({
-            ...group,
+    /**
+     * First preserve the server's existing order.
+     *
+     * Older API data may still have:
+     *
+     * group_priority: 1, 2, 3
+     *
+     * or:
+     *
+     * weight: 1, 2, 3
+     *
+     * We convert those into fractional strings.
+     */
 
-            group_priority:
-                Number(group.group_priority) ||
-                groupIndex + 1,
+    const sortedGroups = [...groups].sort(
+        (a, b) => {
+            const aWeight =
+                Number(a.group_priority);
 
-            is_active:
-                String(group.is_active) === "1" ||
-                group.is_active === true,
+            const bWeight =
+                Number(b.group_priority);
 
-            data: (group.data || [])
-                .map((item, itemIndex) => ({
-                    ...item,
+            if (
+                Number.isFinite(aWeight) &&
+                Number.isFinite(bWeight)
+            ) {
+                return aWeight - bWeight;
+            }
 
-                    weight:
-                        Number(item.weight) ||
-                        itemIndex + 1,
-
-                    is_active:
-                        String(item.is_active) === "1" ||
-                        item.is_active === true,
-                }))
-                .sort(
-                    (a, b) =>
-                        a.weight - b.weight,
-                ),
-        }))
-        .sort(
-            (a, b) =>
-                a.group_priority -
+            return compareWeights(
+                a.group_priority,
                 b.group_priority,
+            );
+        },
+    );
+
+    const fractionalGroupWeights =
+        generateNKeysBetween(
+            null,
+            null,
+            sortedGroups.length,
         );
+
+    return sortedGroups.map(
+        (group, groupIndex) => {
+            const fields = Array.isArray(
+                group.data,
+            )
+                ? [...group.data]
+                : [];
+
+            fields.sort((a, b) => {
+                const aWeight =
+                    Number(a.weight);
+
+                const bWeight =
+                    Number(b.weight);
+
+                if (
+                    Number.isFinite(aWeight) &&
+                    Number.isFinite(bWeight)
+                ) {
+                    return aWeight - bWeight;
+                }
+
+                return compareWeights(
+                    a.weight,
+                    b.weight,
+                );
+            });
+
+            const fractionalFieldWeights =
+                generateNKeysBetween(
+                    null,
+                    null,
+                    fields.length,
+                );
+
+            return {
+                ...group,
+
+                /**
+                 * Keep group_priority because
+                 * the rest of your existing component
+                 * expects it.
+                 *
+                 * It is now a fractional string.
+                 */
+                group_priority:
+                    fractionalGroupWeights[
+                    groupIndex
+                    ],
+
+                is_active:
+                    String(
+                        group.is_active,
+                    ) === "1" ||
+                    group.is_active === true,
+
+                data: fields.map(
+                    (
+                        item,
+                        itemIndex,
+                    ) => ({
+                        ...item,
+
+                        weight:
+                            fractionalFieldWeights[
+                            itemIndex
+                            ],
+
+                        is_active:
+                            String(
+                                item.is_active,
+                            ) === "1" ||
+                            item.is_active ===
+                            true,
+                    }),
+                ),
+            };
+        },
+    );
 }
 
 
@@ -139,6 +319,7 @@ function Toggle({
                     : "bg-muted"
                 }
             `}
+            aria-pressed={checked}
         >
             <span
                 className={`
@@ -191,7 +372,9 @@ function SortableGroup({
 
     const style = {
         transform:
-            CSS.Transform.toString(transform),
+            CSS.Transform.toString(
+                transform,
+            ),
 
         transition,
     };
@@ -305,7 +488,7 @@ function SortableGroup({
                 <Toggle
                     checked={group.is_active}
                     onChange={() =>
-                        onToggle(group.id)
+                        onToggle(group)
                     }
                 />
 
@@ -381,6 +564,7 @@ function SortableGroup({
 
 function SortableField({
     item,
+    groupId,
     selected,
     onSelect,
     onToggle,
@@ -398,12 +582,15 @@ function SortableField({
         data: {
             type: "item",
             itemId: item.id,
+            groupId,
         },
     });
 
     const style = {
         transform:
-            CSS.Transform.toString(transform),
+            CSS.Transform.toString(
+                transform,
+            ),
 
         transition,
     };
@@ -501,7 +688,16 @@ function SortableField({
 
             {/* WEIGHT */}
 
-            <span className="text-[10px] text-muted-foreground">
+            <span
+                className="
+                    max-w-[80px]
+                    truncate
+                    text-[9px]
+                    font-mono
+                    text-muted-foreground
+                "
+                title={item.weight}
+            >
                 {item.weight}
             </span>
 
@@ -510,7 +706,7 @@ function SortableField({
             <Toggle
                 checked={item.is_active}
                 onChange={() =>
-                    onToggle(item.id)
+                    onToggle(item)
                 }
             />
         </div>
@@ -608,7 +804,9 @@ function GroupEditor({
                 <div className="space-y-5">
                     <FieldInput
                         label="Group Name"
-                        value={group.group_name}
+                        value={
+                            group.group_name
+                        }
                         onChange={(value) =>
                             onUpdate({
                                 group_name:
@@ -624,34 +822,31 @@ function GroupEditor({
                         </label>
 
                         <input
-                            type="number"
                             value={
                                 group.group_priority ??
-                                0
+                                ""
                             }
-                            onChange={(event) =>
-                                onUpdate({
-                                    group_priority:
-                                        Number(
-                                            event
-                                                .target
-                                                .value,
-                                        ),
-                                })
-                            }
+                            readOnly
                             className="
                                 h-10
                                 w-full
                                 rounded-lg
                                 border
                                 border-border
-                                bg-background
+                                bg-muted/30
                                 px-3
+                                font-mono
                                 text-sm
+                                text-muted-foreground
                                 outline-none
-                                focus:border-primary/50
                             "
                         />
+
+                        <p className="mt-1 text-[10px] text-muted-foreground">
+                            Weight is automatically
+                            generated using fractional
+                            indexing.
+                        </p>
                     </div>
 
                     <div
@@ -698,7 +893,11 @@ function GroupEditor({
                                 </p>
 
                                 <p className="text-xs text-muted-foreground">
-                                    {group.data.length} fields
+                                    {
+                                        group.data
+                                            .length
+                                    }{" "}
+                                    fields
                                 </p>
                             </div>
 
@@ -762,7 +961,15 @@ function GroupEditor({
                                             }
                                         </span>
 
-                                        <span className="text-[10px] text-muted-foreground">
+                                        <span
+                                            className="
+                                                max-w-[80px]
+                                                truncate
+                                                font-mono
+                                                text-[9px]
+                                                text-muted-foreground
+                                            "
+                                        >
                                             {
                                                 item.weight
                                             }
@@ -854,12 +1061,15 @@ function ItemEditor({
                         </p>
 
                         <h3 className="mt-1 truncate text-base font-semibold">
-                            {item.name || "Field"}
+                            {item.name ||
+                                "Field"}
                         </h3>
                     </div>
 
                     <Toggle
-                        checked={item.is_active}
+                        checked={
+                            item.is_active
+                        }
                         onChange={() =>
                             onUpdate({
                                 is_active:
@@ -885,7 +1095,9 @@ function ItemEditor({
 
                     <FieldInput
                         label="Module Name"
-                        value={item.module_name}
+                        value={
+                            item.module_name
+                        }
                         onChange={(value) =>
                             onUpdate({
                                 module_name:
@@ -908,7 +1120,9 @@ function ItemEditor({
 
                     <FieldInput
                         label="Navigation"
-                        value={item.navigation}
+                        value={
+                            item.navigation
+                        }
                         onChange={(value) =>
                             onUpdate({
                                 navigation:
@@ -920,7 +1134,9 @@ function ItemEditor({
 
                     <FieldInput
                         label="Endpoint"
-                        value={item.endpoint}
+                        value={
+                            item.endpoint
+                        }
                         onChange={(value) =>
                             onUpdate({
                                 endpoint:
@@ -936,33 +1152,31 @@ function ItemEditor({
                         </label>
 
                         <input
-                            type="number"
                             value={
-                                item.weight ?? 0
+                                item.weight ??
+                                ""
                             }
-                            onChange={(event) =>
-                                onUpdate({
-                                    weight:
-                                        Number(
-                                            event
-                                                .target
-                                                .value,
-                                        ),
-                                })
-                            }
+                            readOnly
                             className="
                                 h-10
                                 w-full
                                 rounded-lg
                                 border
                                 border-border
-                                bg-background
+                                bg-muted/30
                                 px-3
+                                font-mono
                                 text-sm
+                                text-muted-foreground
                                 outline-none
-                                focus:border-primary/50
                             "
                         />
+
+                        <p className="mt-1 text-[10px] text-muted-foreground">
+                            Weight is automatically
+                            generated using fractional
+                            indexing.
+                        </p>
                     </div>
 
                     <div
@@ -1101,6 +1315,41 @@ function EmptyEditor() {
 
 
 /* =========================================================================
+   TYPE-AWARE COLLISION DETECTION
+   ========================================================================= */
+
+const collisionDetectionStrategy = (args) => {
+    const activeType = args.active?.data?.current?.type;
+
+    if (activeType === "group") {
+        const groupContainers = args.droppableContainers.filter(
+            (container) =>
+                container.data?.current?.type === "group",
+        );
+
+        return closestCenter({
+            ...args,
+            droppableContainers: groupContainers,
+        });
+    }
+
+    if (activeType === "item") {
+        const fieldContainers = args.droppableContainers.filter(
+            (container) =>
+                container.data?.current?.type === "item",
+        );
+
+        return closestCenter({
+            ...args,
+            droppableContainers: fieldContainers,
+        });
+    }
+
+    return closestCenter(args);
+};
+
+
+/* =========================================================================
    SIDEBAR PAGE
    ========================================================================= */
 
@@ -1110,16 +1359,10 @@ const Sidebar = () => {
         isPending: layoutLoading,
     } = useLayoutPreferences();
 
-    /*
-     * IMPORTANT:
-     *
-     * This mutation is ONLY called after
-     * drag/drop reordering.
-     *
-     * Nothing else calls it.
-     */
-    const { mutate: updateLayout } =
-        useUpdateLayout();
+    const {
+        mutate: updateLayout,
+        isPending: updateLayoutPending,
+    } = useUpdateLayout();
 
     const [groups, setGroups] =
         useState([]);
@@ -1225,10 +1468,10 @@ const Sidebar = () => {
 
                     return {
                         ...group,
-                        data:
-                            groupMatch
-                                ? group.data
-                                : fields,
+
+                        data: groupMatch
+                            ? group.data
+                            : fields,
                     };
                 })
                 .filter(
@@ -1307,22 +1550,65 @@ const Sidebar = () => {
 
 
     /* =====================================================================
+       GET MODULE
+       ===================================================================== */
+
+    const getGroupModule = (group) =>
+        group?.module ||
+        group?.module_name ||
+        "outr_ui_groups";
+
+    const getFieldModule = (item) =>
+        item?.module ||
+        item?.module_name ||
+        "outr_ui_modules";
+
+
+    /* =====================================================================
        TOGGLE GROUP
        ===================================================================== */
 
-    const toggleGroup = (groupId) => {
+    const toggleGroup = (group) => {
+        if (!group?.id) {
+            return;
+        }
+
+        const nextActive =
+            !group.is_active;
+
+        /**
+         * Optimistic local update.
+         */
         setGroups((current) =>
-            current.map(
-                (group) =>
-                    group.id === groupId
-                        ? {
-                            ...group,
-                            is_active:
-                                !group.is_active,
-                        }
-                        : group,
+            current.map((item) =>
+                item.id === group.id
+                    ? {
+                        ...item,
+                        is_active:
+                            nextActive,
+                    }
+                    : item,
             ),
         );
+
+        /**
+         * ONE API CALL.
+         *
+         * is_active:
+         *     true  -> 1
+         *     false -> 0
+         */
+        updateLayout({
+            module:
+                getGroupModule(group),
+
+            id: group.id,
+
+            payload: {
+                is_active:
+                    nextActive ? 1 : 0,
+            },
+        });
     };
 
 
@@ -1330,31 +1616,54 @@ const Sidebar = () => {
        TOGGLE FIELD
        ===================================================================== */
 
-    const toggleField = (itemId) => {
-        setGroups((current) =>
-            current.map(
-                (group) => ({
-                    ...group,
+    const toggleField = (item) => {
+        if (!item?.id) {
+            return;
+        }
 
-                    data: group.data.map(
-                        (item) =>
-                            item.id ===
-                                itemId
-                                ? {
-                                    ...item,
-                                    is_active:
-                                        !item.is_active,
-                                }
-                                : item,
-                    ),
-                }),
-            ),
+        const nextActive =
+            !item.is_active;
+
+        /**
+         * Optimistic local update.
+         */
+        setGroups((current) =>
+            current.map((group) => ({
+                ...group,
+
+                data: group.data.map(
+                    (field) =>
+                        field.id ===
+                            item.id
+                            ? {
+                                ...field,
+                                is_active:
+                                    nextActive,
+                            }
+                            : field,
+                ),
+            })),
         );
+
+        /**
+         * ONE API CALL.
+         */
+        updateLayout({
+            module:
+                getFieldModule(item),
+
+            id: item.id,
+
+            payload: {
+                is_active:
+                    nextActive ? 1 : 0,
+            },
+        });
     };
 
 
     /* =====================================================================
-       UPDATE GROUP
+       UPDATE GROUP LOCAL
        ===================================================================== */
 
     const updateGroup = (
@@ -1362,21 +1671,20 @@ const Sidebar = () => {
         changes,
     ) => {
         setGroups((current) =>
-            current.map(
-                (group) =>
-                    group.id === groupId
-                        ? {
-                            ...group,
-                            ...changes,
-                        }
-                        : group,
+            current.map((group) =>
+                group.id === groupId
+                    ? {
+                        ...group,
+                        ...changes,
+                    }
+                    : group,
             ),
         );
     };
 
 
     /* =====================================================================
-       UPDATE FIELD
+       UPDATE FIELD LOCAL
        ===================================================================== */
 
     const updateField = (
@@ -1384,22 +1692,19 @@ const Sidebar = () => {
         changes,
     ) => {
         setGroups((current) =>
-            current.map(
-                (group) => ({
-                    ...group,
+            current.map((group) => ({
+                ...group,
 
-                    data: group.data.map(
-                        (item) =>
-                            item.id ===
-                                itemId
-                                ? {
-                                    ...item,
-                                    ...changes,
-                                }
-                                : item,
-                    ),
-                }),
-            ),
+                data: group.data.map(
+                    (item) =>
+                        item.id === itemId
+                            ? {
+                                ...item,
+                                ...changes,
+                            }
+                            : item,
+                ),
+            })),
         );
     };
 
@@ -1410,22 +1715,10 @@ const Sidebar = () => {
 
     const deleteGroup = (group) => {
         setGroups((current) =>
-            current
-                .filter(
-                    (item) =>
-                        item.id !==
-                        group.id,
-                )
-                .map(
-                    (
-                        item,
-                        index,
-                    ) => ({
-                        ...item,
-                        group_priority:
-                            index + 1,
-                    }),
-                ),
+            current.filter(
+                (item) =>
+                    item.id !== group.id,
+            ),
         );
 
         setSelectedItem(null);
@@ -1438,44 +1731,27 @@ const Sidebar = () => {
 
     const deleteField = (item) => {
         setGroups((current) =>
-            current.map(
-                (group) => {
-                    if (
-                        !group.data.some(
-                            (field) =>
-                                field.id ===
-                                item.id,
-                        )
-                    ) {
-                        return group;
-                    }
+            current.map((group) => {
+                if (
+                    !group.data.some(
+                        (field) =>
+                            field.id ===
+                            item.id,
+                    )
+                ) {
+                    return group;
+                }
 
-                    return {
-                        ...group,
+                return {
+                    ...group,
 
-                        data:
-                            group.data
-                                .filter(
-                                    (
-                                        field,
-                                    ) =>
-                                        field.id !==
-                                        item.id,
-                                )
-                                .map(
-                                    (
-                                        field,
-                                        index,
-                                    ) => ({
-                                        ...field,
-                                        weight:
-                                            index +
-                                            1,
-                                    }),
-                                ),
-                    };
-                },
-            ),
+                    data: group.data.filter(
+                        (field) =>
+                            field.id !==
+                            item.id,
+                    ),
+                };
+            }),
         );
 
         setSelectedItem(null);
@@ -1490,14 +1766,26 @@ const Sidebar = () => {
         const id =
             `local-group-${Date.now()}`;
 
+        /**
+         * Generate the weight after the
+         * current last group.
+         */
+        const lastGroup =
+            groups[groups.length - 1];
+
+        const weight =
+            generateKeyBetween(
+                lastGroup?.group_priority ??
+                null,
+                null,
+            );
+
         const group = {
             id,
 
-            group_name:
-                name,
+            group_name: name,
 
-            group_priority:
-                groups.length + 1,
+            group_priority: weight,
 
             is_active: true,
 
@@ -1540,80 +1828,88 @@ const Sidebar = () => {
         icon,
     }) => {
         setGroups((current) =>
-            current.map(
-                (group) => {
-                    if (
-                        group.id !==
-                        groupId
-                    ) {
-                        return group;
-                    }
+            current.map((group) => {
+                if (
+                    group.id !==
+                    groupId
+                ) {
+                    return group;
+                }
 
-                    const id =
-                        `local-item-${Date.now()}`;
+                const id =
+                    `local-item-${Date.now()}`;
 
-                    const newItem = {
+                const lastField =
+                    group.data[
+                    group.data.length - 1
+                    ];
+
+                const weight =
+                    generateKeyBetween(
+                        lastField?.weight ??
+                        null,
+                        null,
+                    );
+
+                const newItem = {
+                    id,
+
+                    name,
+
+                    module:
+                        "outr_ui_modules",
+
+                    module_name:
+                        name
+                            .toLowerCase()
+                            .replace(
+                                /\s+/g,
+                                "_",
+                            ),
+
+                    library: "lu",
+
+                    icon:
+                        icon ||
+                        "Settings2",
+
+                    key: "",
+
+                    data_filters: [],
+
+                    count_filters: [],
+
+                    count_email_req: 0,
+
+                    navigation: "",
+
+                    endpoint: "",
+
+                    weight,
+
+                    description: "",
+
+                    is_active: true,
+
+                    isNew: true,
+                };
+
+                setTimeout(() => {
+                    setSelectedItem({
+                        type: "field",
                         id,
+                    });
+                }, 0);
 
-                        name,
+                return {
+                    ...group,
 
-                        module:
-                            "outr_ui_modules",
-
-                        module_name:
-                            name
-                                .toLowerCase()
-                                .replace(
-                                    /\s+/g,
-                                    "_",
-                                ),
-
-                        library: "lu",
-
-                        icon:
-                            icon ||
-                            "Settings2",
-
-                        key: "",
-
-                        data_filters: [],
-
-                        count_filters: [],
-
-                        count_email_req: 0,
-
-                        navigation: "",
-
-                        endpoint: "",
-
-                        weight:
-                            group.data.length +
-                            1,
-
-                        description: "",
-
-                        is_active: true,
-
-                        isNew: true,
-                    };
-
-                    setTimeout(() => {
-                        setSelectedItem({
-                            type: "field",
-                            id,
-                        });
-                    }, 0);
-
-                    return {
-                        ...group,
-
-                        data: [
-                            ...group.data,
-                            newItem,
-                        ],
-                    };
-                },
-            ),
+                    data: [
+                        ...group.data,
+                        newItem,
+                    ],
+                };
+            }),
         );
 
         setExpandedGroups(
@@ -1639,25 +1935,21 @@ const Sidebar = () => {
 
 
     /* =====================================================================
-       UPDATE GROUP WEIGHT API
+       UPDATE GROUP WEIGHT
        ===================================================================== */
 
     const updateGroupWeight = (
         group,
         weight,
     ) => {
-        /*
-         * API:
-         *
-         * model/module = group.module_name
-         * id            = group.id
-         * payload       = { weight }
-         */
-
         if (!group?.id) {
             return;
         }
 
+        /**
+         * Don't call backend for locally
+         * created records.
+         */
         if (
             String(group.id).startsWith(
                 "local-",
@@ -1665,33 +1957,28 @@ const Sidebar = () => {
         ) {
             return;
         }
-        console.log("GROUP", group)
-        console.log("WEIGHT", weight)
 
         updateLayout({
-            module: group.module,
+            module:
+                getGroupModule(group),
+
             id: group.id,
-            payload: { weight },
+
+            payload: {
+                weight,
+            },
         });
     };
 
 
     /* =====================================================================
-       UPDATE FIELD WEIGHT API
+       UPDATE FIELD WEIGHT
        ===================================================================== */
 
     const updateFieldWeight = (
         item,
         weight,
     ) => {
-        /*
-         * API:
-         *
-         * model/module = item.module_name
-         * id            = item.id
-         * payload       = { weight }
-         */
-
         if (!item?.id) {
             return;
         }
@@ -1706,7 +1993,7 @@ const Sidebar = () => {
 
         updateLayout({
             module:
-                item.module,
+                getFieldModule(item),
 
             id: item.id,
 
@@ -1721,208 +2008,176 @@ const Sidebar = () => {
        DRAG END
        ===================================================================== */
 
-    const handleDragEnd = ({
-        active,
-        over,
-    }) => {
+    const handleDragEnd = ({ active, over }) => {
         setActiveDrag(null);
 
-        if (
-            !over ||
-            active.id === over.id
-        ) {
-            return;
-        }
+        if (!over) return;
 
-        const activeData =
-            active.data.current;
+        const activeData = active.data?.current;
+        const overData = over.data?.current;
 
-        const overData =
-            over.data.current;
-
+        if (!activeData || !overData) return;
 
         /* ================================================================
            GROUP REORDER
            ================================================================ */
 
-        if (
-            activeData?.type ===
-            "group" &&
-            overData?.type ===
-            "group"
-        ) {
-            const oldIndex =
-                groups.findIndex(
-                    (group) =>
-                        `group-${group.id}` ===
-                        active.id,
-                );
+        if (activeData.type === "group") {
+            if (overData.type !== "group") return;
 
-            const newIndex =
-                groups.findIndex(
-                    (group) =>
-                        `group-${group.id}` ===
-                        over.id,
-                );
+            const activeGroupId = activeData.groupId;
+            const overGroupId = overData.groupId;
 
-            if (
-                oldIndex === -1 ||
-                newIndex === -1
-            ) {
-                return;
-            }
+            if (!activeGroupId || !overGroupId) return;
+            if (String(activeGroupId) === String(overGroupId)) return;
 
-            const reordered =
-                arrayMove(
-                    groups,
-                    oldIndex,
-                    newIndex,
-                ).map(
-                    (
-                        group,
-                        index,
-                    ) => ({
-                        ...group,
-
-                        group_priority:
-                            index + 1,
-                    }),
-                );
-
-            /*
-             * Update UI immediately.
-             */
-            setGroups(reordered);
-
-            /*
-             * Only update the group
-             * that was actually dragged.
-             */
-            const movedGroup =
-                reordered[newIndex];
-
-            updateGroupWeight(
-                movedGroup,
-                newIndex + 1,
+            const oldIndex = groups.findIndex(
+                (group) => String(group.id) === String(activeGroupId),
             );
 
+            const newIndex = groups.findIndex(
+                (group) => String(group.id) === String(overGroupId),
+            );
+
+            if (oldIndex === -1 || newIndex === -1) return;
+            if (oldIndex === newIndex) return;
+
+            const reorderedGroups = arrayMove(
+                [...groups],
+                oldIndex,
+                newIndex,
+            );
+
+            const previous =
+                reorderedGroups[newIndex - 1]?.group_priority ?? null;
+            const next =
+                reorderedGroups[newIndex + 1]?.group_priority ?? null;
+
+            const newWeight = generateKeyBetween(previous, next);
+            const movedGroup = reorderedGroups[newIndex];
+
+            reorderedGroups[newIndex] = {
+                ...movedGroup,
+                group_priority: newWeight,
+            };
+
+            setGroups(reorderedGroups);
+
+            updateGroupWeight(movedGroup, newWeight);
             return;
         }
-
 
         /* ================================================================
            FIELD REORDER
            ================================================================ */
 
-        if (
-            activeData?.type ===
-            "item" &&
-            overData?.type ===
-            "item"
-        ) {
-            const activeId =
-                activeData.itemId;
+        if (activeData.type === "item") {
+            if (overData.type !== "item") return;
 
-            const overId =
-                overData.itemId;
+            const activeItemId = activeData.itemId;
+            const overItemId = overData.itemId;
 
-            /*
-             * Make sure both fields
-             * belong to the same group.
-             */
-            const groupIndex =
-                groups.findIndex(
-                    (group) =>
-                        group.data.some(
-                            (item) =>
-                                item.id ===
-                                activeId,
-                        ) &&
-                        group.data.some(
-                            (item) =>
-                                item.id ===
-                                overId,
-                        ),
-                );
+            if (!activeItemId || !overItemId) return;
+            if (String(activeItemId) === String(overItemId)) return;
 
-            if (
-                groupIndex === -1
-            ) {
-                return;
-            }
+            const sourceGroupIndex = groups.findIndex((group) =>
+                group.data?.some(
+                    (item) => String(item.id) === String(activeItemId),
+                ),
+            );
 
-            const group =
-                groups[groupIndex];
+            const targetGroupIndex = groups.findIndex((group) =>
+                group.data?.some(
+                    (item) => String(item.id) === String(overItemId),
+                ),
+            );
 
-            const oldIndex =
-                group.data.findIndex(
-                    (item) =>
-                        item.id ===
-                        activeId,
-                );
+            if (sourceGroupIndex === -1 || targetGroupIndex === -1) return;
 
-            const newIndex =
-                group.data.findIndex(
-                    (item) =>
-                        item.id ===
-                        overId,
-                );
+            const sourceGroup = groups[sourceGroupIndex];
+            const targetGroup = groups[targetGroupIndex];
 
-            if (
-                oldIndex === -1 ||
-                newIndex === -1
-            ) {
-                return;
-            }
+            const oldIndex = sourceGroup.data.findIndex(
+                (item) => String(item.id) === String(activeItemId),
+            );
 
-            const reordered =
-                arrayMove(
-                    group.data,
+            const newIndex = targetGroup.data.findIndex(
+                (item) => String(item.id) === String(overItemId),
+            );
+
+            if (oldIndex === -1 || newIndex === -1) return;
+
+            /* ============================================================
+               SAME GROUP
+               ============================================================ */
+
+            if (sourceGroupIndex === targetGroupIndex) {
+                const reorderedFields = arrayMove(
+                    [...sourceGroup.data],
                     oldIndex,
                     newIndex,
-                ).map(
-                    (
-                        item,
-                        index,
-                    ) => ({
-                        ...item,
-
-                        weight:
-                            index + 1,
-                    }),
                 );
 
-            const nextGroups = [
-                ...groups,
-            ];
+                const previous =
+                    reorderedFields[newIndex - 1]?.weight ?? null;
+                const next =
+                    reorderedFields[newIndex + 1]?.weight ?? null;
 
-            nextGroups[groupIndex] = {
-                ...group,
+                const newWeight = generateKeyBetween(previous, next);
+                const movedField = reorderedFields[newIndex];
 
-                data: reordered,
+                reorderedFields[newIndex] = {
+                    ...movedField,
+                    weight: newWeight,
+                };
+
+                const nextGroups = [...groups];
+                nextGroups[sourceGroupIndex] = {
+                    ...sourceGroup,
+                    data: reorderedFields,
+                };
+
+                setGroups(nextGroups);
+                updateFieldWeight(movedField, newWeight);
+                return;
+            }
+
+            /* ============================================================
+               CROSS GROUP
+               ============================================================ */
+
+            const movedField = sourceGroup.data[oldIndex];
+
+            const sourceFields = [...sourceGroup.data];
+            sourceFields.splice(oldIndex, 1);
+
+            const targetFields = [...targetGroup.data];
+
+            const previous = targetFields[newIndex - 1]?.weight ?? null;
+            const next = targetFields[newIndex]?.weight ?? null;
+            const newWeight = generateKeyBetween(previous, next);
+
+            targetFields.splice(newIndex, 0, {
+                ...movedField,
+                weight: newWeight,
+            });
+
+            const nextGroups = [...groups];
+
+            nextGroups[sourceGroupIndex] = {
+                ...sourceGroup,
+                data: sourceFields,
             };
 
-            /*
-             * Update UI immediately.
-             */
-            setGroups(
-                nextGroups,
-            );
+            nextGroups[targetGroupIndex] = {
+                ...targetGroup,
+                data: targetFields,
+            };
 
-            /*
-             * Only update the field
-             * that was dragged.
-             */
-            const movedField =
-                reordered[newIndex];
-
-            updateFieldWeight(
-                movedField,
-                newIndex + 1,
-            );
+            setGroups(nextGroups);
+            updateFieldWeight(movedField, newWeight);
         }
     };
-
 
     /* =====================================================================
        RESET
@@ -1970,6 +2225,7 @@ const Sidebar = () => {
 
     return (
         <div className="flex h-full min-h-0 flex-col">
+
             {/* HEADER */}
 
             <div
@@ -2003,9 +2259,15 @@ const Sidebar = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+
                     <button
                         type="button"
-                        onClick={resetChanges}
+                        onClick={
+                            resetChanges
+                        }
+                        disabled={
+                            updateLayoutPending
+                        }
                         className="
                             inline-flex
                             items-center
@@ -2018,6 +2280,8 @@ const Sidebar = () => {
                             text-sm
                             font-medium
                             hover:bg-accent
+                            disabled:pointer-events-none
+                            disabled:opacity-50
                         "
                     >
                         <RotateCcw className="h-4 w-4" />
@@ -2047,6 +2311,7 @@ const Sidebar = () => {
                         <Plus className="h-4 w-4" />
                         Add Group
                     </button>
+
                 </div>
             </div>
 
@@ -2063,6 +2328,7 @@ const Sidebar = () => {
                     lg:grid-cols-[minmax(300px,420px)_minmax(0,1fr)]
                 "
             >
+
                 {/* =========================================================
                     LEFT SIDEBAR BUILDER
                    ========================================================= */}
@@ -2079,10 +2345,12 @@ const Sidebar = () => {
                         lg:border-r
                     "
                 >
+
                     {/* SEARCH */}
 
                     <div className="shrink-0 border-b border-border p-3">
                         <div className="relative">
+
                             <Search
                                 className="
                                     pointer-events-none
@@ -2097,10 +2365,16 @@ const Sidebar = () => {
                             />
 
                             <input
-                                value={search}
-                                onChange={(event) =>
+                                value={
+                                    search
+                                }
+                                onChange={(
+                                    event,
+                                ) =>
                                     setSearch(
-                                        event.target.value,
+                                        event
+                                            .target
+                                            .value,
                                     )
                                 }
                                 placeholder="Search groups or fields..."
@@ -2118,6 +2392,7 @@ const Sidebar = () => {
                                     focus:border-primary/50
                                 "
                             />
+
                         </div>
                     </div>
 
@@ -2125,30 +2400,43 @@ const Sidebar = () => {
                     {/* BUILDER */}
 
                     <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-3">
+
                         <DndContext
-                            sensors={sensors}
+                            sensors={
+                                sensors
+                            }
                             collisionDetection={
-                                closestCenter
+                                collisionDetectionStrategy
                             }
                             onDragStart={
                                 handleDragStart
                             }
+                            onDragCancel={() => {
+                                setActiveDrag(null);
+                            }}
                             onDragEnd={
                                 handleDragEnd
                             }
                         >
+
                             <SortableContext
                                 items={filteredGroups.map(
-                                    (group) =>
+                                    (
+                                        group,
+                                    ) =>
                                         `group-${group.id}`,
                                 )}
                                 strategy={
                                     verticalListSortingStrategy
                                 }
                             >
+
                                 <div className="space-y-3">
+
                                     {filteredGroups.map(
-                                        (group) => (
+                                        (
+                                            group,
+                                        ) => (
                                             <SortableGroup
                                                 key={
                                                     group.id
@@ -2173,14 +2461,17 @@ const Sidebar = () => {
                                                         {
                                                             groupId:
                                                                 group.id,
+
                                                             name:
                                                                 "New Field",
+
                                                             icon:
                                                                 "Settings2",
                                                         },
                                                     )
                                                 }
                                             >
+
                                                 <SortableContext
                                                     items={group.data.map(
                                                         (
@@ -2192,7 +2483,9 @@ const Sidebar = () => {
                                                         verticalListSortingStrategy
                                                     }
                                                 >
+
                                                     <div className="space-y-0.5">
+
                                                         {group.data.map(
                                                             (
                                                                 item,
@@ -2203,6 +2496,9 @@ const Sidebar = () => {
                                                                     }
                                                                     item={
                                                                         item
+                                                                    }
+                                                                    groupId={
+                                                                        group.id
                                                                     }
                                                                     selected={
                                                                         selectedItem?.type ===
@@ -2219,15 +2515,22 @@ const Sidebar = () => {
                                                                 />
                                                             ),
                                                         )}
+
                                                     </div>
+
                                                 </SortableContext>
+
                                             </SortableGroup>
                                         ),
                                     )}
+
                                 </div>
+
                             </SortableContext>
 
+
                             <DragOverlay>
+
                                 {activeDrag?.type ===
                                     "group" ? (
                                     <div className="rounded-xl border border-primary/30 bg-card px-4 py-3 shadow-xl">
@@ -2243,8 +2546,11 @@ const Sidebar = () => {
                                         </p>
                                     </div>
                                 ) : null}
+
                             </DragOverlay>
+
                         </DndContext>
+
                     </div>
                 </div>
 
@@ -2260,6 +2566,7 @@ const Sidebar = () => {
                         bg-background
                     "
                 >
+
                     {selectedItem?.type ===
                         "group" && (
                             <GroupEditor
@@ -2278,19 +2585,20 @@ const Sidebar = () => {
                                     deleteGroup
                                 }
                                 onAddField={() =>
-                                    addField(
-                                        {
-                                            groupId:
-                                                selectedObject?.id,
-                                            name:
-                                                "New Field",
-                                            icon:
-                                                "Settings2",
-                                        },
-                                    )
+                                    addField({
+                                        groupId:
+                                            selectedObject?.id,
+
+                                        name:
+                                            "New Field",
+
+                                        icon:
+                                            "Settings2",
+                                    })
                                 }
                             />
                         )}
+
 
                     {selectedItem?.type ===
                         "field" && (
@@ -2300,22 +2608,46 @@ const Sidebar = () => {
                                 }
                                 onUpdate={(
                                     changes,
-                                ) =>
+                                ) => {
+                                    /**
+                                     * If editor toggle
+                                     * changes is_active,
+                                     * use the API as well.
+                                     */
+                                    if (
+                                        Object.prototype.hasOwnProperty.call(
+                                            changes,
+                                            "is_active",
+                                        )
+                                    ) {
+                                        const nextActive =
+                                            changes.is_active;
+
+                                        toggleField(
+                                            selectedObject,
+                                        );
+
+                                        return;
+                                    }
+
                                     updateField(
                                         selectedItem.id,
                                         changes,
-                                    )
-                                }
+                                    );
+                                }}
                                 onDelete={
                                     deleteField
                                 }
                             />
                         )}
 
+
                     {!selectedItem && (
                         <EmptyEditor />
                     )}
+
                 </div>
+
             </div>
         </div>
     );
