@@ -138,7 +138,7 @@ export default function Footer() {
     >
       <IconButton icon={Settings} label="Settings" onClick={() => navigate("/settings")} />
       <div className="flex gap-2">
-        <div className="flex items-center gap-3">
+        {/* <div className="flex items-center gap-3">
           {crmDomain && (
             <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-all duration-400 cursor-pointer">
               <Link2 className="w-4 h-4 text-purple-600 group-hover:scale-125 transition-transform duration-300" />
@@ -166,7 +166,7 @@ export default function Footer() {
           )}
 
 
-        </div>
+        </div> */}
 
         <IconButton
           onClick={() => navigate("/RecentEntry")}

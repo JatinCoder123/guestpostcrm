@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
 import { PageContext } from "../context/pageContext.jsx";
-import video from "/video.mp4"
+import video from "/video.webm"
 
 const DisplayIntro = () => {
   const { setDisplayIntro } = useContext(PageContext);
