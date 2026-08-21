@@ -18,15 +18,13 @@ import {
   FiTrendingUp,
 } from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
-import { useEffect, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
 import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
 import GPCContentPopup from "./GPCContentPopup";
-import { apiRequest, fetchGpc, http } from "../services/api";
-import { toast } from "react-toastify";
+import { apiRequest, fetchGpc } from "../services/api";
 import PromptLadger from "./PromptLadger";
 import { getCurrentUser } from "../services/utils";
 
@@ -40,83 +38,6 @@ function ValidTick() {
         Valid
       </span>
     </span>
-  );
-}
-
-const isDefaulter = (value) => String(value ?? "").trim() === "1";
-
-// The gateway can return either an array, a { data: [] } response, or a
-// single record. Keeping this normalised here avoids coupling the delete
-// check to one response shape.
-const firstRecord = (response) => {
-  if (Array.isArray(response)) return response[0] ?? null;
-  if (!response || typeof response !== "object") return null;
-  if (Array.isArray(response.records)) return response.records[0] ?? null;
-  if (Array.isArray(response.data)) return response.data[0] ?? null;
-  if (response.record && typeof response.record === "object") return firstRecord(response.record);
-  // Smart Gateway sometimes returns { data: { records: [...] } }. Recurse
-  // into that wrapper so we read the actual queue, order, or invoice record.
-  if (response.data && typeof response.data === "object") return firstRecord(response.data);
-  return response;
-};
-
-function DeletionStatusPopup({ result, onClose, onDelete, deleting }) {
-  if (!result) return null;
-
-  const rows = [
-    {
-      label: "Order status",
-      value: result.orderStatus,
-      valid: result.orderIsDefaulter,
-      expected: "defaulter",
-    },
-    {
-      label: "Invoice status",
-      value: result.invoiceStatus,
-      valid: result.invoiceIsCancelled,
-      expected: "CANCELLED",
-    },
-  ];
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="deletion-status-title"
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-      >
-        <h3 id="deletion-status-title" className="text-lg font-semibold text-slate-900">
-          Linked record status
-        </h3>
-        <p className="mt-1 text-sm text-slate-500">
-          This link is marked as a defaulter. Review the linked CRM records before deleting it.
-        </p>
-        <div className="mt-5 space-y-3">
-          {rows.map((row) => (
-            <div key={row.label} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-              <div>
-                <p className="font-medium text-slate-800">{row.label}</p>
-                <p className="text-xs text-slate-500">
-                  {row.value || "Not found"} - expected {row.expected}
-                </p>
-              </div>
-              <span className={row.valid ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
-                {row.valid ? <Check size={20} strokeWidth={3} aria-label="True" /> : "False"}
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 flex justify-end gap-3">
-          <button onClick={onClose} disabled={deleting} className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
-            Close
-          </button>
-          <button onClick={onDelete} disabled={deleting} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
-            {deleting ? "Deleting..." : "Delete record"}
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -583,9 +504,8 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
   const [linkId, setLinkId] = useState(null);
-  const [checkingDefaulter, setCheckingDefaulter] = useState(false);
-  const [deletionStatus, setDeletionStatus] = useState(null);
-  const [pendingDeleteLink, setPendingDeleteLink] = useState(null);
+  const [activeType, setActiveType] = useState("GP");
+  const [activeGroupIndex, setActiveGroupIndex] = useState(0);
   const dispatch = useDispatch();
 
   const handleUpdate = (data) => {
@@ -599,74 +519,8 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
     }
   }, [updateLinkMessage]);
 
-  const handleDelete = async (link) => {
-    setCheckingDefaulter(true);
-    setLinkId(link.id);
-    try {
-      // The queue record is the CRM source of truth for these three fields.
-      // Do not use any WordPress response or the backlink row's stale fields.
-      const queueRecordId = link.link_queue_id ?? link.link_queue_id_c ?? link.id;
-      const queueResponse = await http({
-        method: "POST",
-        body: {
-          action: "fetch",
-          module: "outr_link_queue",
-          filters: { id: queueRecordId },
-        },
-      });
-      const queueRecord = firstRecord(queueResponse);
-
-      // Non-defaulters retain the existing direct-delete behaviour.
-      if (!isDefaulter(queueRecord?.defaulter)) {
-        dispatch(deleteLink(id, link.id));
-        return;
-      }
-
-      const [orderResponse, invoiceResponse] = await Promise.all([
-        queueRecord.order_id
-          ? http({
-              method: "POST",
-              body: {
-                action: "fetch",
-                module: "outr_order_gp_li",
-                filter: { order_id: queueRecord.order_id },
-              },
-            })
-          : Promise.resolve(null),
-        queueRecord.invoice_record_id
-          ? http({
-              method: "POST",
-              body: {
-                action: "fetch",
-                module: "outr_paypal_invoice_links",
-                filter: { id: queueRecord.invoice_record_id },
-              },
-            })
-          : Promise.resolve(null),
-      ]);
-      const orderStatus = firstRecord(orderResponse)?.order_status ?? "";
-      const invoiceStatus = firstRecord(invoiceResponse)?.status_c ?? "";
-
-      setDeletionStatus({
-        orderStatus,
-        invoiceStatus,
-        orderIsDefaulter: String(orderStatus).toLowerCase() === "defaulter",
-        invoiceIsCancelled: String(invoiceStatus) === "CANCELLED",
-      });
-      setPendingDeleteLink(link);
-    } catch {
-      // If the CRM queue record cannot be read, preserve the safe direct-delete path.
-      dispatch(deleteLink(id, link.id));
-    } finally {
-      setCheckingDefaulter(false);
-    }
-  };
-
-  const confirmDefaulterDelete = () => {
-    if (!pendingDeleteLink) return;
-    dispatch(deleteLink(id, pendingDeleteLink.id));
-    setDeletionStatus(null);
-    setPendingDeleteLink(null);
+  const handleDelete = (linkId) => {
+    dispatch(deleteLink(id, linkId));
   };
 
   const gpLinkGroups = gpLinks.reduce((acc, link) => {
@@ -682,6 +536,29 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
     acc[key].push(link);
     return acc;
   }, {});
+
+  const gpGroupEntries = Object.entries(gpLinkGroups);
+  const liGroupEntries = Object.entries(liLinkGroups);
+
+  useEffect(() => {
+    if (activeType === "GP" && !gpGroupEntries.length && liGroupEntries.length) {
+      setActiveType("LI");
+      setActiveGroupIndex(0);
+    }
+    if (activeType === "LI" && !liGroupEntries.length && gpGroupEntries.length) {
+      setActiveType("GP");
+      setActiveGroupIndex(0);
+    }
+  }, [activeType, gpGroupEntries.length, liGroupEntries.length]);
+
+  const activeGroups = activeType === "GP" ? gpGroupEntries : liGroupEntries;
+  const activeGroup = activeGroups[activeGroupIndex] || activeGroups[0];
+
+  useEffect(() => {
+    setActiveGroupIndex((index) =>
+      activeGroups.length ? Math.min(index, activeGroups.length - 1) : 0,
+    );
+  }, [activeType, activeGroups.length]);
 
   return (
     <>
@@ -754,76 +631,137 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
           onUpdate={handleUpdate}
         />
       )}
-      <DeletionStatusPopup
-        result={deletionStatus}
-        deleting={deleting}
-        onClose={() => {
-          setDeletionStatus(null);
-          setPendingDeleteLink(null);
-        }}
-        onDelete={confirmDefaulterDelete}
-      />
 
-      <div className="flex flex-col gap-10 w-full min-w-0">
-        <div className="flex flex-col gap-3 group relative w-full min-w-0">
-          <div className="relative flex flex-col gap-3 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3 border border-slate-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] w-full min-w-0">
-            {/* GP LINKS: one card per unique doc URL */}
-            {Object.entries(gpLinkGroups).map(([docUrl, links], groupIndex) => (
-              <div key={docUrl} className="relative mb-4">
-                <span
-                  className="flex items-center justify-center w-7 h-7 rounded-full absolute top-0 left-0
-        bg-gradient-to-r from-indigo-500 to-purple-600
-        text-white text-xs font-bold shadow-md"
-                >
-                  #{groupIndex + 1}
-                </span>
-                <GPLinksTable
-                email={email}
-                  gpLinks={links}
-                  orderId={orderId}
-                  linkId={linkId}
-                  groupIndex={groupIndex}
-                  setItem={setItem}
-                  setOpen={setOpen}
-                  deleting={deleting}
-                  checkingDefaulter={checkingDefaulter}
-                  setLinkId={setLinkId}
-                  handleDelete={handleDelete}
-                />
-              </div>
+      <div className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 p-3 sm:p-4">
+          <div className="flex rounded-lg border border-blue-100 bg-white p-1 shadow-sm">
+            {[
+              { value: "GP", label: "Guest Post", count: gpLinks.length, groups: gpGroupEntries.length },
+              { value: "LI", label: "Link Insertion", count: liLinks.length, groups: liGroupEntries.length },
+            ].map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => {
+                  setActiveType(tab.value);
+                  setActiveGroupIndex(0);
+                }}
+                disabled={!tab.groups}
+                className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${activeType === tab.value
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-blue-50"
+                  }`}
+              >
+                {tab.value === "GP" ? <LinkIcon size={15} /> : <Link size={15} />}
+                {tab.label}
+                <span className={`rounded-md px-1.5 py-0.5 text-xs ${activeType === tab.value ? "bg-white/20" : "bg-slate-100 text-slate-500"}`}>{tab.count}</span>
+              </button>
             ))}
-
-            {/* LI LINKS: one card per unique target URL */}
-            {Object.entries(liLinkGroups).map(
-              ([targetUrl, links], groupIndex) => (
-                <div key={targetUrl} className="relative mb-4">
-                  <span
-                    className="flex items-center justify-center w-7 h-7 rounded-full absolute top-0 left-0
-        bg-gradient-to-r from-indigo-500 to-purple-600
-        text-white text-xs font-bold shadow-md"
-                  >
-                    #{groupIndex + 1}
-                  </span>
-                  <LILinksTable
-                    liLinks={links}
-                    groupIndex={groupIndex}
-                    setItem={setItem}
-                    setOpen={setOpen}
-                    deleting={deleting}
-                    checkingDefaulter={checkingDefaulter}
-                    setLinkId={setLinkId}
-                    linkId={linkId}
-                    handleDelete={handleDelete}
-                    orderId={orderId}
-                  />
-                </div>
-              ),
-            )}
           </div>
+          {activeGroups.length > 1 && (
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
+              <BacklinkPagerButton
+                disabled={activeGroupIndex === 0}
+                onClick={() => setActiveGroupIndex((index) => Math.max(index - 1, 0))}
+              >
+                {"<"}
+              </BacklinkPagerButton>
+              {pageItems(activeGroups.length, activeGroupIndex).map((item, index) =>
+                item === "ellipsis" ? (
+                  <span key={`ellipsis-${index}`} className="px-1 text-sm text-slate-400">...</span>
+                ) : (
+                  <button
+                    key={activeGroups[item][0]}
+                    onClick={() => setActiveGroupIndex(item)}
+                    className={`h-8 min-w-8 rounded-lg px-2 text-sm font-semibold transition ${item === activeGroupIndex
+                      ? "bg-blue-600 text-white"
+                      : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                      }`}
+                  >
+                    {item + 1}
+                  </button>
+                ),
+              )}
+              <BacklinkPagerButton
+                disabled={activeGroupIndex === activeGroups.length - 1}
+                onClick={() =>
+                  setActiveGroupIndex((index) =>
+                    Math.min(index + 1, activeGroups.length - 1),
+                  )
+                }
+              >
+                {">"}
+              </BacklinkPagerButton>
+            </div>
+          )}
+        </div>
+        <div className="bg-white p-3 sm:p-4">
+          {activeGroup ? (
+            activeType === "GP" ? (
+              <GPLinksTable
+                email={email}
+                gpLinks={activeGroup[1]}
+                orderId={orderId}
+                linkId={linkId}
+                groupIndex={activeGroupIndex}
+                setItem={setItem}
+                setOpen={setOpen}
+                deleting={deleting}
+                setLinkId={setLinkId}
+                handleDelete={handleDelete}
+              />
+            ) : (
+              <LILinksTable
+                liLinks={activeGroup[1]}
+                groupIndex={activeGroupIndex}
+                setItem={setItem}
+                setOpen={setOpen}
+                deleting={deleting}
+                setLinkId={setLinkId}
+                linkId={linkId}
+                handleDelete={handleDelete}
+                orderId={orderId}
+              />
+            )
+          ) : (
+            <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 text-sm font-medium text-slate-500">
+              No backlinks found.
+            </div>
+          )}
         </div>
       </div>
     </>
   );
+}
+
+function BacklinkPagerButton({ children, disabled, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {children}
+    </button>
+  );
+}
+
+function pageItems(total, activeIndex) {
+  if (total <= 7) return Array.from({ length: total }, (_, index) => index);
+
+  const visible = new Set([0, total - 1, activeIndex - 1, activeIndex, activeIndex + 1]);
+  const items = [];
+  let previous = -1;
+
+  [...visible]
+    .filter((index) => index >= 0 && index < total)
+    .sort((a, b) => a - b)
+    .forEach((index) => {
+      if (index - previous > 1) items.push("ellipsis");
+      items.push(index);
+      previous = index;
+    });
+
+  return items;
 }
 
 /* ─────────────────────────────────────────────
@@ -1236,13 +1174,10 @@ function LinkTableRow({
   setLinkId,
   linkId,
   deleting,
-  checkingDefaulter,
   handleDelete,
-  orderId,
 }) {
   const spam = getSpamLabel(link.spam_score_c);
-  const navigateTo = useNavigate();
-  const [activePromptId, setActivePromptId] = useState(null)
+  const [activePromptId, setActivePromptId] = useState(null);
   return (
     <div
       className={`flex items-center gap-3 px-4 py-3 border-t border-slate-100 text-sm w-full min-w-0 ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
@@ -1369,12 +1304,12 @@ function LinkTableRow({
         <button
           onClick={() => {
             setLinkId(link.id);
-            handleDelete(link);
+            handleDelete(link.id);
           }}
-          disabled={deleting || checkingDefaulter}
+          disabled={deleting}
           className="px-2 py-1 rounded-xl bg-red-600 text-white hover:bg-red-700 transition shadow"
         >
-          {(deleting || checkingDefaulter) && linkId === link.id ? (
+          {deleting && linkId === link.id ? (
             <LoadingChase size="16" color="white" />
           ) : (
             <Trash size={14} />
@@ -1391,11 +1326,9 @@ function LinkTableRow({
 function GPLinksTable({
   email,
   gpLinks,
-  groupIndex,
   setItem,
   setOpen,
   deleting,
-  checkingDefaulter,
   setLinkId,
   linkId,
   orderId,
@@ -1412,7 +1345,6 @@ function GPLinksTable({
         docNiche={rep.niche}
         ContentValid={rep.is_content_valid}
         DocName={rep.document_name}
-        DomainValid={rep.is_domain_valid}
         linkCount={gpLinks.length}
         linkId={rep.id}
         link={rep}
@@ -1430,7 +1362,6 @@ function GPLinksTable({
           setLinkId={setLinkId}
           linkId={linkId}
           deleting={deleting}
-          checkingDefaulter={checkingDefaulter}
           handleDelete={handleDelete}
         />
       ))}
@@ -1443,11 +1374,9 @@ function GPLinksTable({
 ───────────────────────────────────────────── */
 function LILinksTable({
   liLinks,
-  groupIndex,
   setItem,
   setOpen,
   deleting,
-  checkingDefaulter,
   setLinkId,
   linkId,
   handleDelete,
@@ -1474,7 +1403,6 @@ function LILinksTable({
           setLinkId={setLinkId}
           linkId={linkId}
           deleting={deleting}
-          checkingDefaulter={checkingDefaulter}
           handleDelete={handleDelete}
           orderId={orderId}
         />
@@ -1493,7 +1421,6 @@ function DocumentAnalysisCard({
   website,
   ContentValid,
   DocName,
-  DomainValid,
   linkCount,
   ContentVerdictPromptLedger,
   orderId,
@@ -1501,14 +1428,11 @@ function DocumentAnalysisCard({
   link,
   gpLinks = [],
 }) {
-  const navigateTo = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [activePromptId, setActivePromptId] = useState(null);
   const [analysisData, setAnalysisData] = useState(null);
   const [openPopup, setOpenPopup] = useState(false);
   const { updateLinkLoading } = useSelector((state) => state.orders);
-  const { crmEndpoint } = useSelector((state) => state.user);
-
-  const domain = crmEndpoint.split("?")[0];
   const isLoading = loading || updateLinkLoading;
   const postedUrl = link?.post_id || link?.assigned_user_link || "";
   const postStatus = usePostStatus(postedUrl, website);
@@ -1537,6 +1461,11 @@ function DocumentAnalysisCard({
   };
   return (
     <div className="overflow-hidden">
+      <PromptLadger
+        activePromptId={activePromptId}
+        setActivePromptId={setActivePromptId}
+        isModal={true}
+      />
       {/* HEADER */}
       <div className="flex items-center justify-center gap-2 bg-blue-300 px-4 py-2">
         <div className="text-white text-md font-bold flex items-center gap-2">
@@ -2083,10 +2012,10 @@ export function OurLink({ data }) {
   );
 }
 
-function Meta({ icon: Icon, label, value, valid }) {
+function Meta({ icon, label, value, valid }) {
   return (
     <div className="flex items-start gap-2">
-      <Icon className="text-slate-400 mt-0.5" size={14} />
+      {createElement(icon, { className: "text-slate-400 mt-0.5", size: 14 })}
       <div>
         <p className="text-xs text-slate-500">{label}</p>
         <p className="text-sm text-slate-700 font-medium break-all">

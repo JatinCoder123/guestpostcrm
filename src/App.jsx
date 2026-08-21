@@ -54,21 +54,27 @@ import IpManager from "./components/pages/IpManager";
 import DataModellingPage from "./components/pages/settingpages/DataModellingPage";
 import UserActivity from "./components/pages/settingpages/UserActivity";
 import RecyclePage from "./components/pages/settingpages/Recycle";
-import Profile from "./components/pages/Profile"
+import Profile from "./components/pages/Profile";
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
 import { Toaster } from "react-hot-toast";
 import ReminderManagementPage from "./components/pages/ReminderManagement";
 import { TimelineProvider } from "./context/TimelineContext";
 import MeetingWidget from "./components/MeetingWidget";
-import TwakChat from "./components/TwakTo";
+// import TwakChat from "./components/TwakTo";
 import BootApp from "./components/BootApp";
 import Recharge from "./components/pages/Recharge";
 import PlansPage from "./components/pages/PlansPage";
 import BillingSettings from "./components/pages/BillingSettings";
 import InternetStatus from "./components/InternetStatus";
-import { LinkRemovalPage } from "./components/pages/LinkRemovalpage";
-import LinkRemovalDetailPage from "./components/pages/LinkRemovalDetailPage";
+import DynamicEntityHandler from "./components/routing/DynamicEntityHandler";
+import Theme from "./components/theme/Theme";
+import Layout from "./components/layouts/Layout";
+import Sidebar from "./components/layouts/sidebar/Sidebar";
+import DetailView from "./components/layouts/detail-view/DetailView";
+import EditView from "./components/layouts/edit-view/EditView";
+import CreateView from "./components/layouts/create-view/CreateView";
+import TableView from "./components/layouts/table-view/TableView";
 
 const router = createBrowserRouter([
   {
@@ -76,30 +82,117 @@ const router = createBrowserRouter([
     element: <NotFoundPage />,
   },
   {
-    path: "",
+    path: "/",
     element: (
       <ErrorBoundary>
-
         <ThreadContextProvider>
           <PageContextProvider>
             <TimelineProvider>
               <SocketContextProvider>
-
                 <BootApp />
                 <RootLayout />
               </SocketContextProvider>
             </TimelineProvider>
           </PageContextProvider>
         </ThreadContextProvider>
-
       </ErrorBoundary>
-
-
     ),
+    handle: {
+      breadcrumb: "Timeline",
+    },
     children: [
       {
         index: true,
         element: <TimelinePage />,
+      },
+
+      {
+        path: "entity/:entity/list/:view",
+        element: <DynamicEntityHandler mode="list" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: params.view,
+              type: "view",
+            },
+          ],
+        },
+      },
+
+      {
+        path: "entity/:entity/view",
+        element: <DynamicEntityHandler mode="list" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: "View",
+              type: "view",
+            },
+          ],
+        },
+      },
+
+      {
+        path: "entity/:entity/:email",
+        element: <DynamicEntityHandler mode="detail" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: params.email,
+              type: "record",
+            },
+          ],
+        },
+      },
+
+      {
+        path: "entity/:entity/create",
+        element: <DynamicEntityHandler mode="create" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: "Create",
+              type: "action",
+            },
+          ],
+        },
+      },
+
+      {
+        path: "entity/:entity/:email/edit",
+        element: <DynamicEntityHandler mode="edit" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: params.email,
+              type: "record",
+            },
+            {
+              label: "Edit",
+              type: "action",
+            },
+          ],
+        },
       },
       {
         path: "unreplied-emails",
@@ -121,7 +214,6 @@ const router = createBrowserRouter([
         path: "plans",
         element: <PlansPage />,
       },
-
 
       {
         path: "tag-manager",
@@ -157,19 +249,42 @@ const router = createBrowserRouter([
 
       {
         path: ":type",
-        element: <DynamicRouteHandler mode="list" />,
-      },
-      {
-        path: ":type/view",
-        element: <DynamicRouteHandler mode="list" />,
-      },
-      {
-        path: ":type/create",
-        element: <DynamicRouteHandler mode="create" />,
-      },
-      {
-        path: ":type/edit",
-        element: <DynamicRouteHandler mode="edit" />,
+        element: <Outlet />,
+
+        handle: {
+          breadcrumb: ({ params }) => params.type,
+        },
+
+        children: [
+          {
+            index: true,
+            element: <DynamicRouteHandler mode="list" />,
+          },
+
+          {
+            path: "view",
+            element: <DynamicRouteHandler mode="list" />,
+            handle: {
+              breadcrumb: "View",
+            },
+          },
+
+          {
+            path: "create",
+            element: <DynamicRouteHandler mode="create" />,
+            handle: {
+              breadcrumb: "Create",
+            },
+          },
+
+          {
+            path: "edit",
+            element: <DynamicRouteHandler mode="edit" />,
+            handle: {
+              breadcrumb: "Edit",
+            },
+          },
+        ],
       },
       {
         path: "invoices",
@@ -183,15 +298,6 @@ const router = createBrowserRouter([
       {
         path: "reminders/:id?",
         element: <ReminderPage />,
-      },
-
-      {
-        path: "link-removal",
-        element: <LinkRemovalPage />,
-      },
-      {
-        path: "link-removal/:id",
-        element: <LinkRemovalDetailPage />,
       },
 
       {
@@ -271,15 +377,10 @@ const router = createBrowserRouter([
           },
         ],
       },
-
       {
         path: "settings",
-        element: <Outlet />,
+        element: <SettingsPage />,
         children: [
-          {
-            index: true,
-            element: <SettingsPage />,
-          },
           {
             path: "machine-learning",
             element: <MachineLearningPage />,
@@ -344,8 +445,45 @@ const router = createBrowserRouter([
             path: "backlinks",
             element: <BacklinksPage />,
           },
+          {
+            path: "theme",
+            element: <Theme />,
+          },
 
+          /* ================================================================
+             LAYOUT
+             ================================================================ */
 
+          {
+            path: "layout",
+            element: <Layout />,
+            children: [
+              {
+                index: true,
+                element: <Sidebar />,
+              },
+              {
+                path: "sidebar",
+                element: <Sidebar />,
+              },
+              {
+                path: "detail-view",
+                element: <DetailView />,
+              },
+              {
+                path: "edit-view",
+                element: <EditView />,
+              },
+              {
+                path: "create-view",
+                element: <CreateView />,
+              },
+              {
+                path: "table-view",
+                element: <TableView />,
+              },
+            ],
+          },
         ],
       },
     ],
@@ -368,8 +506,7 @@ export default function App() {
 
     // Only allow email param when URL has no extra path
     const isOnlyDomain =
-      window.location.pathname === "/" ||
-      window.location.pathname === "";
+      window.location.pathname === "/" || window.location.pathname === "";
 
     if (isOnlyDomain && email) {
       dispatch(getUser(email));
@@ -390,16 +527,14 @@ export default function App() {
       <Toaster />
       <InternetStatus />
 
-
       {isAuthenticated && !loading && (
         <>
-          {/* <MeetingWidget />
-          <TwakChat /> */}
+          {/* <MeetingWidget /> */}
+          {/* <TwakChat /> */}
           <RouterProvider router={router} />
         </>
       )}
       {!isAuthenticated && loading && <LoadingPage />}
-
 
       {!isAuthenticated && !loading && <Login />}
 

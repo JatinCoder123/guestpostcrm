@@ -17,6 +17,7 @@ import { getDomain } from "../../../assets/assets";
 import TinyEditor from "../../TinyEditor";
 import { apiRequest, fetchGpc } from "../../../services/api";
 import { queryClient } from "../../../lib/queryClient";
+import { setupEmailBackgroundHandling } from "../../../lib/tinyEmailBackground";
 import { useCrmUsers } from "../../../queries/users.queries";
 import { useTemplate, useTemplatesByStage, useTemplateStages } from "../../../queries/template.queries";
 
@@ -69,6 +70,49 @@ const TINY_INIT = {
   resize: true,
 
   browser_spellcheck: true,
+  setup: setupEmailBackgroundHandling,
+extended_valid_elements: `
+    *[style|class|id|title|data-email-background-url],
+    div[style|class|id],
+    p[style|class|id],
+    span[style|class|id],
+    table[style|class|id|role|border|width|height|cellpadding|cellspacing|background|data-email-background-url],
+    tr[style|class],
+    td[style|class|id|align|valign|width|height|colspan|rowspan|bgcolor|background|data-email-background-url],
+    th[style|class|id|align|valign|width|height|colspan|rowspan|bgcolor|background|data-email-background-url],
+    img[src|alt|width|height|style|class]
+  `,
+
+  valid_styles: {
+  "*": [
+    "background",
+    "background-color",
+    "background-image",
+    "background-size",
+    "background-position",
+    "background-repeat",
+    "color",
+    "border",
+    "border-color",
+    "border-style",
+    "border-width",
+    "border-radius",
+    "padding",
+    "margin",
+    "width",
+    "height",
+    "min-width",
+    "max-width",
+    "min-height",
+    "max-height",
+    "text-align",
+    "font-size",
+    "font-family",
+    "font-weight",
+    "line-height",
+    "display"
+  ].join(","),
+},
 
   content_style: `
     body {
@@ -858,11 +902,7 @@ export default function TemplatesPage() {
                   </button>
                 </div>
               )}
-              <Editor
-                value={newTemplateContent}
-                onEditorChange={setNewTemplateContent}
-                init={TINY_INIT}
-              />
+
               <TinyEditor
                 editorContent={newTemplateContent}
                 setEditorContent={setNewTemplateContent}

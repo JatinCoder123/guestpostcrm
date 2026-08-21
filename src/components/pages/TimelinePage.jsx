@@ -12,8 +12,6 @@ import LatestMessage from "../LatestMessage";
 import { useTimeline } from "../../context/TimelineContext";
 import { useTimelineLoading } from "../../hooks/useTimelineLoading";
 import { useInfiniteLedger } from "../../queries/ledger.queries";
-import useRecordLock from "../../hooks/useRecordLock";
-import LockedBar from "../LockedBar";
 export function TimelinePage() {
   const [showAvatar, setShowAvatar] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
@@ -36,7 +34,6 @@ export function TimelinePage() {
   const { viewEmail, threadId, count, contactInfo, } = useSelector(
     (state) => state.viewEmail,
   );
-  const { isLocked, recordUsers } = useRecordLock({ email: currentEmail, compareTo: 'currentTimeline', page: ['/'] })
 
   useEffect(() => {
     const summaryColumn = summaryColumnRef.current;
@@ -72,9 +69,6 @@ export function TimelinePage() {
       <div className="min-h-[400px] p-0">
         {(isTimelineLoading) ? <LoadingSkeleton /> : <>
           <div className="flex flex-col gap-4">
-            {isLocked && (
-              <LockedBar recordUsers={recordUsers} recordName="Timeline" />
-            )}
             <ContactHeader />
 
             <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)] gap-4 items-start pb-10">
@@ -86,7 +80,7 @@ export function TimelinePage() {
               </div>
 
               <aside ref={summaryColumnRef} className="min-w-0 flex flex-col gap-4">
-                <LatestMessage handleMessageClick={handleMessageClick} classes={isLocked ? 'pointer-events-none opacity-50' : ''} />
+                <LatestMessage handleMessageClick={handleMessageClick} />
                 <MailerSummaryHeader />
               </aside>
             </div>

@@ -1,11 +1,12 @@
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
-import { useContext, useEffect, useRef, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { viewEmailAction } from "./store/Slices/viewEmail";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
+import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
 import { SocketContext } from "./context/SocketContext";
 import { getDomain } from "./assets/assets";
@@ -14,47 +15,33 @@ import useRefresh from "./hooks/useRefresh";
 import OnBoarding from "./components/OnBoarding";
 import { useTimeline } from "./context/TimelineContext";
 import toast from "react-hot-toast";
-import { queryClient } from "./lib/queryClient";
-import { motion } from "framer-motion";
-import RefreshReminder from "./components/RefreshReminder";
+import { queryClient } from "./lib/queryClient"
+import Breadcrumbs from "./components/Breadcrumbs";
+
 
 const RootLayout = () => {
-  const { message, error } = useSelector(
-    (state) => state.viewEmail
-  );
+  const { message, error } = useSelector((state) => state.viewEmail);
 
-  const {
-    crmEndpoint,
-    currentScore,
-  } = useSelector((state) => state.user);
-
+  const { crmEndpoint, currentScore, } =
+    useSelector((state) => state.user);
   const {
     displayIntro,
     setActivePage,
     collapsed,
-    showRefreshReminder,
   } = useContext(PageContext);
-
-  const [showRechargeWarn, setShowRechargeWarn] = useState(
-    Number(currentScore) <= 0
-  );
-
+  const [showRechargeWarn, setShowRechargeWarn] = useState(Number(currentScore) <= 0)
   const { setCrm } = useContext(SocketContext);
+  useTimeline()
 
-  useTimeline();
   useRefresh();
 
   const dispatch = useDispatch();
-  const location = useLocation();
+  const location = useLocation().pathname.split("/")[2];
+  const pathname = useLocation().pathname;
 
-  const pathname = location.pathname;
-  const activePage = pathname.split("/")[2];
 
   const mainRef = useRef(null);
 
-  /* -------------------------------------------------------
-   * Scroll main content to top when route changes
-   * ----------------------------------------------------- */
   useEffect(() => {
     if (mainRef.current) {
       mainRef.current.scrollTo({
@@ -65,139 +52,79 @@ const RootLayout = () => {
     }
   }, [pathname]);
 
-  /* -------------------------------------------------------
-   * Set CRM endpoint
-   * ----------------------------------------------------- */
   useEffect(() => {
     if (crmEndpoint) {
       setCrm(getDomain(crmEndpoint));
     }
-  }, [crmEndpoint, setCrm]);
+  }, [crmEndpoint]);
 
-  /* -------------------------------------------------------
-   * Toast messages
-   * ----------------------------------------------------- */
+
   useEffect(() => {
     if (message) {
       dispatch(viewEmailAction.clearAllMessage());
-
       toast.success(message, {
         style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
         },
       });
-
-      queryClient.invalidateQueries({
-        queryKey: ["emails"],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["threads"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["threads"] });
     }
 
     if (error) {
       dispatch(viewEmailAction.clearAllErrors());
-
       toast.error(error, {
         style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
         },
       });
     }
-  }, [message, error, dispatch]);
+  }, [message, error]);
 
-  /* -------------------------------------------------------
-   * Active sidebar page
-   * ----------------------------------------------------- */
+  // Set active page based on URL
   useEffect(() => {
-    setActivePage(activePage);
-  }, [activePage, setActivePage]);
+    setActivePage(location);
+  }, [location, setActivePage]);
 
-  /* -------------------------------------------------------
-   * Intro screen
-   * ----------------------------------------------------- */
-  if (displayIntro) {
+  if (!displayIntro) {
     return <DisplayIntro key="intro" />;
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Refresh reminder */}
-      <RefreshReminder />
+    <div className="flex h-screen bg-background ">
 
-      {/* Main application wrapper */}
-      <motion.div
-        animate={{
-          paddingTop: showRefreshReminder ? 60 : 0,
-        }}
-        transition={{
-          duration: 0.35,
-          ease: [0.22, 1, 0.36, 1],
-        }}
-        className="flex min-h-0 w-full flex-1"
-      >
-        {/* =====================================================
-            LEFT SIDEBAR
-        ====================================================== */}
-        <Sidebar />
+      {/* LEFT */}
+      <Sidebar />
 
-        {/* =====================================================
-            RIGHT CONTENT
-        ====================================================== */}
-        <div
-          className={`
-            flex
-            min-w-0
-            flex-1
-            flex-col
-            overflow-hidden
-            p-2
-          `}
+
+      {/* RIGHT */}
+      <div className="flex flex-1 flex-col overflow-hidden p-2">
+        <TopNav />
+        {/* <Breadcrumbs /> */}
+        <main
+          ref={mainRef}
+          className="flex-1 overflow-y-auto hide-scrollbar w-full"
         >
-          {/* Top Navigation */}
-          <TopNav />
-
-          {/* ===================================================
-              MAIN CONTENT
-          ==================================================== */}
-          <main
-            ref={mainRef}
-            className="
-              min-h-0
-              flex-1
-              w-full
-              overflow-y-auto
-              hide-scrollbar
-            "
-          >
-            <div className="w-full">
-              {/* Low credit warning */}
-              <LowCreditWarning
-                open={showRechargeWarn}
-                score={currentScore}
-                onClose={() => setShowRechargeWarn(false)}
-              />
-
-              {/* Page content */}
-              <div className="m-3">
-                <Outlet />
-              </div>
+          <div className="p-0">
+            <LowCreditWarning
+              open={showRechargeWarn}
+              score={currentScore}
+              onClose={() => setShowRechargeWarn(false)}
+            />
+            <div className="m-3">
+              <Outlet />
             </div>
-          </main>
+          </div>
+        </main>
 
-          {/* ===================================================
-              BOTTOM
-          ==================================================== */}
-          <OnBoarding />
-
-          <Footer />
-        </div>
-      </motion.div>
+        {/* Bottom */}
+        <OnBoarding />
+        <Footer />
+      </div>
     </div>
   );
 };

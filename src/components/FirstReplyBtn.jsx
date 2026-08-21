@@ -8,12 +8,14 @@ import { LoadingChase } from "./Loading";
 import { useNext } from "../hooks/useNext";
 import { updateActivity } from "../services/utils";
 import { useContact } from "../queries/contact.queries";
+// import { threadId } from "node:worker_threads";
 
 const FirstReplyBtn = ({ email, threadEmails = [] }) => {
   const dispatch = useDispatch();
   const { businessEmail } = useSelector((s) => s.user);
-   const { data, isPending } = useContact(email);
+  const { data, isPending } = useContact(email);
   const threadId =  data?.contact?.thread_id
+
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
   const [reminderId, setReminderId] = useState(null);
   const { moveToNext } = useNext()
@@ -39,7 +41,7 @@ const FirstReplyBtn = ({ email, threadEmails = [] }) => {
     try {
       setFrLoading(true);
       await fetchGpc({
-        params: { type: "send_reminder", reminder_id: reminderId,threadId: threadId },
+        params: { type: "send_reminder", reminder_id: reminderId , threadId: threadId},
       });
       toast.success(`First Reply Sent Successfully to ${email}`)
       updateActivity(email, "first reply sent");

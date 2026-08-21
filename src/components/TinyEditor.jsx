@@ -3,6 +3,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { queryClient } from "../lib/queryClient"
+import { setupEmailBackgroundHandling } from "../lib/tinyEmailBackground";
 
 const TinyEditor = ({
   editorContent,
@@ -24,8 +25,8 @@ const TinyEditor = ({
           value={editorContent}
           onEditorChange={setEditorContent}
           onInit={(e, editor) => {
-            editorRef.current = editor;
-            setEditorReady(true);
+            if (editorRef) editorRef.current = editor;
+            setEditorReady?.(true);
           }}
           init={{
             license_key: 'gpl',
@@ -96,6 +97,49 @@ const TinyEditor = ({
 
             /* ================= ACCESSIBILITY ================= */
             a11y_advanced_options: true,
+            setup: setupEmailBackgroundHandling,
+            extended_valid_elements: `
+  *[style|class|id|title|data-email-background-url],
+  div[style|class|id|title],
+  p[style|class|id|title],
+  span[style|class|id|title],
+  table[style|class|id|role|border|width|height|cellpadding|cellspacing|background|data-email-background-url],
+  tbody[style|class|id],
+  thead[style|class|id],
+  tr[style|class|id|height],
+  td[style|class|id|align|valign|width|height|colspan|rowspan|bgcolor|background|data-email-background-url],
+  th[style|class|id|align|valign|width|height|colspan|rowspan|bgcolor|background|data-email-background-url],
+  img[src|alt|title|width|height|style|class|border],
+  a[href|target|rel|title|style|class]
+`,
+
+valid_styles: {
+  "*": [
+    "background",
+    "background-color",
+    "background-image",
+    "background-repeat",
+    "background-size",
+    "background-position",
+    "color",
+    "border",
+    "border-color",
+    "border-style",
+    "border-width",
+    "border-radius",
+    "padding",
+    "margin",
+    "width",
+    "max-width",
+    "height",
+    "text-align",
+    "font-size",
+    "font-family",
+    "font-weight",
+    "line-height",
+    "display"
+  ].join(","),
+},
 
             /* ================= CONTENT STYLE ================= */
             content_style: `

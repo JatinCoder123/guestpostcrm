@@ -28,7 +28,6 @@ import { useCrmUsers } from "../queries/users.queries";
 import ActionButton from "./ActionButton";
 import { useMailerSummary } from "../queries/mailerSummary.queries";
 import { Titletooltip } from "./TitleTooltip";
-import useRecordLock from "../hooks/useRecordLock";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -49,23 +48,18 @@ const ContactHeader = () => {
 
   const navigate = useNavigate();
   const { data, isPending } = useContact(currentEmail);
-
-
+  const { data: summaryData, isPending: summaryLoading } =
+    useMailerSummary(currentEmail);
   const contactInfo = data?.contact;
+  const mailersSummary = summaryData?.mailers_summary;
   const hashtags = contactInfo?.hashtag?.data?.hashtags;
   const email = contactInfo?.email1;
-  const threadId = contactInfo?.thread_id;
-  const { data: summaryData, isPending: summaryLoading } =
-    useMailerSummary({ email, threadId });
   const { showNextPrev, handleDateClick } = useContext(PageContext);
   const { data: dealsData } = useDealsByEmail(currentEmail);
   const emailDeals = dealsData?.data ?? [];
-  const mailersSummary = summaryData?.mailers_summary;
-
   const { showBrandTimeline, contacts = [] } = useSelector(
-    (state) => state.brandTimeline
+    (state) => state.brandTimeline,
   );
-  const { isLocked } = useRecordLock({ email: currentEmail, compareTo: 'currentTimeline', page: ['/'] })
   const [showSidebar, setShowSidebar] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
 
@@ -91,7 +85,6 @@ const ContactHeader = () => {
       const animate = (now) => {
         const progress = Math.min((now - startTime) / duration, 1);
         const current = Math.floor(progress * value);
-
         setCount(current);
 
         if (progress < 1) {
@@ -125,19 +118,19 @@ const ContactHeader = () => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-        ...emailDeals.map((d) =>
-          Number(
-            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
-          )
+          ...emailDeals.map((d) =>
+            Number(
+              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+            ),
+          ),
         )
-      )
       : 0;
 
   const statusItems = [
     { Icon: Tag, label: "Type", value: contactInfo?.type },
     { Icon: Rocket, label: "Stage", value: data?.stage },
     { Icon: Hourglass, label: "Status", value: data?.status },
-    { Icon: Lock, label: "Category", value: contactInfo?.customer_type },
+    { Icon: Lock, label: "Category", value: data?.customer_type },
     {
       Icon: ArrowBigDown,
       label: "Direction",
@@ -166,7 +159,6 @@ const ContactHeader = () => {
       value: contactInfo?.last_activity_date ?? "-",
     },
   ];
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -180,7 +172,6 @@ const ContactHeader = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
   const isBrand = contactInfo?.type?.toLowerCase() === "brand";
 
   return (
@@ -189,8 +180,7 @@ const ContactHeader = () => {
       {showBrandTimeline && (
         <div
           ref={sidebarRef}
-          className={`absolute top-28 right-0 z-50 h-[75vh] transition-all duration-300 ${showSidebar ? "w-72" : "w-10"
-            }`}
+          className={`absolute top-28 right-0 z-50 h-[75vh] transition-all duration-300 ${showSidebar ? "w-72" : "w-10"}`}
         >
           {/* Toggle */}
           <div
@@ -202,8 +192,9 @@ const ContactHeader = () => {
 
           {/* Content */}
           <div
-            className={`ml-10 h-[300px] bg-white border border-gray-200 shadow-2xl rounded-l-2xl overflow-hidden ${showSidebar ? "block" : "hidden"
-              }`}
+            className={`ml-10 h-[300px] bg-white border border-gray-200 shadow-2xl rounded-l-2xl overflow-hidden ${
+              showSidebar ? "block" : "hidden"
+            }`}
           >
             <div className="p-4 border-b bg-blue-50 font-bold text-gray-700">
               Brand Contacts ({contacts?.length || 0})
@@ -226,7 +217,6 @@ const ContactHeader = () => {
                     <p className="font-semibold text-sm text-gray-800">
                       {item?.name || "No Name"}
                     </p>
-
                     <p className="text-xs text-gray-500 truncate">
                       {item?.email1}
                     </p>
@@ -249,24 +239,10 @@ const ContactHeader = () => {
           <div className="flex min-w-0 basis-full items-center gap-3 px-3 py-1 sm:basis-auto sm:flex-1 2xl:min-w-[360px] 2xl:flex-none 2xl:px-5">
             {!isPending && (
               <>
-                {/* USER INITIALS */}
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
-                  {(() => {
-                    const name = he.decode(
-                      contactInfo?.full_name?.trim() || email || ""
-                    );
-
-                    const initials = name
-                      .split(/\s+/)
-                      .filter(Boolean)
-                      .slice(0, 2)
-                      .map((word) => word.charAt(0).toUpperCase())
-                      .join("");
-
-                    return initials || "U";
-                  })()}
-                </div>
-
+                <img
+                  src={"Rectangle.png"}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
@@ -275,14 +251,14 @@ const ContactHeader = () => {
                       title={he.decode(
                         contactInfo?.full_name?.trim()
                           ? contactInfo.full_name
-                          : email ?? ""
+                          : (email ?? ""),
                       )}
                     >
                       {(() => {
                         const text = he.decode(
                           contactInfo?.full_name?.trim()
                             ? contactInfo.full_name
-                            : email ?? ""
+                            : (email ?? ""),
                         );
 
                         return text.length > 8
@@ -298,27 +274,24 @@ const ContactHeader = () => {
                   </div>
 
                   <div className="mb-1 mt-1 flex max-w-full flex-wrap items-center gap-2">
-                    {(showAllTags
-                      ? hashtags
-                      : hashtags?.slice(0, 2)
-                    )?.map((tag) => (
-                      <HashTag
-                        key={tag.id}
-                        text={tag.name}
-                        color="bg-gradient-to-r from-search-primary to-search-secondary"
-                      />
-                    ))}
+                      {(showAllTags ? hashtags : hashtags?.slice(0, 2))?.map((tag) => (
+                        <HashTag
+                          key={tag.id}
+                          text={tag.name}
+                          color="bg-gradient-to-r from-search-primary to-search-secondary"
+                        />
+                      ))}
 
-                    {hashtags?.length > 2 && (
-                      <button
-                        type="button"
-                        className="shrink-0 rounded-full bg-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-300"
-                        onClick={() => setShowAllTags((visible) => !visible)}
-                        aria-expanded={showAllTags}
-                      >
-                        {showAllTags ? "Show less" : "..."}
-                      </button>
-                    )}
+                      {hashtags?.length > 2 && (
+                        <button
+                          type="button"
+                          className="shrink-0 rounded-full bg-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-300"
+                          onClick={() => setShowAllTags((visible) => !visible)}
+                          aria-expanded={showAllTags}
+                        >
+                          {showAllTags ? "Show less" : "..."}
+                        </button>
+                      )}
                   </div>
                 </div>
               </>
@@ -328,55 +301,54 @@ const ContactHeader = () => {
           <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
 
           <div className="flex min-w-0 flex-1 flex-wrap items-start gap-y-3 px-3 2xl:flex-nowrap 2xl:px-0">
-            <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
-              <p className="text-[12px] xl:text-[16px] font-semibold uppercase tracking-widest text-blue-600">
-                CREATED AT
-              </p>
 
-              <p className="text-[12px] font-semibold text-gray-900 mt-1">
+          <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
+            <p className="text-[12px] xl:text-[16px] font-semibold uppercase tracking-widest text-blue-600">
+              CREATED AT
+            </p>
+
+            <p className="text-[12px] font-semibold text-gray-900 mt-1">
+              {summaryLoading
+                ? "Loading..."
+                : mailersSummary?.date_entered_formatted || "N/A"}
+            </p>
+
+            <p className="text-xs text-gray-500 mt-1">
+              {mailersSummary?.date_entered || ""}
+            </p>
+          </div>
+
+          <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
+
+          <div className="min-w-[170px] flex-1 px-3 2xl:min-w-[200px] 2xl:px-6">
+            <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
+              SUBJECT
+            </p>
+
+            <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+              <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[230px]">
                 {summaryLoading
                   ? "Loading..."
-                  : mailersSummary?.date_entered_formatted || "N/A"}
+                  : mailersSummary?.subject || "No Subject"}
               </p>
+            </Titletooltip>
+          </div>
 
-              <p className="text-xs text-gray-500 mt-1">
-                {mailersSummary?.date_entered || ""}
+          <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
+
+          <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
+            <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
+              MOTIVE
+            </p>
+
+            <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
+              <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[200px]">
+                {summaryLoading
+                  ? "Loading..."
+                  : mailersSummary?.correct_motive || "N/A"}
               </p>
-            </div>
-
-            <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
-
-            <div className="min-w-[170px] flex-1 px-3 2xl:min-w-[200px] 2xl:px-6">
-              <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
-                SUBJECT
-              </p>
-
-              <Titletooltip content={mailersSummary?.subject || "No Subject"}>
-                <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[230px]">
-                  {summaryLoading
-                    ? "Loading..."
-                    : mailersSummary?.subject || "No Subject"}
-                </p>
-              </Titletooltip>
-            </div>
-
-            <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
-
-            <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
-              <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
-                MOTIVE
-              </p>
-
-              <Titletooltip
-                content={mailersSummary?.correct_motive || "N/A"}
-              >
-                <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[200px]">
-                  {summaryLoading
-                    ? "Loading..."
-                    : mailersSummary?.correct_motive || "N/A"}
-                </p>
-              </Titletooltip>
-            </div>
+            </Titletooltip>
+          </div>
           </div>
 
           <div className="flex basis-full flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-3 pt-3 2xl:ml-auto 2xl:basis-auto 2xl:flex-nowrap 2xl:justify-end 2xl:border-0 2xl:px-5 2xl:pt-0">
@@ -414,9 +386,8 @@ const ContactHeader = () => {
             ))}
           </div>
         )}
-
-        <div className="relative  w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-visible">
-          <ActionButton classes={isLocked ? 'pointer-events-none opacity-50' : ''} />
+        <div className="relative z-40 w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-visible">
+          <ActionButton />
         </div>
       </div>
     </div>

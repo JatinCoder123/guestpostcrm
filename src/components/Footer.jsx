@@ -1,16 +1,13 @@
-import { BellIcon, CircleAlert, Flame, Link2, List, Mail, MailWarning, Settings, Sparkles, Unlink } from "lucide-react";
+import { BellIcon, Flame, List, MailWarning, Settings, Sparkles } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { motion } from "framer-motion";
-import toast from "react-hot-toast";
 import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
-import { useLinkRemovalCount } from "../queries/backlinks.queries";
+import { useContact } from "../queries/contact.queries";
 import { SocketContext } from "../context/SocketContext";
 import IconButton from "./ui/Buttons/IconButton";
 import { PageContext } from "../context/pageContext";
-import { userAction } from "../store/Slices/userSlice";
 const VARIANTS = {
   indigo: {
     wrap: "bg-indigo-50 hover:bg-indigo-100 border-indigo-200",
@@ -68,17 +65,12 @@ function NavBtn({ icon: Icon, label, onClick, count, color = "indigo" }) {
 }
 export default function Footer() {
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
-  const { data: linkRemovalData } = useLinkRemovalCount();
-  const { crmEndpoint, businessEmail } = useSelector(state => state.user)
   const { notificationCount } = useContext(SocketContext);
   const { collapsed } = useContext(PageContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
   const dispatch = useDispatch()
   const prevCountRef = useRef(0);
-  const crmDomain = crmEndpoint
-    ?.replace("https://", "")
-    ?.replace("http://", "")
-    ?.split("/")[0];
+
   const {
     data: paymentReminderData,
     isPending: paymentReminderPending,
@@ -86,12 +78,6 @@ export default function Footer() {
   const { count: hotCount } = useSelector((s) => s.hot);
   const { error } = useSelector((s) => s.user);
   const outboxCount = outboxData?.stats?.all?.count ?? 0;
-  const linkRemovalCount = Number(
-    linkRemovalData?.stats?.all?.count ??
-    linkRemovalData?.total ??
-    linkRemovalData?.count ??
-    0
-  );
   const paymentReminderCount =
     paymentReminderData?.total ??
     paymentReminderData?.total_records ??
@@ -138,36 +124,6 @@ export default function Footer() {
     >
       <IconButton icon={Settings} label="Settings" onClick={() => navigate("/settings")} />
       <div className="flex gap-2">
-        <div className="flex items-center gap-3">
-          {crmDomain && (
-            <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-all duration-400 cursor-pointer">
-              <Link2 className="w-4 h-4 text-purple-600 group-hover:scale-125 transition-transform duration-300" />
-
-              <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-64 transition-all duration-600">
-                CRM:{" "}
-                <span className="font-bold text-purple-700">
-                  {crmDomain?.split(".")[0]}
-                </span>
-              </span>
-            </div>
-          )}
-
-          {businessEmail && (
-            <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer">
-              <Mail className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
-
-              <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-80 transition-all duration-600">
-                Business Email:{" "}
-                <span className="font-bold text-blue-700">
-                  {businessEmail}
-                </span>
-              </span>
-            </div>
-          )}
-
-
-        </div>
-
         <IconButton
           onClick={() => navigate("/RecentEntry")}
           icon={List}
@@ -176,15 +132,6 @@ export default function Footer() {
           showCount={true}
 
           iconColor="blue"
-        />
-
-        <IconButton
-          icon={Unlink}
-          iconColor="red"
-          iconClassName={linkRemovalCount > 0 ? "animate-spin" : ""}
-          count={linkRemovalCount}
-          label="Link Removal"
-          onClick={() => navigate("/link-removal")}
         />
 
         <IconButton

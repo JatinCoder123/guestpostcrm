@@ -1,115 +1,18 @@
-import {
-  Calendar,
-  User2,
-  Pen,
-  Clapperboard,
-  Package,
-  CheckCircle,
-  XCircle,
-  PauseCircle,
-  BadgeCheck,
-  StoreIcon,
-  ListFilter,
-  X,
-  ShoppingCart,
-  DollarSign,
-  BarChart,
-  BarChart3,
-  IdCardIcon,
-  Eye,
-} from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import { useContext, useEffect, useState } from "react";
-import { orderAction, updateOrder } from "../../store/Slices/orders.js";
+import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
-import { useNavigate } from "react-router-dom";
-import TableView, { Table } from "../ui/table/Table";
-import TableTitleBar from "../ui/table/TableTitleBar";
-import { LoadingAll } from "../Loading.jsx";
-const STATUS_CONFIG = [
-  {
-    value: "new",
-    label: "New",
-    icon: Package,
-    color: "#2563eb", // blue
-    filter: 'order_status',
-    showAmount: true
-  },
-  {
-    value: "accepted",
-    label: "Accepted",
-    icon: CheckCircle,
-    color: "#16a34a", // green
-    filter: 'order_status',
-    showAmount: true
-
-  },
-  {
-    value: "rejected_nontechnical",
-    label: "Rejected",
-    icon: XCircle,
-    color: "#dc2626", // red
-    filter: 'order_status',
-    showAmount: true
-
-  },
-  {
-    value: "wrong",
-    label: "Wrong",
-    icon: X,
-    color: "#662744", // red
-    filter: 'order_status',
-    showAmount: true
-
-  },
-  {
-    value: "pending",
-    label: "Pending",
-    icon: PauseCircle,
-    color: "#ca8a04", // yellow
-    filter: 'order_status',
-    showAmount: true
-
-  },
-  {
-    value: "completed",
-    label: "Completed",
-    icon: BadgeCheck,
-    color: "#7c3aed", // purple
-    filter: 'order_status',
-    showAmount: true
-
-  },
-  {
-    value: "Marketplace",
-    label: "Marketplace",
-    icon: StoreIcon,
-    color: "#ed3ab7", // purple
-    filter: 'order_type',
-    showAmount: true
-
-  },
-  {
-    value: "listacle",
-    label: "Listacle",
-    icon: ListFilter,
-    color: "#56cd1f", // purple
-    filter: 'order_type',
-    showAmount: true
-
-
-  },
-];
-import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
-import { toast } from "react-toastify";
-import { orderKeys, useInfiniteOrders, useOrderStats } from "../../queries/orders.queries.js";
+import TableView from "../ui/table/Table";
+import { useInfiniteOrders, useOrderStats } from "../../queries/orders.queries.js";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
-import { queryClient } from "../../lib/queryClient.js";
+import { useLayout } from "@/queries/layouts.queries.js";
+import { LoadingProgress } from "../Loading";
 
 export function OrdersPage() {
   const preferences = useTablePreference("orders");
-  const { updating, message, error } = useSelector(state => state.orders);
   const { enteredEmail: email } = useContext(PageContext)
+  const { data: layout, isPending: layoutPending } = useLayout('orders', "table")
+
+  const STATUS_CONFIG = layout?.config?.statusConfig ?? []
+  console.log("LAYOUT", layout)
   const {
     data,
     fetchNextPage,
@@ -118,268 +21,46 @@ export function OrdersPage() {
     isPending,
   } = useInfiniteOrders({ preferences, email });
   if (!isPending) {
-    console.log("ORDERS", data)
 
   }
   const {
     data: summary,
     isPending: summaryLoading,
   } = useOrderStats({ email });
-  const [updateOrderId, setUpdateOrderId] = useState(null);
 
-  const { handleDateClick, enteredEmail } = useContext(PageContext);
-  const navigateTo = useNavigate();
-  const dispatch = useDispatch();
-  const columns = [
-    {
-      label: "Created At",
-      accessor: "date_entered",
-      headerClasses: "",
-      icon: Calendar,
-      sortable: true,
-
-      onClick: (row) =>
-        handleDateClick({ email: row?.client_email, navigate: "/" }),
-      classes: "truncate max-w-[200px]",
-      render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered_time_ago}
-        </span>
-      ),
-    },
-    {
-      label: "Contact",
-      accessor: "client_email",
-      headerClasses: "",
-      icon: User2,
-      classes: "truncate max-w-[200px]",
-      onClick: (row) =>
-        handleDateClick({
-          email: row?.client_email,
-          navigate: "/contacts",
-        }),
-      searchable: true,
-
-      render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {row?.name}
-        </span>
-      ),
-    },
-    {
-      label: "Amount",
-      accessor: "total_amount_c",
-      headerClasses: "",
-      icon: DollarSign,
-      sortable: true,
-      classes: "truncate  max-w-[100px]",
-      render: (row) => (
-        <span className="font-medium text-blue-700 ">
-          ${row.total_amount_c || "0.00"}{" "}
-        </span>
-      ),
-      searchable: true,
-
-    },
-    {
-      label: "Status",
-      accessor: "order_status",
-      headerClasses: "",
-      icon: BarChart,
-      classes: "truncate max-w-[200px]",
-
-      render: (row) => (
-        <span
-          className={`px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700`}
-        >
-          {row.order_status || "Unknown"}
-        </span>
-      ),
-    },
-    {
-      label: "Type",
-      accessor: "order_type",
-      headerClasses: "",
-      icon: BarChart3,
-      classes: "truncate max-w-[200px]",
-
-      render: (row) => (
-        <span className="font-medium text-gray-700 ">{row?.order_type}</span>
-      ),
-    },
-    {
-      label: "Modified At",
-      accessor: "date_modified",
-      headerClasses: "",
-      icon: Calendar,
-      classes: "truncate max-w-[200px]",
-
-      render: (row) => (
-        <span className="px-3 py-1  rounded-full ">{row?.date_modified}</span>
-      ),
-    },
-    {
-      label: "Order Id",
-      accessor: "order_id",
-      headerClasses: "",
-      icon: IdCardIcon,
-      classes: "truncate max-w-[200px]",
-      searchable: true,
-
-      render: (row) => (
-        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-          {row?.order_id}
-        </span>
-      ),
-    },
-    {
-      label: "Action",
-      accessor: "action",
-      headerClasses: "ml-auto",
-      icon: Clapperboard,
-      classes: "truncate max-w-[200px] ml-auto",
-      render: (row) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() =>
-              navigateTo(`/orders/edit?email=${row?.client_email}&id=${row?.id}`)
-            }
-            className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
-            title="Update"
-          >
-            <Pen className="w-5 h-5 text-blue-600" />
-          </button>
-          <button
-            onClick={() =>
-              navigateTo(`/orders/view?email=${row?.client_email}&id=${row?.id}`)
-            }
-            className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
-            title="Update"
-          >
-            <Eye className="w-5 h-5 text-blue-600" />
-          </button>
-          {row.order_type?.toLowerCase() == "marketplace" &&
-            row.order_status !== "completed" && (
-              <button
-                onClick={() => {
-                  dispatch(
-                    updateOrder({
-                      order: { ...row, order_status: "completed" },
-                      email: row?.client_email,
-                    }),
-                  );
-                  setUpdateOrderId(row.order_id);
-                }}
-                disabled={updating}
-                className="p-1 hover:bg-green-500 rounded-full transition-colors cursor-pointer"
-                title="Complete"
-              >
-                {updating && updateOrderId == row.order_id ? (
-                  <LoadingAll />
-                ) : (
-                  <IoCheckmarkDoneCircleOutline className="w-8 h-8 text-green-600 hover:text-white   " />
-                )}
-              </button>
-            )}
-        </div>
-      ),
-    },
-  ];
-  const filterColumns = [
-    {
-      label: "Type",
-      accessor: "type",
-
-      values: [
-        {
-          label: "Link Insertion",
-          value: "link_insertion",
-        },
-
-        {
-          label: "Guest Post",
-          value: "guest_post",
-        },
-        {
-          label: "MarketPlace",
-          value: "marketplace",
-        },
-      ],
-    },
-
-  ];
-  const orders =
-    data?.pages?.flatMap(
-      (page) => page.records || page.data || []
-    ) ?? [];
-  const pages = data?.pages ?? [];
-
-  const lastPage = pages[pages.length - 1] ?? {};
-  const firstPage = pages[0] ?? {};
-
-  const pageIndex = lastPage.page ?? 1;
-  const pageCount = firstPage.total_pages ?? 0;
-  const count = firstPage.total ?? 0;
 
   const loading = isPending || isFetchingNextPage;
   const statusList = STATUS_CONFIG.map((config) => {
     return {
       ...config,
-      count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
-      amount: Number(summary?.stats?.[`${config.value}`]?.sum_of?.total_amount_c || 0)
+      count: Number(summary?.stats?.[`${config.key}`]?.count || 0),
+      amount: Number(summary?.stats?.[`${config.key}`]?.sum_of?.total_amount_c || 0)
     };
   });
-  const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
-  useEffect(() => {
-    if (message) {
-      toast.success(message);
-      setUpdateOrderId(null);
-      dispatch(orderAction.clearAllMessages());
-      queryClient.invalidateQueries({ queryKey: orderKeys.all })
-    }
-    if (error) {
-      setUpdateOrderId(null);
-      toast.error(error);
-      dispatch(orderAction.clearAllErrors());
-    }
-  }, [message, error]);
+  if (layoutPending) {
+    return (
+      <div className="flex h-full min-h-[70vh] items-center justify-center">
+        <div className="flex flex-col items-center">
+          <LoadingProgress color="blue" size="100" stroke="5" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <TableView
-      tableData={orders}
+      data={data}
+      layout={layout}
       tableName={"Orders"}
-      columns={columns}
       slice={"orders"}
-      defaultStatus={"new"}
-      statusKey={"order_status"}
       statusList={statusList}
-      pageIndex={pageIndex}
-      statusCount={statusCount}
-      pageCount={pageCount}
-      count={count}
       loading={loading}
       preferences={preferences}
-      filterColumns={filterColumns}
       refreshKey={["orders"]}
-      fetchNextPage={() => {
-        if (
-          hasNextPage &&
-          !isFetchingNextPage
-        ) {
-          fetchNextPage();
-        }
-      }}
+      fetchNextPage={fetchNextPage}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
     >
-      <TableTitleBar
-        Icon={ShoppingCart}
-        title={"Orders"}
-        titleClass={"text-cyan-700"}
-      />
-      <Table
-        headerStyle={"  bg-cyan-600"}
-        layoutStyle={
-          "grid grid-cols-8"
-        }
-      />
     </TableView>
   );
 }

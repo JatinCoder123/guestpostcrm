@@ -2,13 +2,15 @@ import { ArrowLeft, BadgeInfo } from "lucide-react";
 import TableFooter from "./TableFooter";
 import { useNavigate } from "react-router-dom";
 import IconButton from "../Buttons/IconButton";
-function TableTitleBar({ Icon, title, iconClass, titleClass }) {
+import { useTableContext } from "./Table";
+function TableTitleBar({ Icon, title, iconClass }) {
     const navigate = useNavigate();
+    const { tableName } = useTableContext()
 
     return (
-        <div className="flex items-center justify-between px-5 py-4 border-b bg-white shadow-sm rounded-t-xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b bg-white shadow-sm rounded-t-xl text-primary">
 
-            <div className={`flex items-center gap-3 text-blue-600 `}>
+            <div className={`flex items-center gap-3 `}>
                 <IconButton
                     onClick={() => navigate(-1)}
                     className={`h-10 w-10 rounded-full border bg-white hover:bg-gray-100 transition flex items-center justify-center `}
@@ -16,10 +18,10 @@ function TableTitleBar({ Icon, title, iconClass, titleClass }) {
                     label="Back"
                     tooltipPosition="bottom"
                 />
-                <div className="p-2 rounded-lg flex items-center gap-3">
+                <div className="p-2 rounded-lg flex items-center gap-3 ">
 
-                    <Icon className={`w-5 h-5 ${iconClass}`} />
-                    <h2 className="text-lg  font-semibold">{title}</h2>
+                    {/* <Icon className={`w-6 h-6 `} /> */}
+                    <h2 className="text-xl font-semibold ">{tableName}</h2>
                 </div>
 
 

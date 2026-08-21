@@ -66,6 +66,41 @@ const generateToken = () => {
 };
 
 export const http = async ({
+  endpoint = '',
+  method = "GET",
+  rightee = false,
+  body = null,
+  params = {},
+  headers = {},
+}) => {
+  const params1 = DB_NAME ? { ...params, db_name: DB_NAME } : params;
+
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
+
+  // Generate token
+  const token = generateToken();
+
+  const requestHeaders = {
+    "X-Api-Token": token,
+    ...headers,
+  };
+
+  if (!isFormData && !requestHeaders["Content-Type"]) {
+    requestHeaders["Content-Type"] = "application/json";
+  }
+
+  const response = await apiClient({
+    url: `${rightee ? 'https://crm.outrightsystems.org/index.php' : endpoint || getCRM()}?entryPoint=smart_gateway`,
+    method,
+    data: body,
+    params: params1,
+    headers: requestHeaders,
+  });
+
+  return response.data;
+};
+export const smartGateway = async ({
   method = "GET",
   rightee = false,
   body = null,
