@@ -37,11 +37,12 @@ export function Sidebar() {
   const [sidebarStatsQuery, setSidebarStatsQuery] = useState();
   const [expandedGroups, setExpandedGroups] = useState({});
 
-  const { data: layoutData, isPending: layoutLoading } =
-    useLayoutPreferences();
+  const {
+    data: layoutData,
+    isPending: layoutLoading,
+  } = useLayoutPreferences();
 
   const sidebarSections = layoutData ?? [];
-
 
   const { user } = useSelector((s) => s.user);
 
@@ -109,28 +110,60 @@ export function Sidebar() {
     }));
   };
 
+  /**
+   * Only keep:
+   * 1. Groups where is_active === 1
+   * 2. Items/fields where is_active === 1
+   *
+   * Empty groups are also removed because there is nothing
+   * active to display inside them.
+   */
+  const activeSidebarGroups =
+    sidebarSections?.data
+      ?.filter(
+        (group) => Number(group.is_active) === 1
+      )
+      ?.map((group) => ({
+        ...group,
+        data: (group.data ?? []).filter(
+          (item) => Number(item.is_active) === 1
+        ),
+      }))
+      ?.filter(
+        (group) => group.data.length > 0
+      ) ?? [];
+
   useEffect(() => {
-    if (!sidebarSections?.data) return;
+    if (!activeSidebarGroups.length) {
+      setExpandedGroups({});
+      setSidebarStatsQuery([]);
+      return;
+    }
 
     setExpandedGroups(
       Object.fromEntries(
-        sidebarSections.data.map((group) => [
+        activeSidebarGroups.map((group) => [
           group.group_name,
           true,
         ])
       )
     );
 
+    /**
+     * Only create sidebar stats queries for active items.
+     */
     setSidebarStatsQuery(
-      sidebarSections.data?.flatMap((group) =>
+      activeSidebarGroups.flatMap((group) =>
         (group.data ?? []).map((item) => ({
           key: item.key,
           module: item.module_name,
           ignore_email:
-            item.email_by_filter == "1" ? false : true,
+            item.email_by_filter == "1"
+              ? false
+              : true,
           filters: item.count_filters ?? {},
         }))
-      ) ?? null
+      )
     );
   }, [sidebarSections]);
 
@@ -201,7 +234,9 @@ export function Sidebar() {
                   {[1, 2, 3, 4].map((item) => (
                     <div
                       key={item}
-                      className={`flex items-center gap-3 p-2 ${collapsed ? "justify-center" : ""
+                      className={`flex items-center gap-3 p-2 ${collapsed
+                        ? "justify-center"
+                        : ""
                         }`}
                     >
                       {/* Icon */}
@@ -352,10 +387,12 @@ export function Sidebar() {
                 rounded-lg
               "
             >
-              {sidebarSections?.data
-                ?.sort(
+              {activeSidebarGroups
+                .slice()
+                .sort(
                   (a, b) =>
-                    a.weight - b.weight
+                    Number(a.weight) -
+                    Number(b.weight)
                 )
                 .map((group) => (
                   <div
@@ -366,7 +403,9 @@ export function Sidebar() {
                     {!collapsed && (
                       <button
                         onClick={() =>
-                          toggleGroup(group.group_name)
+                          toggleGroup(
+                            group.group_name
+                          )
                         }
                         className="
                           flex w-full
@@ -381,7 +420,9 @@ export function Sidebar() {
                           hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
                         "
                       >
-                        <span>{group.group_name}</span>
+                        <span>
+                          {group.group_name}
+                        </span>
 
                         {expandedGroups[
                           group.group_name
@@ -400,7 +441,14 @@ export function Sidebar() {
                       ]) && (
                         <div className="mt-1 ml-2 space-y-1">
                           {group.data
-                            ?.sort(
+                            ?.filter(
+                              (item) =>
+                                Number(
+                                  item.is_active
+                                ) === 1
+                            )
+                            .slice()
+                            .sort(
                               (a, b) =>
                                 Number(a.weight) -
                                 Number(b.weight)
@@ -409,8 +457,12 @@ export function Sidebar() {
                               <button
                                 key={item.id}
                                 onClick={() => {
-                                  setSidebarCollapsed(true);
-                                  setActivePage(item.id);
+                                  setSidebarCollapsed(
+                                    true
+                                  );
+                                  setActivePage(
+                                    item.id
+                                  );
                                   navigateTo(
                                     `/${item.navigation}`
                                   );
@@ -425,7 +477,8 @@ export function Sidebar() {
                                     ? "justify-center"
                                     : ""
                                   }
-                                ${activePage === item.id
+                                ${activePage ===
+                                    item.id
                                     ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)] rounded-full shadow-lg"
                                     : ""
                                   }
@@ -436,7 +489,8 @@ export function Sidebar() {
                                   library={item.library}
                                   className={`
                                   h-4 w-4 shrink-0
-                                  ${activePage === item.id
+                                  ${activePage ===
+                                      item.id
                                       ? "scale-125 text-[var(--topbtn-primary)]"
                                       : ""
                                     }
@@ -450,7 +504,8 @@ export function Sidebar() {
                                     </span>
 
                                     {item.key &&
-                                      sidebarCounts?.stats?.[
+                                      sidebarCounts
+                                        ?.stats?.[
                                       item.key
                                       ] &&
                                       sidebarCountPending ? (
@@ -464,9 +519,11 @@ export function Sidebar() {
                                         text-xs
                                       "
                                       >
-                                        {sidebarCounts?.stats?.[
+                                        {sidebarCounts
+                                          ?.stats?.[
                                           item.key
-                                        ]?.count || 0}
+                                        ]?.count ||
+                                          0}
                                       </span>
                                     )}
                                   </>
@@ -563,7 +620,8 @@ export function Sidebar() {
                       "
                     >
                       {
-                        sidebarSections?.sidebar_footer
+                        sidebarSections
+                          ?.sidebar_footer
                           ?.description
                       }
                     </p>

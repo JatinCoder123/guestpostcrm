@@ -90,7 +90,7 @@ const RootLayout = () => {
     setActivePage(location);
   }, [location, setActivePage]);
 
-  if (!displayIntro) {
+  if (displayIntro) {
     return <DisplayIntro key="intro" />;
   }
 
