@@ -11,6 +11,7 @@ import {
   Users,
   Copy,
   Check,
+  GraduationCap,
   MailOpen,
   Send,
   Bell,
@@ -32,6 +33,7 @@ import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
 import { useCrmUsers } from "../queries/users.queries";
+import { useGpcTrainingStatus } from "../queries/training.queries";
 import { fetchGpc } from "../services/api";
 import IconButton from "./ui/Buttons/IconButton";
 
@@ -385,9 +387,12 @@ export function TopNav() {
   const { enteredEmail, handleClear } = useContext(PageContext);
   // ↓ activeUsers added alongside existing notificationCount
   const { user, error } = useSelector((s) => s.user);
+  const { data: trainingCount, refetch: refetchTrainingStatus } =
+    useGpcTrainingStatus(user?.email);
 
   /* ── Local state ── */
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showTraining, setShowTraining] = useState(false);
   const [copied, setCopied] = useState(false);
   const [profilePreview, setProfilePreview] = useState(
     () => sessionStorage.getItem("userProfileImage") || user?.profileImage || ""
@@ -399,6 +404,8 @@ export function TopNav() {
 
   /* ── Derived ── */
   const isSearchActive = Boolean(enteredEmail?.trim());
+  // Keep the control hidden until the Rightee CRM training value is known.
+  const canOpenTraining = Number.isFinite(trainingCount) && trainingCount < 7;
 
 
   /* ── Effects ── (unchanged) */
@@ -422,6 +429,11 @@ export function TopNav() {
   const handleLogout = () => {
     dispatch(logout());
     setShowProfileMenu(false);
+  };
+
+  const handleTrainingClose = () => {
+    setShowTraining(false);
+    refetchTrainingStatus();
   };
 
   const handleCopyEmail = async () => {
@@ -552,6 +564,16 @@ export function TopNav() {
             currentUserEmail={user?.email}
           />
         </div>
+        {canOpenTraining && (
+          <button
+            type="button"
+            onClick={() => setShowTraining(true)}
+            className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-xs font-semibold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 active:scale-95"
+          >
+            <GraduationCap size={16} aria-hidden="true" />
+            GPC Training
+          </button>
+        )}
         {/* Thin divider between activity panel and icon buttons */}
         <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
@@ -719,6 +741,63 @@ export function TopNav() {
         onClose={() => setShowCropper(false)}
         onSave={handleProfileSave}
       />
+      <AnimatePresence>
+        {showTraining && user?.email && (
+          <GpcTrainingFrame
+            email={user.email}
+            onClose={handleTrainingClose}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+const getTrainingUrl = (email) =>
+  `https://training.guestpostcrm.com/?email=${encodeURIComponent(email)}`;
+
+function GpcTrainingFrame({ email, onClose }) {
+  const trainingUrl = getTrainingUrl(email);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[10000] flex bg-slate-950/65 p-3 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="gpc-training-title"
+    >
+      <motion.section
+        initial={{ opacity: 0, scale: 0.98, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: 12 }}
+        transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+      >
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5">
+          <div className="flex min-w-0 items-center gap-2 text-slate-800">
+            <GraduationCap size={20} className="shrink-0 text-indigo-600" />
+            <h2 id="gpc-training-title" className="truncate text-base font-bold">
+              GPC Training
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            aria-label="Close GPC Training"
+          >
+            <X size={20} />
+          </button>
+        </header>
+        <iframe
+          title="GPC Training"
+          src={trainingUrl}
+          className="min-h-0 w-full flex-1 border-0 bg-white"
+        />
+      </motion.section>
+    </motion.div>
   );
 }
