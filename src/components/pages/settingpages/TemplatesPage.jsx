@@ -1033,7 +1033,7 @@ export default function TemplatesPage() {
   // MAIN LIST
   // ══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="p-8 min-h-screen bg-gray-50">
+    <div className="p-3 sm:p-6 lg:p-8 min-h-screen bg-gray-50">
       <Header
         text="Template Manager"
         handleCreate={() => setShowNewTemplateModal(true)}

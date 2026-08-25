@@ -197,17 +197,19 @@ const GlobalSearch = () => {
             ref={searchRef}
             data-tour="top-nav-search"
             className="
-            relative flex w-[450px] max-w-[60vw] p-1
+            relative flex w-full min-w-0 p-1
             items-center rounded-full
             border border-gray-300 bg-white
             shadow-[0_4px_8px_rgba(0,0,0,0.22)]
+            lg:w-[450px] lg:max-w-[60vw]
         "
         >
             {/* SEARCH ICON */}
             <Search
                 className="
-                ml-6 h-5 w-5 shrink-0
+                ml-3 h-5 w-5 shrink-0
                 text-gray-400
+                lg:ml-6
             "
             />
 
@@ -220,12 +222,13 @@ const GlobalSearch = () => {
                 onKeyDown={handleKeyPress}
                 placeholder="Search anything..."
                 className="
-                min-w-0 flex-1
+                w-0 min-w-0 flex-1
                 bg-transparent
                 px-2
-                text-base text-gray-700
+                text-sm text-gray-700
                 placeholder:text-gray-400
                 focus:outline-none
+                sm:text-base
             "
             />
 
@@ -237,11 +240,12 @@ const GlobalSearch = () => {
                     onClick={handleCopy}
                     aria-label="Copy search text"
                     className="
-                    mr-2 flex h-8 w-8 shrink-0
+                    mr-1 flex h-7 w-7 shrink-0
                     items-center justify-center
                     rounded-full
                     text-blue-600
                     transition hover:bg-blue-50
+                    sm:mr-2 sm:h-8 sm:w-8
                 "
                 >
                     {copied ? (
@@ -260,11 +264,12 @@ const GlobalSearch = () => {
                     onClick={handleInputClear}
                     aria-label="Clear search"
                     className="
-                    mr-2 flex h-8 w-8 shrink-0
+                    mr-1 flex h-7 w-7 shrink-0
                     items-center justify-center
                     rounded-full
                     text-red-500
                     transition hover:bg-red-50
+                    sm:mr-2 sm:h-8 sm:w-8
                 "
                 >
                     <X className="h-4 w-4" />
@@ -275,17 +280,20 @@ const GlobalSearch = () => {
             <button
                 type="button"
                 onClick={handleSearch}
+                aria-label="Search"
                 className="
-                shrink-0 rounded-full
+                flex shrink-0 items-center justify-center rounded-full
                 bg-gradient-to-r from-search-primary to-search-secondary
-                px-4 py-1
+                h-8 w-8
                 text-base font-small text-white
                 transition
                 hover:bg-blue-700
                 active:scale-[0.98]
+                sm:h-auto sm:w-auto sm:px-4 sm:py-1
             "
             >
-                Search
+                <Search className="h-4 w-4 sm:hidden" />
+                <span className="hidden sm:inline">Search</span>
             </button>
 
             {/* SEARCH HISTORY */}

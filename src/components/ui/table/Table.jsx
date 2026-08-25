@@ -241,8 +241,8 @@ const TableView = ({
         </motion.div>
 
         {/* TOOLBAR ROW */}
-        <div className="flex items-center  gap-3 bg-white border rounded-xl p-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 bg-white border rounded-xl p-2 sm:gap-3 sm:p-3">
+          <div className="order-1 flex items-center gap-2 lg:order-none">
             {/* FILTER TOGGLE */}
             {filterColumns.length > 0 && <IconButton
               onClick={() =>
@@ -270,27 +270,31 @@ const TableView = ({
             {sortingFilter && <SortDropdown />}
 
           </div>
-          {timefilter && <DateRangeFilter
-            fromDate={fromDate}
-            fromTime={fromTime}
-            toDate={toDate}
-            toTime={toTime}
-            filterActive={filterActive}
-            onApply={({
-              fromDate,
-              fromTime,
-              toDate,
-              toTime,
-            }) =>
-              updateDateFilter(
-                `${fromDate} ${fromTime}`,
-                `${toDate} ${toTime}`
-              )
-            }
-            onReset={handleResetFilter}
-          />}
-          {searching && <SearchBar />}
-          <div className="ml-auto flex gap-2">
+          {timefilter && <div className="order-3 w-full min-w-0 lg:order-none lg:w-auto lg:max-w-md lg:flex-1">
+            <DateRangeFilter
+              fromDate={fromDate}
+              fromTime={fromTime}
+              toDate={toDate}
+              toTime={toTime}
+              filterActive={filterActive}
+              onApply={({
+                fromDate,
+                fromTime,
+                toDate,
+                toTime,
+              }) =>
+                updateDateFilter(
+                  `${fromDate} ${fromTime}`,
+                  `${toDate} ${toTime}`
+                )
+              }
+              onReset={handleResetFilter}
+            />
+          </div>}
+          {searching && <div className="order-4 w-full min-w-0 lg:order-none lg:w-auto">
+            <SearchBar />
+          </div>}
+          <div className="order-2 ml-auto flex gap-2 lg:order-none">
             {canAdd && <IconButton
               onClick={handleAddClick}
               className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"
@@ -308,7 +312,7 @@ const TableView = ({
         </div>
 
         {/* MAIN CONTENT */}
-        <div className="flex gap-3">
+        <div className="flex min-w-0 flex-col gap-3 lg:flex-row">
           {showFilterColumn && filterColumns.length > 0 && <FilterColumn />}
 
           {/* TABLE */}
@@ -318,7 +322,7 @@ const TableView = ({
               stiffness: 120,
               damping: 18,
             }}
-            className="flex-1 rounded-xl border overflow-hidden relative bg-white"
+            className="min-w-0 flex-1 rounded-xl border overflow-hidden relative bg-white"
           >
             {children}
 
@@ -344,12 +348,53 @@ const TableView = ({
   );
 };
 
+/**
+ * Below `lg` the grid tracks defined in `layoutStyle` can't fit the viewport, so
+ * the table gets a min-width and its wrapper scrolls horizontally instead of
+ * clipping. Derived from the `layoutStyle` grid template: explicit px tracks are
+ * kept as-is, flexible tracks get FLEX_TRACK_MIN. Pages can override with the
+ * `minWidth` prop.
+ */
+const FLEX_TRACK_MIN = 150;
+
+export const getTableMinWidth = (layoutStyle = "", columnCount = 0) => {
+  const arbitrary = /grid-cols-\[([^\]]+)\]/.exec(layoutStyle);
+
+  if (arbitrary) {
+    return arbitrary[1]
+      .split("_")
+      .filter(Boolean)
+      .reduce((total, track) => {
+        const px = /^(\d+(?:\.\d+)?)px$/.exec(track.trim());
+        return total + (px ? Number(px[1]) : FLEX_TRACK_MIN);
+      }, 0);
+  }
+
+  const numbered = /grid-cols-(\d+)/.exec(layoutStyle);
+  const cols = Number(numbered?.[1]) || columnCount || 1;
+
+  return cols * FLEX_TRACK_MIN;
+};
+
 export const Table = (props) => {
+  const { visibleColumns } = useTableContext();
+
+  const minWidth =
+    props.minWidth ??
+    getTableMinWidth(props.layoutStyle, visibleColumns?.length);
+
   return (
-    <table className="w-full">
-      <TableHeader {...props} />
-      <TableBody {...props} />
-    </table>
+    <div className="w-full overflow-x-auto">
+      <div
+        className="w-full min-w-[var(--table-min-w)] lg:min-w-0"
+        style={{ "--table-min-w": `${minWidth}px` }}
+      >
+        <table className="w-full">
+          <TableHeader {...props} />
+          <TableBody {...props} />
+        </table>
+      </div>
+    </div>
   );
 };
 function EmptyCard() {

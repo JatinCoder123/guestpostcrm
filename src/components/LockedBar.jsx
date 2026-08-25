@@ -7,15 +7,15 @@ const LockedBar = ({ recordUsers, recordName = '' }) => {
 
     return (
         <div className="sticky top-0 z-40 mb-4 overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100 shadow-lg backdrop-blur">
-            <div className="flex items-start justify-between gap-6 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 p-4">
 
-                <div className="flex items-start gap-3">
+                <div className="flex min-w-0 grow basis-[min(100%,14rem)] items-start gap-3">
 
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-md">
                         <Lock size={20} />
                     </div>
 
-                    <div>
+                    <div className="min-w-0">
                         <h3 className="text-sm font-semibold text-amber-900">
                             {recordName} Locked
                         </h3>
@@ -28,20 +28,20 @@ const LockedBar = ({ recordUsers, recordName = '' }) => {
 
                 </div>
 
-                <div className="flex flex-wrap justify-end gap-2">
+                <div className="ml-auto flex min-w-0 flex-wrap justify-end gap-2">
                     {recordUsers
                         .filter(user => user.email !== currentUser.email)
                         .map(user => (
                             <div
                                 key={user.id}
-                                className="flex items-center gap-2 rounded-full border border-amber-200 bg-white/80 px-3 py-2 shadow-sm backdrop-blur"
+                                className="flex min-w-0 max-w-full items-center gap-2 rounded-full border border-amber-200 bg-white/80 px-3 py-2 shadow-sm backdrop-blur"
                             >
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-xs font-semibold text-white">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-xs font-semibold text-white">
                                     {user.name?.charAt(0)}
                                 </div>
 
-                                <div>
-                                    <div className="text-sm font-medium text-slate-900">
+                                <div className="min-w-0">
+                                    <div className="truncate text-sm font-medium text-slate-900">
                                         {user.name}
                                     </div>
 

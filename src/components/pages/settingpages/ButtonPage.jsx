@@ -62,7 +62,7 @@ export default function ButtonPage() {
     });
   };
   return (
-    <div className="p-8">
+    <div className="p-3 sm:p-6 lg:p-8">
       {/* Header */}
       <Header
         text={"Button Manager"}

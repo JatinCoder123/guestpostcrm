@@ -69,27 +69,30 @@ export default function EditModal({ item, onClose, handleUpdate, stages }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4"
         >
           <motion.div
             onClick={(e) => e.stopPropagation()} // 👈 prevent inside click
             initial={{ scale: 0.9, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 30 }}
-            className="flex flex-col bg-white rounded-2xl p-6 w-full max-w-[80%] shadow-xl relative"
+            /* max-h + scroll: the body holds a tall textarea, which on a phone
+               would push the save button off screen. */
+            className="flex max-h-[92vh] w-full min-w-0 max-w-4xl flex-col overflow-y-auto bg-white rounded-2xl p-4 sm:p-6 shadow-xl relative"
           >
             {/* Close */}
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-200 cursor-pointer"
+              aria-label="Close"
+              className="absolute right-3 top-3 sm:right-4 sm:top-4 p-1 rounded-full hover:bg-gray-200 cursor-pointer"
             >
               <X />
             </button>
 
-            <h2 className="text-2xl font-semibold mb-6">Edit Item</h2>
+            <h2 className="pr-8 text-lg sm:text-2xl font-semibold mb-4 sm:mb-6">Edit Item</h2>
 
             {/* Top Fields */}
-            <div className="flex gap-4 mb-6">
+            <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:gap-4 sm:mb-6">
               <Input
                 label="Name"
                 value={form.name}
@@ -150,7 +153,9 @@ export default function EditModal({ item, onClose, handleUpdate, stages }) {
               <textarea
                 value={form[activeTab]}
                 onChange={(e) => updateField(activeTab, e.target.value)}
-                className="w-full h-120 p-3 border rounded-xl bg-gray-50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                /* was a flat h-120 (480px), taller than the room a phone has
+                   left once the header, tabs and save button are counted */
+                className="w-full h-[45vh] min-h-[180px] sm:h-120 p-3 border rounded-xl bg-gray-50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder={`Enter ${TABS.find((t) => t.key === activeTab)?.label
                   }`}
               />
@@ -173,7 +178,7 @@ export default function EditModal({ item, onClose, handleUpdate, stages }) {
 }
 
 const Input = ({ label, value, onChange, disabled = false }) => (
-  <div className="flex-1">
+  <div className="min-w-0 flex-1">
     <label className="text-sm font-medium text-gray-600">{label}</label>
     <input
       value={value}

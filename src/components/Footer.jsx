@@ -1,4 +1,15 @@
-import { BellIcon, CircleAlert, Flame, Link2, List, Mail, MailWarning, Settings, Sparkles, Unlink } from "lucide-react";
+import {
+  BellIcon,
+  CircleAlert,
+  Flame,
+  Link2,
+  List,
+  Mail,
+  MailWarning,
+  Settings,
+  Sparkles,
+  Unlink,
+} from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -69,28 +80,26 @@ function NavBtn({ icon: Icon, label, onClick, count, color = "indigo" }) {
 export default function Footer() {
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
   const { data: linkRemovalData } = useLinkRemovalCount();
-  const { crmEndpoint, businessEmail } = useSelector(state => state.user)
+  const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
   const { notificationCount } = useContext(SocketContext);
   const { collapsed } = useContext(PageContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const prevCountRef = useRef(0);
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
     ?.replace("http://", "")
     ?.split("/")[0];
-  const {
-    data: paymentReminderData,
-    isPending: paymentReminderPending,
-  } = useTodayPaymentReminderStats();
+  const { data: paymentReminderData, isPending: paymentReminderPending } =
+    useTodayPaymentReminderStats();
   const { count: hotCount } = useSelector((s) => s.hot);
   const { error } = useSelector((s) => s.user);
   const outboxCount = outboxData?.stats?.all?.count ?? 0;
   const linkRemovalCount = Number(
     linkRemovalData?.stats?.all?.count ??
-    linkRemovalData?.total ??
-    linkRemovalData?.count ??
-    0
+      linkRemovalData?.total ??
+      linkRemovalData?.count ??
+      0,
   );
   const paymentReminderCount =
     paymentReminderData?.total ??
@@ -113,8 +122,7 @@ export default function Footer() {
     return () => clearTimeout(timer);
   }, [count]);
   useEffect(() => {
-    if (notificationCount?.error_log_created)
-      setErrorLogCount((n) => n + 1);
+    if (notificationCount?.error_log_created) setErrorLogCount((n) => n + 1);
   }, [notificationCount?.error_log_created]);
 
   useEffect(() => {
@@ -133,10 +141,15 @@ export default function Footer() {
   }, [error, dispatch]);
   return (
     <footer
-      className={`fixed bottom-0 right-0 z-20 flex h-12 items-center justify-between bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-[820px]:left-0 ${collapsed ? "left-[80px]" : "left-[260px]"
-        }`}
+      className={`fixed bottom-0 right-0 z-40 flex h-12 items-center justify-between gap-2 overflow-x-auto overflow-y-hidden hide-scrollbar bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-lg:left-0 ${
+        collapsed ? "lg:left-[80px]" : "lg:left-[260px]"
+      }`}
     >
-      <IconButton icon={Settings} label="Settings" onClick={() => navigate("/settings")} />
+      <IconButton
+        icon={Settings}
+        label="Settings"
+        onClick={() => navigate("/settings")}
+      />
       <div className="flex gap-2">
         {/* <div className="flex items-center gap-3">
           {crmDomain && (
@@ -174,7 +187,6 @@ export default function Footer() {
           count={count}
           label="Recent Entry"
           showCount={true}
-
           iconColor="blue"
         />
 
@@ -244,6 +256,6 @@ export default function Footer() {
           </motion.div>
         )}
       </div>
-    </footer >
+    </footer>
   );
 }

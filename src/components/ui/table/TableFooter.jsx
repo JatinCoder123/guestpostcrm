@@ -13,10 +13,10 @@ const TableFooter = () => {
     return (
         <motion.div
             layout
-            className="flex  items-center justify-between px-4 py-3  bg-gradient-to-r from-gray-50 to-gray-100"
+            className="flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-1 rounded-lg px-3 py-2 bg-gradient-to-r from-gray-50 to-gray-100 sm:w-auto sm:px-4 sm:py-3"
         >
             {/* LEFT - RESULT INFO */}
-            <div className="text-sm text-gray-600 font-medium">
+            <div className="whitespace-nowrap text-xs text-gray-600 font-medium sm:text-sm">
                 Showing{" "}
                 <span className="text-black font-semibold">
                     {start}
@@ -28,8 +28,8 @@ const TableFooter = () => {
                 results
             </div>
 
-            {/* CENTER - PAGE INFO */}
-            <div className="text-sm font-semibold text-gray-700 ml-50">
+            {/* RIGHT - PAGE INFO */}
+            <div className="whitespace-nowrap text-xs font-semibold text-gray-700 sm:text-sm">
                 Page {pageIndex} of {pageCount}
             </div>
         </motion.div>

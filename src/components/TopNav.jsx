@@ -15,7 +15,9 @@ import {
   MailOpen,
   Send,
   Bell,
-  Menu
+  Menu,
+  MoreVertical,
+  ChevronRight,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -36,30 +38,70 @@ import { useCrmUsers } from "../queries/users.queries";
 import { useGpcTrainingStatus } from "../queries/training.queries";
 import { fetchGpc } from "../services/api";
 import IconButton from "./ui/Buttons/IconButton";
+import { useIsDesktop } from "../hooks/useMediaQuery";
 
 /* ─────────────────────────────────────────────────────────────
    Reusable icon button — coloured tint + badge + tooltip
 ───────────────────────────────────────────────────────────── */
 
-
-
 /* ─────────────────────────────────────────────────────────────
    Avatar colour palette — cycles through 8 distinct combos
 ───────────────────────────────────────────────────────────── */
 const AVATAR_COLORS = [
-  { bg: "bg-violet-100", text: "text-violet-700", ring: "ring-violet-400", dot: "bg-violet-400" },
-  { bg: "bg-emerald-100", text: "text-emerald-700", ring: "ring-emerald-400", dot: "bg-emerald-400" },
-  { bg: "bg-sky-100", text: "text-sky-700", ring: "ring-sky-400", dot: "bg-sky-400" },
-  { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-400", dot: "bg-amber-400" },
-  { bg: "bg-rose-100", text: "text-rose-700", ring: "ring-rose-400", dot: "bg-rose-400" },
-  { bg: "bg-teal-100", text: "text-teal-700", ring: "ring-teal-400", dot: "bg-teal-400" },
-  { bg: "bg-fuchsia-100", text: "text-fuchsia-700", ring: "ring-fuchsia-400", dot: "bg-fuchsia-400" },
-  { bg: "bg-orange-100", text: "text-orange-700", ring: "ring-orange-400", dot: "bg-orange-400" },
+  {
+    bg: "bg-violet-100",
+    text: "text-violet-700",
+    ring: "ring-violet-400",
+    dot: "bg-violet-400",
+  },
+  {
+    bg: "bg-emerald-100",
+    text: "text-emerald-700",
+    ring: "ring-emerald-400",
+    dot: "bg-emerald-400",
+  },
+  {
+    bg: "bg-sky-100",
+    text: "text-sky-700",
+    ring: "ring-sky-400",
+    dot: "bg-sky-400",
+  },
+  {
+    bg: "bg-amber-100",
+    text: "text-amber-700",
+    ring: "ring-amber-400",
+    dot: "bg-amber-400",
+  },
+  {
+    bg: "bg-rose-100",
+    text: "text-rose-700",
+    ring: "ring-rose-400",
+    dot: "bg-rose-400",
+  },
+  {
+    bg: "bg-teal-100",
+    text: "text-teal-700",
+    ring: "ring-teal-400",
+    dot: "bg-teal-400",
+  },
+  {
+    bg: "bg-fuchsia-100",
+    text: "text-fuchsia-700",
+    ring: "ring-fuchsia-400",
+    dot: "bg-fuchsia-400",
+  },
+  {
+    bg: "bg-orange-100",
+    text: "text-orange-700",
+    ring: "ring-orange-400",
+    dot: "bg-orange-400",
+  },
 ];
 
 function getColorForUser(email = "") {
   let hash = 0;
-  for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < email.length; i++)
+    hash = email.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
@@ -89,7 +131,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const navigateTo = useNavigate();
-  const { data: crmUsers } = useCrmUsers()
+  const { data: crmUsers } = useCrmUsers();
 
   /* Close on outside click */
   useEffect(() => {
@@ -105,9 +147,13 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const idleUsers = activeUsers.filter((u) => u?.status !== "online");
 
   const meOnline = onlineUsers?.find((u) => u?.email === currentUserEmail);
-  const otherOnlineUsers = onlineUsers.filter((u) => u?.email !== currentUserEmail);
+  const otherOnlineUsers = onlineUsers.filter(
+    (u) => u?.email !== currentUserEmail,
+  );
 
-  const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
+  const orderedOnline = meOnline
+    ? [meOnline, ...otherOnlineUsers]
+    : otherOnlineUsers;
   const ordered = [...orderedOnline, ...idleUsers];
 
   const stackVisible = orderedOnline.slice(0, 4);
@@ -117,7 +163,6 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
 
   return (
     <div ref={ref} className="relative flex items-center">
-
       {/* ── Trigger pill ── */}
       <button
         type="button"
@@ -137,7 +182,9 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         <div className="flex items-center w-full h-2">
           {stackVisible.map((u, i) => {
             const c = getColorForUser(u.email);
-            const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+            const name = crmUsers?.find(
+              (user) => user?.description === u.email,
+            )?.name;
             const initials = getInitials(name || u.name, u.email);
             const isMe = u.email === currentUserEmail;
             return (
@@ -197,7 +244,10 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               </div>
               <button
                 type="button"
-                onClick={() => { setOpen(false); navigateTo("/settings/user-activity"); }}
+                onClick={() => {
+                  setOpen(false);
+                  navigateTo("/settings/user-activity");
+                }}
                 className="text-[11px] font-medium text-indigo-500 hover:text-indigo-700 transition"
               >
                 View all →
@@ -213,7 +263,9 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               ) : (
                 ordered.map((u) => {
                   const c = getColorForUser(u.email);
-                  const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+                  const name = crmUsers?.find(
+                    (user) => user?.description === u.email,
+                  )?.name;
                   const initials = getInitials(name || u.name, u.email);
                   const isMe = u.email === currentUserEmail;
                   const isOnline = u?.status === "online";
@@ -221,7 +273,11 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                   return (
                     <div
                       key={u.email}
-                      onClick={() => navigateTo(`/view-reports?email=${encodeURIComponent(u.email)}`)}
+                      onClick={() =>
+                        navigateTo(
+                          `/view-reports?email=${encodeURIComponent(u.email)}`,
+                        )
+                      }
                       className="flex items-center gap-3 border-b border-slate-50 px-4 py-3 last:border-none hover:bg-slate-50/60 transition"
                     >
                       {/* Avatar */}
@@ -256,7 +312,6 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                         <div className="mt-0.5 flex items-center gap-1">
                           <span className="h-1 w-1 rounded-full bg-slate-300" />
                           <p className="truncate text-[11px] text-slate-500">
-
                             {u.page == "/" ? "Timeline" : u.page}
                           </p>
                         </div>
@@ -266,9 +321,10 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                       <div className="flex shrink-0 flex-col items-end gap-1">
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-semibold
-                            ${isOnline
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-amber-50  text-amber-700"
+                            ${
+                              isOnline
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-amber-50  text-amber-700"
                             }`}
                         >
                           {isOnline ? "Online" : "Idle"}
@@ -300,13 +356,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
     </div>
   );
 }
-const StatBadge = ({
-  icon,
-  label,
-  value,
-  colorClass,
-  bgClass,
-}) => {
+const StatBadge = ({ icon, label, value, colorClass, bgClass }) => {
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
@@ -333,8 +383,9 @@ const StatBadge = ({
         </span>
 
         <span
-          className={`text-[18px] font-medium text-gray-900 transition-all duration-300 ${animate ? "scale-110" : "scale-100"
-            }`}
+          className={`text-[18px] font-medium text-gray-900 transition-all duration-300 ${
+            animate ? "scale-110" : "scale-100"
+          }`}
         >
           {value ?? "—"}
         </span>
@@ -379,12 +430,13 @@ export function TopNav() {
 
   const { activeUsers = [] } = useContext(SocketContext);
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
-  const { data } = useCrmUsers()
-  const {
-    data: paymentReminderData,
-    isPending: paymentReminderPending,
-  } = useTodayPaymentReminderStats();
-  const { enteredEmail, handleClear } = useContext(PageContext);
+  const { data } = useCrmUsers();
+  const { data: paymentReminderData, isPending: paymentReminderPending } =
+    useTodayPaymentReminderStats();
+  const { enteredEmail, handleClear, mobileSidebarOpen, setMobileSidebarOpen } =
+    useContext(PageContext);
+
+  const isDesktop = useIsDesktop();
   // ↓ activeUsers added alongside existing notificationCount
   const { user, error } = useSelector((s) => s.user);
   const { data: trainingCount, refetch: refetchTrainingStatus } =
@@ -395,18 +447,24 @@ export function TopNav() {
   const [showTraining, setShowTraining] = useState(false);
   const [copied, setCopied] = useState(false);
   const [profilePreview, setProfilePreview] = useState(
-    () => sessionStorage.getItem("userProfileImage") || user?.profileImage || ""
+    () =>
+      sessionStorage.getItem("userProfileImage") || user?.profileImage || "",
   );
   const [showCropper, setShowCropper] = useState(false);
   const [cropImage, setCropImage] = useState(null);
 
   const profileMenuRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   /* ── Derived ── */
   const isSearchActive = Boolean(enteredEmail?.trim());
   // Keep the control hidden until the Rightee CRM training value is known.
   const canOpenTraining = Number.isFinite(trainingCount) && trainingCount < 7;
 
+  const onlineCount = activeUsers.filter((u) => u?.status === "online").length;
+
+  const displayName =
+    data?.find((d) => d.description === user?.email)?.name || user?.name;
 
   /* ── Effects ── (unchanged) */
   useEffect(() => {
@@ -414,21 +472,26 @@ export function TopNav() {
     setProfilePreview(saved || user?.profileImage || "");
   }, [user?.profileImage]);
 
-
-
   useEffect(() => {
     const handler = (e) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target))
         setShowProfileMenu(false);
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target))
+        setShowMobileMenu(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  /* Close the overflow menu once the header has room for everything again */
+  useEffect(() => {
+    if (isDesktop && showMobileMenu) setShowMobileMenu(false);
+  }, [isDesktop, showMobileMenu]);
 
   const handleLogout = () => {
     dispatch(logout());
     setShowProfileMenu(false);
+    setShowMobileMenu(false);
   };
 
   const handleTrainingClose = () => {
@@ -451,12 +514,14 @@ export function TopNav() {
     }
   };
 
-
   const handleProfileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => { setCropImage(reader.result); setShowCropper(true); };
+    reader.onload = () => {
+      setCropImage(reader.result);
+      setShowCropper(true);
+    };
     reader.readAsDataURL(file);
   };
 
@@ -466,7 +531,8 @@ export function TopNav() {
   };
 
   const getUserInitials = () => {
-    const name = data?.find((d) => d.description === user?.email)?.name || user?.name;
+    const name =
+      data?.find((d) => d.description === user?.email)?.name || user?.name;
     if (!name) return "U";
     const parts = name.trim().split(" ");
     return parts.length === 1
@@ -480,12 +546,29 @@ export function TopNav() {
   return (
     <div
       data-tour="top-nav"
-      className="sticky top-0 z-[999] flex   items-center justify-between p-2 gap-3 bg-white border  rounded-md "
+      className="sticky top-0 z-[999] flex w-full min-w-0 items-center justify-between p-2 gap-2 sm:gap-3 bg-white border  rounded-md "
     >
-      <div className="flex items-center justify-between">
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 lg:flex-initial">
+        {/* ── Sidebar drawer trigger — small screens only ── */}
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          aria-label={
+            mobileSidebarOpen ? "Close navigation menu" : "Open navigation menu"
+          }
+          aria-expanded={Boolean(mobileSidebarOpen)}
+          aria-controls="app-sidebar"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90 lg:hidden"
+        >
+          {mobileSidebarOpen ? (
+            <X size={20} strokeWidth={2.2} />
+          ) : (
+            <Menu size={20} strokeWidth={2.2} />
+          )}
+        </button>
 
         <div
-          className="flex  items-center gap-2 min-w-0 justify-center p-1"
+          className="flex  items-center gap-2 min-w-0 flex-1 justify-center p-1 lg:flex-initial"
           data-tour="top-nav-search"
         >
           <AnimatePresence mode="wait">
@@ -498,7 +581,7 @@ export function TopNav() {
                 transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
                 role="status"
                 aria-live="polite"
-                className="flex items-center gap-2.5 rounded-2xl border px-4 py-2 max-w-[400px]"
+                className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl border px-3 py-2 sm:px-4 lg:max-w-[400px] lg:flex-initial"
                 style={{
                   background: "linear-gradient(100deg,#eef2ff 0%,#e0f2fe 100%)",
                   border: "1px solid rgba(99,102,241,0.22)",
@@ -510,13 +593,13 @@ export function TopNav() {
                   className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-indigo-500"
                   style={{ animationDuration: "1.4s" }}
                 />
-                <span className="flex items-center gap-1.5 text-[16px] text-indigo-800 leading-none">
-                  <span className="shrink-0 font-normal text-indigo-600">
+                <span className="flex min-w-0 items-center gap-1.5 text-sm leading-none text-indigo-800 sm:text-[16px]">
+                  <span className="hidden shrink-0 font-normal text-indigo-600 sm:inline">
                     Viewing record for
                   </span>
                   <span
                     title={enteredEmail}
-                    className="max-w-[220px] truncate font-bold text-cyan-700 underline underline-offset-2 decoration-dashed cursor-default"
+                    className="min-w-0 truncate font-bold text-cyan-700 underline underline-offset-2 decoration-dashed cursor-default lg:max-w-[220px]"
                   >
                     {enteredEmail}
                   </span>
@@ -553,10 +636,10 @@ export function TopNav() {
         </div>
       </div>
 
-
-
-      <div className="justify-end flex shrink-0 items-center gap-1.5">
-
+      {/* ─────────────────────────────────────────────────────────
+          RIGHT CLUSTER — full layout, `lg` and up
+      ───────────────────────────────────────────────────────── */}
+      <div className="justify-end hidden shrink-0 items-center gap-1.5 lg:flex">
         {/* ── 🆕 User Activity Panel — sits before the other nav buttons ── */}
         <div className="flex-shrink-0 flex items-center gap-2">
           <UserActivityPanel
@@ -608,13 +691,10 @@ export function TopNav() {
           />
 
           {/* SUMMARY */}
-
         </div>
         {/* AI Credits */}
 
-
         {/* Payment Reminders */}
-
 
         {/* Divider */}
         <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
@@ -638,7 +718,9 @@ export function TopNav() {
             ) : (
               <span
                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white"
-                style={{ background: "linear-gradient(135deg,#6366f1,#06b6d4)" }}
+                style={{
+                  background: "linear-gradient(135deg,#6366f1,#06b6d4)",
+                }}
               >
                 {getUserInitials()}
               </span>
@@ -656,7 +738,10 @@ export function TopNav() {
               >
                 <button
                   type="button"
-                  onClick={() => { navigateTo("/profile"); setShowProfileMenu(false); }}
+                  onClick={() => {
+                    navigateTo("/profile");
+                    setShowProfileMenu(false);
+                  }}
                   className="flex w-full items-center gap-3 border-b border-slate-100 p-4 text-left transition hover:bg-slate-50"
                 >
                   {profilePreview ? (
@@ -668,14 +753,17 @@ export function TopNav() {
                   ) : (
                     <span
                       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-bold text-white"
-                      style={{ background: "linear-gradient(135deg,#6366f1,#06b6d4)" }}
+                      style={{
+                        background: "linear-gradient(135deg,#6366f1,#06b6d4)",
+                      }}
                     >
                       {getUserInitials()}
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-slate-800">
-                      {data?.find((d) => d.description === user?.email)?.name || user?.name}
+                      {data?.find((d) => d.description === user?.email)?.name ||
+                        user?.name}
                     </p>
                     <p className="truncate text-xs text-slate-400 mt-0.5">
                       {user?.email}
@@ -706,7 +794,10 @@ export function TopNav() {
 
                   <button
                     type="button"
-                    onClick={() => { navigateTo("/profile"); setShowProfileMenu(false); }}
+                    onClick={() => {
+                      navigateTo("/profile");
+                      setShowProfileMenu(false);
+                    }}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                   >
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
@@ -734,6 +825,204 @@ export function TopNav() {
         </div>
       </div>
 
+      {/* ─────────────────────────────────────────────────────────
+          RIGHT CLUSTER — overflow menu, below `lg`
+
+          Everything that does not fit next to the sidebar toggle and
+          the search field moves in here: stats, active users, and the
+          profile actions.
+      ───────────────────────────────────────────────────────── */}
+      <div ref={mobileMenuRef} className="relative shrink-0 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileMenu((v) => !v)}
+          aria-label="More options"
+          aria-expanded={showMobileMenu}
+          aria-haspopup="true"
+          className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90"
+        >
+          {profilePreview ? (
+            <img
+              src={profilePreview}
+              alt=""
+              className="h-7 w-7 rounded-lg object-cover"
+            />
+          ) : (
+            <MoreVertical size={20} strokeWidth={2.2} />
+          )}
+
+          {onlineCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full border border-white bg-emerald-500" />
+            </span>
+          )}
+        </button>
+
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+              role="menu"
+              className="absolute right-0 top-full z-[1000] mt-2.5 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10"
+            >
+              {/* ── Profile ── */}
+              <button
+                type="button"
+                onClick={() => {
+                  navigateTo("/profile");
+                  setShowMobileMenu(false);
+                }}
+                className="flex w-full items-center gap-3 border-b border-slate-100 p-3.5 text-left transition hover:bg-slate-50"
+              >
+                {profilePreview ? (
+                  <img
+                    src={profilePreview}
+                    alt=""
+                    className="h-10 w-10 shrink-0 rounded-xl object-cover"
+                  />
+                ) : (
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
+                    style={{
+                      background: "linear-gradient(135deg,#6366f1,#06b6d4)",
+                    }}
+                  >
+                    {getUserInitials()}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-slate-800">
+                    {displayName}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-slate-400">
+                    {user?.email}
+                  </p>
+                </div>
+                <ChevronRight size={16} className="shrink-0 text-slate-300" />
+              </button>
+
+              {/* ── Stats ── */}
+              <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
+                {[
+                  {
+                    icon: MailOpen,
+                    label: "Received",
+                    value: stats.reply_recieved,
+                    colorClass: "text-emerald-500",
+                    bgClass: "bg-emerald-100",
+                  },
+                  {
+                    icon: Send,
+                    label: "Sent",
+                    value: stats.reply_sent,
+                    colorClass: "text-blue-600",
+                    bgClass: "bg-blue-100",
+                  },
+                  {
+                    icon: Bell,
+                    label: "Reminders",
+                    value: stats.reminder_sent,
+                    colorClass: "text-amber-500",
+                    bgClass: "bg-amber-100",
+                  },
+                ].map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex flex-col items-center gap-1 px-2 py-3"
+                  >
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full ${s.bgClass}`}
+                    >
+                      {createElement(s.icon, {
+                        className: `h-3.5 w-3.5 ${s.colorClass}`,
+                      })}
+                    </span>
+                    <span className="text-[15px] font-semibold leading-none text-slate-900">
+                      {s.value ?? "—"}
+                    </span>
+                    <span className="text-[10px] font-medium leading-none text-slate-400">
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Actions ── */}
+              <div className="flex flex-col gap-0.5 p-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigateTo("/settings/user-activity");
+                    setShowMobileMenu(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
+                    <Users size={14} className="text-indigo-500" />
+                  </span>
+                  <span className="flex-1 text-left">Active users</span>
+                  <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {onlineCount}
+                  </span>
+                </button>
+
+                <label
+                  htmlFor="profile-upload-mobile"
+                  className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                    <Camera size={14} className="text-slate-500" />
+                  </span>
+                  Change profile photo
+                </label>
+                <input
+                  id="profile-upload-mobile"
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    setShowMobileMenu(false);
+                    handleProfileUpload(e);
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigateTo("/profile");
+                    setShowMobileMenu(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                    <User2 size={14} className="text-slate-500" />
+                  </span>
+                  Edit profile
+                </button>
+
+                <div className="mx-2 my-1 h-px bg-slate-100" />
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50">
+                    <LogOut size={14} className="text-red-500" />
+                  </span>
+                  Log out
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* ── Image cropper (unchanged) ── */}
       <ProfileImageCropper
         isOpen={showCropper}
@@ -743,10 +1032,7 @@ export function TopNav() {
       />
       <AnimatePresence>
         {showTraining && user?.email && (
-          <GpcTrainingFrame
-            email={user.email}
-            onClose={handleTrainingClose}
-          />
+          <GpcTrainingFrame email={user.email} onClose={handleTrainingClose} />
         )}
       </AnimatePresence>
     </div>
@@ -779,7 +1065,10 @@ function GpcTrainingFrame({ email, onClose }) {
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5">
           <div className="flex min-w-0 items-center gap-2 text-slate-800">
             <GraduationCap size={20} className="shrink-0 text-indigo-600" />
-            <h2 id="gpc-training-title" className="truncate text-base font-bold">
+            <h2
+              id="gpc-training-title"
+              className="truncate text-base font-bold"
+            >
               GPC Training
             </h2>
           </div>

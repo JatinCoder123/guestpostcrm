@@ -443,7 +443,10 @@ Open Contact
         </button>
       </div>
 
-      <div className="relative z-50 grid grid-cols-3 sm:grid-cols-5 gap-x-3 gap-y-5 place-items-center overflow-visible">
+      {/* z-30 lifts this grid's popovers (assign / move / tag / notes) above
+          sibling page cards, while staying below the fixed app chrome —
+          footer z-40, sidebar z-50, top nav z-999. */}
+      <div className="relative z-30 grid grid-cols-3 sm:grid-cols-5 gap-x-3 gap-y-5 place-items-center overflow-visible">
         {actionButtons.map((btn, i) => (
           <div
             key={i}

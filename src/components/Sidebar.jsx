@@ -4,6 +4,7 @@ import {
   PanelLeft,
   Radio,
   Settings,
+  X,
 } from "lucide-react";
 
 import Skeleton from "react-loading-skeleton";
@@ -12,7 +13,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { PageContext } from "../context/pageContext";
 
@@ -37,6 +38,8 @@ import { useGpcController } from "../queries/controller.queries";
 
 import logo, { headingLogo } from "../assets/assets";
 
+import { useIsDesktop } from "../hooks/useMediaQuery";
+
 import Icon from "./ui/Icon/Icon";
 
 import { LoadingSpin } from "./Loading";
@@ -50,11 +53,55 @@ export function Sidebar() {
     enteredEmail: email,
     activePage,
     setActivePage,
-    collapsed,
+    collapsed: desktopCollapsed,
     setSidebarCollapsed,
     mobileSidebarOpen,
     setMobileSidebarOpen,
   } = useContext(PageContext);
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | RESPONSIVE MODE
+  |--------------------------------------------------------------------------
+  | At `lg` and up the sidebar is a permanent, collapsible column.
+  | Below `lg` it becomes an off-canvas drawer that is always shown in its
+  | full (expanded) form, so `collapsed` is forced off there.
+  */
+
+  const isDesktop = useIsDesktop();
+
+  const collapsed = isDesktop ? desktopCollapsed : false;
+
+  const drawerOpen = !isDesktop && mobileSidebarOpen;
+
+
+  /* Close the drawer on Escape */
+  useEffect(() => {
+
+    if (!drawerOpen) return;
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMobileSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => window.removeEventListener("keydown", onKeyDown);
+
+  }, [drawerOpen, setMobileSidebarOpen]);
+
+
+  /* Make sure the drawer never stays open once we cross into desktop */
+  useEffect(() => {
+
+    if (isDesktop && mobileSidebarOpen) {
+      setMobileSidebarOpen(false);
+    }
+
+  }, [isDesktop, mobileSidebarOpen, setMobileSidebarOpen]);
 
 
   const { user } = useSelector((state) => state.user);
@@ -453,20 +500,37 @@ export function Sidebar() {
       {/* MOBILE OVERLAY */}
       {/* ---------------------------------------------------------------- */}
 
-      {mobileSidebarOpen && (
-        <div
-          className="
-            fixed
-            inset-0
-            z-40
-            bg-black/50
-            lg:hidden
-          "
-          onClick={() =>
-            setMobileSidebarOpen(false)
-          }
-        />
-      )}
+      <AnimatePresence>
+
+        {drawerOpen && (
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+
+            aria-hidden="true"
+
+            /* z-[1000] clears the sticky TopNav (z-[999]) so the open drawer
+               dims the header too, instead of the header punching through it. */
+            className="
+              fixed
+              inset-0
+              z-[1000]
+              bg-black/50
+              backdrop-blur-[1px]
+              lg:hidden
+            "
+
+            onClick={() =>
+              setMobileSidebarOpen(false)
+            }
+          />
+
+        )}
+
+      </AnimatePresence>
 
 
       {/* ---------------------------------------------------------------- */}
@@ -474,29 +538,40 @@ export function Sidebar() {
       {/* ---------------------------------------------------------------- */}
 
       <motion.aside
+        id="app-sidebar"
         data-tour="sidebar"
+
+        role={!isDesktop ? "dialog" : undefined}
+        aria-modal={!isDesktop ? drawerOpen : undefined}
+        aria-label="Main navigation"
+        aria-hidden={!isDesktop && !drawerOpen}
+        inert={!isDesktop && !drawerOpen ? "" : undefined}
+
+        initial={false}
 
         animate={{
           width: collapsed ? 80 : 260,
 
-          x:
-            mobileSidebarOpen
-              ? 0
-              : undefined,
+          x: isDesktop || drawerOpen ? 0 : "-100%",
         }}
 
         transition={{
           duration: 0.25,
+          ease: [0.22, 1, 0.36, 1],
         }}
 
+        /* As a drawer it must sit above the sticky TopNav (z-[999]) and its own
+           backdrop (z-[1000]). `lg:z-auto` drops it back out of the stack on
+           desktop, where the aside is in-flow (`lg:static`) and never overlaps. */
         className="
           fixed
           left-0
           top-0
-          z-50
+          z-[1010]
 
           flex
           h-screen
+          max-w-[85vw]
           flex-col
 
           overflow-hidden
@@ -514,6 +589,8 @@ export function Sidebar() {
 
           lg:static
           lg:z-auto
+          lg:max-w-none
+          lg:shadow-none
         "
       >
 
@@ -666,44 +743,99 @@ export function Sidebar() {
                 />
 
 
-                {/* COLLAPSE BUTTON */}
+                {/* COLLAPSE BUTTON — desktop only */}
 
-                <button
-                  onClick={() =>
-                    setSidebarCollapsed(
-                      !collapsed
-                    )
-                  }
+                {isDesktop && (
+                  <button
+                    type="button"
 
-                  className={`
-                    flex
-                    h-7
-                    w-7
-                    shrink-0
-                    cursor-pointer
-                    items-center
-                    justify-center
-                    rounded-full
-                    bg-white
-                    shadow
-                    transition-all
-
-                    ${collapsed
-                      ? "hidden group-hover:flex"
-                      : "flex"
+                    aria-label={
+                      collapsed
+                        ? "Expand sidebar"
+                        : "Collapse sidebar"
                     }
-                  `}
-                >
 
-                  <PanelLeft
+                    title={
+                      collapsed
+                        ? "Expand sidebar"
+                        : "Collapse sidebar"
+                    }
+
+                    onClick={() =>
+                      setSidebarCollapsed(
+                        !collapsed
+                      )
+                    }
+
+                    className={`
+                      h-7
+                      w-7
+                      shrink-0
+                      cursor-pointer
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-white
+                      shadow
+                      transition-all
+
+                      ${collapsed
+                        ? "hidden group-hover:flex"
+                        : "flex"
+                      }
+                    `}
+                  >
+
+                    <PanelLeft
+                      className="
+                        h-5
+                        w-5
+                      "
+                      color="#0a3687"
+                    />
+
+                  </button>
+                )}
+
+
+                {/* CLOSE BUTTON — drawer only */}
+
+                {!isDesktop && (
+                  <button
+                    type="button"
+
+                    aria-label="Close navigation"
+
+                    onClick={() =>
+                      setMobileSidebarOpen(false)
+                    }
+
                     className="
-                      h-5
-                      w-5
+                      flex
+                      h-7
+                      w-7
+                      shrink-0
+                      cursor-pointer
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-white
+                      shadow
+                      transition-all
+                      active:scale-90
                     "
-                    color="#0a3687"
-                  />
+                  >
 
-                </button>
+                    <X
+                      className="
+                        h-5
+                        w-5
+                      "
+                      color="#0a3687"
+                    />
+
+                  </button>
+                )}
 
               </div>
 

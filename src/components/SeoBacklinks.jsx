@@ -861,6 +861,31 @@ function LinkTableHeader() {
   );
 }
 
+/**
+ * Scrolls the header and rows of a link table together.
+ *
+ * The 7 columns are all `flex-1`, so on a phone each one gets roughly 45px and
+ * the anchor text, URLs and domain become unreadable. Since the header and the
+ * rows share COL_STYLES, they have to scroll as one unit to stay aligned —
+ * hence the min-width on a single inner track rather than per-row overflow.
+ * overflow-y is pinned because `overflow-x-auto` alone would compute it from
+ * visible to auto and let the row tooltips add a stray vertical scrollbar.
+ */
+function LinkTableScroller({ children, minWidth = 720, className = "" }) {
+  return (
+    <div
+      className={`overflow-x-auto overflow-y-hidden lg:overflow-x-visible lg:overflow-y-visible ${className}`}
+    >
+      <div
+        className="min-w-[var(--link-table-min-w)] lg:min-w-0"
+        style={{ "--link-table-min-w": `${minWidth}px` }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 const getSpamLabel = (score) => {
   if (score < 10) return { label: "Low", color: "text-green-600" };
   if (score < 40) return { label: "Moderate", color: "text-yellow-600" };
@@ -1419,21 +1444,23 @@ function GPLinksTable({
         gpLinks={gpLinks}
         ContentVerdictPromptLedger={rep.guestpost_prompt_ledger[0]}
       />
-      <LinkTableHeader />
-      {gpLinks.map((gpLink, rowIndex) => (
-        <LinkTableRow
-          key={gpLink.id}
-          link={gpLink}
-          rowIndex={rowIndex}
-          setItem={setItem}
-          setOpen={setOpen}
-          setLinkId={setLinkId}
-          linkId={linkId}
-          deleting={deleting}
-          checkingDefaulter={checkingDefaulter}
-          handleDelete={handleDelete}
-        />
-      ))}
+      <LinkTableScroller>
+        <LinkTableHeader />
+        {gpLinks.map((gpLink, rowIndex) => (
+          <LinkTableRow
+            key={gpLink.id}
+            link={gpLink}
+            rowIndex={rowIndex}
+            setItem={setItem}
+            setOpen={setOpen}
+            setLinkId={setLinkId}
+            linkId={linkId}
+            deleting={deleting}
+            checkingDefaulter={checkingDefaulter}
+            handleDelete={handleDelete}
+          />
+        ))}
+      </LinkTableScroller>
     </div>
   );
 }
@@ -1463,22 +1490,24 @@ function LILinksTable({
         link={rep}
         orderId={orderId}
       />
-      <LinkTableHeader />
-      {liLinks.map((liLink, rowIndex) => (
-        <LinkTableRow
-          key={liLink.id}
-          link={liLink}
-          rowIndex={rowIndex}
-          setItem={setItem}
-          setOpen={setOpen}
-          setLinkId={setLinkId}
-          linkId={linkId}
-          deleting={deleting}
-          checkingDefaulter={checkingDefaulter}
-          handleDelete={handleDelete}
-          orderId={orderId}
-        />
-      ))}
+      <LinkTableScroller>
+        <LinkTableHeader />
+        {liLinks.map((liLink, rowIndex) => (
+          <LinkTableRow
+            key={liLink.id}
+            link={liLink}
+            rowIndex={rowIndex}
+            setItem={setItem}
+            setOpen={setOpen}
+            setLinkId={setLinkId}
+            linkId={linkId}
+            deleting={deleting}
+            checkingDefaulter={checkingDefaulter}
+            handleDelete={handleDelete}
+            orderId={orderId}
+          />
+        ))}
+      </LinkTableScroller>
     </div>
   );
 }
@@ -1552,9 +1581,12 @@ function DocumentAnalysisCard({
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="flex items-center gap-4 p-4">
-        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-5 gap-4">
+      {/* CONTENT — labels sit in row 1 and values in row 2 of one grid, so the
+          column count cannot be reduced without breaking that pairing. Scroll
+          sideways on narrow screens instead. */}
+      <div className="flex items-center gap-4 p-2 sm:p-4 min-w-0">
+        <LinkTableScroller className="flex-1 min-w-0" minWidth={620}>
+        <div className="bg-white rounded-lg px-2 py-3 shadow grid grid-cols-5 gap-4">
           <div className="text-sm font-semibold text-gray-500">Doc Name</div>
           <div className="text-sm font-semibold text-gray-500">Niche</div>
           <div className="text-sm font-semibold text-gray-500">
@@ -1635,6 +1667,7 @@ function DocumentAnalysisCard({
             </span>
           </div>
         </div>
+        </LinkTableScroller>
         {openPopup && analysisData && (
           <GPCContentPopup
           email={email}
@@ -1684,9 +1717,11 @@ function LIAnalysisCard({ targetUrl, website, link, orderId }) {
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="flex items-center gap-4 p-4 min-w-0">
-        <div className="flex-1 min-w-0 bg-white rounded-lg px-3 py-3 shadow grid grid-cols-3 gap-6 items-center">
+      {/* CONTENT — same label-row/value-row grid as the GP card, so it scrolls
+          sideways on narrow screens rather than dropping to fewer columns. */}
+      <div className="flex items-center gap-4 p-2 sm:p-4 min-w-0">
+        <LinkTableScroller className="flex-1 min-w-0" minWidth={480}>
+        <div className="min-w-0 bg-white rounded-lg px-3 py-3 shadow grid grid-cols-3 gap-6 items-center">
           <div className="text-sm font-semibold text-gray-500 min-w-0">
             Target URL
           </div>
@@ -1744,6 +1779,7 @@ function LIAnalysisCard({ targetUrl, website, link, orderId }) {
             )}
           </div>
         </div>
+        </LinkTableScroller>
       </div>
       {liPopupOpen && (
         <LIInsertPopup

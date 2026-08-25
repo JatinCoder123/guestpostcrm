@@ -123,7 +123,7 @@ function SearchBar() {
     return (
         <div
             ref={wrapperRef}
-            className="relative"
+            className="relative w-full min-w-0 lg:w-auto"
         >
             {/* SEARCH WRAPPER */}
             <motion.div
@@ -149,8 +149,8 @@ function SearchBar() {
                     duration-300
 
                     ${expanded
-                        ? "w-[520px] border-blue-100 shadow-[0_10px_30px_rgba(59,130,246,0.08)]"
-                        : "w-[160px] border-gray-200 hover:border-gray-300"
+                        ? "w-full lg:w-[520px] border-blue-100 shadow-[0_10px_30px_rgba(59,130,246,0.08)]"
+                        : "w-full lg:w-[160px] border-gray-200 hover:border-gray-300"
                     }
                 `}
             >
@@ -413,6 +413,7 @@ function SearchBar() {
                             right-0
                             z-50
                             w-[260px]
+                            max-w-[calc(100vw_-_2rem)]
                         "
                     >
                         <div

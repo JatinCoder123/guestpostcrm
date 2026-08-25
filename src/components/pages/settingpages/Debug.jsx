@@ -617,7 +617,7 @@ const Debug = () => {
               )}
 
               {!loading && !error && filteredData.length > 0 && (
-                <table className="min-w-full text-sm">
+                <table className="min-w-[760px] text-sm lg:min-w-full">
                   <thead className="bg-slate-50 text-left">
                     <tr>
                       {columns.map((col) => (

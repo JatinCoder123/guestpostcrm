@@ -31,26 +31,27 @@ function CustomDropdown({
     }, []);
 
     return (
-        <div ref={ref} className={`relative ${className}`}>
+        <div ref={ref} className={`relative min-w-0 ${className}`}>
             <button
                 disabled={disabled}
                 onClick={() => setOpen((p) => !p)}
                 className={`
-          w-full flex items-center justify-between
-          px-4 py-2.5 rounded-lg border
+          w-full flex items-center justify-between gap-2
+          px-3 py-2.5 rounded-lg border
           bg-white text-sm text-gray-700
           shadow-sm transition
           hover:border-indigo-400
           focus:outline-none focus:ring-2 focus:ring-indigo-500
+          sm:px-4
           ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
         `}
             >
-                <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
+                <span className={`truncate ${selectedOption ? "text-gray-900" : "text-gray-400"}`}>
                     {selectedOption?.label || placeholder}
                 </span>
 
                 <ChevronDown
-                    className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
                 />
             </button>
 
