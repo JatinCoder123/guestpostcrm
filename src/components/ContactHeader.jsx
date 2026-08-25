@@ -189,7 +189,7 @@ const ContactHeader = () => {
       {showBrandTimeline && (
         <div
           ref={sidebarRef}
-          className={`absolute top-28 right-0 z-50 h-[75vh] transition-all duration-300 ${showSidebar ? "w-72" : "w-10"
+          className={`absolute top-28 right-0 z-30 h-[75vh] transition-all duration-300 ${showSidebar ? "w-72" : "w-10"
             }`}
         >
           {/* Toggle */}

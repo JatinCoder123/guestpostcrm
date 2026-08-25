@@ -133,11 +133,11 @@ export default function Footer() {
   }, [error, dispatch]);
   return (
     <footer
-      className={`fixed bottom-0 right-0 z-20 flex h-12 items-center justify-between bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-[820px]:left-0 ${collapsed ? "left-[80px]" : "left-[260px]"
+      className={`fixed bottom-0 right-0 z-40 flex h-12 items-center justify-between gap-2 overflow-x-auto overflow-y-hidden hide-scrollbar bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-lg:left-0 ${collapsed ? "lg:left-[80px]" : "lg:left-[260px]"
         }`}
     >
       <IconButton icon={Settings} label="Settings" onClick={() => navigate("/settings")} />
-      <div className="flex gap-2">
+      <div className="flex shrink-0 gap-2">
         <div className="flex items-center gap-3">
           {crmDomain && (
             <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-all duration-400 cursor-pointer">

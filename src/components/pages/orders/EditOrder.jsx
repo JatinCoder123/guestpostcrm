@@ -93,20 +93,20 @@ export default function EditOrder({ id, email }) {
   }, [message, error]);
 
   return (
-    <div className="w-full flex gap-6 items-start">
+    <div className="w-full min-w-0">
       {/* 🔥 TABLE */}
-      <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
+      <div className="min-w-0 relative border rounded-2xl p-3 sm:p-6 bg-white shadow-sm">
         <PageHeader title={"Edit Order"} showAdd={false} />
         {/* Card */}
         <div className="bg-white ">
           {/* Order Info */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 flex items-center gap-2">
               <Package className="h-4 w-4 text-violet-500" />
               Order Information
             </h2>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid gap-4 md:grid-cols-3 sm:gap-6">
               {/* Order ID */}
               <div>
                 <label className="block text-sm mb-1"># Order ID</label>
@@ -178,20 +178,22 @@ export default function EditOrder({ id, email }) {
           </div>
 
           {/* Additional */}
-          <div className="mb-8">
-            <div className="flex gap-9 items-center">
+          <div className="mb-6 sm:mb-8">
+            {/* Two nowrap radio labels plus the invoice field cannot share one
+                row on a phone, so they stack until there is room. */}
+            <div className="flex flex-col gap-4 lg:flex-row lg:gap-9 lg:items-center">
               {/* Order Type */}
-              <div className="flex-shrink-0">
+              <div className="min-w-0 lg:flex-shrink-0">
                 <label className="block text-sm mb-1 flex items-center gap-1">
                   <Package className="w-4 h-4 text-black-500" />
                   Order Status
                 </label>
 
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   {["LINK INSERTION", "GUEST POST"].map((type) => (
                     <label
                       key={type}
-                      className={`whitespace-nowrap px-4 py-2 border rounded-lg cursor-pointer transition 
+                      className={`whitespace-nowrap px-3 py-2 text-sm sm:px-4 sm:text-base border rounded-lg cursor-pointer transition 
           ${order.order_type === type
                           ? "border-blue-600 bg-blue-50"
                           : "border-gray-300"
@@ -226,7 +228,7 @@ export default function EditOrder({ id, email }) {
                     handleChange("invoice_link_c", e.target.value)
                   }
                   placeholder="https://example.com"
-                  className="w-[90%]  border rounded-lg h-11 px-3 bg-slate-50"
+                  className="w-full lg:w-[90%] border rounded-lg h-11 px-3 bg-slate-50"
                 />
               </div>
             </div>

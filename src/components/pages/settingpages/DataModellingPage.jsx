@@ -467,6 +467,54 @@ const CSS = `
 
 @keyframes dm-spin { to { transform: rotate(360deg); } }
 .dm-spin { display: inline-block; animation: dm-spin 0.6s linear infinite; }
+
+/* ── NARROW SCREENS ───────────────────────────────────────────────────────
+   The shell is a fixed 220px sidebar beside main, with no breakpoints at
+   all, so below ~900px the content column had almost nothing left. Here it
+   collapses to a single column and the sidebar becomes a horizontally
+   scrolling strip of the same action buttons — nothing is dropped, the
+   group headings just fold away since they read oddly in a single row. */
+@media (max-width: 900px) {
+  .dm-app {
+    grid-template-areas: "topbar" "sidebar" "main";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .dm-topbar {
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  .dm-topbar-info { margin-left: auto; }
+
+  .dm-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--dm-border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .dm-sidebar::-webkit-scrollbar { display: none; }
+  .dm-sidebar { scrollbar-width: none; }
+
+  .dm-section { display: none; }
+
+  .dm-action-btn {
+    width: auto;
+    flex: 0 0 auto;
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  .dm-main { padding: 12px; }
+  .dm-pane { max-width: 100%; }
+  .dm-custom-dates { grid-template-columns: 1fr; }
+}
 `;
 
 // ─── SMALL REUSABLE UI ────────────────────────────────────────────────────────

@@ -129,26 +129,27 @@ export function SettingsPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       <Header text={"Settings"} />
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Intermediate steps so tablets don't jump straight from 1 to 4 columns */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
         {menuItems.map((item, index) => (
           <Link
             to={item.link}
             key={index}
-            className={`bg-gray-200/60 p-6 rounded-2xl shadow-sm cursor-pointer hover:shadow-lg hover:-translate-y-1 transition block`}
+            className={`bg-gray-200/60 p-4 sm:p-6 rounded-2xl shadow-sm cursor-pointer hover:shadow-lg hover:-translate-y-1 transition block min-w-0`}
           >
             <div>{item.icon}</div>
 
-            <h3 className="mt-4 text-xl font-semibold">{item.title}</h3>
+            <h3 className="mt-3 sm:mt-4 text-base sm:text-xl font-semibold">{item.title}</h3>
             <p className="text-gray-600 text-sm mt-1">{item.subtitle}</p>
           </Link>
         ))}
       </div>
 
       {/* Child pages will load here */}
-      <div className="mt-10">
+      <div className="mt-6 sm:mt-10">
         <Outlet />
       </div>
     </div>

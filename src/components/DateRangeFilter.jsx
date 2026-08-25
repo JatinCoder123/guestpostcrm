@@ -117,7 +117,7 @@ export function DateRangeFilter({
   return (
     <div className="relative" ref={dropRef}>
       {/* Trigger */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-5 py-1 flex flex-wrap items-center gap-3">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-3 py-1.5 flex items-center gap-2 sm:px-5 sm:py-1 sm:gap-3">
         <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
           <CalendarDays size={15} className="text-blue-700" />
         </div>
@@ -142,7 +142,7 @@ export function DateRangeFilter({
             className={`text-gray-400 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           />
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-shrink-0 items-center gap-2">
           {filterActive && (
             <button
               onClick={() => {
@@ -151,7 +151,7 @@ export function DateRangeFilter({
                 setOpen(false);
                 onReset();
               }}
-              className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl hover:bg-gray-200 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-2 py-1.5 bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl hover:bg-gray-200 transition-all cursor-pointer sm:px-3 sm:py-2"
             >
               <RefreshCcw size={11} /> Reset
             </button>
@@ -162,34 +162,35 @@ export function DateRangeFilter({
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute left-0 top-full mt-2 z-[9999] bg-white border border-gray-200 rounded-2xl shadow-2xl"
-          style={{ width: 520 }}
+          className="absolute left-0 top-full mt-2 z-[9999] w-[min(520px,calc(100vw_-_1.5rem))] max-h-[70vh] overflow-y-auto bg-white border border-gray-200 rounded-2xl shadow-2xl sm:max-h-none sm:overflow-visible"
         >
           <div
-            className="flex rounded-t-2xl"
+            className="flex flex-col rounded-t-2xl sm:flex-row"
             style={{ borderRadius: "16px 16px 0 0", overflow: "hidden" }}
           >
             {/* Preset sidebar */}
-            <div className="w-44 bg-gray-50 border-r border-gray-100 py-2 flex-shrink-0">
+            <div className="w-full bg-gray-50 border-b border-gray-100 py-2 flex-shrink-0 sm:w-44 sm:border-b-0 sm:border-r">
               <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 px-4 pt-2 pb-2">
                 Quick Select
               </p>
-              {PRESETS.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => applyPreset(p.id)}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${activePreset === p.id
-                    ? "bg-blue-700 text-white"
-                    : "text-gray-600 hover:bg-white hover:text-gray-900"
-                    }`}
-                >
-                  {p.label}
-                </button>
-              ))}
+              <div className="grid grid-cols-2 gap-1 px-2 pb-1 sm:grid-cols-1 sm:gap-0 sm:px-0 sm:pb-0">
+                {PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => applyPreset(p.id)}
+                    className={`w-full text-left px-3 py-2.5 text-xs font-semibold transition-all rounded-lg sm:rounded-none sm:px-4 ${activePreset === p.id
+                      ? "bg-blue-700 text-white"
+                      : "text-gray-600 hover:bg-white hover:text-gray-900"
+                      }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Right panel */}
-            <div className="flex-1 p-5 flex flex-col gap-4 min-w-0">
+            <div className="flex-1 p-4 flex flex-col gap-4 min-w-0 sm:p-5">
               {/* Selected Period */}
               <div>
                 <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">

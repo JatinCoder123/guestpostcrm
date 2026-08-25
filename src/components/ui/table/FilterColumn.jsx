@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { useTableContext } from "./Table";
+import { useIsDesktop } from "../../../hooks/useMediaQuery";
 
 const FilterColumn = () => {
     const {
@@ -20,6 +21,10 @@ const FilterColumn = () => {
         filters,
         setFilters,
     } = useTableContext();
+    // Below `lg` the panel stacks above the table and spans the full width;
+    // from `lg` up it's a fixed 280px column beside the table.
+    const isDesktop = useIsDesktop();
+    const openWidth = isDesktop ? 280 : "100%";
     const [search, setSearch] =
         useState("");
 
@@ -80,7 +85,7 @@ const FilterColumn = () => {
                 opacity: 0,
             }}
             animate={{
-                width: 280,
+                width: openWidth,
                 opacity: 1,
             }}
             exit={{
@@ -91,9 +96,11 @@ const FilterColumn = () => {
                 duration: 0.2,
             }}
             className="
-                min-w-[280px]
-                max-w-[280px]
-                h-full
+                w-full
+                max-w-full
+                lg:min-w-[280px]
+                lg:max-w-[280px]
+                lg:h-full
                 bg-white
                 border
                 border-gray-200

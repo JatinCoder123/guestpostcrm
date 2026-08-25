@@ -3,6 +3,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  MessagesSquare,
+  PenLine,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -32,6 +34,7 @@ import {
 import { useThread } from "../../../queries/threads.queries.js";
 import { PageContext } from "../../../context/pageContext.jsx";
 import LockedBar from "../../LockedBar.jsx";
+import { useMediaQuery } from "../../../hooks/useMediaQuery.js";
 
 export default function ThreadView() {
   const scrollRef = useRef();
@@ -57,6 +60,20 @@ export default function ThreadView() {
     loadAiReply || superfastReply
   );
   const [showSummary, setShowSummary] = useState(false);
+
+  /* ------------------------------------------------------------------
+   * Responsive mode
+   * ------------------------------------------------------------------
+   * The side-by-side composer/conversation split needs real width — at
+   * 375px each panel would get ~180px. Below `lg` we drop the resizable
+   * PanelGroup and expose the two panes as tabs instead, so each one gets
+   * the full width and nothing has to be removed to make room.
+   */
+  const isWideLayout = useMediaQuery("(min-width: 1024px)");
+
+  const [mobileTab, setMobileTab] = useState(
+    loadAiReply || superfastReply ? "reply" : "conversation"
+  );
   const firstMessageRef = useRef(null);
   const lastMessageRef = useRef(null);
 
@@ -187,10 +204,132 @@ export default function ThreadView() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [visibleMessages]);
 
+  /* The editor only exists while its pane is mounted. Clear `editorReady` when
+     it is not, so nothing acts on a stale editorRef pointing at a destroyed
+     TinyMCE instance (applies to toggling the reply panel on wide screens too). */
+  const editorMounted = isWideLayout ? showReplyPanel : mobileTab === "reply";
+
+  useEffect(() => {
+    if (!editorMounted) setEditorReady(false);
+  }, [editorMounted]);
+
+  /* Jump to the newest message. Also re-runs when the conversation tab is
+     re-selected on mobile, since that pane is unmounted while hidden. */
   useEffect(() => {
     if (!scrollRef.current) return;
+    if (!isWideLayout && mobileTab !== "conversation") return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [emails?.length]);
+  }, [emails?.length, isWideLayout, mobileTab]);
+
+  /* ------------------------------------------------------------------
+   * Panes — defined once and composed into either layout, so the mobile
+   * view runs the exact same components (and therefore the exact same
+   * functionality) as the desktop split.
+   * ---------------------------------------------------------------- */
+
+  const aiSummaryPane = (
+    <div className="flex-shrink-0 border-b border-gray-200 bg-white p-2 sm:p-3">
+      <div className="overflow-hidden rounded-lg bg-slate-100">
+        <button
+          type="button"
+          onClick={() => setShowSummary((prev) => !prev)}
+          aria-expanded={showSummary}
+          className="flex w-full items-center justify-between px-3 py-2.5 text-left transition hover:bg-slate-200 sm:px-4 sm:py-3"
+        >
+          <h2 className="text-sm font-medium tracking-wide text-purple-600">
+            ✦ AI Summary
+          </h2>
+
+          <ChevronRight
+            className={`h-4 w-4 shrink-0 text-slate-600 transition-transform duration-200 ${showSummary ? "rotate-90" : ""
+              }`}
+          />
+        </button>
+
+        {showSummary && (
+          <div className="border-t border-slate-200 px-3 py-3 sm:px-4">
+            <div className="max-h-[180px] overflow-y-auto">
+              {summaryLoading || regenSummary.isPending ? (
+                <div className="space-y-3 animate-pulse">
+                  <div className="h-3 w-full rounded bg-slate-200" />
+                  <div className="h-3 w-[92%] rounded bg-slate-200" />
+                  <div className="h-3 w-[80%] rounded bg-slate-200" />
+                </div>
+              ) : (
+                <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-700">
+                  {mailersSummary?.summary || "No summary available"}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const editorPane = (
+    <>
+      {(summaryLoading || regenSummary.isPending) && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-3 border-indigo-500 border-t-transparent"></div>
+            <p className="text-xs font-medium text-gray-600">
+              Loading content...
+            </p>
+          </div>
+        </div>
+      )}
+
+      <SmallTinyEditor
+        setEditorContent={setEditorContent}
+        editorContent={editorContent}
+        setEditorReady={setEditorReady}
+        editorRef={editorRef}
+      />
+    </>
+  );
+
+  const replyToolbarPane = (
+    <ReplyButtons
+      editorReady={editorReady}
+      editorRef={editorRef}
+      threadEmails={emails}
+    />
+  );
+
+  const conversationPane = (
+    <>
+      <Inbox
+        scrollRef={scrollRef}
+        visibleMessages={visibleMessages}
+        emails={emails}
+        firstMessageRef={firstMessageRef}
+        lastMessageRef={lastMessageRef}
+        setOpenMessageId={setOpenMessageId}
+        fetchFullMessage={fetchFullMessage}
+        messageLimit={messageLimit}
+        setMessageLimit={setMessageLimit}
+        showReplyPanel={showReplyPanel}
+        setShowReplyPanel={setShowReplyPanel}
+        showReplyToggle={isWideLayout}
+      />
+
+      {!(loadAiReply || superfastReply) && (
+        <div className="flex flex-shrink-0 justify-center border-t border-gray-100 bg-white p-3 sm:p-4">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate(`/thread/reply`)}
+            className="flex w-full max-w-md items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 py-3 font-semibold text-white shadow-lg transition hover:shadow-xl"
+          >
+            <Send className="h-5 w-5" />
+            <span>Reply</span>
+          </motion.button>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <>
       <SendingOverlay sending={sending || checkingThreadId} email={email} />
@@ -218,20 +357,21 @@ export default function ThreadView() {
     "
       >
         {/* HEADER */}
-        <div className="flex flex-wrap items-center justify-between bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-1 text-white shadow-lg">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-2 py-1.5 text-white shadow-lg sm:px-6 sm:py-1">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate("/")}
-              className="cursor-pointer rounded-full bg-white/20 p-2 transition-colors hover:bg-white/30"
+              aria-label="Back to timeline"
+              className="shrink-0 cursor-pointer rounded-full bg-white/20 p-2 transition-colors hover:bg-white/30"
             >
               <ChevronLeft className="h-5 w-5" />
             </motion.button>
 
-            <div className="group flex items-center gap-3">
+            <div className="group flex min-w-0 flex-1 items-center gap-3">
               <div
-                className="flex cursor-pointer items-center gap-3 transition"
+                className="flex min-w-0 cursor-pointer items-center gap-3 transition"
                 onClick={() =>
                   window.open(
                     `https://mail.google.com/mail/u/0/#inbox/${threadId}`,
@@ -240,9 +380,11 @@ export default function ThreadView() {
                 }
               >
                 <h2
+                  title={emails?.[emails?.length - 1]?.subject}
                   className="
-                    max-w-[400px] truncate text-md font-semibold tracking-tight
+                    min-w-0 truncate text-sm font-semibold tracking-tight sm:text-md
                     transition-all duration-300 hover:text-blue-200 hover:underline
+                    lg:max-w-[400px]
                   "
                 >
                   {emails?.[emails?.length - 1]?.subject}
@@ -258,7 +400,84 @@ export default function ThreadView() {
         )}
         {loading ? (
           <ThreadSkeleton />
+        ) : !isWideLayout ? (
+          /* ══════════════ NARROW LAYOUT — tabbed panes ══════════════ */
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div
+              role="tablist"
+              aria-label="Thread panes"
+              className="flex shrink-0 border-b border-gray-200 bg-white"
+            >
+              {[
+                {
+                  key: "conversation",
+                  label: "Conversation",
+                  icon: MessagesSquare,
+                  count: emails?.length,
+                },
+                {
+                  key: "reply",
+                  label: "Reply",
+                  icon: PenLine,
+                },
+              ].map((tab) => {
+                const active = mobileTab === tab.key;
+
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setMobileTab(tab.key)}
+                    className={`relative flex flex-1 items-center justify-center gap-2 px-2 py-2.5 text-sm font-semibold transition ${active
+                      ? "text-indigo-600"
+                      : "text-slate-500 hover:text-slate-700"
+                      }`}
+                  >
+                    <tab.icon className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{tab.label}</span>
+
+                    {tab.count > 0 && (
+                      <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[11px] font-bold text-slate-600">
+                        {tab.count}
+                      </span>
+                    )}
+
+                    {active && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-x-0 bottom-0 h-0.5 bg-indigo-600"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {mobileTab === "conversation" ? (
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
+                {conversationPane}
+              </div>
+            ) : (
+              <div
+                className={`flex min-h-0 flex-1 flex-col overflow-y-auto bg-slate-50 ${isLocked ? "pointer-events-none opacity-20" : ""
+                  }`}
+              >
+                {aiSummaryPane}
+
+                <div className="relative min-h-[220px] flex-1 bg-white">
+                  {editorPane}
+                </div>
+
+                <div className="flex-shrink-0 border-t border-gray-200 bg-slate-50 p-2">
+                  {replyToolbarPane}
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
+          /* ══════════════ WIDE LAYOUT — resizable split ══════════════ */
           <PanelGroup direction="horizontal" className="flex-1">
             {/* LEFT PANEL */}
             {showReplyPanel && (
@@ -271,68 +490,16 @@ export default function ThreadView() {
                     }`}
                 >
                   {/* AI Summary */}
-                  <div className="flex-shrink-0 border-b border-gray-200 bg-white p-3">
-                    <div className="overflow-hidden rounded-lg bg-slate-100">
-
-                      <button
-                        type="button"
-                        onClick={() => setShowSummary((prev) => !prev)}
-                        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-slate-200 transition"
-                      >
-                        <h2 className="text-sm font-medium tracking-wide text-purple-600">
-                          ✦ AI Summary
-                        </h2>
-
-                        <ChevronRight
-                          className={`h-4 w-4 text-slate-600 transition-transform duration-200 ${showSummary ? "rotate-90" : ""
-                            }`}
-                        />
-                      </button>
-
-                      {showSummary && (
-                        <div className="border-t border-slate-200 px-4 py-3">
-                          <div className="max-h-[180px] overflow-y-auto">
-                            {summaryLoading || regenSummary.isPending ? (
-                              <div className="space-y-3 animate-pulse">
-                                <div className="h-3 w-full rounded bg-slate-200" />
-                                <div className="h-3 w-[92%] rounded bg-slate-200" />
-                                <div className="h-3 w-[80%] rounded bg-slate-200" />
-                              </div>
-                            ) : (
-                              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
-                                {mailersSummary?.summary || "No summary available"}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  {aiSummaryPane}
 
                   {/* Editor */}
                   <div className="relative min-h-0 flex-1 bg-white">
-                    {(summaryLoading || regenSummary.isPending) && (
-                      <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm">
-                        <div className="flex flex-col items-center gap-3">
-                          <div className="h-8 w-8 animate-spin rounded-full border-3 border-indigo-500 border-t-transparent"></div>
-                          <p className="text-xs font-medium text-gray-600">
-                            Loading content...
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    <SmallTinyEditor
-                      setEditorContent={setEditorContent}
-                      editorContent={editorContent}
-                      setEditorReady={setEditorReady}
-                      editorRef={editorRef}
-                    />
+                    {editorPane}
                   </div>
 
                   {/* Reply Buttons */}
                   <div className="flex-shrink-0 border-t border-gray-200 bg-slate-50 p-3">
-                    <ReplyButtons editorReady={editorReady} editorRef={editorRef} threadEmails={emails} />
+                    {replyToolbarPane}
                   </div>
                 </Panel>
 
@@ -391,33 +558,7 @@ export default function ThreadView() {
 
             {/* RIGHT PANEL */}
             <Panel className="flex h-full flex-col overflow-hidden bg-white">
-              <Inbox
-                scrollRef={scrollRef}
-                visibleMessages={visibleMessages}
-                emails={emails}
-                firstMessageRef={firstMessageRef}
-                lastMessageRef={lastMessageRef}
-                setOpenMessageId={setOpenMessageId}
-                fetchFullMessage={fetchFullMessage}
-                messageLimit={messageLimit}
-                setMessageLimit={setMessageLimit}
-                showReplyPanel={showReplyPanel}
-                setShowReplyPanel={setShowReplyPanel}
-              />
-
-              {!(loadAiReply || superfastReply) && (
-                <div className="flex flex-shrink-0 justify-center border-t border-gray-100 bg-white p-4">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate(`/thread/reply`)}
-                    className="flex w-full max-w-md items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 py-3 font-semibold text-white shadow-lg transition hover:shadow-xl"
-                  >
-                    <Send className="h-5 w-5" />
-                    <span>Reply</span>
-                  </motion.button>
-                </div>
-              )}
+              {conversationPane}
             </Panel>
           </PanelGroup>
         )}
@@ -429,22 +570,27 @@ export default function ThreadView() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-4"
+              className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-2 sm:p-4"
             >
               <motion.div
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 20 }}
-                className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+                /* Definite height (not just max-h) so the flex-1 iframe below
+                   has something to resolve its height against. */
+                className="flex h-[92vh] w-full min-w-0 max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:h-[85vh]"
               >
                 {/* HEADER */}
-                <div className="flex items-center justify-between border-b px-6 py-4">
-                  <div>
-                    <h3 className="text-lg font-semibold">
+                <div className="flex shrink-0 items-start justify-between gap-2 border-b px-4 py-3 sm:items-center sm:px-6 sm:py-4">
+                  <div className="min-w-0">
+                    <h3
+                      title={fullMessage?.subject || "Email"}
+                      className="truncate text-base font-semibold sm:text-lg"
+                    >
                       {fullMessage?.subject || "Email"}
                     </h3>
 
-                    <p className="text-xs text-gray-500">
+                    <p className="truncate text-xs text-gray-500">
                       {fullMessage?.from_name} &lt;{fullMessage?.from_email}
                       &gt;
                     </p>
@@ -455,16 +601,18 @@ export default function ThreadView() {
                       setOpenMessageId(null);
                       setFullMessage(null);
                     }}
-                    className="rounded-full p-2 hover:bg-gray-100"
+                    aria-label="Close message preview"
+                    className="shrink-0 rounded-full p-2 hover:bg-gray-100"
                   >
                     <X className="h-5 w-5" />
                   </button>
                 </div>
 
-                {/* BODY */}
+                {/* BODY — was a hard 700x700 box, which overflowed the card
+                    on any screen narrower than that. */}
                 <iframe
                   title="Email Preview"
-                  className="h-[700px] w-[700px] border-0"
+                  className="min-h-0 w-full flex-1 border-0"
                   sandbox=""
                   srcDoc={`
                     <!DOCTYPE html>

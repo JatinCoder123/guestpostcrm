@@ -14,7 +14,9 @@ import {
   MailOpen,
   Send,
   Bell,
-  Menu
+  Menu,
+  MoreVertical,
+  ChevronRight,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -34,6 +36,7 @@ import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
 import { useCrmUsers } from "../queries/users.queries";
 import { fetchGpc } from "../services/api";
 import IconButton from "./ui/Buttons/IconButton";
+import { useIsDesktop } from "../hooks/useMediaQuery";
 
 /* ─────────────────────────────────────────────────────────────
    Reusable icon button — coloured tint + badge + tooltip
@@ -382,12 +385,20 @@ export function TopNav() {
     data: paymentReminderData,
     isPending: paymentReminderPending,
   } = useTodayPaymentReminderStats();
-  const { enteredEmail, handleClear } = useContext(PageContext);
+  const {
+    enteredEmail,
+    handleClear,
+    mobileSidebarOpen,
+    setMobileSidebarOpen,
+  } = useContext(PageContext);
+
+  const isDesktop = useIsDesktop();
   // ↓ activeUsers added alongside existing notificationCount
   const { user, error } = useSelector((s) => s.user);
 
   /* ── Local state ── */
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [copied, setCopied] = useState(false);
   const [profilePreview, setProfilePreview] = useState(
     () => sessionStorage.getItem("userProfileImage") || user?.profileImage || ""
@@ -396,9 +407,15 @@ export function TopNav() {
   const [cropImage, setCropImage] = useState(null);
 
   const profileMenuRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   /* ── Derived ── */
   const isSearchActive = Boolean(enteredEmail?.trim());
+
+  const onlineCount = activeUsers.filter((u) => u?.status === "online").length;
+
+  const displayName =
+    data?.find((d) => d.description === user?.email)?.name || user?.name;
 
 
   /* ── Effects ── (unchanged) */
@@ -413,15 +430,24 @@ export function TopNav() {
     const handler = (e) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target))
         setShowProfileMenu(false);
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target))
+        setShowMobileMenu(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
 
+  /* Close the overflow menu once the header has room for everything again */
+  useEffect(() => {
+    if (isDesktop && showMobileMenu) setShowMobileMenu(false);
+  }, [isDesktop, showMobileMenu]);
+
+
   const handleLogout = () => {
     dispatch(logout());
     setShowProfileMenu(false);
+    setShowMobileMenu(false);
   };
 
   const handleCopyEmail = async () => {
@@ -468,12 +494,32 @@ export function TopNav() {
   return (
     <div
       data-tour="top-nav"
-      className="sticky top-0 z-[999] flex   items-center justify-between p-2 gap-3 bg-white border  rounded-md "
+      className="sticky top-0 z-[999] flex w-full min-w-0 items-center justify-between p-2 gap-2 sm:gap-3 bg-white border  rounded-md "
     >
-      <div className="flex items-center justify-between">
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 lg:flex-initial">
+
+        {/* ── Sidebar drawer trigger — small screens only ── */}
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          aria-label={
+            mobileSidebarOpen
+              ? "Close navigation menu"
+              : "Open navigation menu"
+          }
+          aria-expanded={Boolean(mobileSidebarOpen)}
+          aria-controls="app-sidebar"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90 lg:hidden"
+        >
+          {mobileSidebarOpen ? (
+            <X size={20} strokeWidth={2.2} />
+          ) : (
+            <Menu size={20} strokeWidth={2.2} />
+          )}
+        </button>
 
         <div
-          className="flex  items-center gap-2 min-w-0 justify-center p-1"
+          className="flex  items-center gap-2 min-w-0 flex-1 justify-center p-1 lg:flex-initial"
           data-tour="top-nav-search"
         >
           <AnimatePresence mode="wait">
@@ -486,7 +532,7 @@ export function TopNav() {
                 transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
                 role="status"
                 aria-live="polite"
-                className="flex items-center gap-2.5 rounded-2xl border px-4 py-2 max-w-[400px]"
+                className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl border px-3 py-2 sm:px-4 lg:max-w-[400px] lg:flex-initial"
                 style={{
                   background: "linear-gradient(100deg,#eef2ff 0%,#e0f2fe 100%)",
                   border: "1px solid rgba(99,102,241,0.22)",
@@ -498,13 +544,13 @@ export function TopNav() {
                   className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-indigo-500"
                   style={{ animationDuration: "1.4s" }}
                 />
-                <span className="flex items-center gap-1.5 text-[16px] text-indigo-800 leading-none">
-                  <span className="shrink-0 font-normal text-indigo-600">
+                <span className="flex min-w-0 items-center gap-1.5 text-sm leading-none text-indigo-800 sm:text-[16px]">
+                  <span className="hidden shrink-0 font-normal text-indigo-600 sm:inline">
                     Viewing record for
                   </span>
                   <span
                     title={enteredEmail}
-                    className="max-w-[220px] truncate font-bold text-cyan-700 underline underline-offset-2 decoration-dashed cursor-default"
+                    className="min-w-0 truncate font-bold text-cyan-700 underline underline-offset-2 decoration-dashed cursor-default lg:max-w-[220px]"
                   >
                     {enteredEmail}
                   </span>
@@ -543,7 +589,10 @@ export function TopNav() {
 
 
 
-      <div className="justify-end flex shrink-0 items-center gap-1.5">
+      {/* ─────────────────────────────────────────────────────────
+          RIGHT CLUSTER — full layout, `lg` and up
+      ───────────────────────────────────────────────────────── */}
+      <div className="justify-end hidden shrink-0 items-center gap-1.5 lg:flex">
 
         {/* ── 🆕 User Activity Panel — sits before the other nav buttons ── */}
         <div className="flex-shrink-0 flex items-center gap-2">
@@ -710,6 +759,191 @@ export function TopNav() {
             )}
           </AnimatePresence>
         </div>
+      </div>
+
+
+      {/* ─────────────────────────────────────────────────────────
+          RIGHT CLUSTER — overflow menu, below `lg`
+
+          Everything that does not fit next to the sidebar toggle and
+          the search field moves in here: stats, active users, and the
+          profile actions.
+      ───────────────────────────────────────────────────────── */}
+      <div ref={mobileMenuRef} className="relative shrink-0 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileMenu((v) => !v)}
+          aria-label="More options"
+          aria-expanded={showMobileMenu}
+          aria-haspopup="true"
+          className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90"
+        >
+          {profilePreview ? (
+            <img
+              src={profilePreview}
+              alt=""
+              className="h-7 w-7 rounded-lg object-cover"
+            />
+          ) : (
+            <MoreVertical size={20} strokeWidth={2.2} />
+          )}
+
+          {onlineCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full border border-white bg-emerald-500" />
+            </span>
+          )}
+        </button>
+
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+              role="menu"
+              className="absolute right-0 top-full z-[1000] mt-2.5 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10"
+            >
+              {/* ── Profile ── */}
+              <button
+                type="button"
+                onClick={() => { navigateTo("/profile"); setShowMobileMenu(false); }}
+                className="flex w-full items-center gap-3 border-b border-slate-100 p-3.5 text-left transition hover:bg-slate-50"
+              >
+                {profilePreview ? (
+                  <img
+                    src={profilePreview}
+                    alt=""
+                    className="h-10 w-10 shrink-0 rounded-xl object-cover"
+                  />
+                ) : (
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
+                    style={{ background: "linear-gradient(135deg,#6366f1,#06b6d4)" }}
+                  >
+                    {getUserInitials()}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-slate-800">
+                    {displayName}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-slate-400">
+                    {user?.email}
+                  </p>
+                </div>
+                <ChevronRight size={16} className="shrink-0 text-slate-300" />
+              </button>
+
+              {/* ── Stats ── */}
+              <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
+                {[
+                  {
+                    icon: MailOpen,
+                    label: "Received",
+                    value: stats.reply_recieved,
+                    colorClass: "text-emerald-500",
+                    bgClass: "bg-emerald-100",
+                  },
+                  {
+                    icon: Send,
+                    label: "Sent",
+                    value: stats.reply_sent,
+                    colorClass: "text-blue-600",
+                    bgClass: "bg-blue-100",
+                  },
+                  {
+                    icon: Bell,
+                    label: "Reminders",
+                    value: stats.reminder_sent,
+                    colorClass: "text-amber-500",
+                    bgClass: "bg-amber-100",
+                  },
+                ].map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex flex-col items-center gap-1 px-2 py-3"
+                  >
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full ${s.bgClass}`}
+                    >
+                      {createElement(s.icon, {
+                        className: `h-3.5 w-3.5 ${s.colorClass}`,
+                      })}
+                    </span>
+                    <span className="text-[15px] font-semibold leading-none text-slate-900">
+                      {s.value ?? "—"}
+                    </span>
+                    <span className="text-[10px] font-medium leading-none text-slate-400">
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Actions ── */}
+              <div className="flex flex-col gap-0.5 p-2">
+                <button
+                  type="button"
+                  onClick={() => { navigateTo("/settings/user-activity"); setShowMobileMenu(false); }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
+                    <Users size={14} className="text-indigo-500" />
+                  </span>
+                  <span className="flex-1 text-left">Active users</span>
+                  <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {onlineCount}
+                  </span>
+                </button>
+
+                <label
+                  htmlFor="profile-upload-mobile"
+                  className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                    <Camera size={14} className="text-slate-500" />
+                  </span>
+                  Change profile photo
+                </label>
+                <input
+                  id="profile-upload-mobile"
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => { setShowMobileMenu(false); handleProfileUpload(e); }}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => { navigateTo("/profile"); setShowMobileMenu(false); }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                    <User2 size={14} className="text-slate-500" />
+                  </span>
+                  Edit profile
+                </button>
+
+                <div className="mx-2 my-1 h-px bg-slate-100" />
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50">
+                    <LogOut size={14} className="text-red-500" />
+                  </span>
+                  Log out
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── Image cropper (unchanged) ── */}

@@ -62,6 +62,10 @@ const RootLayout = () => {
         left: 0,
         behavior: "smooth",
       });
+
+      /* Smooth scrolling can be interrupted mid-flight, which would leave a
+         horizontal offset behind. Pin the inline axis synchronously. */
+      mainRef.current.scrollLeft = 0;
     }
   }, [pathname]);
 
@@ -165,6 +169,21 @@ const RootLayout = () => {
           {/* ===================================================
               MAIN CONTENT
           ==================================================== */}
+          {/*
+            overflow-x-hidden is deliberate and load-bearing.
+
+            With only `overflow-y-auto`, CSS computes the other axis from
+            `visible` to `auto`, so this element silently becomes a HORIZONTAL
+            scroll container too — and `hide-scrollbar` hides the scrollbar
+            that would reveal it. Any transient overflow (a hover/highlight
+            `scale-*`, a popover, a wide bar) then lets `main` be scrolled
+            inline by a stray focus/scrollIntoView/touch drag, and because
+            scrollLeft is only reset on route change the page stays offset —
+            content flush left with dead space on the right until reload.
+
+            Pinning overflow-x makes that state unreachable. Wide content
+            (tables etc.) already carries its own overflow-x-auto wrapper.
+          */}
           <main
             ref={mainRef}
             className="
@@ -172,6 +191,7 @@ const RootLayout = () => {
               flex-1
               w-full
               overflow-y-auto
+              overflow-x-hidden
               hide-scrollbar
             "
           >

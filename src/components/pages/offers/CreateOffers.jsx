@@ -22,6 +22,7 @@ import { useTemplateByName } from "../../../queries/template.queries";
 import { queryClient } from "../../../lib/queryClient";
 import { useWebsites } from "../../../queries/web.queries";
 import { useContact } from "../../../queries/contact.queries";
+import Cell from "../../ui/table/RecordCell";
 
 export default function CreateOffers({ email }) {
   const navigate = useNavigate();
@@ -146,13 +147,15 @@ export default function CreateOffers({ email }) {
     }
   }, [message, error]);
   return (
-    <div className="w-full flex gap-6 items-start">
+    /* Stacks until `lg`, matching SummaryCard's `lg:w-80`. Side by side any
+       earlier and the card — `w-full` plus `shrink-0` — takes the whole row. */
+    <div className="w-full flex flex-col gap-4 lg:flex-row lg:gap-6 lg:items-start">
       {/* 🔥 LEFT SIDE (TABLE) */}
-      <div className="flex-1 border rounded-2xl p-6 bg-white shadow-sm">
+      <div className="min-w-0 flex-1 border rounded-2xl p-3 sm:p-6 bg-white shadow-sm">
         <PageHeader title={"Create Offers"} showAdd={false} />
 
-        {/* HEADER */}
-        <div className="grid grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
+        {/* HEADER — grid only from `lg`; the stacked cards label themselves */}
+        <div className="hidden lg:grid lg:grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
           <div className="col-span-3">Website</div>
           <div className="col-span-2 text-center">Client Offer</div>
           <div className="col-span-2 text-center">Our Offer</div>
@@ -166,16 +169,16 @@ export default function CreateOffers({ email }) {
               key={index}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid grid-cols-10 items-center px-4 py-3 bg-gray-50 rounded-xl border"
+              className="flex flex-col gap-2 px-3 py-3 bg-gray-50 rounded-xl border lg:grid lg:grid-cols-10 lg:items-center lg:gap-0 lg:px-4"
             >
 
-              <div className="col-span-3 relative">
+              <Cell label="Website" className="min-w-0 lg:col-span-3 lg:relative">
                 <select
                   value={row.website}
                   onChange={(e) =>
                     handleChangeRow(index, "website", e.target.value)
                   }
-                  className="w-full border rounded-lg px-2 py-1 pr-10"
+                  className="min-w-0 max-w-full border rounded-lg px-2 py-1 lg:w-full lg:pr-10"
                 >
                   <option value="">Select</option>
 
@@ -185,9 +188,9 @@ export default function CreateOffers({ email }) {
                     </option>
                   ))}
                 </select>
-              </div>
+              </Cell>
 
-              <div className="col-span-2 text-center">
+              <Cell label="Client Offer" className="lg:col-span-2 lg:text-center">
                 <input
                   type="number"
                   value={row.client_offer_c}
@@ -197,9 +200,9 @@ export default function CreateOffers({ email }) {
                   }
                   className="w-20 border rounded px-2 py-1 text-center"
                 />
-              </div>
+              </Cell>
 
-              <div className="col-span-2 text-center">
+              <Cell label="Our Offer" className="lg:col-span-2 lg:text-center">
                 <input
                   type="number"
                   min={1}
@@ -209,16 +212,20 @@ export default function CreateOffers({ email }) {
                   }
                   className="w-20 border rounded px-2 py-1 text-center"
                 />
-              </div>
+              </Cell>
 
-              <div className="col-span-2 text-center ml-auto">
+              <Cell
+                label="Action"
+                className="border-t border-gray-200 pt-2 lg:col-span-2 lg:border-0 lg:pt-0 lg:ml-auto lg:text-center"
+              >
                 <button
                   onClick={() => handleRemoveRow(index)}
+                  aria-label="Remove offer row"
                   className="text-red-500"
                 >
                   <Trash2 />
                 </button>
-              </div>
+              </Cell>
             </motion.div>
           ))}
         </div>
