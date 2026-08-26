@@ -340,7 +340,7 @@ function ChildItem({
                         fixed inset-0 z-[9999]
                         flex items-center justify-center
                         bg-black/40 backdrop-blur-sm
-                        p-4
+                        p-2 sm:p-4
                     "
                 >
                     {/* MODAL */}
@@ -352,19 +352,20 @@ function ChildItem({
                         }
                         className="
                             bg-white
-                            w-full
+                            w-full min-w-0
                             max-w-7xl
-                            h-[90vh]
+                            h-[94vh] sm:h-[90vh]
                             rounded-2xl
                             overflow-hidden
                             shadow-2xl
                             flex flex-col
                         "
                     >
-                        {/* HEADER */}
-                        <div className="flex items-center justify-between border-b px-6 py-4">
+                        {/* HEADER — the tab row scrolls sideways rather than
+                            wrapping, so the close button keeps its place */}
+                        <div className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2.5 sm:px-6 sm:py-4">
                             {/* TABS */}
-                            <div className="flex gap-2 flex-wrap">
+                            <div className="flex min-w-0 gap-2 overflow-x-auto overflow-y-hidden hide-scrollbar sm:flex-wrap sm:overflow-visible">
                                 {tabs.map(
                                     (
                                         tab,
@@ -379,7 +380,7 @@ function ChildItem({
                                                 )
                                             }
                                             className={`
-                                                px-4 py-2 rounded-lg text-sm font-medium transition
+                                                shrink-0 whitespace-nowrap px-3 py-2 sm:px-4 rounded-lg text-[13px] sm:text-sm font-medium transition
                                                 ${activeTab ===
                                                     tab.key
                                                     ? "bg-blue-600 text-white"
@@ -402,11 +403,13 @@ function ChildItem({
                                         null,
                                     )
                                 }
+                                aria-label="Close"
                                 className="
-                                    w-10 h-10
+                                    grid shrink-0 place-items-center
+                                    w-9 h-9 sm:w-10 sm:h-10
                                     rounded-lg
                                     hover:bg-gray-100
-                                    text-xl
+                                    text-lg sm:text-xl
                                 "
                             >
                                 ✕
@@ -414,7 +417,7 @@ function ChildItem({
                         </div>
 
                         {/* CONTENT */}
-                        <div className="flex-1 overflow-hidden p-4">
+                        <div className="min-h-0 min-w-0 flex-1 overflow-hidden p-2 sm:p-4">
                             {/* MESSAGE */}
                             {activeTab ===
                                 "message" && (
