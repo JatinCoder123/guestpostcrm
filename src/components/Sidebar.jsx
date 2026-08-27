@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
@@ -20,6 +20,10 @@ import { useGpcController } from "../queries/controller.queries";
 import { useLayoutPreferences } from "../queries/prefrences.queries";
 import Icon from "./ui/Icon/Icon";
 import { useSidebarStats } from "../queries/sidebar.queries";
+import {
+  normalizeSidebarResponse,
+  selectVisibleGroups,
+} from "../utils/sidebarLayout";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -41,6 +45,18 @@ export function Sidebar() {
     useLayoutPreferences();
 
   const sidebarSections = layoutData ?? [];
+
+  /**
+   * What actually renders: groups and fields in weight
+   * order, with anything switched off in the layout editor
+   * (is_active = 0) removed. A group whose fields are all
+   * inactive drops out too, rather than leaving an empty
+   * heading behind.
+   */
+  const visibleGroups = useMemo(
+    () => selectVisibleGroups(normalizeSidebarResponse(layoutData)),
+    [layoutData],
+  );
 
 
   const { user } = useSelector((s) => s.user);
@@ -110,19 +126,23 @@ export function Sidebar() {
   };
 
   useEffect(() => {
-    if (!sidebarSections?.data) return;
+    if (!visibleGroups.length) return;
 
     setExpandedGroups(
       Object.fromEntries(
-        sidebarSections.data.map((group) => [
+        visibleGroups.map((group) => [
           group.group_name,
           true,
         ])
       )
     );
 
+    /**
+     * Only ask for counts on fields that are actually
+     * on screen.
+     */
     setSidebarStatsQuery(
-      sidebarSections.data?.flatMap((group) =>
+      visibleGroups.flatMap((group) =>
         (group.data ?? []).map((item) => ({
           key: item.key,
           module: item.module_name,
@@ -130,9 +150,9 @@ export function Sidebar() {
             item.email_by_filter == "1" ? false : true,
           filters: item.count_filters ?? {},
         }))
-      ) ?? null
+      )
     );
-  }, [sidebarSections]);
+  }, [visibleGroups]);
 
   return (
     <>
@@ -352,12 +372,7 @@ export function Sidebar() {
                 rounded-lg
               "
             >
-              {sidebarSections?.data
-                ?.sort(
-                  (a, b) =>
-                    a.weight - b.weight
-                )
-                .map((group) => (
+              {visibleGroups.map((group) => (
                   <div
                     key={group.group_name}
                     className="mb-3"
@@ -400,11 +415,6 @@ export function Sidebar() {
                       ]) && (
                         <div className="mt-1 ml-2 space-y-1">
                           {group.data
-                            ?.sort(
-                              (a, b) =>
-                                Number(a.weight) -
-                                Number(b.weight)
-                            )
                             .map((item) => (
                               <button
                                 key={item.id}
