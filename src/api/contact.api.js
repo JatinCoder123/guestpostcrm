@@ -182,6 +182,16 @@ export const getContactByEmail = async (email) => {
 };
 
 /**
+ * Create a contact from the timeline empty state.
+ */
+export const createContactFromEmail = (payload) =>
+    fetchGpc({
+        method: "POST",
+        params: { type: "create_contact" },
+        body: payload,
+    });
+
+/**
  * Create contact
  */
 export const createContact = async (payload) => {

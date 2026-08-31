@@ -11,10 +11,15 @@ import MessageModal from "../../MessageModal";
 import { SendingOverlay } from "./SendingOverlay";
 import ReplyButtons from "./ReplyButtons";
 import RightThreadHeader from "./RightThreadHeader";
+import { PageContext } from "../../../context/pageContext";
+import LockedBar from "../../LockedBar";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
+  const { showRefreshReminder, setShowRefreshReminder } = useContext(PageContext)
+  const { user: currentUser } = useSelector(state => state.user)
+
   const {
     emails,
     editorContent,
@@ -22,6 +27,8 @@ const ThreadReply = () => {
     handleSendClick,
     checkingThreadId,
     email,
+    isLocked,
+    recordUsers,
     threadId
   } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -71,10 +78,28 @@ const ThreadReply = () => {
         count={emails?.length || 0}
       />
       {/* {(aiLoading || templateLoading) && <PageLoader />} */}
+
       <motion.div
-        initial={{ x: 0, opacity: 1 }}
-        animate={{ x: 0, opacity: 1 }}
-        className="fixed inset-0 z-[999] bg-white w-screen h-screen flex flex-col overflow-hidden"
+        animate={{
+          top: showRefreshReminder ? 57 : 0,
+          height: showRefreshReminder
+            ? "calc(100vh - 57px)"
+            : "100vh",
+        }}
+        transition={{
+          duration: 0.35,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className="
+        fixed
+        left-0
+        right-0
+        z-[999]
+        bg-white
+        flex
+        flex-col
+        overflow-hidden
+    "
       >
         {/* HEADER */}
         <div className="flex gap-3 justify-between items-center px-6 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
@@ -118,7 +143,11 @@ const ThreadReply = () => {
           <RightThreadHeader />
 
         </div>
-        <div className="flex flex-col h-full w-full">
+        {isLocked && (
+          <LockedBar recordUsers={recordUsers} recordName="Thread" />
+        )}
+        <div className={`flex flex-col h-full w-full ${isLocked ? "pointer-events-none opacity-20" : ""
+          }`}>
           <TinyEditor
             setEditorContent={setEditorContent}
             editorContent={editorContent}

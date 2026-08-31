@@ -54,7 +54,7 @@ import IpManager from "./components/pages/IpManager";
 import DataModellingPage from "./components/pages/settingpages/DataModellingPage";
 import UserActivity from "./components/pages/settingpages/UserActivity";
 import RecyclePage from "./components/pages/settingpages/Recycle";
-import Profile from "./components/pages/Profile"
+import Profile from "./components/pages/Profile";
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
 import { Toaster } from "react-hot-toast";
@@ -85,22 +85,17 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <ErrorBoundary>
-        <SocketContextProvider>
-
-          <ThreadContextProvider>
-            <PageContextProvider>
-              <TimelineProvider>
-
+        <ThreadContextProvider>
+          <PageContextProvider>
+            <TimelineProvider>
+              <SocketContextProvider>
                 <BootApp />
                 <RootLayout />
-
-              </TimelineProvider>
-            </PageContextProvider>
-          </ThreadContextProvider>
-        </SocketContextProvider>
+              </SocketContextProvider>
+            </TimelineProvider>
+          </PageContextProvider>
+        </ThreadContextProvider>
       </ErrorBoundary>
-
-
     ),
     handle: {
       breadcrumb: "Timeline",
@@ -109,7 +104,6 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <TimelinePage />,
-
       },
 
       {
@@ -220,7 +214,6 @@ const router = createBrowserRouter([
         path: "plans",
         element: <PlansPage />,
       },
-
 
       {
         path: "tag-manager",
@@ -492,7 +485,7 @@ const router = createBrowserRouter([
             ],
           },
         ],
-      }
+      },
     ],
   },
 ]);
@@ -513,8 +506,7 @@ export default function App() {
 
     // Only allow email param when URL has no extra path
     const isOnlyDomain =
-      window.location.pathname === "/" ||
-      window.location.pathname === "";
+      window.location.pathname === "/" || window.location.pathname === "";
 
     if (isOnlyDomain && email) {
       dispatch(getUser(email));
@@ -535,7 +527,6 @@ export default function App() {
       <Toaster />
       <InternetStatus />
 
-
       {isAuthenticated && !loading && (
         <>
           {/* <MeetingWidget /> */}
@@ -544,7 +535,6 @@ export default function App() {
         </>
       )}
       {!isAuthenticated && loading && <LoadingPage />}
-
 
       {!isAuthenticated && !loading && <Login />}
 

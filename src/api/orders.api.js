@@ -33,7 +33,7 @@ export const getOrderById = (
         method: "POST",
         body: {
             "action": "fetch",
-            "module": "outr_order_gp_li", filter: { id }
+            "module": "outr_order_gp_li", filters: { id }
         },
     });
 

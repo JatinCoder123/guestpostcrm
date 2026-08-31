@@ -5,22 +5,16 @@ import React from "react";
 import blockRegistry
     from "./blocks";
 
+import { orderLayoutBlocks } from "@/utils/layoutRank";
+
 const CreateRenderer = ({
     layout,
     entity,
 }) => {
-    const blocks = [
-        ...(layout?.blocks ?? []),
-    ]
-        .filter(
-            (block) =>
-                block.visible !== false
-        )
-        .sort(
-            (a, b) =>
-                (a.weight ?? 0) -
-                (b.weight ?? 0)
-        );
+    /*
+     * Ordered by `rank`, compared as an opaque string.
+     */
+    const blocks = orderLayoutBlocks(layout);
 
     const Header =
         blockRegistry.header;

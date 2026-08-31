@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
@@ -20,6 +20,10 @@ import { useGpcController } from "../queries/controller.queries";
 import { useLayoutPreferences } from "../queries/prefrences.queries";
 import Icon from "./ui/Icon/Icon";
 import { useSidebarStats } from "../queries/sidebar.queries";
+import {
+  normalizeSidebarResponse,
+  selectVisibleGroups,
+} from "../utils/sidebarLayout";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -40,9 +44,61 @@ export function Sidebar() {
   const {
     data: layoutData,
     isPending: layoutLoading,
+    refetch: refetchLayout,
   } = useLayoutPreferences();
 
   const sidebarSections = layoutData ?? [];
+
+  /**
+   * What actually renders: groups and fields in rank order,
+   * with anything switched off in the layout editor
+   * (is_active = 0) removed. A group whose fields are all
+   * inactive drops out too, rather than leaving an empty
+   * heading behind.
+   *
+   * Ordering comes from `rank`, an opaque string compared
+   * byte for byte. Nothing here reads `weight`.
+   */
+  const { visibleGroups, rankReports } = useMemo(() => {
+    const reports = [];
+
+    const normalized = normalizeSidebarResponse(layoutData, {
+      onInvalid: (report) => reports.push(report),
+    });
+
+    return {
+      visibleGroups: selectVisibleGroups(normalized),
+      rankReports: reports,
+    };
+  }, [layoutData]);
+
+  /**
+   * A missing or duplicated rank is invalid migrated data,
+   * not something to order around. Report it and refetch the
+   * layout once so a transient cache merge can heal itself.
+   */
+  const rankReloadAttempted = useRef(false);
+
+  useEffect(() => {
+    if (!rankReports.length) {
+      rankReloadAttempted.current = false;
+      return;
+    }
+
+    console.error(
+      "[sidebar] invalid rank data, sidebar order cannot be trusted",
+      rankReports,
+    );
+
+    if (rankReloadAttempted.current) {
+      return;
+    }
+
+    rankReloadAttempted.current = true;
+
+    refetchLayout?.();
+  }, [rankReports, refetchLayout]);
+
 
   const { user } = useSelector((s) => s.user);
 
@@ -103,10 +159,15 @@ export function Sidebar() {
     queries: sidebarStatsQuery,
   });
 
-  const toggleGroup = (groupName) => {
+  /**
+   * Keyed on the record id, not the group name. Names are
+   * editable and can repeat; the id is what identifies a
+   * group.
+   */
+  const toggleGroup = (groupId) => {
     setExpandedGroups((prev) => ({
       ...prev,
-      [groupName]: !prev[groupName],
+      [groupId]: !prev[groupId],
     }));
   };
 
@@ -134,26 +195,23 @@ export function Sidebar() {
       ) ?? [];
 
   useEffect(() => {
-    if (!activeSidebarGroups.length) {
-      setExpandedGroups({});
-      setSidebarStatsQuery([]);
-      return;
-    }
+    if (!visibleGroups.length) return;
 
     setExpandedGroups(
       Object.fromEntries(
-        activeSidebarGroups.map((group) => [
-          group.group_name,
+        visibleGroups.map((group) => [
+          group.id,
           true,
         ])
       )
     );
 
     /**
-     * Only create sidebar stats queries for active items.
+     * Only ask for counts on fields that are actually
+     * on screen.
      */
     setSidebarStatsQuery(
-      activeSidebarGroups.flatMap((group) =>
+      visibleGroups.flatMap((group) =>
         (group.data ?? []).map((item) => ({
           key: item.key,
           module: item.module_name,
@@ -165,7 +223,7 @@ export function Sidebar() {
         }))
       )
     );
-  }, [sidebarSections]);
+  }, [visibleGroups]);
 
   return (
     <>
@@ -387,27 +445,18 @@ export function Sidebar() {
                 rounded-lg
               "
             >
-              {activeSidebarGroups
-                .slice()
-                .sort(
-                  (a, b) =>
-                    Number(a.weight) -
-                    Number(b.weight)
-                )
-                .map((group) => (
-                  <div
-                    key={group.group_name}
-                    className="mb-3"
-                  >
-                    {/* Group Header */}
-                    {!collapsed && (
-                      <button
-                        onClick={() =>
-                          toggleGroup(
-                            group.group_name
-                          )
-                        }
-                        className="
+              {visibleGroups.map((group) => (
+                <div
+                  key={group.id}
+                  className="mb-3"
+                >
+                  {/* Group Header */}
+                  {!collapsed && (
+                    <button
+                      onClick={() =>
+                        toggleGroup(group.id)
+                      }
+                      className="
                           flex w-full
                           items-center justify-between
                           rounded-lg
@@ -419,121 +468,109 @@ export function Sidebar() {
                           text-[color-mix(in_srgb,var(--sidebar-primary-foreground)_75%,transparent)]
                           hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
                         "
-                      >
-                        <span>
-                          {group.group_name}
-                        </span>
+                    >
+                      <span>
+                        {group.group_name}
+                      </span>
 
-                        {expandedGroups[
-                          group.group_name
-                        ] ? (
-                          <ChevronDown size={16} />
-                        ) : (
-                          <ChevronRight size={16} />
-                        )}
-                      </button>
-                    )}
+                      {expandedGroups[
+                        group.id
+                      ] ? (
+                        <ChevronDown size={16} />
+                      ) : (
+                        <ChevronRight size={16} />
+                      )}
+                    </button>
+                  )}
 
-                    {/* Group Items */}
-                    {(collapsed ||
-                      expandedGroups[
-                      group.group_name
-                      ]) && (
-                        <div className="mt-1 ml-2 space-y-1">
-                          {group.data
-                            ?.filter(
-                              (item) =>
-                                Number(
-                                  item.is_active
-                                ) === 1
-                            )
-                            .slice()
-                            .sort(
-                              (a, b) =>
-                                Number(a.weight) -
-                                Number(b.weight)
-                            )
-                            .map((item) => (
-                              <button
-                                key={item.id}
-                                onClick={() => {
-                                  setSidebarCollapsed(
-                                    true
-                                  );
-                                  setActivePage(
-                                    item.id
-                                  );
-                                  navigateTo(
-                                    `/${item.navigation}`
-                                  );
-                                }}
-                                className={`
+                  {/* Group Items */}
+                  {(collapsed ||
+                    expandedGroups[
+                    group.id
+                    ]) && (
+                      <div className="mt-1 ml-2 space-y-1">
+                        {group.data
+                          .map((item) => (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                setSidebarCollapsed(
+                                  true
+                                );
+                                setActivePage(
+                                  item.id
+                                );
+                                navigateTo(
+                                  `/${item.navigation}`
+                                );
+                              }}
+                              className={`
                                 flex w-full
                                 items-center gap-3
                                 rounded-lg p-2
                                 transition-all duration-200
                                 hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
                                 ${collapsed
-                                    ? "justify-center"
-                                    : ""
-                                  }
+                                  ? "justify-center"
+                                  : ""
+                                }
                                 ${activePage ===
-                                    item.id
-                                    ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)] rounded-full shadow-lg"
-                                    : ""
-                                  }
+                                  item.id
+                                  ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)] rounded-full shadow-lg"
+                                  : ""
+                                }
                               `}
-                              >
-                                <Icon
-                                  name={item.icon}
-                                  library={item.library}
-                                  className={`
+                            >
+                              <Icon
+                                name={item.icon}
+                                library={item.library}
+                                className={`
                                   h-4 w-4 shrink-0
                                   ${activePage ===
-                                      item.id
-                                      ? "scale-125 text-[var(--topbtn-primary)]"
-                                      : ""
-                                    }
+                                    item.id
+                                    ? "scale-125 text-[var(--topbtn-primary)]"
+                                    : ""
+                                  }
                                 `}
-                                />
+                              />
 
-                                {!collapsed && (
-                                  <>
-                                    <span className="flex-1 truncate text-left">
-                                      {item.name}
-                                    </span>
+                              {!collapsed && (
+                                <>
+                                  <span className="flex-1 truncate text-left">
+                                    {item.name}
+                                  </span>
 
-                                    {item.key &&
-                                      sidebarCounts
-                                        ?.stats?.[
-                                      item.key
-                                      ] &&
-                                      sidebarCountPending ? (
-                                      <Skeleton count={1} />
-                                    ) : (
-                                      <span
-                                        className="
+                                  {item.key &&
+                                    sidebarCounts
+                                      ?.stats?.[
+                                    item.key
+                                    ] &&
+                                    sidebarCountPending ? (
+                                    <Skeleton count={1} />
+                                  ) : (
+                                    <span
+                                      className="
                                         rounded-full
                                         bg-[color-mix(in_srgb,var(--primary)_20%,transparent)]
                                         px-2 py-0.5
                                         text-xs
                                       "
-                                      >
-                                        {sidebarCounts
-                                          ?.stats?.[
-                                          item.key
-                                        ]?.count ||
-                                          0}
-                                      </span>
-                                    )}
-                                  </>
-                                )}
-                              </button>
-                            ))}
-                        </div>
-                      )}
-                  </div>
-                ))}
+                                    >
+                                      {sidebarCounts
+                                        ?.stats?.[
+                                        item.key
+                                      ]?.count ||
+                                        0}
+                                    </span>
+                                  )}
+                                </>
+                              )}
+                            </button>
+                          ))}
+                      </div>
+                    )}
+                </div>
+              ))}
             </div>
 
             {/* SIDEBAR FOOTER */}

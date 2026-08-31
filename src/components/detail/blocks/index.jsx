@@ -15,9 +15,23 @@ import FieldRenderer from "@/components/fields2/FieldRenderer";
 import DetailField from "../DetailField";
 import { queryClient } from "@/lib/queryClient";
 
+import {
+    orderLayoutActions,
+    orderLayoutFields,
+    orderLayoutSections,
+    orderLayoutTabs,
+} from "@/utils/layoutRank";
+
 const Tabs = ({ config, record, entity, mode }) => {
+    /*
+     * Scope: the tabs of THIS tabs block. Ranks are unique
+     * inside the immediate parent collection only, so tabs from
+     * two different blocks are never compared.
+     */
+    const tabs = orderLayoutTabs(config);
+
     const defaultTab =
-        config.defaultTab || config.tabs?.[0]?.id;
+        config.defaultTab || tabs[0]?.id;
 
     return (
         <ShadcnTabs
@@ -26,7 +40,7 @@ const Tabs = ({ config, record, entity, mode }) => {
         >
             {/* Tab Buttons */}
             <TabsList className="h-auto rounded-full border bg-white p-1 ">
-                {config.tabs.map((tab) => (
+                {tabs.map((tab) => (
                     <TabsTrigger
                         key={tab.id}
                         value={tab.id}
@@ -52,13 +66,14 @@ const Tabs = ({ config, record, entity, mode }) => {
             </TabsList>
 
             {/* Tab Content */}
-            {config.tabs.map((tab) => (
+            {tabs.map((tab) => (
                 <TabsContent
                     key={tab.id}
                     value={tab.id}
                     className="space-y-4"
                 >
-                    {tab.sections?.map((section) => {
+                    {/* Scope: the sections of this tab. */}
+                    {orderLayoutSections(tab).map((section) => {
                         const Component =
                             blockRegistry[section.type];
 
@@ -143,8 +158,9 @@ const Header = ({
                     {config?.actions?.length > 0 && (
                         <ActionField
                             field={{
+                                /* Scope: the actions of this header. */
                                 actions:
-                                    config.actions,
+                                    orderLayoutActions(config),
                             }}
                             record={record}
                             actionContext={{
@@ -285,7 +301,8 @@ const Section = ({
                     gap-4
                 `}
             >
-                {config.fields?.map(
+                {/* Scope: the fields of this section. */}
+                {orderLayoutFields(config).map(
                     (field) => {
                         const value =
                             resolveFieldValue({
@@ -297,7 +314,7 @@ const Section = ({
                         return (
                             <DetailField
                                 key={
-                                    field.accessor
+                                    field.id ?? field.accessor
                                 }
                                 value={value}
                                 updating={

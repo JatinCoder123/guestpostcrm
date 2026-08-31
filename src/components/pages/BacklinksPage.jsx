@@ -1,63 +1,59 @@
-import {
-  Calendar,
-  User2,
-  Globe,
-  ChartNoAxesColumn,
-  Clapperboard,
-  Cable,
-  Text,
-  X,
-  Pen,
-} from "lucide-react";
-
-import { useContext, useState } from "react";
-
-import { PageContext } from "../../context/pageContext";
-import { extractEmail } from "../../assets/assets";
-
-import TableView, {
-  Table,
-} from "../ui/table/Table";
-
-import TableTitleBar from "../ui/table/TableTitleBar";
-
-import BacklinkDetailBox from "./BacklinkDetailBox.jsx";
+import { Calendar, Cable, ExternalLink, FileText, Link2, Tag } from "lucide-react";
+import { useMemo, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 import { useTablePreference } from "../../hooks/useTablePreference";
-
 import {
   useInfiniteBacklinks,
-  useBacklinkStats,
   useUpdateBacklink,
 } from "../../queries/backlinks.queries";
-import toast from "react-hot-toast";
+import TableView, { Table } from "../ui/table/Table";
+import TableTitleBar from "../ui/table/TableTitleBar";
 
-const STATUS_CONFIG = [
-  {
-    value: "dofollow",
-    label: "Do Follow",
-    color: "#10B981",
-    filter: "link_type",
-  },
-  {
-    value: "nofollow",
-    label: "No Follow",
-    color: "#EF4444",
-    filter: "link_type",
-  },
-  {
-    value: "authoritative",
-    label: "Authoritative",
-    color: "#5b44ef",
-    filter: "link_type",
-  },
-];
+const STATUS_OPTIONS = ["Added", "Removed"];
 
-export function BacklinksPage() {
-  const preferences =
-    useTablePreference(
-      "backlinks"
-    );
+function StatusSelect({ row, updateStatus, savingId }) {
+  const isSaving = savingId === row.id;
+
+  return (
+    <div className="relative inline-flex items-center">
+      <select
+        aria-label={`Status for ${row.name}`}
+        value={row.status_c || "Added"}
+        disabled={isSaving}
+        onClick={(event) => event.stopPropagation()}
+        onChange={(event) => updateStatus(row, event.target.value)}
+        className={`min-w-[112px] cursor-pointer rounded-full border px-3 py-1.5 pr-8 text-sm font-semibold outline-none transition focus:ring-2 focus:ring-teal-300 disabled:cursor-wait disabled:opacity-60 ${
+          row.status_c === "Removed"
+            ? "border-red-200 bg-red-50 text-red-700"
+            : "border-emerald-200 bg-emerald-50 text-emerald-700"
+        }`}
+      >
+        {STATUS_OPTIONS.map((status) => (
+          <option key={status} value={status}>
+            {isSaving && status === row.status_c ? "Updating..." : status}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+export function BacklinksPage({ title = "Backlinks", fixedFilters = null, onRecordClick }) {
+  const storedPreferences = useTablePreference("backlinks");
+  const preferences = useMemo(
+    () => ({
+      ...storedPreferences,
+      filters: {
+        ...(storedPreferences?.filters || {}),
+        ...(fixedFilters || {}),
+      },
+    }),
+    [storedPreferences, fixedFilters],
+  );
+  const [savingId, setSavingId] = useState(null);
+  const navigate = useNavigate();
 
   const {
     data,
@@ -65,533 +61,131 @@ export function BacklinksPage() {
     hasNextPage,
     isFetchingNextPage,
     isPending,
-  } =
-    useInfiniteBacklinks(
-      preferences
-    );
+  } = useInfiniteBacklinks(preferences);
+  const { mutate: updateBacklink } = useUpdateBacklink();
 
-  const {
-    data: summary,
-  } =
-    useBacklinkStats();
+  const openRecord = (row) => {
+    if (onRecordClick) onRecordClick(row, navigate);
+  };
 
-  const {
-    mutate:
-    updateBacklink,
-    isPending:
-    saving,
-  } =
-    useUpdateBacklink();
+  const backlinks = data?.pages?.flatMap((page) => page.records || page.data || []) ?? [];
+  const pages = data?.pages ?? [];
+  const firstPage = pages[0] ?? {};
+  const lastPage = pages[pages.length - 1] ?? {};
 
-  const { handleDateClick, } = useContext(PageContext);
+  const updateStatus = (row, status_c) => {
+    if (status_c === row.status_c) return;
 
-  const [
-    showEditModal,
-    setShowEditModal,
-  ] = useState(false);
-
-  const [
-    editData,
-    setEditData,
-  ] = useState(null);
-
-  const [
-    currentBacklinkId,
-    setCurrentBacklinkId,
-  ] = useState(null);
-
-  const backlinks =
-    data?.pages?.flatMap(
-      (page) =>
-        page.records ||
-        page.data ||
-        []
-    ) ?? [];
-
-  const pages =
-    data?.pages ?? [];
-
-  const lastPage =
-    pages[
-    pages.length - 1
-    ] ?? {};
-
-  const firstPage =
-    pages[0] ?? {};
-
-  const pageIndex =
-    lastPage.page ?? 1;
-
-  const pageCount =
-    firstPage.total_pages ??
-    0;
-
-  const count =
-    firstPage.total ?? 0;
-
-  const loading =
-    isPending ||
-    isFetchingNextPage;
-
-  const handleEditClick =
-    (backlink) => {
-      setEditData(
-        backlink
-      );
-      setShowEditModal(
-        true
-      );
-    };
-
-  const handleEditChange =
-    (e) => {
-      setEditData({
-        ...editData,
-        [e.target.name]:
-          e.target.value,
-      });
-    };
-
-  const handleSaveEdit = () => {
-    updateBacklink(editData, {
-      onSuccess: () => {
-        setShowEditModal(false);
-        toast.success(
-          "BackLink Updated Successfully!",
-          {
-            style: {
-              background: "#1f2937",
-              color: "#fff",
-            },
+    setSavingId(row.id);
+    updateBacklink(
+      { id: row.id, status_c },
+      {
+        onSuccess: (response) => {
+          if (response?.success === false) {
+            toast.error(response.message || "Could not update the status.");
+            return;
           }
-        );
+          toast.success(`Status updated to ${status_c}`);
+        },
+        onError: (error) => {
+          toast.error(error?.response?.data?.message || error?.message || "Could not update the status.");
+        },
+        onSettled: () => setSavingId(null),
       },
-    });
+    );
   };
 
   const columns = [
     {
-      label:
-        "Created At",
-
-      accessor:
-        "date_entered",
-
+      label: "GP / LI Date",
+      accessor: "gp_li_date_c",
       icon: Calendar,
-
-      onClick: (
-        row
-      ) =>
-        setCurrentBacklinkId(
-          row.id
-        ),
-
-      classes:
-        "truncate max-w-[200px]",
-
-      render: (
-        row
-      ) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {
-            row.date_entered_time_ago
-          }
-        </span>
+      render: (row) => (
+        <span className="font-medium text-slate-700">{row.gp_li_date_c || "—"}</span>
       ),
     },
-
-    {
-      label:
-        "Author",
-
-      accessor:
-        "post_author_email_c",
-
-      icon: User2,
-      searchable: true,
-      classes:
-        "truncate max-w-[200px]",
-
-      onClick: (
-        row
-      ) =>
-        handleDateClick(
-          {
-            email:
-              extractEmail(
-                row?.post_author_email_c
-              ),
-            navigate:
-              "/contacts",
-          }
-        ),
-
-      render: (
-        row
-      ) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {row.post_author_email_c?.substring(
-            0,
-            20
-          )}
-        </span>
-      ),
-    },
-
-    {
-      label:
-        "Target URL",
-      searchable: true,
-      accessor:
-        "target_url_c",
-
-      icon: Globe,
-      classes:
-        "truncate max-w-[200px]",
-      render: (
-        row
-      ) => (
-        <a
-          href={
-            row.target_url_c
-          }
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          {row.target_url_c?.substring(
-            0,
-            40
-          )}
-          ...
-        </a>
-      ),
-    },
-
-    {
-      label:
-        "Anchor Text",
-      searchable: true,
-      accessor:
-        "anchor_text_c",
-      classes:
-        "truncate max-w-[200px]",
-      icon: Text,
-
-      render: (
-        row
-      ) => (
-        <span className="font-medium text-green-700">
-          {row.anchor_text_c ||
-            "N/A"}
-        </span>
-      ),
-    },
-
-    {
-      label:
-        "Expiry",
-
-      accessor:
-        "expiry_date_c",
-
+     {
+      label: "Link Expiry Date",
+      accessor: "expiry_date_c",
       icon: Calendar,
-
-      render: (
-        row
-      ) => (
-        <span className="font-medium text-gray-700">
-          {
-            row.expiry_date_c
-          }
+      render: (row) => (
+        <span className="font-medium text-slate-700">{row.expiry_date_c || "—"}</span>
+      ),
+    },
+    {
+      label: "Client Email",
+      accessor: "client_email",
+      icon: FileText,
+      searchable: true,
+      classes: "truncate max-w-[240px]",
+      render: (row) => (
+        <span className="font-semibold text-slate-800" title={row.client_email}>
+          {row.client_email || "—"}
         </span>
       ),
     },
-
     {
-      label:
-        "Link Type",
-
-      accessor:
-        "link_type",
-
-      icon:
-        ChartNoAxesColumn,
-
-      render: (
-        row
-      ) => (
-        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-          {
-            row.link_type
-          }
+      label: "Anchor Text",
+      accessor: "anchor_text_c",
+      icon: Tag,
+      searchable: true,
+      classes: "truncate max-w-[280px]",
+      render: (row) => (
+        <span className="font-medium text-slate-700" title={row.anchor_text_c}>
+          {row.anchor_text_c || "—"}
         </span>
       ),
     },
-
     {
-      label:
-        "Action",
-
-      accessor:
-        "action",
-
-      icon:
-        Clapperboard,
-
-      headerClasses:
-        "ml-auto",
-
-      classes:
-        "truncate max-w-[300px] ml-auto",
-
-      render: (
-        row
-      ) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() =>
-              handleEditClick(
-                row
-              )
-            }
-            className="flex items-center gap-1 px-3 py-1 text-blue-700 rounded cursor-pointer"
+      label: "Source URL",
+      accessor: "source_url_c",
+      icon: Link2,
+      searchable: true,
+      classes: "truncate max-w-[360px]",
+      render: (row) =>
+        row.source_url_c ? (
+          <a
+            href={row.source_url_c}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(event) => event.stopPropagation()}
+            title={row.source_url_c}
+            className="inline-flex max-w-full items-center gap-1.5 font-medium text-blue-600 hover:text-blue-800 hover:underline"
           >
-            <Pen className="w-5 h-5" />
-          </button>
-        </div>
-      ),
-    },
-  ];
-
-  const statusList =
-    STATUS_CONFIG.map(
-      (config) => ({
-        ...config,
-        count: Number(
-          summary?.stats?.[
-            config.value
-          ]?.count || 0
+            <span className="truncate">{row.source_url_c}</span>
+            <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+          </a>
+        ) : (
+          <span className="text-slate-400">—</span>
         ),
-      })
-    );
-  const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
-
-  if (
-    currentBacklinkId
-  ) {
-    return (
-      <BacklinkDetailBox
-        backlinkId={
-          currentBacklinkId
-        }
-        onClose={() =>
-          setCurrentBacklinkId(
-            null
-          )
-        }
-      />
-    );
-  }
-
+    },
+   
+  ];
+ 
   return (
-    <>
-      {showEditModal &&
-        editData && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white w-[500px] rounded-xl shadow-xl p-6 relative">
-              <button
-                onClick={() =>
-                  setShowEditModal(
-                    false
-                  )
-                }
-                className="absolute right-4 top-4"
-              >
-                <X />
-              </button>
-
-              <h2 className="text-xl font-semibold mb-6">
-                Edit
-                Backlink
-              </h2>
-
-              <input
-                type="text"
-                name="post_author_name_c"
-                value={
-                  editData.post_author_name_c ||
-                  ""
-                }
-                onChange={
-                  handleEditChange
-                }
-                placeholder="Author Name"
-                className="w-full border p-2 mb-3 rounded"
-              />
-
-              <input
-                type="email"
-                name="post_author_email_c"
-                value={
-                  editData.post_author_email_c ||
-                  ""
-                }
-                onChange={
-                  handleEditChange
-                }
-                placeholder="Author Email"
-                className="w-full border p-2 mb-3 rounded"
-              />
-
-              <input
-                type="text"
-                name="target_url_c"
-                value={
-                  editData.target_url_c ||
-                  ""
-                }
-                onChange={
-                  handleEditChange
-                }
-                placeholder="Target URL"
-                className="w-full border p-2 mb-3 rounded"
-              />
-
-              <input
-                type="text"
-                name="anchor_text_c"
-                value={
-                  editData.anchor_text_c ||
-                  ""
-                }
-                onChange={
-                  handleEditChange
-                }
-                placeholder="Anchor Text"
-                className="w-full border p-2 mb-3 rounded"
-              />
-
-              <input
-                type="date"
-                name="expiry_date_c"
-                value={
-                  editData.expiry_date_c ||
-                  ""
-                }
-                onChange={
-                  handleEditChange
-                }
-                className="w-full border p-2 mb-4 rounded"
-              />
-
-              <select
-                name="link_type"
-                value={
-                  editData.link_type ||
-                  ""
-                }
-                onChange={
-                  handleEditChange
-                }
-                className="w-full border p-2 mb-6 rounded"
-              >
-                <option value="dofollow">
-                  dofollow
-                </option>
-
-                <option value="nofollow">
-                  nofollow
-                </option>
-              </select>
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() =>
-                    setShowEditModal(
-                      false
-                    )
-                  }
-                  className="px-4 py-2 bg-gray-300 rounded"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  onClick={
-                    () => handleSaveEdit()
-                  }
-                  disabled={
-                    saving
-                  }
-                  className="px-4 py-2 bg-green-600 text-white rounded"
-                >
-                  {saving
-                    ? "Saving..."
-                    : "Save Changes"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-      <TableView
-        tableData={backlinks}
-        tableName={"Backlinks"}
-        columns={
-          columns
-        }
-        slice={
-          "backlinks"
-        }
-        statusList={
-          statusList
-        }
-        statusCount={statusCount}
-        pageIndex={
-          pageIndex
-        }
-        pageCount={
-          pageCount
-        }
-        count={count}
-        loading={
-          loading
-        }
-        preferences={
-          preferences
-        }
-        refreshKey={[
-          "backlinks",
-        ]}
-        fetchNextPage={() => {
-          if (
-            hasNextPage &&
-            !isFetchingNextPage
-          ) {
-            fetchNextPage();
-          }
-        }}
-      >
-        <TableTitleBar
-          Icon={Cable}
-          title={
-            "Backlinks"
-          }
-          titleClass={
-            "text-teal-700"
-          }
-        />
-
-        <Table
-          headerStyle={
-            "bg-teal-600"
-          }
-          layoutStyle={
-            "grid grid-cols-7"
-          }
-        />
-      </TableView>
-    </>
+    <TableView
+      tableData={backlinks}
+      tableName={title}
+      columns={columns}
+      slice="backlinks"
+      statusList={[]}
+      statusCount={Number(firstPage.total ?? backlinks.length)}
+      pageIndex={lastPage.page ?? 1}
+      pageCount={firstPage.total_pages ?? 0}
+      count={firstPage.total ?? 0}
+      loading={isPending || isFetchingNextPage}
+      preferences={preferences}
+      refreshKey={["backlinks"]}
+      fetchNextPage={() => {
+        if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+      }}
+    >
+      <TableTitleBar Icon={Link2} title={title} titleClass="text-teal-700" />
+      <Table
+        headerStyle="bg-teal-600"
+        layoutStyle="grid grid-cols-5"
+        onRowClick={onRecordClick ? openRecord : undefined}
+      />
+    </TableView>
   );
 }

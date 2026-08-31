@@ -1,24 +1,31 @@
 import {
   createContext,
+  useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
 import { io } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { showConsole } from "../assets/assets.js";
 import { eventActions } from "../store/Slices/eventSlice.js";
 import { unrepliedAction } from "../store/Slices/unrepliedEmails.js";
 import { apiRequest } from "../services/api.js";
 import { queryClient } from "../lib/queryClient.js";
 import { recentKeys } from "../queries/recentAct.queries.js";
+import { useTimeline } from "./TimelineContext.jsx";
+import { useThreadContext } from "../hooks/useThreadContext.js";
+import { ThreadContext } from "./ThreadContext.jsx";
 
 const socket = io("https://socket.guestpostcrm.com");
 
 export const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
+  const { currentEmail } = useTimeline()
+  const { currentEmail: currentThreadEmail } = useContext(ThreadContext)
+
   const [currentAvatar, setCurrentAvatar] = useState();
   const [crm, setCrm] = useState("");
   const [invoiceOrderId, setInvoiceOrderId] = useState(null);
@@ -28,7 +35,8 @@ export const SocketContextProvider = ({ children }) => {
 
   const dispatch = useDispatch();
   const location = useLocation();
-
+  const [searchParams] = useSearchParams();
+  const currentSearchEmail = searchParams.get('email');
   const {
     user,
     id,
@@ -52,21 +60,15 @@ export const SocketContextProvider = ({ children }) => {
     error_log_created: null,
   });
 
-  useEffect(() => {
-    eventQueueRef.current = eventQueue;
-  }, [eventQueue]);
+
 
   useEffect(() => {
     crmRef.current = crm;
     userRef.current = userIdle;
   }, [crm, userIdle]);
-
-  useEffect(() => {
-    console.log(eventQueue);
-  }, [eventQueue]);
-
   useEffect(() => {
     const presenceListHandler = (users) => {
+      console.log("USER", users)
       const list = Array.isArray(users) ? users : [];
 
       const uniqueUsers = Array.from(
@@ -108,7 +110,10 @@ export const SocketContextProvider = ({ children }) => {
         name: user.name,
         email: user.email,
         crm,
+        currentTimeline: currentEmail,
+        currentThread: currentThreadEmail,
         page: location.pathname,
+        currentSearchEmail: currentSearchEmail,
       });
     };
 
@@ -116,6 +121,9 @@ export const SocketContextProvider = ({ children }) => {
       socket.emit("presence:update", {
         page: location.pathname,
         status: document.hidden ? "away" : "online",
+        currentTimeline: currentEmail,
+        currentThread: currentThreadEmail,
+        currentSearchEmail: currentSearchEmail,
       });
     };
 
@@ -129,7 +137,7 @@ export const SocketContextProvider = ({ children }) => {
       socket.off("connect", emitJoin);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [isAuthenticated, user?.email, user?.name, user?.id, id, crm]);
+  }, [isAuthenticated, user?.email, user?.name, user?.id, id, crm, currentEmail, currentThreadEmail, currentSearchEmail]);
 
   useEffect(() => {
     if (!isAuthenticated || !user?.email || !crm) return;
@@ -137,8 +145,11 @@ export const SocketContextProvider = ({ children }) => {
     socket.emit("presence:update", {
       page: location.pathname,
       status: document.hidden ? "away" : "online",
+      currentTimeline: currentEmail,
+      currentThread: currentThreadEmail,
+      currentSearchEmail: currentSearchEmail,
     });
-  }, [location.pathname, isAuthenticated, user?.email, crm]);
+  }, [location.pathname, isAuthenticated, user?.email, crm, currentThreadEmail, currentEmail, currentSearchEmail]);
 
   useEffect(() => {
     const newAvatarHandler = (data) => {
