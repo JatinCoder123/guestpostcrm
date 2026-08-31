@@ -1,4 +1,4 @@
-import { BellIcon, CircleAlert, Flame, Link2, List, Mail, MailWarning, Settings, Sparkles, Unlink } from "lucide-react";
+import { BellIcon, CircleAlert, Flame, Link2, List, Mail, MailWarning, MessageCircle, Settings, Sparkles, Unlink } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -167,7 +167,13 @@ export default function Footer() {
 
 
         </div>
+        <IconButton
+          onClick={() => navigate("/internal-chats")}
+          icon={MessageCircle}
+          label="Internal Chats"
 
+          iconColor="green"
+        />
         <IconButton
           onClick={() => navigate("/RecentEntry")}
           icon={List}
