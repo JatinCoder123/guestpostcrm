@@ -25,45 +25,72 @@ function SearchBar() {
         setSearch,
         visibleColumns,
     } = useTableContext();
-    const [searchValue, setSearchValue] =
-        useState(search?.search || "");
+
+    // ---------------------------------------------------------
+    // INITIAL LOCAL STATE
+    // ---------------------------------------------------------
+
+    const [searchValue, setSearchValue] = useState(
+        search?.search || ""
+    );
 
     const [selectedColumns, setSelectedColumns] =
-        useState(search?.search_fields || []);
-    useEffect(() => {
-        setSearchValue(search?.search);
-        setSelectedColumns(search?.search_fields)
-    }, [
-        search
-    ]);
+        useState(
+            Array.isArray(search?.search_fields)
+                ? search.search_fields
+                : []
+        );
+
     const wrapperRef = useRef(null);
 
-    const [open, setOpen] =
-        useState(false);
+    const [open, setOpen] = useState(false);
 
+    /*
+     * Keeps track of the last value that THIS component
+     * pushed into the context.
+     *
+     * This prevents:
+     *
+     * local state -> context -> local state -> context
+     *
+     * loops.
+     */
+    const lastPushedSearchRef = useRef({
+        search: search?.search || "",
+        search_fields: Array.isArray(
+            search?.search_fields
+        )
+            ? [...search.search_fields]
+            : [],
+    });
+
+    // ---------------------------------------------------------
     // SEARCHABLE COLUMNS
-    const searchableColumns =
-        useMemo(() => {
-            return (
-                visibleColumns?.filter(
-                    (column) =>
-                        column?.accessor &&
-                        column?.searchable === true
-                ) || []
-            );
-        }, [visibleColumns]);
+    // ---------------------------------------------------------
 
+    const searchableColumns = useMemo(() => {
+        return (
+            visibleColumns?.filter(
+                (column) =>
+                    column?.accessor &&
+                    column?.searchable === true
+            ) || []
+        );
+    }, [visibleColumns]);
 
+    // ---------------------------------------------------------
     // EXPAND SEARCH
-    const expanded =
-        selectedColumns.length >
-        0;
+    // ---------------------------------------------------------
 
+    const expanded =
+        selectedColumns.length > 0;
+
+    // ---------------------------------------------------------
     // OUTSIDE CLICK
+    // ---------------------------------------------------------
+
     useEffect(() => {
-        const handleOutside = (
-            e
-        ) => {
+        const handleOutside = (e) => {
             if (
                 wrapperRef.current &&
                 !wrapperRef.current.contains(
@@ -87,18 +114,26 @@ function SearchBar() {
         };
     }, []);
 
+    // ---------------------------------------------------------
     // TOGGLE COLUMN
+    // ---------------------------------------------------------
+
     const toggleColumn = (accessor) => {
-        setSelectedColumns((prev) =>
-            prev.includes(accessor)
-                ? prev.filter(
+        setSelectedColumns((prev) => {
+            if (prev.includes(accessor)) {
+                return prev.filter(
                     (item) => item !== accessor
-                )
-                : [...prev, accessor]
-        );
+                );
+            }
+
+            return [...prev, accessor];
+        });
     };
 
+    // ---------------------------------------------------------
     // REMOVE COLUMN
+    // ---------------------------------------------------------
+
     const removeColumn = (accessor) => {
         setSelectedColumns((prev) =>
             prev.filter(
@@ -106,20 +141,91 @@ function SearchBar() {
             )
         );
     };
+
+    // ---------------------------------------------------------
+    // CLEAR COLUMNS
+    // ---------------------------------------------------------
+
+    const clearColumns = () => {
+        setSelectedColumns([]);
+    };
+
+    // ---------------------------------------------------------
+    // UPDATE TABLE SEARCH
+    //
+    // IMPORTANT:
+    // There is NO dependency on the `search` object here.
+    //
+    // The old implementation had:
+    //
+    //     [searchValue, selectedColumns]
+    //
+    // and blindly called setSearch().
+    //
+    // Since setSearch can cause the context to create a new
+    // search object, this could trigger the other effect
+    // again and create an infinite update loop.
+    //
+    // We only update context when the actual values changed.
+    // ---------------------------------------------------------
+
     useEffect(() => {
         const timer = setTimeout(() => {
             const value = searchValue.trim();
-            setSearch({
+
+            const nextFields = Array.isArray(
+                selectedColumns
+            )
+                ? selectedColumns
+                : [];
+
+            const last =
+                lastPushedSearchRef.current;
+
+            const sameSearch =
+                last.search === value;
+
+            const sameFields =
+                last.search_fields.length ===
+                nextFields.length &&
+                last.search_fields.every(
+                    (item, index) =>
+                        item === nextFields[index]
+                );
+
+            // Nothing changed since our last update.
+            if (
+                sameSearch &&
+                sameFields
+            ) {
+                return;
+            }
+
+            // Remember what we are pushing.
+            lastPushedSearchRef.current = {
                 search: value,
-                search_fields: selectedColumns,
-            });
+                search_fields: [...nextFields],
+            };
+
+            setSearch((prev) => ({
+                ...prev,
+                search: value,
+                search_fields: [...nextFields],
+            }));
         }, 500);
 
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+        };
     }, [
         searchValue,
         selectedColumns,
     ]);
+
+    // ---------------------------------------------------------
+    // RENDER
+    // ---------------------------------------------------------
+
     return (
         <div
             ref={wrapperRef}
@@ -178,49 +284,41 @@ function SearchBar() {
                 {/* TAGS + INPUT */}
                 <div
                     className="
-        flex
-        flex-wrap
-        items-center
-        gap-1.5
-        flex-1
-        py-1
-        max-h-[88px]
-        overflow-y-auto
-        overflow-x-hidden
-
-        scrollbar-thin
-        scrollbar-thumb-gray-200
-        scrollbar-track-transparent
-    "
+                        flex
+                        flex-wrap
+                        items-center
+                        gap-1.5
+                        flex-1
+                        py-1
+                        max-h-[88px]
+                        overflow-y-auto
+                        overflow-x-hidden
+                        scrollbar-thin
+                        scrollbar-thumb-gray-200
+                        scrollbar-track-transparent
+                    "
                 >
                     {/* TAGS */}
                     <AnimatePresence>
-                        {selectedColumns?.map(
-                            (
-                                accessor
-                            ) => {
+                        {selectedColumns.map(
+                            (accessor) => {
                                 const column =
                                     searchableColumns.find(
-                                        (
-                                            c
-                                        ) =>
+                                        (c) =>
                                             c.accessor ===
                                             accessor
                                     );
 
-                                if (
-                                    !column
-                                )
+                                if (!column) {
                                     return null;
+                                }
 
                                 const Icon =
                                     column.icon;
 
                                 return (
                                     <motion.div
-                                        key={
-                                            accessor
-                                        }
+                                        key={accessor}
                                         layout
                                         initial={{
                                             opacity: 0,
@@ -266,6 +364,7 @@ function SearchBar() {
                                         </span>
 
                                         <button
+                                            type="button"
                                             onClick={() =>
                                                 removeColumn(
                                                     accessor
@@ -300,8 +399,7 @@ function SearchBar() {
                                 }}
                                 animate={{
                                     opacity: 1,
-                                    width:
-                                        "100%",
+                                    width: "100%",
                                 }}
                                 exit={{
                                     opacity: 0,
@@ -311,13 +409,11 @@ function SearchBar() {
                                     duration: 0.2,
                                 }}
                                 type="text"
-                                value={
-                                    searchValue
-                                }
+                                value={searchValue}
                                 onChange={(e) => {
-                                    const value = e.target.value;
-
-                                    setSearchValue(value);
+                                    setSearchValue(
+                                        e.target.value
+                                    );
                                 }}
                                 placeholder="Search..."
                                 className="
@@ -359,11 +455,10 @@ function SearchBar() {
 
                 {/* COLUMN BUTTON */}
                 <button
+                    type="button"
                     onClick={() =>
                         setOpen(
-                            (
-                                prev
-                            ) => !prev
+                            (prev) => !prev
                         )
                     }
                     className={`
@@ -463,24 +558,16 @@ function SearchBar() {
                                 {selectedColumns.length >
                                     0 && (
                                         <button
-                                            onClick={() =>
-                                                setSearch(
-                                                    (
-                                                        prev
-                                                    ) => ({
-                                                        ...prev,
-
-                                                        columns:
-                                                            [],
-                                                    })
-                                                )
+                                            type="button"
+                                            onClick={
+                                                clearColumns
                                             }
                                             className="
-                                                text-xs
-                                                font-medium
-                                                text-blue-600
-                                                hover:text-blue-700
-                                            "
+                                            text-xs
+                                            font-medium
+                                            text-blue-600
+                                            hover:text-blue-700
+                                        "
                                         >
                                             Clear
                                         </button>
@@ -496,9 +583,7 @@ function SearchBar() {
                                 "
                             >
                                 {searchableColumns.map(
-                                    (
-                                        column
-                                    ) => {
+                                    (column) => {
                                         const active =
                                             selectedColumns.includes(
                                                 column.accessor
@@ -509,6 +594,7 @@ function SearchBar() {
 
                                         return (
                                             <button
+                                                type="button"
                                                 key={
                                                     column.accessor
                                                 }

@@ -48,12 +48,14 @@ const ContactHeader = () => {
 
   const navigate = useNavigate();
   const { data, isPending } = useContact(currentEmail);
-  const { data: summaryData, isPending: summaryLoading } =
-    useMailerSummary(currentEmail);
+
   const contactInfo = data?.contact;
-  const mailersSummary = summaryData?.mailers_summary;
   const hashtags = contactInfo?.hashtag?.data?.hashtags;
   const email = contactInfo?.email1;
+  const threadId = contactInfo?.thread_id;
+  const { data: summaryData, isPending: summaryLoading } = useMailerSummary({ email, threadId });
+  const mailersSummary = summaryData?.mailers_summary;
+
   const { showNextPrev, handleDateClick } = useContext(PageContext);
   const { data: dealsData } = useDealsByEmail(currentEmail);
   const emailDeals = dealsData?.data ?? [];
@@ -118,12 +120,12 @@ const ContactHeader = () => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-          ...emailDeals.map((d) =>
-            Number(
-              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
-            ),
+        ...emailDeals.map((d) =>
+          Number(
+            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
           ),
-        )
+        ),
+      )
       : 0;
 
   const statusItems = [
@@ -192,9 +194,8 @@ const ContactHeader = () => {
 
           {/* Content */}
           <div
-            className={`ml-10 h-[300px] bg-white border border-gray-200 shadow-2xl rounded-l-2xl overflow-hidden ${
-              showSidebar ? "block" : "hidden"
-            }`}
+            className={`ml-10 h-[300px] bg-white border border-gray-200 shadow-2xl rounded-l-2xl overflow-hidden ${showSidebar ? "block" : "hidden"
+              }`}
           >
             <div className="p-4 border-b bg-blue-50 font-bold text-gray-700">
               Brand Contacts ({contacts?.length || 0})
@@ -274,24 +275,24 @@ const ContactHeader = () => {
                   </div>
 
                   <div className="mb-1 mt-1 flex max-w-full flex-wrap items-center gap-2">
-                      {(showAllTags ? hashtags : hashtags?.slice(0, 2))?.map((tag) => (
-                        <HashTag
-                          key={tag.id}
-                          text={tag.name}
-                          color="bg-gradient-to-r from-search-primary to-search-secondary"
-                        />
-                      ))}
+                    {(showAllTags ? hashtags : hashtags?.slice(0, 2))?.map((tag) => (
+                      <HashTag
+                        key={tag.id}
+                        text={tag.name}
+                        color="bg-gradient-to-r from-search-primary to-search-secondary"
+                      />
+                    ))}
 
-                      {hashtags?.length > 2 && (
-                        <button
-                          type="button"
-                          className="shrink-0 rounded-full bg-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-300"
-                          onClick={() => setShowAllTags((visible) => !visible)}
-                          aria-expanded={showAllTags}
-                        >
-                          {showAllTags ? "Show less" : "..."}
-                        </button>
-                      )}
+                    {hashtags?.length > 2 && (
+                      <button
+                        type="button"
+                        className="shrink-0 rounded-full bg-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-300"
+                        onClick={() => setShowAllTags((visible) => !visible)}
+                        aria-expanded={showAllTags}
+                      >
+                        {showAllTags ? "Show less" : "..."}
+                      </button>
+                    )}
                   </div>
                 </div>
               </>
@@ -302,53 +303,53 @@ const ContactHeader = () => {
 
           <div className="flex min-w-0 flex-1 flex-wrap items-start gap-y-3 px-3 2xl:flex-nowrap 2xl:px-0">
 
-          <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
-            <p className="text-[12px] xl:text-[16px] font-semibold uppercase tracking-widest text-blue-600">
-              CREATED AT
-            </p>
+            <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
+              <p className="text-[12px] xl:text-[16px] font-semibold uppercase tracking-widest text-blue-600">
+                CREATED AT
+              </p>
 
-            <p className="text-[12px] font-semibold text-gray-900 mt-1">
-              {summaryLoading
-                ? "Loading..."
-                : mailersSummary?.date_entered_formatted || "N/A"}
-            </p>
-
-            <p className="text-xs text-gray-500 mt-1">
-              {mailersSummary?.date_entered || ""}
-            </p>
-          </div>
-
-          <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
-
-          <div className="min-w-[170px] flex-1 px-3 2xl:min-w-[200px] 2xl:px-6">
-            <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
-              SUBJECT
-            </p>
-
-            <Titletooltip content={mailersSummary?.subject || "No Subject"}>
-              <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[230px]">
+              <p className="text-[12px] font-semibold text-gray-900 mt-1">
                 {summaryLoading
                   ? "Loading..."
-                  : mailersSummary?.subject || "No Subject"}
+                  : mailersSummary?.date_entered_formatted || "N/A"}
               </p>
-            </Titletooltip>
-          </div>
 
-          <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
-
-          <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
-            <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
-              MOTIVE
-            </p>
-
-            <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
-              <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[200px]">
-                {summaryLoading
-                  ? "Loading..."
-                  : mailersSummary?.correct_motive || "N/A"}
+              <p className="text-xs text-gray-500 mt-1">
+                {mailersSummary?.date_entered || ""}
               </p>
-            </Titletooltip>
-          </div>
+            </div>
+
+            <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
+
+            <div className="min-w-[170px] flex-1 px-3 2xl:min-w-[200px] 2xl:px-6">
+              <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
+                SUBJECT
+              </p>
+
+              <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+                <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[230px]">
+                  {summaryLoading
+                    ? "Loading..."
+                    : mailersSummary?.subject || "No Subject"}
+                </p>
+              </Titletooltip>
+            </div>
+
+            <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
+
+            <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
+              <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
+                MOTIVE
+              </p>
+
+              <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
+                <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[200px]">
+                  {summaryLoading
+                    ? "Loading..."
+                    : mailersSummary?.correct_motive || "N/A"}
+                </p>
+              </Titletooltip>
+            </div>
           </div>
 
           <div className="flex basis-full flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-3 pt-3 2xl:ml-auto 2xl:basis-auto 2xl:flex-nowrap 2xl:justify-end 2xl:border-0 2xl:px-5 2xl:pt-0">
