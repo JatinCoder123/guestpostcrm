@@ -1,4 +1,10 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   closestCenter,
@@ -10,7 +16,6 @@ import {
 } from "@dnd-kit/core";
 
 import {
-  arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
@@ -36,14 +41,28 @@ import {
 } from "@/queries/prefrences.queries";
 
 import {
-  collectWeightChanges,
+  groupScope,
   isPersistableId,
+  moduleScope,
   normalizeSidebarResponse,
-  planReorder,
+  SIDEBAR_GROUP_MODULE,
+  SIDEBAR_MODULE_MODULE,
   toActiveFlag,
-  toWeight,
-  WEIGHT_STEP,
 } from "@/utils/sidebarLayout";
+
+import { RANK_FIELD, reorderCopy } from "@/utils/rank";
+
+import { performRankMove } from "@/utils/rankMove";
+
+import { isRankConflictError, requestRankMove } from "@/api/rank.api";
+
+import { fetchLayout } from "@/api/prefrences.api";
+
+import { preferenceKeys } from "@/queries/prefrences.queries";
+
+import { useQueryClient } from "@tanstack/react-query";
+
+import toast from "react-hot-toast";
 
 /* =========================================================================
    ICON REGISTRY
@@ -415,7 +434,7 @@ function SortableField({ item, groupId, selected, onSelect, onToggle }) {
         )}
       </div>
 
-      {/* WEIGHT */}
+      {/* RANK */}
 
       <span
         className="
@@ -425,9 +444,9 @@ function SortableField({ item, groupId, selected, onSelect, onToggle }) {
                     font-mono
                     text-muted-foreground
                 "
-        title={item.weight}
+        title={item[RANK_FIELD] ?? "no rank"}
       >
-        {item.weight}
+        {item[RANK_FIELD] ?? "—"}
       </span>
 
       {/* ACTIVE */}
@@ -520,11 +539,11 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
 
           <div>
             <label className="mb-1.5 block text-xs font-medium">
-              Group Weight
+              Group Rank
             </label>
 
             <input
-              value={group.weight ?? ""}
+              value={group[RANK_FIELD] ?? ""}
               readOnly
               className="
                                 h-10
@@ -542,8 +561,8 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
             />
 
             <p className="mt-1 text-[10px] text-muted-foreground">
-              Sort order in the sidebar, lowest first. Set in the CRM or by
-              dragging groups here.
+              Position in the sidebar, ascending. An opaque value assigned by
+              the CRM; drag groups here to change it.
             </p>
           </div>
 
@@ -647,7 +666,7 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
                                                 text-muted-foreground
                                             "
                   >
-                    {item.weight}
+                    {item[RANK_FIELD] ?? "—"}
                   </span>
                 </div>
               ))}
@@ -801,10 +820,10 @@ function ItemEditor({ item, onUpdate, onDelete }) {
           />
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium">Weight</label>
+            <label className="mb-1.5 block text-xs font-medium">Rank</label>
 
             <input
-              value={item.weight ?? ""}
+              value={item[RANK_FIELD] ?? ""}
               readOnly
               className="
                                 h-10
@@ -822,8 +841,8 @@ function ItemEditor({ item, onUpdate, onDelete }) {
             />
 
             <p className="mt-1 text-[10px] text-muted-foreground">
-              Sort order inside the group, lowest first. Set in the CRM or by
-              dragging fields here.
+              Position inside the group, ascending. An opaque value assigned by
+              the CRM; drag fields here to change it.
             </p>
           </div>
 
@@ -996,6 +1015,21 @@ const Sidebar = () => {
   const [activeDrag, setActiveDrag] = useState(null);
 
   /**
+   * Held true for the whole of a reorder. Starting a second
+   * drag before the first has landed would derive neighbour IDs
+   * from an order the server has not accepted yet.
+   */
+  const [savingOrder, setSavingOrder] = useState(false);
+
+  /**
+   * A missing or duplicated rank means the data cannot be
+   * ordered at all. It is shown, not worked around.
+   */
+  const [rankError, setRankError] = useState(null);
+
+  const queryClient = useQueryClient();
+
+  /**
    * When we fire a layout mutation ourselves
    * (drag reorder, toggle, etc.) the query
    * invalidation will refetch layoutData and
@@ -1008,9 +1042,9 @@ const Sidebar = () => {
   const skipNextSync = useRef(false);
 
   /**
-   * Number of weight updates still in flight.
-   * Reordering integers touches multiple records,
-   * so one drag can queue several requests.
+   * Writes still in flight, so the sync effect does not
+   * overwrite optimistic state mid-request. A reorder is always
+   * one write; toggles add their own.
    */
   const pendingWrites = useRef(0);
 
@@ -1026,19 +1060,83 @@ const Sidebar = () => {
        API DATA -> LOCAL STATE
        ===================================================================== */
 
+  /**
+   * Put a server payload on screen.
+   *
+   * This runs after every reorder, so it must not disturb
+   * anything the user was doing. The selected record and the
+   * expanded groups are preserved; only groups the editor has
+   * not seen before get expanded by default, and the selection
+   * is only replaced when the record it pointed at is gone.
+   *
+   * Any scope with a missing or duplicate rank is reported
+   * rather than guessed at. Those records still render, in the
+   * order the server sent, but reordering stays blocked until
+   * the data is repaired.
+   */
+  const applyServerLayout = useCallback((payload) => {
+    const rankProblems = [];
+
+    const normalized = normalizeSidebarResponse(payload, {
+      onInvalid: (report) => rankProblems.push(report),
+    });
+
+    setGroups(normalized);
+
+    setRankError(
+      rankProblems.length
+        ? {
+            reports: rankProblems,
+            message: `Sidebar ordering data is invalid in ${rankProblems.length} place(s). Reordering is disabled until it is fixed.`,
+          }
+        : null,
+    );
+
+    if (!normalized.length) {
+      return normalized;
+    }
+
+    /* Default new groups to expanded, leave the rest alone. */
+    setExpandedGroups((current) => {
+      const next = { ...current };
+
+      normalized.forEach((group) => {
+        if (next[group.id] === undefined) {
+          next[group.id] = true;
+        }
+      });
+
+      return next;
+    });
+
+    setSelectedItem((current) => {
+      if (current) {
+        const stillThere =
+          current.type === "group"
+            ? normalized.some((group) => group.id === current.id)
+            : normalized.some((group) =>
+                (group.data ?? []).some((item) => item.id === current.id),
+              );
+
+        if (stillThere) {
+          return current;
+        }
+      }
+
+      return { type: "group", id: normalized[0].id };
+    });
+
+    return normalized;
+  }, []);
+
   useEffect(() => {
     if (!layoutData) {
       return;
     }
 
     /**
-     * If we triggered this refetch ourselves
-     * (via a mutation), skip overwriting the
-     * optimistic local state.
-     *
-     * A single reorder now writes several records,
-     * so we also hold the sync back until every
-     * in-flight write has settled.
+     * A write is in flight, so local state is showing the
+     * optimistic order and this payload predates it.
      */
     if (pendingWrites.current > 0) {
       return;
@@ -1049,21 +1147,8 @@ const Sidebar = () => {
       return;
     }
 
-    const normalized = normalizeSidebarResponse(layoutData);
-
-    setGroups(normalized);
-
-    if (normalized.length) {
-      setSelectedItem({
-        type: "group",
-        id: normalized[0].id,
-      });
-
-      setExpandedGroups(
-        Object.fromEntries(normalized.map((group) => [group.id, true])),
-      );
-    }
-  }, [layoutData]);
+    applyServerLayout(layoutData);
+  }, [layoutData, applyServerLayout]);
 
   /* =====================================================================
        FILTER
@@ -1147,10 +1232,10 @@ const Sidebar = () => {
        ===================================================================== */
 
   const getGroupModule = (group) =>
-    group?.module || group?.module_name || "outr_ui_groups";
+    group?.module || group?.module_name || SIDEBAR_GROUP_MODULE;
 
   const getFieldModule = (item) =>
-    item?.module || item?.module_name || "outr_ui_modules";
+    item?.module || item?.module_name || SIDEBAR_MODULE_MODULE;
 
   /* =====================================================================
        WRITE
@@ -1189,29 +1274,6 @@ const Sidebar = () => {
     );
   };
 
-  /**
-   * outr_ui_groups and outr_ui_modules both store order in
-   * `weight` and visibility in `is_active`, so the payloads
-   * are the same shape for either. Only the module differs.
-   */
-  const updateWeight = (record, module) => {
-    if (!isPersistableId(record?.id)) {
-      return;
-    }
-
-    const weight = toWeight(record.weight);
-
-    if (weight === null) {
-      return;
-    }
-
-    pushUpdate({
-      module,
-      id: record.id,
-      payload: { weight },
-    });
-  };
-
   const persistActive = (record, module, active) => {
     if (!isPersistableId(record?.id)) {
       return;
@@ -1224,10 +1286,90 @@ const Sidebar = () => {
     });
   };
 
-  const updateGroupWeight = (group) =>
-    updateWeight(group, getGroupModule(group));
+  /* =====================================================================
+       RANK MOVE PLUMBING
+       ===================================================================== */
 
-  const updateFieldWeight = (item) => updateWeight(item, getFieldModule(item));
+  /**
+   * One ordinary `update` per drag, carrying the destination
+   * scope and the two neighbour IDs. The backend generates the
+   * rank; nothing here does.
+   *
+   * The response carries no rank, so there is nothing to write
+   * back into local state - the optimistic order already shows
+   * the result, and the next ordinary fetch brings the
+   * authoritative rank_key values.
+   */
+  const sendMove = async (args) => {
+    /*
+     * Only guards the window between the drop and the response,
+     * so a refetch landing mid-write cannot undo the optimistic
+     * order. `skipNextSync` is deliberately NOT set here: once
+     * the write is confirmed the server order is what we want.
+     */
+    pendingWrites.current += 1;
+
+    try {
+      return await requestRankMove(args);
+    } finally {
+      pendingWrites.current = Math.max(0, pendingWrites.current - 1);
+    }
+  };
+
+  /**
+   * Read the whole payload back from the server and display it.
+   *
+   * Runs after a confirmed reorder, so the editor shows the
+   * order that was actually stored rather than the optimistic
+   * guess. Also runs when a move is rejected or the rank data
+   * is invalid, where local state cannot be trusted at all.
+   *
+   * `fetchQuery` writes into the same cache entry the live
+   * sidebar reads, so the left-hand nav picks up the new order
+   * from this one request too.
+   */
+  const reloadSidebar = async () => {
+    skipNextSync.current = false;
+    pendingWrites.current = 0;
+
+    const fresh = await queryClient.fetchQuery({
+      queryKey: preferenceKeys.layout(),
+      queryFn: fetchLayout,
+      staleTime: 0,
+    });
+
+    return applyServerLayout(fresh);
+  };
+
+  /**
+   * Shared tail for both reorder paths.
+   *
+   * `plan` describes the destination scope only. `restoreOrder`
+   * undoes the optimistic order when the move is rejected;
+   * the scope is then reloaded so the editor shows what the
+   * server actually holds.
+   */
+  const runMove = ({ plan, restoreOrder }) =>
+    performRankMove(plan, {
+      requestMove: sendMove,
+      isConflict: isRankConflictError,
+
+      /*
+       * The update response confirms the write but carries no
+       * rank, so the new order is read back here. This is what
+       * puts the server's order on screen instead of leaving
+       * the optimistic one in place.
+       */
+      syncScope: () => reloadSidebar(),
+
+      restoreOrder,
+
+      reloadScope: () => reloadSidebar(),
+
+      onSaving: setSavingOrder,
+
+      onError: (message) => toast.error(message),
+    });
 
   /* =====================================================================
        TOGGLE GROUP
@@ -1388,22 +1530,21 @@ const Sidebar = () => {
     const id = `local-group-${Date.now()}`;
 
     /**
-     * Append after the current last group.
+     * Appended records get no rank. `rank_key` is left out of
+     * the create payload and the backend assigns the next rank
+     * in the scope; the saved record is then refetched to pick
+     * it up. Guessing one here is how duplicates happen.
      */
-    const lastWeight = toWeight(groups[groups.length - 1]?.weight, 0);
-
-    const weight = lastWeight + WEIGHT_STEP;
-
     const group = {
       id,
 
       group_name: name,
 
-      weight,
+      [RANK_FIELD]: null,
 
       is_active: true,
 
-      module_name: "outr_ui_groups",
+      module_name: SIDEBAR_GROUP_MODULE,
 
       data: [],
 
@@ -1436,19 +1577,16 @@ const Sidebar = () => {
 
         const id = `local-item-${Date.now()}`;
 
-        const lastWeight = toWeight(
-          group.data[group.data.length - 1]?.weight,
-          0,
-        );
-
-        const weight = lastWeight + WEIGHT_STEP;
-
+        /*
+         * Appended, so no rank is sent. The backend assigns the
+         * next rank inside this group_name scope.
+         */
         const newItem = {
           id,
 
           name,
 
-          module: "outr_ui_modules",
+          module: SIDEBAR_MODULE_MODULE,
 
           module_name: name.toLowerCase().replace(/\s+/g, "_"),
 
@@ -1468,7 +1606,7 @@ const Sidebar = () => {
 
           endpoint: "",
 
-          weight,
+          [RANK_FIELD]: null,
 
           description: "",
 
@@ -1507,24 +1645,129 @@ const Sidebar = () => {
   };
 
   /* =====================================================================
-       PERSIST GROUP ORDER
+       MOVE A GROUP
        ===================================================================== */
 
   /**
-   * Usually a single write, because the moved group takes
-   * the gap between its new neighbours. Only a respace
-   * touches the rest of the list.
+   * Scope: the global group list.
+   *
+   * One update on the moved group, carrying the IDs of the
+   * groups now either side of it.
    */
-  const persistGroupOrder = (previousGroups, nextGroups) => {
-    collectWeightChanges(previousGroups, nextGroups).forEach(updateGroupWeight);
+  const moveGroup = (movedId, destinationIndex, sourceGroups) => {
+    const reordered = reorderCopy(sourceGroups, movedId, destinationIndex);
+
+    /* Optimistic: show the new order while the write runs. */
+    setGroups(reordered);
+
+    return runMove({
+      plan: {
+        items: reordered,
+        movedId,
+        scope: groupScope(),
+        module: SIDEBAR_GROUP_MODULE,
+      },
+
+      restoreOrder: () => setGroups(sourceGroups),
+    });
   };
 
   /* =====================================================================
-       PERSIST FIELD ORDER
+       MOVE A FIELD
        ===================================================================== */
 
-  const persistFieldOrder = (previousFields, nextFields) => {
-    collectWeightChanges(previousFields, nextFields).forEach(updateFieldWeight);
+  /**
+   * Scope: the modules of one group_name.
+   *
+   * Neighbours are read from the DESTINATION group only. The
+   * source group just loses a record; the records left behind
+   * keep their ranks, because removing an item never
+   * invalidates the ranks around it.
+   *
+   * `group_name` is sent on every module move, not only
+   * cross-group ones, so the backend always knows which scope
+   * to validate the neighbours against.
+   */
+  const moveField = ({
+    movedId,
+    sourceGroupId,
+    targetGroupId,
+    destinationIndex,
+    sourceGroups,
+  }) => {
+    const crossScope = String(sourceGroupId) !== String(targetGroupId);
+
+    const sourceGroup = sourceGroups.find(
+      (group) => String(group.id) === String(sourceGroupId),
+    );
+
+    const targetGroup = sourceGroups.find(
+      (group) => String(group.id) === String(targetGroupId),
+    );
+
+    if (!sourceGroup || !targetGroup) {
+      return Promise.resolve(null);
+    }
+
+    const moved = (sourceGroup.data ?? []).find(
+      (item) => String(item.id) === String(movedId),
+    );
+
+    if (!moved) {
+      return Promise.resolve(null);
+    }
+
+    let targetFields;
+    let sourceFields = null;
+
+    if (crossScope) {
+      sourceFields = (sourceGroup.data ?? []).filter(
+        (item) => String(item.id) !== String(movedId),
+      );
+
+      targetFields = [...(targetGroup.data ?? [])];
+
+      targetFields.splice(
+        Math.max(0, Math.min(destinationIndex, targetFields.length)),
+        0,
+        moved,
+      );
+    } else {
+      targetFields = reorderCopy(
+        targetGroup.data ?? [],
+        movedId,
+        destinationIndex,
+      );
+    }
+
+    /* Optimistic. */
+    setGroups((current) =>
+      current.map((group) => {
+        if (String(group.id) === String(targetGroupId)) {
+          return { ...group, data: targetFields };
+        }
+
+        if (sourceFields && String(group.id) === String(sourceGroupId)) {
+          return { ...group, data: sourceFields };
+        }
+
+        return group;
+      }),
+    );
+
+    return runMove({
+      plan: {
+        items: targetFields,
+        movedId,
+        scope: moduleScope(targetGroup.group_name),
+        module: SIDEBAR_MODULE_MODULE,
+
+        /* Destination scope, always sent. */
+        scopeFields: { group_name: targetGroup.group_name },
+      },
+
+      restoreOrder: () => setGroups(sourceGroups),
+    });
   };
 
   /* =====================================================================
@@ -1536,13 +1779,20 @@ const Sidebar = () => {
 
     if (!over) return;
 
+    /*
+     * A move can be in flight, and the rank data can be
+     * invalid. Either way the neighbour IDs a new move would be
+     * derived from cannot be trusted.
+     */
+    if (savingOrder || rankError) return;
+
     const activeData = active.data?.current;
     const overData = over.data?.current;
 
     if (!activeData || !overData) return;
 
     /* ================================================================
-           GROUP REORDER
+           GROUP REORDER - scope: the global group list
            ================================================================ */
 
     if (activeData.type === "group") {
@@ -1565,19 +1815,17 @@ const Sidebar = () => {
       if (oldIndex === -1 || newIndex === -1) return;
       if (oldIndex === newIndex) return;
 
-      const reorderedGroups = planReorder(
-        arrayMove([...groups], oldIndex, newIndex),
-        newIndex,
-      );
+      if (!isPersistableId(activeGroupId)) {
+        toast.error("Save this group in the CRM before reordering it.");
+        return;
+      }
 
-      setGroups(reorderedGroups);
-
-      persistGroupOrder(groups, reorderedGroups);
+      moveGroup(activeGroupId, newIndex, groups);
       return;
     }
 
     /* ================================================================
-           FIELD REORDER
+           FIELD REORDER - scope: modules of one group_name
            ================================================================ */
 
     if (activeData.type === "item") {
@@ -1589,84 +1837,43 @@ const Sidebar = () => {
       if (!activeItemId || !overItemId) return;
       if (String(activeItemId) === String(overItemId)) return;
 
-      const sourceGroupIndex = groups.findIndex((group) =>
+      const sourceGroup = groups.find((group) =>
         group.data?.some((item) => String(item.id) === String(activeItemId)),
       );
 
-      const targetGroupIndex = groups.findIndex((group) =>
+      const targetGroup = groups.find((group) =>
         group.data?.some((item) => String(item.id) === String(overItemId)),
       );
 
-      if (sourceGroupIndex === -1 || targetGroupIndex === -1) return;
-
-      const sourceGroup = groups[sourceGroupIndex];
-      const targetGroup = groups[targetGroupIndex];
+      if (!sourceGroup || !targetGroup) return;
 
       const oldIndex = sourceGroup.data.findIndex(
         (item) => String(item.id) === String(activeItemId),
       );
 
+      /*
+       * Destination index inside the TARGET group. For a
+       * cross-group move this is where the record is inserted;
+       * neighbours are only ever read from this scope.
+       */
       const newIndex = targetGroup.data.findIndex(
         (item) => String(item.id) === String(overItemId),
       );
 
       if (oldIndex === -1 || newIndex === -1) return;
 
-      /* ============================================================
-               SAME GROUP
-               ============================================================ */
-
-      if (sourceGroupIndex === targetGroupIndex) {
-        const reorderedFields = planReorder(
-          arrayMove([...sourceGroup.data], oldIndex, newIndex),
-          newIndex,
-        );
-
-        const nextGroups = [...groups];
-        nextGroups[sourceGroupIndex] = {
-          ...sourceGroup,
-          data: reorderedFields,
-        };
-
-        setGroups(nextGroups);
-        persistFieldOrder(sourceGroup.data, reorderedFields);
+      if (!isPersistableId(activeItemId)) {
+        toast.error("Save this field in the CRM before reordering it.");
         return;
       }
 
-      /* ============================================================
-               CROSS GROUP
-               ============================================================ */
-
-      const movedField = sourceGroup.data[oldIndex];
-
-      /**
-       * The source list only loses a record. Leaving a gap
-       * behind is harmless, so none of the remaining
-       * weights need to change.
-       */
-      const sourceFields = [...sourceGroup.data];
-      sourceFields.splice(oldIndex, 1);
-
-      const filledTarget = [...targetGroup.data];
-      filledTarget.splice(newIndex, 0, movedField);
-
-      const targetFields = planReorder(filledTarget, newIndex);
-
-      const nextGroups = [...groups];
-
-      nextGroups[sourceGroupIndex] = {
-        ...sourceGroup,
-        data: sourceFields,
-      };
-
-      nextGroups[targetGroupIndex] = {
-        ...targetGroup,
-        data: targetFields,
-      };
-
-      setGroups(nextGroups);
-
-      persistFieldOrder(targetGroup.data, targetFields);
+      moveField({
+        movedId: activeItemId,
+        sourceGroupId: sourceGroup.id,
+        targetGroupId: targetGroup.id,
+        destinationIndex: newIndex,
+        sourceGroups: groups,
+      });
     }
   };
 
@@ -1679,16 +1886,7 @@ const Sidebar = () => {
       return;
     }
 
-    const normalized = normalizeSidebarResponse(layoutData);
-
-    setGroups(normalized);
-
-    if (normalized.length) {
-      setSelectedItem({
-        type: "group",
-        id: normalized[0].id,
-      });
-    }
+    applyServerLayout(layoutData);
   };
 
   /* =====================================================================
@@ -1738,10 +1936,19 @@ const Sidebar = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {savingOrder && (
+            <span
+              role="status"
+              className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary"
+            >
+              Saving order...
+            </span>
+          )}
+
           <button
             type="button"
             onClick={resetChanges}
-            disabled={updateLayoutPending}
+            disabled={updateLayoutPending || savingOrder}
             className="
                             inline-flex
                             items-center
@@ -1783,6 +1990,70 @@ const Sidebar = () => {
           </button>
         </div>
       </div>
+
+      {/* =====================================================================
+             INVALID RANK DATA
+             ===================================================================== */}
+
+      {rankError && (
+        <div
+          role="alert"
+          className="
+                        shrink-0
+                        border-b
+                        border-destructive/30
+                        bg-destructive/10
+                        px-5
+                        py-3
+                    "
+        >
+          <p className="text-sm font-medium text-destructive">
+            {rankError.message}
+          </p>
+
+          <ul className="mt-1 space-y-0.5">
+            {rankError.reports.map((report) => (
+              <li
+                key={report.scopeLabel}
+                className="text-xs text-destructive/80"
+              >
+                {report.scopeLabel}
+                {report.missing.length
+                  ? ` - missing rank on ${report.missing.length} record(s)`
+                  : ""}
+                {report.duplicates.length
+                  ? ` - duplicate rank(s): ${report.duplicates
+                      .map((entry) => entry.rank)
+                      .join(", ")}`
+                  : ""}
+              </li>
+            ))}
+          </ul>
+
+          <button
+            type="button"
+            onClick={reloadSidebar}
+            className="
+                            mt-2
+                            inline-flex
+                            items-center
+                            gap-1.5
+                            rounded-lg
+                            border
+                            border-destructive/30
+                            px-2.5
+                            py-1.5
+                            text-xs
+                            font-medium
+                            text-destructive
+                            hover:bg-destructive/10
+                        "
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reload from server
+          </button>
+        </div>
+      )}
 
       {/* MAIN TWO COLUMN AREA */}
 
@@ -1865,6 +2136,7 @@ const Sidebar = () => {
               <SortableContext
                 items={filteredGroups.map((group) => `group-${group.id}`)}
                 strategy={verticalListSortingStrategy}
+                disabled={savingOrder || Boolean(rankError)}
               >
                 <div className="space-y-3">
                   {filteredGroups.map((group) => (
@@ -1890,6 +2162,7 @@ const Sidebar = () => {
                       <SortableContext
                         items={group.data.map((item) => `item-${item.id}`)}
                         strategy={verticalListSortingStrategy}
+                        disabled={savingOrder || Boolean(rankError)}
                       >
                         <div className="space-y-0.5">
                           {group.data.map((item) => (

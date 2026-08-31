@@ -13,6 +13,12 @@ import useEntityCreate
 import FieldRenderer
     from "@/components/fields2/FieldRenderer";
 
+import {
+    orderLayoutFields,
+    orderLayoutSections,
+    orderLayoutTabs,
+} from "@/utils/layoutRank";
+
 /*
 |--------------------------------------------------------------------------
 | HEADER
@@ -200,11 +206,8 @@ const Section = ({
                         }, minmax(0, 1fr))`,
                 }}
             >
-                {config.fields
-                    ?.filter(
-                        (field) =>
-                            field.visible !== false
-                    )
+                {/* Scope: the fields of this section. */}
+                {orderLayoutFields(config)
                     .map((field) => {
 
                         const value =
@@ -224,7 +227,7 @@ const Section = ({
                         return (
                             <div
                                 key={
-                                    field.accessor
+                                    field.id ?? field.accessor
                                 }
                                 className="min-w-0"
                             >
@@ -323,7 +326,8 @@ const Summary = ({
     return (
         <div className="grid grid-cols-2 gap-5">
 
-            {config.fields?.map(
+            {/* Scope: the fields of this section. */}
+            {orderLayoutFields(config).map(
                 (field) => {
 
                     const value =
@@ -343,7 +347,7 @@ const Summary = ({
                     return (
                         <div
                             key={
-                                field.accessor
+                                field.id ?? field.accessor
                             }
                             className="min-w-0"
                         >
@@ -426,9 +430,12 @@ const Tabs = ({
     mode = "create",
 }) => {
 
+    /* Scope: the tabs of this tabs block. */
+    const tabs = orderLayoutTabs(config);
+
     const defaultTab =
         config.defaultTab ??
-        config.tabs?.[0]?.id;
+        tabs[0]?.id;
 
     return (
         <ShadcnTabs
@@ -451,7 +458,7 @@ const Tabs = ({
                     p-1
                 "
             >
-                {config.tabs?.map(
+                {tabs.map(
                     (tab) => (
                         <TabsTrigger
                             key={tab.id}
@@ -482,7 +489,7 @@ const Tabs = ({
                 TAB CONTENT
             ===================================================== */}
 
-            {config.tabs?.map(
+            {tabs.map(
                 (tab) => (
                     <TabsContent
                         key={tab.id}
@@ -490,7 +497,8 @@ const Tabs = ({
                         className="space-y-4"
                     >
 
-                        {tab.sections?.map(
+                        {/* Scope: the sections of this tab. */}
+                        {orderLayoutSections(tab).map(
                             (section) => {
 
                                 const Component =

@@ -9,43 +9,45 @@
  *
  * Two backend fields drive everything:
  *
- *   weight     integer, ascending. Sort order.
+ *   rank       opaque ASCII string, ascending, binary order.
+ *              Stored as `rank_key`, exposed as `rank`.
  *   is_active  1 / 0. Whether it shows in the sidebar.
  *
  * Both live on outr_ui_groups and outr_ui_modules.
+ *
+ * `weight` is gone. Ordering is never numeric and never comes
+ * from the array index - see src/utils/rank.js.
+ *
+ * Two scopes exist here, and ranks are only ever compared
+ * inside one of them:
+ *
+ *   groups   the global group list
+ *   modules  the modules of one group_name
  */
+
+import { orderByRank, toRankedRecord } from "./rank";
+
+export const SIDEBAR_GROUP_MODULE = "outr_ui_groups";
+export const SIDEBAR_MODULE_MODULE = "outr_ui_modules";
+
+/** Scope descriptor: the global UI group list. */
+export const groupScope = () => ({
+  collection: SIDEBAR_GROUP_MODULE,
+  label: "sidebar groups",
+});
 
 /**
- * The CRM seeds groups in steps of 10:
+ * Scope descriptor: UI modules inside one group.
  *
- *      10, 20, 30, 40, 50, 60
- *
- * The gaps are the point. Dropping a record between two
- * others usually just needs the midpoint, so a reorder
- * costs one write instead of renumbering the list.
+ * `group_name` is both the scope key and the column every
+ * module move sends, so the backend knows which scope to
+ * validate the neighbour IDs against.
  */
-export const WEIGHT_STEP = 10;
-
-/**
- * Records with no usable weight sort to the end of the
- * list rather than the front.
- */
-const UNWEIGHTED = Number.MAX_SAFE_INTEGER;
-
-export const toWeight = (value, fallback = null) => {
-  if (value === null || value === undefined || value === "") {
-    return fallback;
-  }
-
-  const parsed = Number(value);
-
-  return Number.isFinite(parsed) ? Math.trunc(parsed) : fallback;
-};
-
-export const sortByWeight = (items) =>
-  [...items].sort(
-    (a, b) => toWeight(a?.weight, UNWEIGHTED) - toWeight(b?.weight, UNWEIGHTED),
-  );
+export const moduleScope = (groupName) => ({
+  collection: SIDEBAR_MODULE_MODULE,
+  label: `sidebar modules in group "${groupName ?? ""}"`,
+  group_name: groupName ?? "",
+});
 
 /**
  * The endpoint sends is_active as 1 / "1" for groups and
@@ -83,40 +85,76 @@ export const isPersistableId = (id) =>
   id !== null && id !== undefined && !String(id).startsWith("local-");
 
 /**
- * Put the response into weight order and coerce weight and
+ * Put the response into rank order and coerce rank and
  * is_active into consistent types.
  *
- * We deliberately do NOT renumber. The weight belongs to
- * the backend: someone can set a group to 20 in the CRM
- * and that is exactly what the editor shows.
+ * We deliberately do NOT reassign ranks. The rank belongs to
+ * the backend; the editor shows exactly what is stored.
  *
- * The endpoint does not return groups in weight order, so
- * this sort is what produces the on-screen order.
- * Array.prototype.sort is stable, so records sharing a
- * weight (or missing one) keep the order the server sent.
+ * The backend already returns rank order, so the sort here is
+ * a no-op for a clean response. It earns its keep after
+ * optimistic reorders, where the cached array order and the
+ * ranks can disagree.
+ *
+ * `onInvalid` is called with a report for any scope holding a
+ * missing or duplicate rank, so the caller can surface it and
+ * reload. Nothing is silently repositioned.
  */
-export function normalizeSidebarResponse(response) {
-  const groups = Array.isArray(response) ? response : response?.data || [];
+export function normalizeSidebarResponse(response, { onInvalid } = {}) {
+  const raw = Array.isArray(response) ? response : response?.data || [];
 
-  return sortByWeight(groups).map((group) => {
-    const fields = Array.isArray(group.data) ? group.data : [];
+  const groups = raw.map(toRankedRecord);
+
+  const ordered = orderByRank(groups, groupScope(), { onInvalid }).items;
+
+  return ordered.map((group) => {
+    const fields = (Array.isArray(group.data) ? group.data : []).map(
+      toRankedRecord,
+    );
+
+    const orderedFields = orderByRank(fields, moduleScope(group.group_name), {
+      onInvalid,
+    }).items;
 
     return {
       ...group,
 
-      weight: toWeight(group.weight),
-
       is_active: isActive(group),
 
-      data: sortByWeight(fields).map((item) => ({
+      data: orderedFields.map((item) => ({
         ...item,
-
-        weight: toWeight(item.weight),
 
         is_active: isActive(item),
       })),
     };
   });
+}
+
+/**
+ * Every rank problem across the whole sidebar payload, one
+ * report per scope. Used to decide whether to show an error
+ * and refetch.
+ */
+export function inspectSidebarRanks(groups) {
+  const reports = [];
+
+  const collect = (report) => {
+    if (report && !report.valid) {
+      reports.push(report);
+    }
+  };
+
+  const list = Array.isArray(groups) ? groups : [];
+
+  collect(orderByRank(list, groupScope()).report);
+
+  list.forEach((group) => {
+    collect(
+      orderByRank(group?.data ?? [], moduleScope(group?.group_name)).report,
+    );
+  });
+
+  return reports;
 }
 
 /**
@@ -135,108 +173,4 @@ export function selectVisibleGroups(groups) {
       data: (group.data ?? []).filter(isActive),
     }))
     .filter((group) => group.data.length > 0);
-}
-
-/**
- * Pick a weight that sits strictly between two
- * neighbours, or null when no integer fits.
- */
-const slotWeight = (before, after) => {
-  /* Dropped at the top of the list. */
-  if (before === null) {
-    if (after === null) {
-      return WEIGHT_STEP;
-    }
-
-    const candidate = after - WEIGHT_STEP;
-
-    /* Leave room above, and never go to zero or below. */
-    return candidate > 0 ? candidate : null;
-  }
-
-  /* Dropped at the bottom of the list. */
-  if (after === null) {
-    return before + WEIGHT_STEP;
-  }
-
-  /* No integer exists strictly between the neighbours. */
-  if (after - before < 2) {
-    return null;
-  }
-
-  return before + Math.floor((after - before) / 2);
-};
-
-/**
- * Respace an entire list on WEIGHT_STEP.
- *
- * Only used as a fallback, when the neighbours the record
- * was dropped between are too close together to hold
- * another integer.
- */
-const respace = (items) =>
-  items.map((item, index) => ({
-    ...item,
-    weight: (index + 1) * WEIGHT_STEP,
-  }));
-
-/**
- * Given a list already in its new visual order and the
- * index the moved record landed on, return the list with
- * whatever weights are needed to make that order stick.
- *
- * Cheap path: one record changes.
- * Fallback: the whole list is respaced.
- */
-export function planReorder(ordered, movedIndex) {
-  const before =
-    movedIndex > 0 ? toWeight(ordered[movedIndex - 1]?.weight) : null;
-
-  const after =
-    movedIndex < ordered.length - 1
-      ? toWeight(ordered[movedIndex + 1]?.weight)
-      : null;
-
-  const slotted = slotWeight(before, after);
-
-  if (slotted === null) {
-    return respace(ordered);
-  }
-
-  const next = [...ordered];
-
-  next[movedIndex] = {
-    ...next[movedIndex],
-    weight: slotted,
-  };
-
-  return next;
-}
-
-/**
- * Compare two versions of the same list and return only
- * the records whose weight actually changed.
- *
- * Because normalization never rewrites weights, the
- * previous list still holds what the backend holds, so
- * this diff is exact.
- */
-export function collectWeightChanges(previous, next) {
-  const previousWeights = new Map();
-
-  previous.forEach((item) => {
-    if (!isPersistableId(item?.id)) {
-      return;
-    }
-
-    previousWeights.set(String(item.id), toWeight(item.weight));
-  });
-
-  return next.filter((item) => {
-    if (!isPersistableId(item?.id)) {
-      return false;
-    }
-
-    return previousWeights.get(String(item.id)) !== toWeight(item.weight);
-  });
 }

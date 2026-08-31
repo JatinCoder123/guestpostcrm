@@ -41,22 +41,63 @@ export function Sidebar() {
   const [sidebarStatsQuery, setSidebarStatsQuery] = useState();
   const [expandedGroups, setExpandedGroups] = useState({});
 
-  const { data: layoutData, isPending: layoutLoading } =
-    useLayoutPreferences();
+  const {
+    data: layoutData,
+    isPending: layoutLoading,
+    refetch: refetchLayout,
+  } = useLayoutPreferences();
 
   const sidebarSections = layoutData ?? [];
 
   /**
-   * What actually renders: groups and fields in weight
-   * order, with anything switched off in the layout editor
+   * What actually renders: groups and fields in rank order,
+   * with anything switched off in the layout editor
    * (is_active = 0) removed. A group whose fields are all
    * inactive drops out too, rather than leaving an empty
    * heading behind.
+   *
+   * Ordering comes from `rank`, an opaque string compared
+   * byte for byte. Nothing here reads `weight`.
    */
-  const visibleGroups = useMemo(
-    () => selectVisibleGroups(normalizeSidebarResponse(layoutData)),
-    [layoutData],
-  );
+  const { visibleGroups, rankReports } = useMemo(() => {
+    const reports = [];
+
+    const normalized = normalizeSidebarResponse(layoutData, {
+      onInvalid: (report) => reports.push(report),
+    });
+
+    return {
+      visibleGroups: selectVisibleGroups(normalized),
+      rankReports: reports,
+    };
+  }, [layoutData]);
+
+  /**
+   * A missing or duplicated rank is invalid migrated data,
+   * not something to order around. Report it and refetch the
+   * layout once so a transient cache merge can heal itself.
+   */
+  const rankReloadAttempted = useRef(false);
+
+  useEffect(() => {
+    if (!rankReports.length) {
+      rankReloadAttempted.current = false;
+      return;
+    }
+
+    console.error(
+      "[sidebar] invalid rank data, sidebar order cannot be trusted",
+      rankReports,
+    );
+
+    if (rankReloadAttempted.current) {
+      return;
+    }
+
+    rankReloadAttempted.current = true;
+
+    refetchLayout?.();
+  }, [rankReports, refetchLayout]);
 
 
   const { user } = useSelector((s) => s.user);
@@ -118,10 +159,15 @@ export function Sidebar() {
     queries: sidebarStatsQuery,
   });
 
-  const toggleGroup = (groupName) => {
+  /**
+   * Keyed on the record id, not the group name. Names are
+   * editable and can repeat; the id is what identifies a
+   * group.
+   */
+  const toggleGroup = (groupId) => {
     setExpandedGroups((prev) => ({
       ...prev,
-      [groupName]: !prev[groupName],
+      [groupId]: !prev[groupId],
     }));
   };
 
@@ -131,7 +177,7 @@ export function Sidebar() {
     setExpandedGroups(
       Object.fromEntries(
         visibleGroups.map((group) => [
-          group.group_name,
+          group.id,
           true,
         ])
       )
@@ -374,14 +420,14 @@ export function Sidebar() {
             >
               {visibleGroups.map((group) => (
                   <div
-                    key={group.group_name}
+                    key={group.id}
                     className="mb-3"
                   >
                     {/* Group Header */}
                     {!collapsed && (
                       <button
                         onClick={() =>
-                          toggleGroup(group.group_name)
+                          toggleGroup(group.id)
                         }
                         className="
                           flex w-full
@@ -399,7 +445,7 @@ export function Sidebar() {
                         <span>{group.group_name}</span>
 
                         {expandedGroups[
-                          group.group_name
+                          group.id
                         ] ? (
                           <ChevronDown size={16} />
                         ) : (
@@ -411,7 +457,7 @@ export function Sidebar() {
                     {/* Group Items */}
                     {(collapsed ||
                       expandedGroups[
-                      group.group_name
+                      group.id
                       ]) && (
                         <div className="mt-1 ml-2 space-y-1">
                           {group.data

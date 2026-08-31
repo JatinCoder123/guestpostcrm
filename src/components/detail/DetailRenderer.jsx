@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import blockRegistry from "./blocks/blockRegistry";
 import { DetailEditProvider } from "@/context/DetailEditContext";
+import { orderLayoutBlocks } from "@/utils/layoutRank";
 
 const DetailRenderer = ({ layout, record, entity }) => {
     const navigate = useNavigate();
@@ -99,12 +100,13 @@ const DetailRenderer = ({ layout, record, entity }) => {
         goToRecord(selectedIndex + 1);
     };
 
-    const blocks = [...(layout?.blocks ?? [])]
-        .filter((block) => block.visible !== false)
-        .sort(
-            (a, b) =>
-                (a.weight ?? 0) - (b.weight ?? 0)
-        );
+    /*
+     * Blocks are ordered by `rank`, a binary string comparison.
+     * The backend already sends them in order, so this is a
+     * no-op for a clean response; it exists because this layout
+     * comes out of a react-query cache.
+     */
+    const blocks = orderLayoutBlocks(layout);
 
     const Header = blockRegistry["header"];
 

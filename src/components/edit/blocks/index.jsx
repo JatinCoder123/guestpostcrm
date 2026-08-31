@@ -14,9 +14,18 @@ import useEntityEdit from "../context/useEntityEdit";
 import FieldRenderer from "@/components/fields2/FieldRenderer";
 import toast from "react-hot-toast";
 
+import {
+    orderLayoutFields,
+    orderLayoutSections,
+    orderLayoutTabs,
+} from "@/utils/layoutRank";
+
 const Tabs = ({ config, record, entity, mode }) => {
+    /* Scope: the tabs of this tabs block. */
+    const tabs = orderLayoutTabs(config);
+
     const defaultTab =
-        config.defaultTab || config.tabs?.[0]?.id;
+        config.defaultTab || tabs[0]?.id;
 
     return (
         <ShadcnTabs
@@ -25,7 +34,7 @@ const Tabs = ({ config, record, entity, mode }) => {
         >
             {/* Tab Buttons */}
             <TabsList className="h-auto rounded-full border bg-white p-1 ">
-                {config.tabs.map((tab) => (
+                {tabs.map((tab) => (
                     <TabsTrigger
                         key={tab.id}
                         value={tab.id}
@@ -51,13 +60,14 @@ const Tabs = ({ config, record, entity, mode }) => {
             </TabsList>
 
             {/* Tab Content */}
-            {config.tabs.map((tab) => (
+            {tabs.map((tab) => (
                 <TabsContent
                     key={tab.id}
                     value={tab.id}
                     className="space-y-4"
                 >
-                    {tab.sections?.map((section) => {
+                    {/* Scope: the sections of this tab. */}
+                    {orderLayoutSections(tab).map((section) => {
                         const Component =
                             blockRegistry[section.type];
 
@@ -291,11 +301,8 @@ const Section = ({
                         }, minmax(0, 1fr))`,
                 }}
             >
-                {config.fields
-                    ?.filter(
-                        (field) =>
-                            field.visible !== false
-                    )
+                {/* Scope: the fields of this section. */}
+                {orderLayoutFields(config)
                     .map((field) => {
                         const value =
                             getFieldValue({
@@ -313,7 +320,7 @@ const Section = ({
                         return (
                             <div
                                 key={
-                                    field.accessor
+                                    field.id ?? field.accessor
                                 }
                                 className="min-w-0"
                             >
