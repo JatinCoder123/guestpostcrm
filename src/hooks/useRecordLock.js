@@ -24,8 +24,8 @@ const useRecordLock = ({ email, compareTo, page = [] }) => {
         }
     }, [activeUsers]);
     const isLocked = activeOwner.current && activeOwner.current !== currentUser.email;
-    console.log("recordUsers", recordUsers);
-    console.log("isLocked", isLocked);
+    // console.log("recordUsers", recordUsers);
+    // console.log("isLocked", isLocked);
 
     return (
         { recordUsers, isLocked }
