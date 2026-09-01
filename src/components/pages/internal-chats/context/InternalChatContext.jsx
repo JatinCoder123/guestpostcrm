@@ -1,9 +1,14 @@
 import {
     createContext,
     useContext,
+    useEffect,
     useMemo,
     useState,
 } from "react";
+
+import {
+    useSearchParams,
+} from "react-router-dom";
 
 import {
     useGetConversations,
@@ -23,6 +28,20 @@ export const InternalChatProvider = ({
     children,
 }) => {
     /* ==========================================
+       URL SEARCH PARAMS
+    ========================================== */
+
+    const [
+        searchParams,
+        setSearchParams,
+    ] = useSearchParams();
+
+
+    const emailFromUrl =
+        searchParams.get("email");
+
+
+    /* ==========================================
        SELECTED USER
     ========================================== */
 
@@ -30,7 +49,7 @@ export const InternalChatProvider = ({
         selectedUser,
         setSelectedUser,
     ] = useState(null);
-    console.log("SELECTD ", selectedUser)
+
 
     /* ==========================================
        START CHAT MODAL
@@ -65,8 +84,6 @@ export const InternalChatProvider = ({
 
     /* ==========================================
        ALL CRM USERS
-
-       Used inside StartChatModal
     ========================================== */
 
     const usersQuery =
@@ -82,6 +99,168 @@ export const InternalChatProvider = ({
 
         return [];
     }, [usersQuery.data]);
+
+
+    /* ==========================================
+       FIND USER BY EMAIL
+       
+       We can receive email in URL:
+       
+       /internal-chat?email=user@example.com
+       
+       or:
+       
+       /internal-chat/user@example.com
+       
+       depending on your routing.
+    ========================================== */
+
+    const findUserByEmail = (
+        email
+    ) => {
+        if (!email) {
+            return null;
+        }
+
+        const normalizedEmail =
+            email
+                .trim()
+                .toLowerCase();
+
+        /* ------------------------------
+           Search CRM users
+        ------------------------------ */
+
+        const crmUser =
+            users.find(
+                (user) =>
+                    (
+                        user?.description ??
+                        user?.email ??
+                        ""
+                    )
+                        .toLowerCase() ===
+                    normalizedEmail
+            );
+
+        if (crmUser) {
+            return {
+                email:
+                    crmUser?.description ??
+                    crmUser?.email,
+
+                user_id:
+                    crmUser?.id ??
+                    crmUser?.user_id,
+
+                name:
+                    crmUser?.name ??
+                    crmUser?.full_name ??
+                    normalizedEmail,
+            };
+        }
+
+
+        /* ------------------------------
+           Search existing conversations
+           
+           This is useful when the user
+           already has a conversation but
+           is not returned by useCrmUsers.
+        ------------------------------ */
+
+        const conversation =
+            conversations.find(
+                (item) =>
+                    (
+                        item?.email ??
+                        item?.to_email ??
+                        item?.user_email ??
+                        ""
+                    )
+                        .toLowerCase() ===
+                    normalizedEmail
+            );
+
+        if (conversation) {
+            return {
+                ...conversation,
+
+                email:
+                    conversation?.email ??
+                    conversation?.to_email ??
+                    conversation?.user_email,
+
+                user_id:
+                    conversation?.user_id ??
+                    conversation?.id,
+
+                name:
+                    conversation?.name ??
+                    conversation?.user_name ??
+                    normalizedEmail,
+            };
+        }
+
+
+        /* ------------------------------
+           Fallback
+           
+           Even if the user API has not
+           loaded yet, we can still open
+           the conversation using email.
+        ------------------------------ */
+
+        return {
+            email: email.trim(),
+            user_id: null,
+            name: email.trim(),
+        };
+    };
+
+
+    /* ==========================================
+       SELECT USER FROM URL
+       
+       IMPORTANT:
+       Do NOT put selectedUser in the
+       dependency array here.
+       
+       Otherwise setSelectedUser() can
+       continuously trigger the effect.
+    ========================================== */
+
+    useEffect(() => {
+        if (!emailFromUrl) {
+            return;
+        }
+
+        const user =
+            findUserByEmail(
+                emailFromUrl
+            );
+
+        if (!user?.email) {
+            return;
+        }
+
+        setSelectedUser((previous) => {
+            if (
+                previous?.email?.toLowerCase() ===
+                user.email.toLowerCase()
+            ) {
+                return previous;
+            }
+
+            return user;
+        });
+
+        setMessage("");
+    }, [
+        emailFromUrl,
+        users,
+        conversations,
+    ]);
 
 
     /* ==========================================
@@ -104,7 +283,9 @@ export const InternalChatProvider = ({
         }
 
         return [];
-    }, [userChatQuery.data]);
+    }, [
+        userChatQuery.data,
+    ]);
 
 
     /* ==========================================
@@ -119,13 +300,57 @@ export const InternalChatProvider = ({
        SELECT USER
     ========================================== */
 
-    const selectUser = (user) => {
+    const selectUser = (
+        user
+    ) => {
         if (!user) {
             return;
         }
 
-        setSelectedUser(user);
+        const normalizedUser = {
+            ...user,
+
+            email:
+                user?.email ??
+                user?.description,
+
+            user_id:
+                user?.user_id ??
+                user?.id,
+
+            name:
+                user?.name ??
+                user?.full_name ??
+                user?.email ??
+                user?.description,
+        };
+
+        setSelectedUser(
+            normalizedUser
+        );
+
         setMessage("");
+
+        /*
+         * Keep URL in sync.
+         *
+         * This means selecting a user will
+         * produce:
+         *
+         * /internal-chat?email=user@email.com
+         */
+
+        if (normalizedUser.email) {
+            setSearchParams(
+                {
+                    email:
+                        normalizedUser.email,
+                },
+                {
+                    replace: true,
+                }
+            );
+        }
     };
 
 
@@ -136,6 +361,17 @@ export const InternalChatProvider = ({
     const clearSelectedUser = () => {
         setSelectedUser(null);
         setMessage("");
+
+        /*
+         * Remove email from URL.
+         */
+
+        setSearchParams(
+            {},
+            {
+                replace: true,
+            }
+        );
     };
 
 
@@ -157,14 +393,52 @@ export const InternalChatProvider = ({
        START CHAT WITH USER
     ========================================== */
 
-    const startChatWithUser = (user) => {
+    const startChatWithUser = (
+        user
+    ) => {
         if (!user) {
             return;
         }
 
-        setSelectedUser({ email: user?.description, user_id: user?.id, name: user?.name });
+        const normalizedUser = {
+            email:
+                user?.email ??
+                user?.description,
+
+            user_id:
+                user?.user_id ??
+                user?.id,
+
+            name:
+                user?.name ??
+                user?.full_name ??
+                user?.email ??
+                user?.description,
+        };
+
+        setSelectedUser(
+            normalizedUser
+        );
+
         setMessage("");
+
         setIsStartChatOpen(false);
+
+        /*
+         * Update URL.
+         */
+
+        if (normalizedUser.email) {
+            setSearchParams(
+                {
+                    email:
+                        normalizedUser.email,
+                },
+                {
+                    replace: true,
+                }
+            );
+        }
     };
 
 
@@ -195,28 +469,32 @@ export const InternalChatProvider = ({
         }
 
         try {
-            await sendMessageMutation.mutateAsync({
-                to_email,
-                message: text,
-            });
+            await sendMessageMutation.mutateAsync(
+                {
+                    to_email,
+                    message: text,
+                }
+            );
 
             /*
-             * Clear input after
-             * successful message.
+             * Clear input only after
+             * successful API call.
              */
+
             setMessage("");
 
-            /*
-             * Refresh selected user's
-             * conversation.
-             */
-            await userChatQuery.refetch();
 
             /*
-             * Refresh conversation list
-             * so latest message/time appears
-             * in sidebar.
+             * Refetch current conversation.
              */
+
+            await userChatQuery.refetch();
+
+
+            /*
+             * Refresh conversation list.
+             */
+
             await conversationsQuery.refetch();
 
         } catch (error) {
@@ -224,223 +502,197 @@ export const InternalChatProvider = ({
                 "Failed to send internal message:",
                 error
             );
-
-            /*
-             * Let the component know
-             * about the error through
-             * sendMessageError.
-             */
         }
     };
 
 
     /* ==========================================
        SEND CURRENT INPUT MESSAGE
-       
-       Optional helper so components can
-       simply call sendCurrentMessage()
     ========================================== */
 
-    const sendCurrentMessage = async () => {
-        if (!selectedUser?.email) {
-            return;
-        }
+    const sendCurrentMessage =
+        async () => {
+            if (
+                !selectedUser?.email
+            ) {
+                return;
+            }
 
-        const text =
-            message?.trim();
+            const text =
+                message?.trim();
 
-        if (!text) {
-            return;
-        }
+            if (!text) {
+                return;
+            }
 
-        await sendMessage({
-            to_email:
-                selectedUser.email,
+            await sendMessage({
+                to_email:
+                    selectedUser.email,
 
-            message: text,
-        });
-    };
+                message:
+                    text,
+            });
+        };
 
 
     /* ==========================================
        CONTEXT VALUE
     ========================================== */
 
-    const value = useMemo(
-        () => ({
-            /* ==================================
-               CONVERSATIONS
-            ================================== */
+    const value =
+        useMemo(
+            () => ({
+                /* ------------------------------
+                   URL
+                ------------------------------ */
 
-            conversations,
+                emailFromUrl,
 
-            isConversationsLoading:
+
+                /* ------------------------------
+                   CONVERSATIONS
+                ------------------------------ */
+
+                conversations,
+
+                isConversationsLoading:
+                    conversationsQuery.isLoading,
+
+                isConversationsFetching:
+                    conversationsQuery.isFetching,
+
+                conversationsError:
+                    conversationsQuery.error,
+
+                refetchConversations:
+                    conversationsQuery.refetch,
+
+
+                /* ------------------------------
+                   ALL CRM USERS
+                ------------------------------ */
+
+                users,
+
+                isUsersLoading:
+                    usersQuery.isLoading,
+
+                isUsersFetching:
+                    usersQuery.isFetching,
+
+                usersError:
+                    usersQuery.error,
+
+                refetchUsers:
+                    usersQuery.refetch,
+
+
+                /* ------------------------------
+                   SELECTED USER
+                ------------------------------ */
+
+                selectedUser,
+
+                setSelectedUser,
+
+                selectUser,
+
+                clearSelectedUser,
+
+                startChatWithUser,
+
+
+                /* ------------------------------
+                   MESSAGES
+                ------------------------------ */
+
+                messages,
+
+                isMessagesLoading:
+                    userChatQuery.isLoading,
+
+                isMessagesFetching:
+                    userChatQuery.isFetching,
+
+                messagesError:
+                    userChatQuery.error,
+
+                refetchMessages:
+                    userChatQuery.refetch,
+
+
+                /* ------------------------------
+                   MESSAGE INPUT
+                ------------------------------ */
+
+                message,
+
+                setMessage,
+
+
+                /* ------------------------------
+                   SEND MESSAGE
+                ------------------------------ */
+
+                sendMessage,
+
+                sendCurrentMessage,
+
+                isSendingMessage:
+                    sendMessageMutation.isPending,
+
+                sendMessageError:
+                    sendMessageMutation.error,
+
+                sendMessageSuccess:
+                    sendMessageMutation.isSuccess,
+
+
+                /* ------------------------------
+                   START CHAT MODAL
+                ------------------------------ */
+
+                isStartChatOpen,
+
+                openStartChat,
+
+                closeStartChat,
+            }),
+            [
+                emailFromUrl,
+
+                conversations,
+
                 conversationsQuery.isLoading,
-
-            isConversationsFetching:
                 conversationsQuery.isFetching,
-
-            conversationsError:
                 conversationsQuery.error,
-
-            refetchConversations:
                 conversationsQuery.refetch,
 
+                users,
 
-            /* ==================================
-               ALL CRM USERS
-            ================================== */
-
-            users,
-
-            isUsersLoading:
                 usersQuery.isLoading,
-
-            isUsersFetching:
                 usersQuery.isFetching,
-
-            usersError:
                 usersQuery.error,
-
-            refetchUsers:
                 usersQuery.refetch,
 
+                selectedUser,
 
-            /* ==================================
-               SELECTED USER
-            ================================== */
+                messages,
 
-            selectedUser,
-
-            setSelectedUser,
-
-            selectUser,
-
-            clearSelectedUser,
-
-            startChatWithUser,
-
-
-            /* ==================================
-               MESSAGES
-            ================================== */
-
-            messages,
-
-            isMessagesLoading:
                 userChatQuery.isLoading,
-
-            isMessagesFetching:
                 userChatQuery.isFetching,
-
-            messagesError:
                 userChatQuery.error,
-
-            refetchMessages:
                 userChatQuery.refetch,
 
+                message,
 
-            /* ==================================
-               MESSAGE INPUT
-            ================================== */
-
-            message,
-
-            setMessage,
-
-
-            /* ==================================
-               SEND MESSAGE
-            ================================== */
-
-            sendMessage,
-
-            sendCurrentMessage,
-
-            isSendingMessage:
                 sendMessageMutation.isPending,
-
-            sendMessageError:
                 sendMessageMutation.error,
-
-            sendMessageSuccess:
                 sendMessageMutation.isSuccess,
 
-
-            /* ==================================
-               START CHAT MODAL
-            ================================== */
-
-            isStartChatOpen,
-
-            openStartChat,
-
-            closeStartChat,
-        }),
-        [
-            /* Conversations */
-
-            conversations,
-
-            conversationsQuery.isLoading,
-
-            conversationsQuery.isFetching,
-
-            conversationsQuery.error,
-
-            conversationsQuery.refetch,
-
-
-            /* Users */
-
-            users,
-
-            usersQuery.isLoading,
-
-            usersQuery.isFetching,
-
-            usersQuery.error,
-
-            usersQuery.refetch,
-
-
-            /* Selected user */
-
-            selectedUser,
-
-
-            /* Messages */
-
-            messages,
-
-            userChatQuery.isLoading,
-
-            userChatQuery.isFetching,
-
-            userChatQuery.error,
-
-            userChatQuery.refetch,
-
-
-            /* Input */
-
-            message,
-
-
-            /* Mutation */
-
-            sendMessageMutation.isPending,
-
-            sendMessageMutation.error,
-
-            sendMessageMutation.isSuccess,
-
-
-            /* Modal */
-
-            isStartChatOpen,
-        ]
-    );
+                isStartChatOpen,
+            ]
+        );
 
 
     return (
@@ -453,17 +705,18 @@ export const InternalChatProvider = ({
 };
 
 
-export const useInternalChat = () => {
-    const context =
-        useContext(
-            InternalChatContext
-        );
+export const useInternalChat =
+    () => {
+        const context =
+            useContext(
+                InternalChatContext
+            );
 
-    if (!context) {
-        throw new Error(
-            "useInternalChat must be used inside InternalChatProvider"
-        );
-    }
+        if (!context) {
+            throw new Error(
+                "useInternalChat must be used inside InternalChatProvider"
+            );
+        }
 
-    return context;
-};
+        return context;
+    };

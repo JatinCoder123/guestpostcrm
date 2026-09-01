@@ -15,16 +15,32 @@ const InternalChatContent = () => {
     } = useInternalChat();
 
     return (
-        <div className="flex h-full min-h-0 w-full overflow-hidden rounded-xl border border-border bg-card">            {/* 
-                MOBILE:
-                Show sidebar only when no user is selected.
+        <div
+            className="
+                flex
+                h-full
+                min-h-0
+                w-full
+                flex-1
+                overflow-hidden
+                rounded-xl
+                border
+                border-border
+                mb-10
+                bg-card
+            "
+        >
+            {/* =========================================
+                CHAT SIDEBAR
+            ========================================== */}
 
-                DESKTOP:
-                Always show sidebar.
-            */}
             <div
                 className={`
-                    h-full min-h-0 shrink-0
+                    h-full
+                    min-h-0
+                    shrink-0
+                    overflow-hidden
+
                     ${selectedUser
                         ? "hidden md:flex"
                         : "flex w-full md:w-[340px]"
@@ -34,27 +50,44 @@ const InternalChatContent = () => {
                 <ChatSidebar />
             </div>
 
-            {/* 
-                MOBILE:
-                Show chat only when a user is selected.
+            {/* =========================================
+                CHAT PANEL
+            ========================================== */}
 
-                DESKTOP:
-                Always show chat panel.
-            */}
             <div
                 className={`
-                    min-h-0 min-w-0 flex-1 flex-col
+                    min-h-0
+                    min-w-0
+                    flex-1
+                    flex-col
+                    overflow-hidden
+
                     ${selectedUser
                         ? "flex"
                         : "hidden md:flex"
                     }
                 `}
             >
-                <ChatHeader />
+                {/* Header - fixed height */}
+                <div className="shrink-0">
+                    <ChatHeader />
+                </div>
 
-                <ChatMessages />
+                {/* Messages - TAKES ALL REMAINING SPACE */}
+                <div
+                    className="
+                        min-h-0
+                        flex-1
+                        overflow-hidden
+                    "
+                >
+                    <ChatMessages />
+                </div>
 
-                <ChatInput />
+                {/* Input - fixed at bottom */}
+                <div className="shrink-0">
+                    <ChatInput />
+                </div>
             </div>
 
             <StartChatModal />

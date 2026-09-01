@@ -26,8 +26,20 @@ export default function ChatMessages() {
      */
     if (!selectedUser) {
         return (
-            <div className="flex min-h-0 flex-1 items-center justify-center bg-background">
-                <div className="flex flex-col items-center justify-center px-6 text-center">
+            <div
+                className="
+        flex
+        h-full
+        min-h-0
+        p-10
+        flex-1
+        items-center
+        justify-center
+        overflow-y-auto
+        custom-scrollbar
+        bg-background
+    "
+            >                 <div className="flex flex-col items-center justify-center px-6 text-center">
                     <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-card shadow-sm">
                         <MessageCircle
                             size={25}
@@ -56,8 +68,20 @@ export default function ChatMessages() {
 
     if (isMessagesLoading) {
         return (
-            <div className="flex min-h-0 flex-1 items-center justify-center bg-background">
-                <Loader2
+            <div
+                className="
+        flex
+        h-full
+        min-h-0
+        p-10
+        flex-1
+        items-center
+        justify-center
+        overflow-y-auto
+        custom-scrollbar
+        bg-background
+    "
+            >                  <Loader2
                     size={22}
                     className="animate-spin text-search-primary"
                 />
@@ -72,45 +96,56 @@ export default function ChatMessages() {
      */
 
     return (
-        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto bg-background px-4 py-5 md:px-6">
-            {messages.length === 0 ? (
-                <div className="flex h-full items-center justify-center">
-                    <div className="text-center">
-                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-card shadow-sm">
-                            <MessageCircle
-                                size={21}
-                                className="text-muted-foreground"
-                            />
-                        </div>
-
-                        <p className="text-sm font-medium text-foreground">
-                            No messages yet
-                        </p>
-
-                        <p className="mt-1 text-xs text-muted-foreground">
-                            Send a message to start
-                            the conversation.
-                        </p>
+        <div
+            className="
+        flex
+        h-full
+        min-h-0
+        p-10
+        flex-1
+        flex-col
+        overflow-y-auto
+        custom-scrollbar
+        bg-background
+    "
+        >           {messages.length === 0 ? (
+            <div className="flex h-full items-center justify-center">
+                <div className="text-center">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-card shadow-sm">
+                        <MessageCircle
+                            size={21}
+                            className="text-muted-foreground"
+                        />
                     </div>
+
+                    <p className="text-sm font-medium text-foreground">
+                        No messages yet
+                    </p>
+
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Send a message to start
+                        the conversation.
+                    </p>
                 </div>
-            ) : (
-                <div className="mx-auto flex w-full max-w-4xl flex-col gap-3">
-                    {messages.map(
-                        (message, index) => (
-                            <MessageBubble
-                                key={
-                                    message?.id ??
-                                    message?.message_id ??
-                                    index
-                                }
-                                message={
-                                    message
-                                }
-                            />
-                        )
-                    )}
-                </div>
-            )}
+            </div>
+        ) : (
+            <div className="mx-auto flex w-full max-w-4xl flex-col gap-3">
+                {messages.map(
+                    (message, index) => (
+                        <MessageBubble
+                            key={
+                                message?.id ??
+                                message?.message_id ??
+                                index
+                            }
+                            message={
+                                message
+                            }
+                        />
+                    )
+                )}
+            </div>
+        )}
         </div>
     );
 }
