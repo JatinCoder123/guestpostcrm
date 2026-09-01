@@ -122,7 +122,19 @@ export const getDetailLayout = () => ({
 export const getLayout = async (module = 'orders', view_key = "table") => {
     const data = await apiRequest({
         endpoint: "https://gagan.guestpostcrm.com/index.php?entryPoint=flexibility&api_version=v1",
-        params: { module_key: module, view_key },
+        /*
+         * `_` busts the browser's HTTP cache.
+         *
+         * This is a plain GET, so the browser is free to answer it from its own
+         * cache. That matters now that presentation values are written back:
+         * after a column resize is stored, the layout is re-read to pick up the
+         * authoritative width and the new record id, and a cached body would
+         * hand back the pre-write state - making the resize appear to snap back.
+         *
+         * react-query already caches this in memory, so the HTTP cache adds
+         * nothing here except that staleness risk.
+         */
+        params: { module_key: module, view_key, _: Date.now() },
     })
     return data;
 }

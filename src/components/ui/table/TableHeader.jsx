@@ -14,13 +14,55 @@ export default function TableHeader() {
         toggleSort,
         columnWidths,
         resizeColumn,
+        commitColumnWidth,
+        savingColumns,
     } = useTableContext();
 
-    const { startResize } =
-        useColumnResize({
-            columnWidths,
-            resizeColumn,
-        });
+    /*
+     * `onResizeEnd` fires once, when the gesture finishes, and stores the width
+     * on the CRM. The drag itself only updates `resizeColumn`, so a gesture is
+     * one write rather than one per pointermove.
+     */
+    const {
+        startResize,
+        nudgeResize,
+        flushKeyboardResize,
+    } = useColumnResize({
+        columnWidths,
+        resizeColumn,
+        onResizeEnd: commitColumnWidth,
+    });
+
+    /** Arrow keys resize; Enter/Escape store the result immediately. */
+    const handleResizeKeyDown = (
+        event,
+        column
+    ) => {
+        const step = event.shiftKey ? 24 : 8;
+
+        if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            event.stopPropagation();
+            nudgeResize(column.accessor, -step);
+            return;
+        }
+
+        if (event.key === "ArrowRight") {
+            event.preventDefault();
+            event.stopPropagation();
+            nudgeResize(column.accessor, step);
+            return;
+        }
+
+        if (
+            event.key === "Enter" ||
+            event.key === "Escape"
+        ) {
+            event.preventDefault();
+            event.stopPropagation();
+            flushKeyboardResize();
+        }
+    };
 
     const handleToggleSort = (
         column
@@ -205,6 +247,29 @@ export default function TableHeader() {
 
                             {column.resizable && (
                                 <div
+                                    role="separator"
+                                    aria-orientation="vertical"
+                                    aria-label={`Resize ${column.label} column`}
+                                    aria-valuenow={
+                                        columnWidths?.[
+                                            column
+                                                .accessor
+                                        ]?.width
+                                    }
+                                    aria-valuemin={
+                                        columnWidths?.[
+                                            column
+                                                .accessor
+                                        ]?.minWidth
+                                    }
+                                    aria-valuemax={
+                                        columnWidths?.[
+                                            column
+                                                .accessor
+                                        ]?.maxWidth
+                                    }
+                                    tabIndex={0}
+                                    title={`Drag to resize ${column.label}. Saved automatically.`}
                                     onPointerDown={(
                                         e
                                     ) =>
@@ -213,7 +278,20 @@ export default function TableHeader() {
                                             column.accessor
                                         )
                                     }
-                                    className="
+                                    onKeyDown={(e) =>
+                                        handleResizeKeyDown(
+                                            e,
+                                            column
+                                        )
+                                    }
+                                    /* Leaving the handle stores a pending nudge. */
+                                    onBlur={
+                                        flushKeyboardResize
+                                    }
+                                    onClick={(e) =>
+                                        e.stopPropagation()
+                                    }
+                                    className={`
                                         absolute
                                         right-0
                                         top-0
@@ -221,8 +299,17 @@ export default function TableHeader() {
                                         w-[6px]
                                         cursor-col-resize
                                         hover:bg-secondary-foreground/20
+                                        focus:bg-secondary-foreground/40
+                                        focus:outline-none
                                         active:bg-secondary-foreground/40
-                                    "
+
+                                        ${savingColumns?.has(
+                                        column.accessor
+                                    )
+                                            ? "animate-pulse bg-primary/60"
+                                            : ""
+                                        }
+                                    `}
                                 />
                             )}
                         </div>

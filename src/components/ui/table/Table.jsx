@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -30,9 +31,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import TableTitleBar from "./TableTitleBar";
 import { entityKeys } from "@/hooks/useEntity";
-const EMPTY_ARRAY = [];
-const EMPTY_OBJECT = {};
-
+import useColumnWidthPersistence from "./hooks/useColumnWidthPersistence";
 const TableContext = createContext();
 export const useTableContext = () => {
   const ctx = useContext(TableContext);
@@ -43,6 +42,28 @@ export const useTableContext = () => {
   }
 
   return ctx;
+};
+
+/**
+ * Is this column published as visible?
+ *
+ * The layout contract sends real booleans, but this reads 1/"1"/"false" the
+ * same way `isActive` in src/utils/sidebarLayout.js does, so one representation
+ * changing upstream cannot silently blank a table. Anything unrecognised - and
+ * anything missing - counts as visible.
+ */
+const isColumnVisible = (column) => {
+  const value = column?.visible;
+
+  if (value === undefined || value === null || value === "") {
+    return true;
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  return String(value) !== "0" && String(value).toLowerCase() !== "false";
 };
 
 const TableSkeleton = ({
@@ -93,289 +114,125 @@ const TableView = ({
   handleAddClick,
   loading,
 }) => {
-  const slice = entity;
+  const slice = entity
+  const STATUS_CONFIG = layout?.config?.statusConfig ?? []
 
-  /*
-   * IMPORTANT:
-   * Keep fallback arrays/objects stable. Using `?? []` or
-   * `?? {}` directly inside the component creates a new
-   * reference on every render when the source is undefined.
-   */
-  const STATUS_CONFIG =
-    layout?.config?.statusConfig ?? EMPTY_ARRAY;
-
-  const rawFilterColumns =
-    layout?.config?.filterColumns ?? EMPTY_ARRAY;
-
-  const rawColumns =
-    layout?.config?.columns ?? EMPTY_ARRAY;
-
-  const timefilterField =
-    rawFilterColumns?.[0]?.name || "date_entered";
-
+  const timefilterField = layout?.config?.filterColumns ? layout?.config?.filterColumns[0]?.name : 'date_entered';
   const tableName = layout?.label;
-
-  /*
-   * Stabilize layout arrays by their content.
-   *
-   * This protects TableView when a parent recreates the
-   * layout/config arrays on every render.
-   */
-  const columnsKey = JSON.stringify(rawColumns);
-  const filterColumnsKey =
-    JSON.stringify(rawFilterColumns);
-  const statusConfigKey =
-    JSON.stringify(STATUS_CONFIG);
-
-  const columns = useMemo(
-    () => rawColumns,
-    [columnsKey]
-  );
-
-  const filterColumns = useMemo(
-    () => rawFilterColumns,
-    [filterColumnsKey]
-  );
-
-  const stableStatusConfig = useMemo(
-    () => STATUS_CONFIG,
-    [statusConfigKey]
-  );
-
+  const columns = layout?.config?.columns ?? []
+  const filterColumns = layout?.config?.filterColumns ?? []
   const tableData =
     data?.pages?.flatMap(
       (page) => page.records || page.data || []
-    ) ?? EMPTY_ARRAY;
+    ) ?? [];
+  const pages = data?.pages ?? [];
 
-  const pages =
-    data?.pages ?? EMPTY_ARRAY;
+  const lastPage = pages[pages.length - 1] ?? {};
+  const firstPage = pages[0] ?? {};
 
-  const lastPage =
-    pages[pages.length - 1] ?? EMPTY_OBJECT;
-
-  const firstPage =
-    pages[0] ?? EMPTY_OBJECT;
-
-  const pageIndex =
-    lastPage.page ?? 1;
-
-  const pageCount =
-    firstPage.total_pages ?? 0;
-
-  const count =
-    firstPage.total ?? 0;
-
-  const sort =
-    preferences?.sorting ?? EMPTY_OBJECT;
-
-  const dateFilter =
-    preferences?.date_filter ?? EMPTY_OBJECT;
-
-  const fromDate =
-    dateFilter?.date_from?.split(" ")[0] ||
-    todayStr();
-
-  const fromTime =
-    dateFilter?.date_from?.split(" ")[1] ||
-    "00:01";
-
-  const toDate =
-    dateFilter?.date_to?.split(" ")[0] ||
-    todayStr();
-
-  const toTime =
-    dateFilter?.date_to?.split(" ")[1] ||
-    "23:59";
-
-  const filterActive =
-    !!dateFilter?.date_from &&
-    !!dateFilter?.date_to;
-
-  const filters =
-    preferences?.filters ?? EMPTY_OBJECT;
-
-  /*
-   * IMPORTANT:
-   * `search` used to be a new object on every render.
-   * Memoizing it prevents unnecessary context consumers
-   * from reacting to an unrelated TableView render.
-   */
-  const search = useMemo(
-    () => ({
-      search:
-        preferences?.search_filter?.search || "",
-      search_fields:
-        preferences?.search_filter?.search_fields ||
-        EMPTY_ARRAY,
-    }),
-    [
-      preferences?.search_filter?.search,
-      preferences?.search_filter?.search_fields,
-    ]
-  );
-
-  const [showStatus, setShowStatus] =
-    useState(true);
-
-  const [showFilterColumn, setShowFilterColumn] =
-    useState(false);
-
+  const pageIndex = lastPage.page ?? 1;
+  const pageCount = firstPage.total_pages ?? 0;
+  const count = firstPage.total ?? 0;
+  const sort = preferences?.sorting ?? {}
+  const dateFilter = preferences?.date_filter || {};
+  const fromDate = dateFilter?.date_from?.split(" ")[0] || todayStr();
+  const fromTime = dateFilter.date_from?.split(" ")[1] || "00:01";
+  const toDate = dateFilter.date_to?.split(" ")[0] || todayStr();
+  const toTime = dateFilter.date_to?.split(" ")[1] || "23:59";
+  const filterActive = !!dateFilter.date_from && !!dateFilter.date_to;
+  const filters = preferences?.filters ?? {};
+  const search = {
+    search: preferences?.search_filter?.search || "",
+    search_fields: preferences?.search_filter?.search_fields || [],
+  };
+  const [showStatus, setShowStatus] = useState(true);
+  const [showFilterColumn, setShowFilterColumn] = useState(false);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
+
+
+
+
 
   const [selectedRows, setSelectedRows] =
     useState([]);
 
-  /*
-   * Initialize these states from the current columns.
-   * They are synchronized below with guarded functional
-   * updates, so setState is NOT called when nothing changed.
-   */
-  const [visibleColumns, setVisibleColumns] =
-    useState(() => [...columns]);
+  const [visibleColumns, setVisibleColumns] = useState([]);
+  const [columnWidths, setColumnWidths] = useState({});
 
-  const [columnWidths, setColumnWidths] =
-    useState(() => {
-      const widths = {};
-
-      columns.forEach((column) => {
-        widths[column.accessor] = {
-          width: column.width ?? 220,
-          minWidth: column.minWidth ?? 120,
-          maxWidth: column.maxWidth ?? 700,
-          sticky: column.sticky ?? false,
-        };
-      });
-
-      return widths;
-    });
-
-  /*
-   * Synchronize visible columns safely.
+  /**
+   * Only the columns this view is published to render.
    *
-   * Returning the previous state object when the content is
-   * identical is critical. It prevents:
+   * `visible` is a presentation value that comes down with the layout. It is
+   * what the Table View layout editor writes to `value_boolean` on the
+   * column's visibility override, so a column hidden there has to disappear
+   * from the header, the body, the search field list and the sort list -
+   * all of which read `visibleColumns`.
    *
-   * render -> effect -> setState -> render -> effect -> ...
+   * `columns` deliberately stays the full published set, because the width
+   * bookkeeping below and the loading skeleton still need to know about
+   * hidden columns.
+   *
+   * A missing or unrecognised value counts as visible, so a column never
+   * vanishes from a table because the backend sent something unexpected.
    */
   useEffect(() => {
-    setVisibleColumns((previousColumns) => {
-      if (
-        previousColumns.length ===
-        columns.length
-      ) {
-        const same = columns.every(
-          (column, index) => {
-            const previous =
-              previousColumns[index];
-
-            if (!previous) {
-              return false;
-            }
-
-            return (
-              previous.accessor ===
-              column.accessor &&
-              previous.label ===
-              column.label &&
-              previous.width ===
-              column.width &&
-              previous.minWidth ===
-              column.minWidth &&
-              previous.maxWidth ===
-              column.maxWidth &&
-              previous.sticky ===
-              column.sticky &&
-              previous.searchable ===
-              column.searchable
-            );
-          }
-        );
-
-        if (same) {
-          return previousColumns;
-        }
-      }
-
-      return columns;
-    });
+    setVisibleColumns(columns.filter(isColumnVisible));
   }, [columns]);
-
-  /*
-   * Synchronize column widths safely.
-   *
-   * Preserve manually resized widths when the same column
-   * still exists, while adding/removing columns as needed.
-   */
   useEffect(() => {
-    setColumnWidths((previousWidths) => {
-      const nextWidths = {};
+    const widths = {};
 
-      columns.forEach((column) => {
-        const previous =
-          previousWidths[column.accessor];
-
-        nextWidths[column.accessor] = {
-          width:
-            previous?.width ??
-            column.width ??
-            220,
-          minWidth:
-            column.minWidth ?? 120,
-          maxWidth:
-            column.maxWidth ?? 700,
-          sticky:
-            column.sticky ?? false,
-        };
-      });
-
-      const previousKeys =
-        Object.keys(previousWidths);
-
-      const nextKeys =
-        Object.keys(nextWidths);
-
-      if (
-        previousKeys.length ===
-        nextKeys.length &&
-        nextKeys.every((key) => {
-          const previous =
-            previousWidths[key];
-
-          const next =
-            nextWidths[key];
-
-          return (
-            previous?.width ===
-            next.width &&
-            previous?.minWidth ===
-            next.minWidth &&
-            previous?.maxWidth ===
-            next.maxWidth &&
-            previous?.sticky ===
-            next.sticky
-          );
-        })
-      ) {
-        return previousWidths;
-      }
-
-      return nextWidths;
+    columns.forEach((column) => {
+      widths[column.accessor] = {
+        width: column.width ?? 220,
+        minWidth: column.minWidth ?? 120,
+        maxWidth: column.maxWidth ?? 700,
+        sticky: column.sticky ?? false,
+      };
     });
+
+    setColumnWidths(widths);
   }, [columns]);
 
-  const resizeColumn = (accessor, width) => {
-    setColumnWidths((prev) => ({
-      ...prev,
-      [accessor]: {
-        ...prev[accessor],
-        width: Math.max(
-          prev[accessor].minWidth,
-          Math.min(width, prev[accessor].maxWidth)
-        ),
-      },
-    }));
-  };
+  const resizeColumn = useCallback((accessor, width) => {
+    setColumnWidths((prev) => {
+      const current = prev[accessor];
+
+      if (!current) return prev;
+
+      return {
+        ...prev,
+        [accessor]: {
+          ...current,
+          width: Math.max(
+            current.minWidth,
+            Math.min(width, current.maxWidth)
+          ),
+        },
+      };
+    });
+  }, []);
+
+  /**
+   * Store a finished resize on the CRM.
+   *
+   * A column width is a published presentation value, not local UI state, so
+   * dragging an edge here writes the same `outr_ui_properties` override the
+   * Table View layout editor writes. The drag updates the screen immediately;
+   * this persists the width the user stopped on and re-reads the layout so the
+   * stored value becomes the rendered one.
+   *
+   * `resizeColumn` is passed as the rollback, so a rejected write puts the
+   * pre-drag width back rather than leaving the header showing a size the CRM
+   * does not have.
+   */
+  const { commitColumnWidth, savingColumns } =
+    useColumnWidthPersistence({
+      columns,
+      moduleKey: entity,
+      viewKey: "table",
+      applyWidth: resizeColumn,
+    });
   const gridTemplate = useMemo(() => {
     return visibleColumns
       .map(
@@ -469,118 +326,80 @@ const TableView = ({
   const actionMutation =
     useActionMutation();
 
-  const actionContext = useMemo(
-    () => ({
-      navigate: navigateTo,
+  const actionContext = {
+    navigate: navigateTo,
 
-      // user: currentUser,
+    // user: currentUser,
 
-      mutateAsync:
-        actionMutation.mutateAsync,
-
-      queryClient,
-
-      toast,
-
-      // openModal,
-
-      onActionSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey:
-            entityKeys.allByEntity(entity),
-        });
-      },
-
-      // onActionError,
-    }),
-    [
-      navigateTo,
+    mutateAsync:
       actionMutation.mutateAsync,
-      entity,
-    ]
-  );
 
-  const value = useMemo(
-    () => ({
-      tableName,
-      layout,
-      columns,
+    queryClient,
 
-      visibleColumns,
-      setVisibleColumns,
+    toast,
 
-      columnWidths,
-      resizeColumn,
+    // openModal,
 
-      gridTemplate,
-      stickyColumns,
+    onActionSuccess: () => { queryClient.invalidateQueries({ queryKey: entityKeys.allByEntity(entity) }) },
+    // onActionError,
+  };
 
-      showStatus,
-      setShowStatus,
+  const value = {
+    tableName,
+    layout,
+    columns,
 
-      search,
-      setSearch: updateSearch,
+    visibleColumns,
+    setVisibleColumns,
 
-      filters,
-      setFilters: updateFilters,
+    columnWidths,
+    resizeColumn,
 
-      slice,
-      entity,
+    /* Persists a finished resize to the CRM. */
+    commitColumnWidth,
+    savingColumns,
 
-      sort,
-      toggleSort,
+    gridTemplate,
+    stickyColumns,
 
-      fetchNextPage,
-      hasNextPage,
-      isFetchingNextPage,
+    showStatus,
+    setShowStatus,
 
-      searching,
+    search,
+    setSearch: updateSearch,
 
-      timefilter,
+    filters,
+    setFilters: updateFilters,
 
-      filterColumns,
+    slice,
+    entity,
 
-      loading,
+    sort,
+    toggleSort,
 
-      selectedRows,
-      setSelectedRows,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
 
-      pageIndex,
-      pageCount,
+    searching,
 
-      count,
-      data: tableData,
-      actionContext,
-    }),
-    [
-      tableName,
-      layout,
-      columns,
-      visibleColumns,
-      columnWidths,
-      gridTemplate,
-      stickyColumns,
-      showStatus,
-      search,
-      filters,
-      slice,
-      entity,
-      sort,
-      fetchNextPage,
-      hasNextPage,
-      isFetchingNextPage,
-      searching,
-      timefilter,
-      filterColumns,
-      loading,
-      selectedRows,
-      pageIndex,
-      pageCount,
-      count,
-      tableData,
-      actionContext,
-    ]
-  );
+
+    timefilter,
+
+    filterColumns,
+
+    loading,
+
+    selectedRows,
+    setSelectedRows,
+
+    pageIndex,
+    pageCount,
+
+    count,
+    data: tableData,
+    actionContext
+  };
 
   return (
     <TableContext.Provider value={value}>
@@ -604,7 +423,7 @@ const TableView = ({
           }}
           style={{ overflow: "hidden" }}
         >
-          {stableStatusConfig.length > 0 &&
+          {STATUS_CONFIG.length > 0 &&
             count >= 0 && (
               <StatusRow />
             )}
@@ -628,7 +447,7 @@ const TableView = ({
 
 
             {/* STATUS TOGGLE */}
-            {stableStatusConfig.length > 0 && <IconButton
+            {STATUS_CONFIG.length > 0 && <IconButton
               onClick={() =>
                 setShowStatus((prev) => !prev)
               }
@@ -693,7 +512,7 @@ const TableView = ({
                 <table className="w-full">
                   <TableSkeleton
                     columnsLength={
-                      columns?.length || 5
+                      visibleColumns?.length || 5
                     }
                   />
                 </table>
