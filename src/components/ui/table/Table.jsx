@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -30,6 +31,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import TableTitleBar from "./TableTitleBar";
 import { entityKeys } from "@/hooks/useEntity";
+import useColumnWidthPersistence from "./hooks/useColumnWidthPersistence";
 const TableContext = createContext();
 export const useTableContext = () => {
   const ctx = useContext(TableContext);
@@ -40,6 +42,28 @@ export const useTableContext = () => {
   }
 
   return ctx;
+};
+
+/**
+ * Is this column published as visible?
+ *
+ * The layout contract sends real booleans, but this reads 1/"1"/"false" the
+ * same way `isActive` in src/utils/sidebarLayout.js does, so one representation
+ * changing upstream cannot silently blank a table. Anything unrecognised - and
+ * anything missing - counts as visible.
+ */
+const isColumnVisible = (column) => {
+  const value = column?.visible;
+
+  if (value === undefined || value === null || value === "") {
+    return true;
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  return String(value) !== "0" && String(value).toLowerCase() !== "false";
 };
 
 const TableSkeleton = ({
@@ -135,8 +159,25 @@ const TableView = ({
 
   const [visibleColumns, setVisibleColumns] = useState([]);
   const [columnWidths, setColumnWidths] = useState({});
+
+  /**
+   * Only the columns this view is published to render.
+   *
+   * `visible` is a presentation value that comes down with the layout. It is
+   * what the Table View layout editor writes to `value_boolean` on the
+   * column's visibility override, so a column hidden there has to disappear
+   * from the header, the body, the search field list and the sort list -
+   * all of which read `visibleColumns`.
+   *
+   * `columns` deliberately stays the full published set, because the width
+   * bookkeeping below and the loading skeleton still need to know about
+   * hidden columns.
+   *
+   * A missing or unrecognised value counts as visible, so a column never
+   * vanishes from a table because the backend sent something unexpected.
+   */
   useEffect(() => {
-    setVisibleColumns(columns);
+    setVisibleColumns(columns.filter(isColumnVisible));
   }, [columns]);
   useEffect(() => {
     const widths = {};
@@ -153,18 +194,45 @@ const TableView = ({
     setColumnWidths(widths);
   }, [columns]);
 
-  const resizeColumn = (accessor, width) => {
-    setColumnWidths((prev) => ({
-      ...prev,
-      [accessor]: {
-        ...prev[accessor],
-        width: Math.max(
-          prev[accessor].minWidth,
-          Math.min(width, prev[accessor].maxWidth)
-        ),
-      },
-    }));
-  };
+  const resizeColumn = useCallback((accessor, width) => {
+    setColumnWidths((prev) => {
+      const current = prev[accessor];
+
+      if (!current) return prev;
+
+      return {
+        ...prev,
+        [accessor]: {
+          ...current,
+          width: Math.max(
+            current.minWidth,
+            Math.min(width, current.maxWidth)
+          ),
+        },
+      };
+    });
+  }, []);
+
+  /**
+   * Store a finished resize on the CRM.
+   *
+   * A column width is a published presentation value, not local UI state, so
+   * dragging an edge here writes the same `outr_ui_properties` override the
+   * Table View layout editor writes. The drag updates the screen immediately;
+   * this persists the width the user stopped on and re-reads the layout so the
+   * stored value becomes the rendered one.
+   *
+   * `resizeColumn` is passed as the rollback, so a rejected write puts the
+   * pre-drag width back rather than leaving the header showing a size the CRM
+   * does not have.
+   */
+  const { commitColumnWidth, savingColumns } =
+    useColumnWidthPersistence({
+      columns,
+      moduleKey: entity,
+      viewKey: "table",
+      applyWidth: resizeColumn,
+    });
   const gridTemplate = useMemo(() => {
     return visibleColumns
       .map(
@@ -286,6 +354,10 @@ const TableView = ({
 
     columnWidths,
     resizeColumn,
+
+    /* Persists a finished resize to the CRM. */
+    commitColumnWidth,
+    savingColumns,
 
     gridTemplate,
     stickyColumns,
@@ -440,7 +512,7 @@ const TableView = ({
                 <table className="w-full">
                   <TableSkeleton
                     columnsLength={
-                      columns?.length || 5
+                      visibleColumns?.length || 5
                     }
                   />
                 </table>
