@@ -3,6 +3,14 @@ import {
     Smile,
 } from "lucide-react";
 
+import EmojiPicker from "emoji-picker-react";
+
+import {
+    useEffect,
+    useRef,
+    useState,
+} from "react";
+
 import {
     useInternalChat,
 } from "../context/InternalChatContext";
@@ -18,6 +26,52 @@ export default function ChatInput() {
     } = useInternalChat();
 
 
+    const [
+        showEmojiPicker,
+        setShowEmojiPicker,
+    ] = useState(false);
+
+
+    const emojiPickerRef =
+        useRef(null);
+
+
+    /* ==========================================
+       CLOSE EMOJI PICKER ON OUTSIDE CLICK
+    ========================================== */
+
+    useEffect(() => {
+        const handleClickOutside = (
+            event
+        ) => {
+            if (
+                emojiPickerRef.current &&
+                !emojiPickerRef.current.contains(
+                    event.target
+                )
+            ) {
+                setShowEmojiPicker(false);
+            }
+        };
+
+        if (showEmojiPicker) {
+            document.addEventListener(
+                "mousedown",
+                handleClickOutside
+            );
+        }
+
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                handleClickOutside
+            );
+        };
+    }, [
+        showEmojiPicker,
+    ]);
+
+
     /* ==========================================
        NO SELECTED USER
     ========================================== */
@@ -25,6 +79,26 @@ export default function ChatInput() {
     if (!selectedUser) {
         return null;
     }
+
+
+    /* ==========================================
+       EMOJI SELECT
+    ========================================== */
+
+    const handleEmojiClick = (
+        emojiData
+    ) => {
+        if (
+            isSendingMessage
+        ) {
+            return;
+        }
+
+        setMessage(
+            (currentMessage) =>
+                `${currentMessage}${emojiData.emoji}`
+        );
+    };
 
 
     /* ==========================================
@@ -39,6 +113,8 @@ export default function ChatInput() {
             return;
         }
 
+        setShowEmojiPicker(false);
+
         await sendCurrentMessage();
     };
 
@@ -47,11 +123,13 @@ export default function ChatInput() {
        KEYBOARD HANDLER
     ========================================== */
 
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (
+        event
+    ) => {
         /*
-         * Enter = send
+         * Enter = Send
          *
-         * Shift + Enter = new line
+         * Shift + Enter = New line
          */
 
         if (
@@ -66,14 +144,29 @@ export default function ChatInput() {
 
 
     return (
-        <div className="shrink-0 border-t border-border bg-card p-3">
+        <div className="relative shrink-0 border-t border-border bg-card p-3">
+
             <div className="mx-auto flex w-full max-w-4xl items-end gap-2">
 
                 {/* ==================================
                     MESSAGE INPUT
                 ================================== */}
 
-                <div className="flex min-h-[42px] flex-1 items-end rounded-xl bg-input-background px-3 transition focus-within:ring-2 focus-within:ring-search-primary/20">
+                <div
+                    className="
+                        relative
+                        flex
+                        min-h-[42px]
+                        flex-1
+                        items-end
+                        rounded-xl
+                        bg-input-background
+                        px-3
+                        transition
+                        focus-within:ring-2
+                        focus-within:ring-search-primary/20
+                    "
+                >
 
                     <textarea
                         value={message}
@@ -86,7 +179,9 @@ export default function ChatInput() {
                             handleKeyDown
                         }
                         rows={1}
-                        placeholder={`Message ${selectedUser.name || "user"}...`}
+                        placeholder={`Message ${selectedUser?.name ||
+                            "user"
+                            }...`}
                         disabled={
                             isSendingMessage
                         }
@@ -111,32 +206,90 @@ export default function ChatInput() {
                         EMOJI BUTTON
                     ================================== */}
 
-                    <button
-                        type="button"
-                        disabled={
-                            isSendingMessage
+                    <div
+                        ref={
+                            emojiPickerRef
                         }
-                        className="
-                            mb-1
-                            flex
-                            h-8
-                            w-8
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-lg
-                            text-muted-foreground
-                            transition
-                            hover:bg-accent
-                            hover:text-foreground
-                            disabled:cursor-not-allowed
-                            disabled:opacity-50
-                        "
+                        className="relative mb-1"
                     >
-                        <Smile
-                            size={18}
-                        />
-                    </button>
+
+                        <button
+                            type="button"
+                            disabled={
+                                isSendingMessage
+                            }
+                            onClick={() =>
+                                setShowEmojiPicker(
+                                    (previous) =>
+                                        !previous
+                                )
+                            }
+                            aria-label="Open emoji picker"
+                            className="
+                                flex
+                                h-8
+                                w-8
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-lg
+                                text-muted-foreground
+                                transition
+                                hover:bg-accent
+                                hover:text-foreground
+                                disabled:cursor-not-allowed
+                                disabled:opacity-50
+                            "
+                        >
+                            <Smile
+                                size={18}
+                            />
+                        </button>
+
+
+                        {/* ==================================
+                            EMOJI PICKER
+                        ================================== */}
+
+                        {showEmojiPicker && (
+                            <div
+                                className="
+                                    absolute
+                                    bottom-11
+                                    right-0
+                                    z-50
+                                    overflow-hidden
+                                    rounded-xl
+                                    border
+                                    border-border
+                                    shadow-xl
+                                "
+                            >
+                                <EmojiPicker
+                                    onEmojiClick={
+                                        handleEmojiClick
+                                    }
+
+                                    width={320}
+
+                                    height={400}
+
+                                    searchPlaceholder="Search emoji..."
+
+                                    lazyLoadEmojis
+
+                                    previewConfig={{
+                                        showPreview: false,
+                                    }}
+
+                                    theme="auto"
+
+                                    emojiStyle="native"
+                                />
+                            </div>
+                        )}
+
+                    </div>
 
                 </div>
 
@@ -174,6 +327,7 @@ export default function ChatInput() {
                         disabled:opacity-50
                     "
                 >
+
                     {isSendingMessage ? (
                         <span
                             className="
@@ -191,6 +345,7 @@ export default function ChatInput() {
                             size={17}
                         />
                     )}
+
                 </button>
 
             </div>

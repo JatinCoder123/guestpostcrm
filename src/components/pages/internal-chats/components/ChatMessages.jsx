@@ -99,7 +99,7 @@ export default function ChatMessages() {
         <div
             className="
         flex
-        h-full
+        h-[69vh]
         min-h-0
         p-10
         flex-1

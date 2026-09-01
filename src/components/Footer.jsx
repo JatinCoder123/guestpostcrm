@@ -70,7 +70,7 @@ export default function Footer() {
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
   const { data: linkRemovalData } = useLinkRemovalCount();
   const { crmEndpoint, businessEmail } = useSelector(state => state.user)
-  const { notificationCount } = useContext(SocketContext);
+  const { notificationCount, totalUnseenChatCount } = useContext(SocketContext);
   const { collapsed } = useContext(PageContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
   const dispatch = useDispatch()
@@ -171,7 +171,7 @@ export default function Footer() {
           onClick={() => navigate("/internal-chats")}
           icon={MessageCircle}
           label="Internal Chats"
-
+          count={totalUnseenChatCount}
           iconColor="green"
         />
         <IconButton
