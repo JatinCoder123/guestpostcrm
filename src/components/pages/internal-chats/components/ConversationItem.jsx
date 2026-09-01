@@ -1,4 +1,5 @@
 import {
+    ArrowDownLeft,
     CheckCheck,
 } from "lucide-react";
 
@@ -203,34 +204,44 @@ export default function ConversationItem({
                 </div>
 
                 {/* Last Message */}
-
                 <div className="mt-1 flex min-w-0 items-center gap-1">
-                    <CheckCheck
-                        size={13}
-                        className={`
-                            shrink-0
-                            ${unseenMessages > 0
-                                ? "text-search-primary"
-                                : "text-muted-foreground"
-                            }
-                        `}
-                    />
+                    {conversation?.latest_message?.direction === "received" ||
+                        conversation?.latest_message?.direction === "inbound" ? (
+                        <ArrowDownLeft
+                            size={13}
+                            className={`
+                shrink-0
+                ${unseenMessages > 0
+                                    ? "text-search-primary"
+                                    : "text-muted-foreground"
+                                }
+            `}
+                        />
+                    ) : (
+                        <CheckCheck
+                            size={13}
+                            className={`
+                shrink-0
+                ${unseenMessages > 0
+                                    ? "text-search-primary"
+                                    : "text-muted-foreground"
+                                }
+            `}
+                        />
+                    )}
 
                     <p
                         className={`
-                            min-w-0
-                            truncate
-                            text-xs
-                            ${unseenMessages > 0
+            min-w-0
+            truncate
+            text-xs
+            ${unseenMessages > 0
                                 ? "font-medium text-foreground"
                                 : "text-muted-foreground"
                             }
-                        `}
+        `}
                     >
-                        {
-                            conversation?.last_message ||
-                            email
-                        }
+                        {conversation?.latest_message?.message || ""}
                     </p>
                 </div>
             </div>
