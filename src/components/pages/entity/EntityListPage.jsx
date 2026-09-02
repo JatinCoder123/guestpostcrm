@@ -53,6 +53,7 @@ const EntityListPage = ({ entity }) => {
         preferences,
         email,
         entity,
+        dataFilters: layout?.dataFilters ?? {},
         module: layout?.module,
     });
 

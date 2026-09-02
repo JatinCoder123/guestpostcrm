@@ -57,7 +57,7 @@ const Thread = () => {
       return;
     }
 
-    handleSetCurrent(paramEmail, paramThreadId);
+    handleSetCurrent({ email: paramEmail, thread: paramThreadId });
 
     // Remove email and threadId from URL
     const newParams = new URLSearchParams(searchParams);

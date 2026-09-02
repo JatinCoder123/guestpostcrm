@@ -16,8 +16,7 @@ function TableCell({
         layout,
     } = useTableContext();
 
-    const updateMutation =
-        useUpdateEntity();
+    const updateMutation = useUpdateEntity();
 
     const handleSave = useCallback(
         async ({
@@ -26,6 +25,10 @@ function TableCell({
             rowId,
             record,
         }) => {
+            const toastId = toast.loading(
+                "Saving changes..."
+            );
+
             try {
                 await updateMutation.mutateAsync({
                     entity: entity,
@@ -37,7 +40,28 @@ function TableCell({
                 });
 
                 toast.success(
-                    "Changes Saved"
+                    (t) => (
+                        <div className="flex items-center gap-3">
+                            <span>
+                                Changes saved
+                            </span>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    // Undo functionality will be added later
+                                    toast.dismiss(t.id);
+                                }}
+                                className="font-medium text-blue-600 hover:text-blue-700 underline"
+                            >
+                                Undo
+                            </button>
+                        </div>
+                    ),
+                    {
+                        id: toastId,
+                        duration: 5000,
+                    }
                 );
             } catch (error) {
                 console.error(
@@ -46,11 +70,15 @@ function TableCell({
                 );
 
                 toast.error(
-                    "Failed to save changes"
+                    "Failed to save changes",
+                    {
+                        id: toastId,
+                    }
                 );
             }
         },
         [
+            entity,
             layout,
             updateMutation,
         ]

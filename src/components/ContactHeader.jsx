@@ -355,7 +355,7 @@ const ContactHeader = () => {
           <div className="flex basis-full flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-3 pt-3 2xl:ml-auto 2xl:basis-auto 2xl:flex-nowrap 2xl:justify-end 2xl:border-0 2xl:px-5 2xl:pt-0">
             {emailDeals?.length > 0 && (
               <div
-                onClick={() => navigate("/deals")}
+                onClick={() => navigate(`/deals/view?email=${currentEmail}`)}
                 className="flex min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1.5 transition hover:bg-slate-200"
               >
                 <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">

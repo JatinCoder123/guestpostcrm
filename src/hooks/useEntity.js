@@ -53,7 +53,8 @@ export function useEntityStats({ filters, email, entity, stats, module }) {
 }
 export const useInfiniteEntity = (
     { preferences = {},
-        email = "", entity, module }
+        email = "", entity, module, dataFilters = {}
+    }
 ) => {
 
     return useInfiniteQuery({
@@ -65,7 +66,8 @@ export const useInfiniteEntity = (
                 module,
                 preferences,
                 page: pageParam,
-                email
+                email,
+                dataFilters
             }),
 
         initialPageParam: 1,

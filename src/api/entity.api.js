@@ -14,7 +14,8 @@ export const fetchInfiniteList = async ({
     preferences,
     page = 1,
     email = "",
-    module
+    module,
+    dataFilters = {}
 }) => {
     const params = email ? { email } : {}
     return http({
@@ -24,7 +25,8 @@ export const fetchInfiniteList = async ({
             "module": module,
             page,
             ...buildTableRequestBody(
-                preferences
+                preferences,
+                dataFilters
             ),
         },
         params: { ...params }
