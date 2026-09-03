@@ -18,14 +18,9 @@ const tabs = [
         path: "sidebar",
     },
     {
-        id: "detail-view",
-        label: "Detail View",
-        path: "detail-view",
-    },
-    {
-        id: "edit-view",
-        label: "Edit View",
-        path: "edit-view",
+        id: "views",
+        label: "Deatil & Edit View",
+        path: "views",
     },
     {
         id: "create-view",

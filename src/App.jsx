@@ -71,8 +71,7 @@ import DynamicEntityHandler from "./components/routing/DynamicEntityHandler";
 import Theme from "./components/theme/Theme";
 import Layout from "./components/layouts/Layout";
 import Sidebar from "./components/layouts/sidebar/Sidebar";
-import DetailView from "./components/layouts/detail-view/DetailView";
-import EditView from "./components/layouts/edit-view/EditView";
+import Views from "./components/layouts/detail-view/Views";
 import CreateView from "./components/layouts/create-view/CreateView";
 import TableView from "./components/layouts/table-view/TableView";
 import IconPickerPage from "./components/IconPickerPage";
@@ -472,12 +471,8 @@ const router = createBrowserRouter([
                 element: <Sidebar />,
               },
               {
-                path: "detail-view",
-                element: <DetailView />,
-              },
-              {
-                path: "edit-view",
-                element: <EditView />,
+                path: "views",
+                element: <Views />,
               },
               {
                 path: "create-view",
