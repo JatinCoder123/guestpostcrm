@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/tabs";
 import { useUpdateEntity } from "@/queries/entity.queries";
 import toast from "react-hot-toast";
-import FieldRenderer from "@/components/fields2/FieldRenderer";
 import DetailField from "../DetailField";
 import { queryClient } from "@/lib/queryClient";
 
@@ -21,6 +20,7 @@ import {
     orderLayoutSections,
     orderLayoutTabs,
 } from "@/utils/layoutRank";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Tabs = ({ config, record, entity, mode }) => {
     /*
@@ -201,6 +201,13 @@ const Summary = ({ config, record }) => {
 
 };
 
+
+
+// Keep your existing imports for:
+// DetailField
+// resolveFieldValue
+// orderLayoutFields
+
 const Section = ({
     config,
     record,
@@ -218,6 +225,14 @@ const Section = ({
         5: "grid-cols-5",
         6: "grid-cols-6",
     };
+
+    /*
+     * ---------------------------------------------------------
+     * QUERY CLIENT
+     * ---------------------------------------------------------
+     */
+
+    const queryClient = useQueryClient();
 
     /*
      * ---------------------------------------------------------
@@ -246,19 +261,204 @@ const Section = ({
                 return;
             }
 
+            /*
+             * -------------------------------------------------
+             * IMPORTANT:
+             * Capture the OLD value BEFORE updating.
+             * -------------------------------------------------
+             *
+             * Example:
+             *
+             * record.status = "active"
+             * value = "accepted"
+             *
+             * previousValue = "active"
+             * newValue = "accepted"
+             */
+
+            const previousValue =
+                record?.[field.accessor];
+
+            const newValue = value;
+
+            /*
+             * Optional safety:
+             * If nothing actually changed, don't make
+             * an unnecessary API request.
+             */
+            if (
+                previousValue === newValue
+            ) {
+                return;
+            }
+
+            /*
+             * -------------------------------------------------
+             * SAVE TOAST
+             * -------------------------------------------------
+             */
+
+            const toastId =
+                toast.loading(
+                    "Saving changes..."
+                );
+
             try {
+                /*
+                 * -------------------------------------------------
+                 * FIRST REQUEST
+                 * Save the NEW value.
+                 * -------------------------------------------------
+                 */
+
                 await updateMutation.mutateAsync({
+                    module: config.module,
                     entity: config.module,
                     id: rowId,
                     payload: {
-                        [field.accessor]: value,
+                        [field.accessor]:
+                            newValue,
                     },
                 });
 
+                /*
+                 * Refresh entity data after successful save.
+                 */
+                await queryClient.invalidateQueries({
+                    queryKey: [
+                        "entity",
+                        entity,
+                    ],
+                });
+
+                /*
+                 * -------------------------------------------------
+                 * SUCCESS + UNDO
+                 * -------------------------------------------------
+                 *
+                 * previousValue is captured inside this callback.
+                 * Therefore it will still contain the OLD value
+                 * when the user clicks Undo.
+                 */
+
                 toast.success(
-                    `${field?.label || accessor} updated`
+                    (t) => {
+                        let undoClicked =
+                            false;
+
+                        const handleUndo =
+                            async () => {
+                                /*
+                                 * Prevent clicking Undo multiple
+                                 * times while the request is running.
+                                 */
+                                if (
+                                    undoClicked
+                                ) {
+                                    return;
+                                }
+
+                                undoClicked =
+                                    true;
+
+                                /*
+                                 * Show loading state in the
+                                 * existing toast.
+                                 */
+                                toast.loading(
+                                    "Undoing changes...",
+                                    {
+                                        id: t.id,
+                                    }
+                                );
+
+                                try {
+                                    /*
+                                     * -------------------------------------------------
+                                     * SECOND REQUEST
+                                     * Restore the OLD value.
+                                     * -------------------------------------------------
+                                     */
+
+                                    await updateMutation.mutateAsync({
+                                        module: config.module,
+                                        entity: config.module,
+                                        id: rowId,
+                                        payload: {
+                                            [field.accessor]:
+                                                previousValue,
+                                        },
+                                    });
+
+                                    /*
+                                     * Refresh the entity after
+                                     * restoring the old value.
+                                     */
+                                    await queryClient.invalidateQueries({
+                                        queryKey: [
+                                            "entity",
+                                            entity,
+                                        ],
+                                    });
+
+                                    toast.success(
+                                        "Changes undone",
+                                        {
+                                            id: t.id,
+                                            duration: 3000,
+                                        }
+                                    );
+                                } catch (
+                                error
+                                ) {
+                                    console.error(
+                                        "Undo failed:",
+                                        error
+                                    );
+
+                                    toast.error(
+                                        "Failed to undo changes",
+                                        {
+                                            id: t.id,
+                                            duration: 4000,
+                                        }
+                                    );
+                                }
+                            };
+
+                        return (
+                            <div className="flex items-center gap-3">
+                                <span>
+                                    Changes saved
+                                </span>
+
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleUndo
+                                    }
+                                    disabled={
+                                        undoClicked
+                                    }
+                                    className="
+                                        font-medium
+                                        text-blue-600
+                                        hover:text-blue-700
+                                        underline
+                                        disabled:opacity-50
+                                        disabled:cursor-not-allowed
+                                    "
+                                >
+                                    Undo
+                                </button>
+                            </div>
+                        );
+                    },
+                    {
+                        id: toastId,
+                        duration: 5000,
+                    }
                 );
-                queryClient.invalidateQueries({ queryKey: ['entity', entity] })
             } catch (error) {
                 console.error(
                     "Field update failed:",
@@ -266,19 +466,23 @@ const Section = ({
                 );
 
                 toast.error(
-                    "Failed to update field"
+                    "Failed to update field",
+                    {
+                        id: toastId,
+                    }
                 );
 
                 throw error;
             }
         },
         [
+            config,
             entity,
             record,
             updateMutation,
+            queryClient,
         ]
     );
-
 
     /*
      * ---------------------------------------------------------
@@ -301,27 +505,32 @@ const Section = ({
                     gap-4
                 `}
             >
-                {/* Scope: the fields of this section. */}
-                {orderLayoutFields(config).map(
+                {orderLayoutFields(
+                    config
+                ).map(
                     (field) => {
                         const value =
                             resolveFieldValue({
                                 record,
-                                section: config,
+                                section:
+                                    config,
                                 field,
                             });
 
                         return (
                             <DetailField
                                 key={
-                                    field.id ?? field.accessor
+                                    field.id ??
+                                    field.accessor
                                 }
                                 value={value}
                                 updating={
                                     updateMutation.isPending
                                 }
                                 field={field}
-                                fieldKey={field.accessor}
+                                fieldKey={
+                                    field.accessor
+                                }
                                 record={record}
                                 onSave={
                                     handleSave
@@ -334,6 +543,7 @@ const Section = ({
         </div>
     );
 };
+
 
 
 

@@ -28,7 +28,7 @@ const EntityCreatePage = ({
         error: layoutError,
     } = useLayout(
         entity,
-        "detail"
+        "create"
     );
 
 

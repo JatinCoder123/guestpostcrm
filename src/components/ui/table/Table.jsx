@@ -32,6 +32,9 @@ import { useNavigate } from "react-router-dom";
 import TableTitleBar from "./TableTitleBar";
 import { entityKeys } from "@/hooks/useEntity";
 import useColumnWidthPersistence from "./hooks/useColumnWidthPersistence";
+const EMPTY_ARRAY = [];
+const EMPTY_OBJECT = {};
+
 const TableContext = createContext();
 export const useTableContext = () => {
   const ctx = useContext(TableContext);
@@ -114,84 +117,231 @@ const TableView = ({
   handleAddClick,
   loading,
 }) => {
-  const slice = entity
-  const STATUS_CONFIG = layout?.config?.statusConfig ?? []
+  const slice = entity;
 
-  const timefilterField = layout?.config?.filterColumns ? layout?.config?.filterColumns[0]?.name : 'date_entered';
+  const rawStatusConfig =
+    layout?.config?.statusConfig ?? EMPTY_ARRAY;
+
+  const rawColumns =
+    layout?.config?.columns ?? EMPTY_ARRAY;
+
+  const rawFilterColumns =
+    layout?.config?.filterColumns ?? EMPTY_ARRAY;
+
+  /*
+   * These keys are primitive strings. If the parent recreates the
+   * layout arrays with the same content, the memoized references below
+   * remain stable and downstream effects do not fire again.
+   */
+  const columnsKey = JSON.stringify(rawColumns);
+  const filterColumnsKey =
+    JSON.stringify(rawFilterColumns);
+  const statusConfigKey =
+    JSON.stringify(rawStatusConfig);
+
+  const columns = useMemo(
+    () => rawColumns,
+    [columnsKey]
+  );
+
+  const filterColumns = useMemo(
+    () => rawFilterColumns,
+    [filterColumnsKey]
+  );
+
+  const STATUS_CONFIG = useMemo(
+    () => rawStatusConfig,
+    [statusConfigKey]
+  );
+
+  const timefilterField =
+    filterColumns?.[0]?.name || "date_entered";
+
   const tableName = layout?.label;
-  const columns = layout?.config?.columns ?? []
-  const filterColumns = layout?.config?.filterColumns ?? []
+
   const tableData =
     data?.pages?.flatMap(
       (page) => page.records || page.data || []
-    ) ?? [];
-  const pages = data?.pages ?? [];
+    ) ?? EMPTY_ARRAY;
 
-  const lastPage = pages[pages.length - 1] ?? {};
-  const firstPage = pages[0] ?? {};
+  const pages =
+    data?.pages ?? EMPTY_ARRAY;
 
-  const pageIndex = lastPage.page ?? 1;
-  const pageCount = firstPage.total_pages ?? 0;
-  const count = firstPage.total ?? 0;
-  const sort = preferences?.sorting ?? {}
-  const dateFilter = preferences?.date_filter || {};
-  const fromDate = dateFilter?.date_from?.split(" ")[0] || todayStr();
-  const fromTime = dateFilter.date_from?.split(" ")[1] || "00:01";
-  const toDate = dateFilter.date_to?.split(" ")[0] || todayStr();
-  const toTime = dateFilter.date_to?.split(" ")[1] || "23:59";
-  const filterActive = !!dateFilter.date_from && !!dateFilter.date_to;
-  const filters = preferences?.filters ?? {};
-  const search = {
-    search: preferences?.search_filter?.search || "",
-    search_fields: preferences?.search_filter?.search_fields || [],
-  };
-  const [showStatus, setShowStatus] = useState(true);
-  const [showFilterColumn, setShowFilterColumn] = useState(false);
+  const lastPage =
+    pages[pages.length - 1] ?? EMPTY_OBJECT;
+
+  const firstPage =
+    pages[0] ?? EMPTY_OBJECT;
+
+  const pageIndex =
+    lastPage.page ?? 1;
+
+  const pageCount =
+    firstPage.total_pages ?? 0;
+
+  const count =
+    firstPage.total ?? 0;
+
+  const sort =
+    preferences?.sorting ?? EMPTY_OBJECT;
+
+  const dateFilter =
+    preferences?.date_filter ?? EMPTY_OBJECT;
+
+  const fromDate =
+    dateFilter?.date_from?.split(" ")[0] ||
+    todayStr();
+
+  const fromTime =
+    dateFilter?.date_from?.split(" ")[1] ||
+    "00:01";
+
+  const toDate =
+    dateFilter?.date_to?.split(" ")[0] ||
+    todayStr();
+
+  const toTime =
+    dateFilter?.date_to?.split(" ")[1] ||
+    "23:59";
+
+  const filterActive =
+    !!dateFilter?.date_from &&
+    !!dateFilter?.date_to;
+
+  const filters =
+    preferences?.filters ?? EMPTY_OBJECT;
+
+  const searchFields =
+    preferences?.search_filter?.search_fields ??
+    EMPTY_ARRAY;
+
+  const searchFieldsKey =
+    JSON.stringify(searchFields);
+
+  const search = useMemo(
+    () => ({
+      search:
+        preferences?.search_filter?.search || "",
+      search_fields: searchFields,
+    }),
+    [
+      preferences?.search_filter?.search,
+      searchFieldsKey,
+    ]
+  );
+
+  const [showStatus, setShowStatus] =
+    useState(true);
+
+  const [showFilterColumn, setShowFilterColumn] =
+    useState(false);
+
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
-
-
-
-
 
   const [selectedRows, setSelectedRows] =
     useState([]);
 
-  const [visibleColumns, setVisibleColumns] = useState([]);
-  const [columnWidths, setColumnWidths] = useState({});
-
-  /**
-   * Only the columns this view is published to render.
+  /*
+   * visibleColumns is derived from columns, so it does NOT need
+   * useState + useEffect synchronization.
    *
-   * `visible` is a presentation value that comes down with the layout. It is
-   * what the Table View layout editor writes to `value_boolean` on the
-   * column's visibility override, so a column hidden there has to disappear
-   * from the header, the body, the search field list and the sort list -
-   * all of which read `visibleColumns`.
+   * The previous implementation did:
    *
-   * `columns` deliberately stays the full published set, because the width
-   * bookkeeping below and the loading skeleton still need to know about
-   * hidden columns.
+   *   useEffect(() => {
+   *     setVisibleColumns(columns.filter(...));
+   *   }, [columns]);
    *
-   * A missing or unrecognised value counts as visible, so a column never
-   * vanishes from a table because the backend sent something unexpected.
+   * which could continuously update when `columns` changed identity.
    */
-  useEffect(() => {
-    setVisibleColumns(columns.filter(isColumnVisible));
-  }, [columns]);
-  useEffect(() => {
-    const widths = {};
+  const visibleColumns = useMemo(
+    () => columns.filter(isColumnVisible),
+    [columns]
+  );
 
-    columns.forEach((column) => {
-      widths[column.accessor] = {
-        width: column.width ?? 220,
-        minWidth: column.minWidth ?? 120,
-        maxWidth: column.maxWidth ?? 700,
-        sticky: column.sticky ?? false,
-      };
+  const [columnWidths, setColumnWidths] =
+    useState(() => {
+      const widths = {};
+
+      columns.forEach((column) => {
+        widths[column.accessor] = {
+          width: column.width ?? 220,
+          minWidth: column.minWidth ?? 120,
+          maxWidth: column.maxWidth ?? 700,
+          sticky: column.sticky ?? false,
+        };
+      });
+
+      return widths;
     });
 
-    setColumnWidths(widths);
+  /*
+   * Synchronize published column definitions with local widths.
+   *
+   * IMPORTANT:
+   * Returning `previousWidths` when the values are identical prevents
+   * an unnecessary state update and therefore prevents an effect/render
+   * feedback loop.
+   */
+  useEffect(() => {
+    setColumnWidths((previousWidths) => {
+      const nextWidths = {};
+
+      columns.forEach((column) => {
+        const previous =
+          previousWidths[column.accessor];
+
+        nextWidths[column.accessor] = {
+          width:
+            previous?.width ??
+            column.width ??
+            220,
+
+          minWidth:
+            column.minWidth ?? 120,
+
+          maxWidth:
+            column.maxWidth ?? 700,
+
+          sticky:
+            column.sticky ?? false,
+        };
+      });
+
+      const previousKeys =
+        Object.keys(previousWidths);
+
+      const nextKeys =
+        Object.keys(nextWidths);
+
+      const unchanged =
+        previousKeys.length ===
+        nextKeys.length &&
+        nextKeys.every((key) => {
+          const previous =
+            previousWidths[key];
+
+          const next =
+            nextWidths[key];
+
+          return (
+            previous?.width ===
+            next.width &&
+            previous?.minWidth ===
+            next.minWidth &&
+            previous?.maxWidth ===
+            next.maxWidth &&
+            previous?.sticky ===
+            next.sticky
+          );
+        });
+
+      if (unchanged) {
+        return previousWidths;
+      }
+
+      return nextWidths;
+    });
   }, [columns]);
 
   const resizeColumn = useCallback((accessor, width) => {
@@ -326,80 +476,125 @@ const TableView = ({
   const actionMutation =
     useActionMutation();
 
-  const actionContext = {
-    navigate: navigateTo,
+  const actionContext = useMemo(
+    () => ({
+      navigate: navigateTo,
 
-    // user: currentUser,
+      // user: currentUser,
 
-    mutateAsync:
+      mutateAsync:
+        actionMutation.mutateAsync,
+
+      queryClient,
+
+      toast,
+
+      // openModal,
+
+      onActionSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey:
+            entityKeys.allByEntity(entity),
+        });
+      },
+
+      // onActionError,
+    }),
+    [
+      navigateTo,
       actionMutation.mutateAsync,
+      entity,
+    ]
+  );
 
-    queryClient,
+  const value = useMemo(
+    () => ({
+      tableName,
+      layout,
+      columns,
 
-    toast,
+      visibleColumns,
 
-    // openModal,
+      columnWidths,
+      resizeColumn,
 
-    onActionSuccess: () => { queryClient.invalidateQueries({ queryKey: entityKeys.allByEntity(entity) }) },
-    // onActionError,
-  };
+      /* Persists a finished resize to the CRM. */
+      commitColumnWidth,
+      savingColumns,
 
-  const value = {
-    tableName,
-    layout,
-    columns,
+      gridTemplate,
+      stickyColumns,
 
-    visibleColumns,
-    setVisibleColumns,
+      showStatus,
+      setShowStatus,
 
-    columnWidths,
-    resizeColumn,
+      search,
+      setSearch: updateSearch,
 
-    /* Persists a finished resize to the CRM. */
-    commitColumnWidth,
-    savingColumns,
+      filters,
+      setFilters: updateFilters,
 
-    gridTemplate,
-    stickyColumns,
+      slice,
+      entity,
 
-    showStatus,
-    setShowStatus,
+      sort,
+      toggleSort,
 
-    search,
-    setSearch: updateSearch,
+      fetchNextPage,
+      hasNextPage,
+      isFetchingNextPage,
 
-    filters,
-    setFilters: updateFilters,
+      searching,
 
-    slice,
-    entity,
+      timefilter,
 
-    sort,
-    toggleSort,
+      filterColumns,
 
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+      loading,
 
-    searching,
+      selectedRows,
+      setSelectedRows,
 
+      pageIndex,
+      pageCount,
 
-    timefilter,
-
-    filterColumns,
-
-    loading,
-
-    selectedRows,
-    setSelectedRows,
-
-    pageIndex,
-    pageCount,
-
-    count,
-    data: tableData,
-    actionContext
-  };
+      count,
+      data: tableData,
+      actionContext,
+    }),
+    [
+      tableName,
+      layout,
+      columns,
+      visibleColumns,
+      columnWidths,
+      resizeColumn,
+      commitColumnWidth,
+      savingColumns,
+      gridTemplate,
+      stickyColumns,
+      showStatus,
+      search,
+      filters,
+      slice,
+      entity,
+      sort,
+      toggleSort,
+      fetchNextPage,
+      hasNextPage,
+      isFetchingNextPage,
+      searching,
+      timefilter,
+      filterColumns,
+      loading,
+      selectedRows,
+      pageIndex,
+      pageCount,
+      count,
+      tableData,
+      actionContext,
+    ]
+  );
 
   return (
     <TableContext.Provider value={value}>
