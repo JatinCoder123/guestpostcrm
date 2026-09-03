@@ -24,18 +24,23 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 import {
+  ChevronDown,
   GripVertical,
-  MoreHorizontal,
+  LoaderCircle,
   Plus,
   RotateCcw,
+  Save,
   Search,
   Settings2,
   Trash2,
 } from "lucide-react";
 
-import * as LucideIcons from "lucide-react";
+import IconInput from "@/components/IconInput";
+
+import Icon from "@/components/ui/Icon/Icon";
 
 import {
+  useCrmModules,
   useLayoutPreferences,
   useUpdateLayout,
 } from "@/queries/prefrences.queries";
@@ -56,7 +61,10 @@ import { performRankMove } from "@/utils/rankMove";
 
 import { isRankConflictError, requestRankMove } from "@/api/rank.api";
 
-import { fetchLayout } from "@/api/prefrences.api";
+import {
+  fetchLayout,
+  fetchSidebarComponentId,
+} from "@/api/prefrences.api";
 
 import { preferenceKeys } from "@/queries/prefrences.queries";
 
@@ -65,31 +73,35 @@ import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 /* =========================================================================
-   ICON REGISTRY
-   ========================================================================= */
-
-const iconRegistry = {
-  ...LucideIcons,
-};
-
-/* =========================================================================
    DYNAMIC ICON
    ========================================================================= */
 
-function DynamicIcon({ icon, className = "h-4 w-4" }) {
-  const Icon = icon && iconRegistry[icon] ? iconRegistry[icon] : Settings2;
+function DynamicIcon({ icon, library, className = "h-4 w-4" }) {
+  const fallback = <Settings2 className={className} />;
 
-  return <Icon className={className} />;
+  if (!icon || !library) {
+    return fallback;
+  }
+
+  return (
+    <Icon
+      name={icon}
+      library={library}
+      className={className}
+      fallback={fallback}
+    />
+  );
 }
 
 /* =========================================================================
    TOGGLE
    ========================================================================= */
 
-function Toggle({ checked, onChange }) {
+function Toggle({ checked, onChange, disabled = false }) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={(event) => {
         event.stopPropagation();
         onChange?.();
@@ -102,6 +114,8 @@ function Toggle({ checked, onChange }) {
                 rounded-full
                 transition-colors
                 ${checked ? "bg-primary" : "bg-muted"}
+                disabled:cursor-not-allowed
+                disabled:opacity-50
             `}
       aria-pressed={checked}
     >
@@ -129,7 +143,10 @@ function Toggle({ checked, onChange }) {
 function SortableGroup({
   group,
   selected,
+  expanded,
+  disabled,
   onSelect,
+  onToggleExpanded,
   onToggle,
   children,
   onAddField,
@@ -147,6 +164,7 @@ function SortableGroup({
     data: {
       type: "group",
       groupId: group.id,
+      acceptsItems: group.data.length === 0,
     },
   });
 
@@ -177,7 +195,10 @@ function SortableGroup({
       {/* GROUP HEADER */}
 
       <div
-        onClick={() => onSelect(group)}
+        onClick={() => {
+          onSelect(group);
+          onToggleExpanded(group);
+        }}
         className={`
                     flex
                     cursor-pointer
@@ -246,20 +267,26 @@ function SortableGroup({
 
           <p className="text-[11px] text-muted-foreground">
             {group.is_active
-              ? `${group.data.length} ${group.data.length === 1 ? "field" : "fields"}`
+              ? `${group.data.length} ${group.data.length === 1 ? "module" : "modules"}`
               : "Hidden from sidebar"}
           </p>
         </div>
 
         {/* ACTIVE */}
 
-        <Toggle checked={group.is_active} onChange={() => onToggle(group)} />
+        <Toggle
+          checked={group.is_active}
+          onChange={() => onToggle(group)}
+          disabled={disabled}
+        />
 
         <button
           type="button"
+          aria-expanded={expanded}
+          aria-label={`${expanded ? "Collapse" : "Expand"} ${group.group_name}`}
           onClick={(event) => {
             event.stopPropagation();
-            onSelect(group);
+            onToggleExpanded(group);
           }}
           className="
                         flex
@@ -274,26 +301,39 @@ function SortableGroup({
                         hover:text-foreground
                     "
         >
-          <MoreHorizontal className="h-4 w-4" />
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${
+              expanded ? "rotate-0" : "-rotate-90"
+            }`}
+          />
         </button>
       </div>
 
       {/* FIELDS */}
 
-      <div
-        className="
+      {expanded && (
+        <div
+          className="
                     border-t
                     border-border
                     px-2
                     py-1.5
                 "
-      >
-        {children}
+        >
+          {children}
 
-        <button
-          type="button"
-          onClick={() => onAddField(group)}
-          className="
+          {group.data.length === 0 && (
+            <div className="mx-1 my-2 rounded-lg border border-dashed border-primary/30 bg-primary/[0.03] px-3 py-4 text-center text-xs text-muted-foreground">
+              Drop a module here
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => onAddField(group)}
+            disabled={group.isNew}
+            title={group.isNew ? "Create the group before adding modules" : undefined}
+            className="
                         mt-1
                         flex
                         w-full
@@ -308,12 +348,15 @@ function SortableGroup({
                         transition-colors
                         hover:bg-accent
                         hover:text-foreground
+                        disabled:pointer-events-none
+                        disabled:opacity-40
                     "
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add field
-        </button>
-      </div>
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add module
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -322,7 +365,14 @@ function SortableGroup({
    SORTABLE FIELD
    ========================================================================= */
 
-function SortableField({ item, groupId, selected, onSelect, onToggle }) {
+function SortableField({
+  item,
+  groupId,
+  selected,
+  onSelect,
+  onToggle,
+  disabled,
+}) {
   const {
     attributes,
     listeners,
@@ -388,7 +438,7 @@ function SortableField({ item, groupId, selected, onSelect, onToggle }) {
                     hover:text-foreground
                     active:cursor-grabbing
                 "
-        title="Drag field"
+        title="Drag module"
       >
         <GripVertical className="h-3.5 w-3.5" />
       </button>
@@ -411,6 +461,7 @@ function SortableField({ item, groupId, selected, onSelect, onToggle }) {
       >
         <DynamicIcon
           icon={item.icon}
+          library={item.library}
           className="
                         h-3.5
                         w-3.5
@@ -433,24 +484,13 @@ function SortableField({ item, groupId, selected, onSelect, onToggle }) {
         )}
       </div>
 
-      {/* RANK */}
-
-      <span
-        className="
-                    max-w-[80px]
-                    truncate
-                    text-[9px]
-                    font-mono
-                    text-muted-foreground
-                "
-        title={item[RANK_FIELD] ?? "no rank"}
-      >
-        {item[RANK_FIELD] ?? "—"}
-      </span>
-
       {/* ACTIVE */}
 
-      <Toggle checked={item.is_active} onChange={() => onToggle(item)} />
+      <Toggle
+        checked={item.is_active}
+        onChange={() => onToggle(item)}
+        disabled={disabled}
+      />
     </div>
   );
 }
@@ -491,11 +531,73 @@ function FieldInput({ label, value, onChange, placeholder }) {
   );
 }
 
+function ModuleSelect({
+  value,
+  onChange,
+  modules,
+  loading,
+  loadError,
+  disabled,
+}) {
+  const currentValueIsCustom =
+    value && !modules.some((module) => module.value === value);
+
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-medium text-foreground">
+        Module Name
+      </label>
+
+      <div className="relative">
+        <select
+          value={value ?? ""}
+          onChange={(event) => onChange(event.target.value)}
+          disabled={disabled || loading || loadError}
+          className="h-10 w-full appearance-none rounded-lg border border-border bg-background px-3 pr-9 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <option value="" disabled>
+            {loading ? "Loading CRM modules..." : "Select a CRM module"}
+          </option>
+
+          {currentValueIsCustom && (
+            <option value={value}>{value} (configured value)</option>
+          )}
+
+          {modules.map((module) => (
+            <option key={module.value} value={module.value}>
+              {module.label} ({module.value})
+            </option>
+          ))}
+        </select>
+
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      </div>
+
+      <p
+        className={`mt-1.5 text-[10px] ${
+          loadError ? "text-destructive" : "text-muted-foreground"
+        }`}
+      >
+        {loadError
+          ? "CRM modules could not be loaded. Refresh and try again."
+          : "The selected CRM module key is saved as fetch_from."}
+      </p>
+    </div>
+  );
+}
+
 /* =========================================================================
    GROUP EDITOR
    ========================================================================= */
 
-function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
+function GroupEditor({
+  group,
+  onUpdate,
+  onDelete,
+  onAddField,
+  onSave,
+  saving,
+}) {
   if (!group) {
     return <EmptyEditor />;
   }
@@ -503,23 +605,12 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-border px-5 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-              Group
-            </p>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+            Group
+          </p>
 
-            <h3 className="mt-1 text-base font-semibold">Group Settings</h3>
-          </div>
-
-          <Toggle
-            checked={group.is_active}
-            onChange={() =>
-              onUpdate({
-                is_active: !group.is_active,
-              })
-            }
-          />
+          <h3 className="mt-1 text-base font-semibold">Group Settings</h3>
         </div>
       </div>
 
@@ -537,77 +628,24 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
           />
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium">
-              Group Rank
-            </label>
-
-            <input
-              value={group[RANK_FIELD] ?? ""}
-              readOnly
-              className="
-                                h-10
-                                w-full
-                                rounded-lg
-                                border
-                                border-border
-                                bg-muted/30
-                                px-3
-                                font-mono
-                                text-sm
-                                text-muted-foreground
-                                outline-none
-                            "
-            />
-
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              Position in the sidebar, ascending. An opaque value assigned by
-              the CRM; drag groups here to change it.
-            </p>
-          </div>
-
-          <div
-            className="
-                            flex
-                            items-center
-                            justify-between
-                            rounded-xl
-                            border
-                            border-border
-                            bg-muted/20
-                            p-3
-                        "
-          >
-            <div>
-              <p className="text-sm font-medium">Show in sidebar</p>
-
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Enable or disable the entire group.
-              </p>
-            </div>
-
-            <Toggle
-              checked={group.is_active}
-              onChange={() =>
-                onUpdate({
-                  is_active: !group.is_active,
-                })
-              }
-            />
-          </div>
-
-          <div>
             <div className="mb-2 flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold">Fields</p>
+                <p className="text-sm font-semibold">Modules</p>
 
                 <p className="text-xs text-muted-foreground">
-                  {group.data.length} fields
+                  {group.data.length} modules
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => onAddField(group)}
+                disabled={group.isNew}
+                title={
+                  group.isNew
+                    ? "Create the group before adding modules"
+                    : undefined
+                }
                 className="
                                     inline-flex
                                     items-center
@@ -620,10 +658,12 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
                                     text-xs
                                     font-medium
                                     hover:bg-accent
+                                    disabled:pointer-events-none
+                                    disabled:opacity-40
                                 "
               >
                 <Plus className="h-3.5 w-3.5" />
-                Add
+                Add module
               </button>
             </div>
 
@@ -645,6 +685,7 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
                 >
                   <DynamicIcon
                     icon={item.icon}
+                    library={item.library}
                     className="
                                                 h-4
                                                 w-4
@@ -656,17 +697,6 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
                     {item.name}
                   </span>
 
-                  <span
-                    className="
-                                                max-w-[80px]
-                                                truncate
-                                                font-mono
-                                                text-[9px]
-                                                text-muted-foreground
-                                            "
-                  >
-                    {item[RANK_FIELD] ?? "—"}
-                  </span>
                 </div>
               ))}
             </div>
@@ -674,11 +704,16 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
         </div>
       </div>
 
-      <div className="border-t border-border p-4">
-        <button
-          type="button"
-          onClick={() => onDelete(group)}
-          className="
+      <div
+        className={`grid gap-2 border-t border-border p-4 ${
+          group.isNew ? "grid-cols-2" : "grid-cols-1"
+        }`}
+      >
+        {group.isNew && (
+          <button
+            type="button"
+            onClick={() => onDelete(group)}
+            className="
                         flex
                         w-full
                         items-center
@@ -694,9 +729,40 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
                         text-destructive
                         hover:bg-destructive/10
                     "
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Discard Group
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => onSave(group)}
+          disabled={saving || !group.group_name?.trim()}
+          className="
+                        flex
+                        w-full
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-lg
+                        bg-primary
+                        px-3
+                        py-2
+                        text-xs
+                        font-medium
+                        text-primary-foreground
+                        hover:bg-primary/90
+                        disabled:pointer-events-none
+                        disabled:opacity-50
+                    "
         >
-          <Trash2 className="h-3.5 w-3.5" />
-          Delete Group
+          {saving ? (
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Save className="h-3.5 w-3.5" />
+          )}
+          {group.isNew ? "Create Group" : "Update Group"}
         </button>
       </div>
     </div>
@@ -707,7 +773,16 @@ function GroupEditor({ group, onUpdate, onDelete, onAddField }) {
    FIELD EDITOR
    ========================================================================= */
 
-function ItemEditor({ item, onUpdate, onDelete }) {
+function ItemEditor({
+  item,
+  onUpdate,
+  onDelete,
+  onSave,
+  saving,
+  crmModules,
+  modulesLoading,
+  modulesLoadError,
+}) {
   if (!item) {
     return <EmptyEditor />;
   }
@@ -732,6 +807,7 @@ function ItemEditor({ item, onUpdate, onDelete }) {
           >
             <DynamicIcon
               icon={item.icon}
+              library={item.library}
               className="
                                 h-5
                                 w-5
@@ -742,22 +818,14 @@ function ItemEditor({ item, onUpdate, onDelete }) {
 
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-              Sidebar Field
+              Sidebar Module
             </p>
 
             <h3 className="mt-1 truncate text-base font-semibold">
-              {item.name || "Field"}
+              {item.name || "Module"}
             </h3>
           </div>
 
-          <Toggle
-            checked={item.is_active}
-            onChange={() =>
-              onUpdate({
-                is_active: !item.is_active,
-              })
-            }
-          />
         </div>
       </div>
 
@@ -774,27 +842,47 @@ function ItemEditor({ item, onUpdate, onDelete }) {
             placeholder="Contacts"
           />
 
-          <FieldInput
-            label="Module Name"
+          <ModuleSelect
             value={item.module_name}
             onChange={(value) =>
               onUpdate({
                 module_name: value,
               })
             }
-            placeholder="contacts"
+            modules={crmModules}
+            loading={modulesLoading}
+            loadError={modulesLoadError}
+            disabled={saving}
           />
 
-          <FieldInput
-            label="Icon Name"
-            value={item.icon}
-            onChange={(value) =>
-              onUpdate({
-                icon: value,
-              })
-            }
-            placeholder="Users"
-          />
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-foreground">
+              Icon
+            </label>
+
+            <IconInput
+              value={
+                item.icon && item.library
+                  ? {
+                      name: item.icon,
+                      library: item.library,
+                    }
+                  : null
+              }
+              onChange={(selection) =>
+                onUpdate({
+                  icon: selection?.name ?? "",
+                  library: selection?.library ?? "",
+                })
+              }
+              placeholder="Choose an icon"
+              disabled={saving}
+            />
+
+            <p className="mt-1.5 text-[10px] text-muted-foreground">
+              The icon_name and library are saved when you update the module.
+            </p>
+          </div>
 
           <FieldInput
             label="Navigation"
@@ -807,91 +895,19 @@ function ItemEditor({ item, onUpdate, onDelete }) {
             placeholder="/contacts"
           />
 
-          <FieldInput
-            label="Endpoint"
-            value={item.endpoint}
-            onChange={(value) =>
-              onUpdate({
-                endpoint: value,
-              })
-            }
-            placeholder="/api/contacts"
-          />
-
-          <div>
-            <label className="mb-1.5 block text-xs font-medium">Rank</label>
-
-            <input
-              value={item[RANK_FIELD] ?? ""}
-              readOnly
-              className="
-                                h-10
-                                w-full
-                                rounded-lg
-                                border
-                                border-border
-                                bg-muted/30
-                                px-3
-                                font-mono
-                                text-sm
-                                text-muted-foreground
-                                outline-none
-                            "
-            />
-
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              Position inside the group, ascending. An opaque value assigned by
-              the CRM; drag fields here to change it.
-            </p>
-          </div>
-
-          <div
-            className="
-                            flex
-                            items-center
-                            justify-between
-                            rounded-xl
-                            border
-                            border-border
-                            bg-muted/20
-                            p-3
-                        "
-          >
-            <div>
-              <p className="text-sm font-medium">Active</p>
-
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Show this field in the sidebar.
-              </p>
-            </div>
-
-            <Toggle
-              checked={item.is_active}
-              onChange={() =>
-                onUpdate({
-                  is_active: !item.is_active,
-                })
-              }
-            />
-          </div>
-
-          <div>
-            <p className="mb-2 text-sm font-semibold">Configuration</p>
-
-            <div className="rounded-xl border border-border bg-muted/20 p-3">
-              <pre className="max-h-52 overflow-auto text-[10px] leading-5 text-muted-foreground">
-                {JSON.stringify(item, null, 2)}
-              </pre>
-            </div>
-          </div>
         </div>
       </div>
 
-      <div className="border-t border-border p-4">
-        <button
-          type="button"
-          onClick={() => onDelete(item)}
-          className="
+      <div
+        className={`grid gap-2 border-t border-border p-4 ${
+          item.isNew ? "grid-cols-2" : "grid-cols-1"
+        }`}
+      >
+        {item.isNew && (
+          <button
+            type="button"
+            onClick={() => onDelete(item)}
+            className="
                         flex
                         w-full
                         items-center
@@ -907,9 +923,42 @@ function ItemEditor({ item, onUpdate, onDelete }) {
                         text-destructive
                         hover:bg-destructive/10
                     "
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Discard Module
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => onSave(item)}
+          disabled={
+            saving || !item.name?.trim() || !item.module_name?.trim()
+          }
+          className="
+                        flex
+                        w-full
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-lg
+                        bg-primary
+                        px-3
+                        py-2
+                        text-xs
+                        font-medium
+                        text-primary-foreground
+                        hover:bg-primary/90
+                        disabled:pointer-events-none
+                        disabled:opacity-50
+                    "
         >
-          <Trash2 className="h-3.5 w-3.5" />
-          Remove Field
+          {saving ? (
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Save className="h-3.5 w-3.5" />
+          )}
+          {item.isNew ? "Create Module" : "Update Module"}
         </button>
       </div>
     </div>
@@ -954,7 +1003,7 @@ function EmptyEditor() {
       <h3 className="text-sm font-semibold">Nothing selected</h3>
 
       <p className="mt-1 max-w-xs text-xs leading-5 text-muted-foreground">
-        Select a group or sidebar field from the left to configure its
+        Select a group or sidebar module from the left to configure its
         properties.
       </p>
     </div>
@@ -980,13 +1029,16 @@ const collisionDetectionStrategy = (args) => {
   }
 
   if (activeType === "item") {
-    const fieldContainers = args.droppableContainers.filter(
-      (container) => container.data?.current?.type === "item",
+    const moduleContainers = args.droppableContainers.filter(
+      (container) =>
+        container.data?.current?.type === "item" ||
+        (container.data?.current?.type === "group" &&
+          container.data?.current?.acceptsItems),
     );
 
     return closestCenter({
       ...args,
-      droppableContainers: fieldContainers,
+      droppableContainers: moduleContainers,
     });
   }
 
@@ -1000,7 +1052,13 @@ const collisionDetectionStrategy = (args) => {
 const Sidebar = () => {
   const { data: layoutData, isPending: layoutLoading } = useLayoutPreferences();
 
-  const { mutate: updateLayout, isPending: updateLayoutPending } =
+  const {
+    data: crmModules = [],
+    isPending: crmModulesLoading,
+    isError: crmModulesLoadError,
+  } = useCrmModules();
+
+  const { mutateAsync: saveLayoutRecord, isPending: updateLayoutPending } =
     useUpdateLayout();
 
   const [groups, setGroups] = useState([]);
@@ -1012,6 +1070,10 @@ const Sidebar = () => {
   const [expandedGroups, setExpandedGroups] = useState({});
 
   const [activeDrag, setActiveDrag] = useState(null);
+
+  const [savingRecord, setSavingRecord] = useState(false);
+
+  const savingLayout = savingRecord || updateLayoutPending;
 
   /**
    * Held true for the whole of a reorder. Starting a second
@@ -1027,18 +1089,6 @@ const Sidebar = () => {
   const [rankError, setRankError] = useState(null);
 
   const queryClient = useQueryClient();
-
-  /**
-   * When we fire a layout mutation ourselves
-   * (drag reorder, toggle, etc.) the query
-   * invalidation will refetch layoutData and
-   * trigger the sync useEffect below.
-   *
-   * We set this flag BEFORE calling updateLayout
-   * so the next useEffect cycle skips
-   * overwriting our optimistic local state.
-   */
-  const skipNextSync = useRef(false);
 
   /**
    * Writes still in flight, so the sync effect does not
@@ -1141,11 +1191,6 @@ const Sidebar = () => {
       return;
     }
 
-    if (skipNextSync.current) {
-      skipNextSync.current = false;
-      return;
-    }
-
     applyServerLayout(layoutData);
   }, [layoutData, applyServerLayout]);
 
@@ -1227,65 +1272,6 @@ const Sidebar = () => {
   };
 
   /* =====================================================================
-       GET MODULE
-       ===================================================================== */
-
-  const getGroupModule = (group) =>
-    group?.module || group?.module_name || SIDEBAR_GROUP_MODULE;
-
-  const getFieldModule = (item) =>
-    item?.module || item?.module_name || SIDEBAR_MODULE_MODULE;
-
-  /* =====================================================================
-       WRITE
-       ===================================================================== */
-
-  /**
-   * Every write goes through here, so the bookkeeping that
-   * keeps the refetch from clobbering optimistic state
-   * lives in exactly one place.
-   */
-  const pushUpdate = ({ module, id, payload }) => {
-    skipNextSync.current = true;
-    pendingWrites.current += 1;
-
-    updateLayout(
-      {
-        module,
-        id,
-        payload,
-      },
-      {
-        /**
-         * The write was rejected, so the optimistic change is
-         * wrong. Drop the skip flag and let the refetch
-         * overwrite local state, which snaps the editor back
-         * to what the server actually holds.
-         */
-        onError: () => {
-          skipNextSync.current = false;
-        },
-
-        onSettled: () => {
-          pendingWrites.current = Math.max(0, pendingWrites.current - 1);
-        },
-      },
-    );
-  };
-
-  const persistActive = (record, module, active) => {
-    if (!isPersistableId(record?.id)) {
-      return;
-    }
-
-    pushUpdate({
-      module,
-      id: record.id,
-      payload: { is_active: toActiveFlag(active) },
-    });
-  };
-
-  /* =====================================================================
        RANK MOVE PLUMBING
        ===================================================================== */
 
@@ -1303,8 +1289,8 @@ const Sidebar = () => {
     /*
      * Only guards the window between the drop and the response,
      * so a refetch landing mid-write cannot undo the optimistic
-     * order. `skipNextSync` is deliberately NOT set here: once
-     * the write is confirmed the server order is what we want.
+     * order. Once the write is confirmed, the server order is
+     * what we want.
      */
     pendingWrites.current += 1;
 
@@ -1328,7 +1314,6 @@ const Sidebar = () => {
    * from this one request too.
    */
   const reloadSidebar = async () => {
-    skipNextSync.current = false;
     pendingWrites.current = 0;
 
     const fresh = await queryClient.fetchQuery({
@@ -1376,7 +1361,7 @@ const Sidebar = () => {
 
   /**
    * Turning a group off hides the whole group, heading and
-   * fields, from the live sidebar. The fields keep their
+   * modules, from the live sidebar. The modules keep their
    * own is_active, so turning the group back on restores
    * whatever was visible before.
    *
@@ -1408,7 +1393,16 @@ const Sidebar = () => {
       ),
     );
 
-    persistActive(group, getGroupModule(group), nextActive);
+    if (isPersistableId(group.id)) {
+      void saveLayoutRecord({
+        action: "update",
+        module: SIDEBAR_GROUP_MODULE,
+        id: group.id,
+        payload: { is_active: toActiveFlag(nextActive) },
+      }).catch(() => {
+        // The mutation hook reports the error and restores server state.
+      });
+    }
   };
 
   const toggleGroup = (group) => setGroupActive(group);
@@ -1446,7 +1440,16 @@ const Sidebar = () => {
       })),
     );
 
-    persistActive(item, getFieldModule(item), nextActive);
+    if (isPersistableId(item.id)) {
+      void saveLayoutRecord({
+        action: "update",
+        module: SIDEBAR_MODULE_MODULE,
+        id: item.id,
+        payload: { is_active: toActiveFlag(nextActive) },
+      }).catch(() => {
+        // The mutation hook reports the error and restores server state.
+      });
+    }
   };
 
   const toggleField = (item) => setFieldActive(item);
@@ -1487,6 +1490,128 @@ const Sidebar = () => {
         ),
       })),
     );
+  };
+
+  /* =====================================================================
+       CREATE / UPDATE DRAFTS
+       ===================================================================== */
+
+  const saveGroup = async (group) => {
+    if (savingRecord) {
+      return;
+    }
+
+    const name = group?.group_name?.trim();
+
+    if (!name) {
+      toast.error("Enter a group name before saving.");
+      return;
+    }
+
+    const isNew = !isPersistableId(group.id);
+
+    setSavingRecord(true);
+
+    try {
+      const response = await saveLayoutRecord({
+        action: isNew ? "create" : "update",
+        module: SIDEBAR_GROUP_MODULE,
+        id: isNew ? undefined : group.id,
+        payload: {
+          name,
+          is_active: toActiveFlag(group.is_active),
+        },
+      });
+
+      await reloadSidebar();
+
+      if (response?.id) {
+        setSelectedItem({ type: "group", id: response.id });
+        setExpandedGroups((current) => ({
+          ...current,
+          [response.id]: true,
+        }));
+      }
+
+      toast.success(isNew ? "Group created." : "Group updated.");
+    } catch (error) {
+      if (!error?.message?.startsWith("Layout ")) {
+        toast.error(error?.message || "The group could not be saved.");
+      }
+    } finally {
+      setSavingRecord(false);
+    }
+  };
+
+  const saveField = async (item) => {
+    if (savingRecord) {
+      return;
+    }
+
+    const parentGroup = groups.find((group) =>
+      group.data.some((field) => field.id === item?.id),
+    );
+
+    if (!item?.name?.trim()) {
+      toast.error("Enter a module label before saving.");
+      return;
+    }
+
+    if (!item?.module_name?.trim()) {
+      toast.error("Select a CRM module before saving.");
+      return;
+    }
+
+    if (!parentGroup || !isPersistableId(parentGroup.id)) {
+      toast.error("Create the group before creating modules inside it.");
+      return;
+    }
+
+    const isNew = !isPersistableId(item.id);
+
+    setSavingRecord(true);
+
+    try {
+      const sidebarComponentId = isNew
+        ? await fetchSidebarComponentId()
+        : null;
+
+      const response = await saveLayoutRecord({
+        action: isNew ? "create" : "update",
+        module: SIDEBAR_MODULE_MODULE,
+        id: isNew ? undefined : item.id,
+        payload: {
+          name: item.name.trim(),
+          fetch_from: item.module_name ?? "",
+          icon_name: item.icon ?? "",
+          library: item.library ?? "",
+          navigation: item.navigation ?? "",
+          group_name: parentGroup.group_name,
+          is_active: toActiveFlag(item.is_active),
+          outr_ui_groups_outr_ui_modules_1outr_ui_groups_ida: parentGroup.id,
+          ...(sidebarComponentId
+            ? {
+                outr_global_component_outr_ui_modules_1outr_global_component_ida:
+                  sidebarComponentId,
+              }
+            : {}),
+        },
+      });
+
+      await reloadSidebar();
+
+      if (response?.id) {
+        setSelectedItem({ type: "field", id: response.id });
+      }
+
+      toast.success(isNew ? "Module created." : "Module updated.");
+    } catch (error) {
+      if (!error?.message?.startsWith("Layout ")) {
+        toast.error(error?.message || "The module could not be saved.");
+      }
+    } finally {
+      setSavingRecord(false);
+    }
   };
 
   /* =====================================================================
@@ -1543,7 +1668,7 @@ const Sidebar = () => {
 
       is_active: true,
 
-      module_name: SIDEBAR_GROUP_MODULE,
+      module: SIDEBAR_GROUP_MODULE,
 
       data: [],
 
@@ -1587,11 +1712,11 @@ const Sidebar = () => {
 
           module: SIDEBAR_MODULE_MODULE,
 
-          module_name: name.toLowerCase().replace(/\s+/g, "_"),
+          module_name: "",
 
           library: "lu",
 
-          icon: icon || "Settings2",
+          icon: icon || "LuSettings2",
 
           key: "",
 
@@ -1828,23 +1953,37 @@ const Sidebar = () => {
            ================================================================ */
 
     if (activeData.type === "item") {
-      if (overData.type !== "item") return;
+      const droppingIntoEmptyGroup =
+        overData.type === "group" && overData.acceptsItems;
+
+      if (overData.type !== "item" && !droppingIntoEmptyGroup) return;
 
       const activeItemId = activeData.itemId;
-      const overItemId = overData.itemId;
+      const overItemId = droppingIntoEmptyGroup ? null : overData.itemId;
 
-      if (!activeItemId || !overItemId) return;
-      if (String(activeItemId) === String(overItemId)) return;
+      if (!activeItemId) return;
+      if (overItemId && String(activeItemId) === String(overItemId)) return;
 
       const sourceGroup = groups.find((group) =>
         group.data?.some((item) => String(item.id) === String(activeItemId)),
       );
 
-      const targetGroup = groups.find((group) =>
-        group.data?.some((item) => String(item.id) === String(overItemId)),
-      );
+      const targetGroup = droppingIntoEmptyGroup
+        ? groups.find(
+            (group) => String(group.id) === String(overData.groupId),
+          )
+        : groups.find((group) =>
+            group.data?.some(
+              (item) => String(item.id) === String(overItemId),
+            ),
+          );
 
       if (!sourceGroup || !targetGroup) return;
+
+      if (!isPersistableId(targetGroup.id)) {
+        toast.error("Create the target group before moving modules into it.");
+        return;
+      }
 
       const oldIndex = sourceGroup.data.findIndex(
         (item) => String(item.id) === String(activeItemId),
@@ -1855,14 +1994,16 @@ const Sidebar = () => {
        * cross-group move this is where the record is inserted;
        * neighbours are only ever read from this scope.
        */
-      const newIndex = targetGroup.data.findIndex(
-        (item) => String(item.id) === String(overItemId),
-      );
+      const newIndex = droppingIntoEmptyGroup
+        ? 0
+        : targetGroup.data.findIndex(
+            (item) => String(item.id) === String(overItemId),
+          );
 
       if (oldIndex === -1 || newIndex === -1) return;
 
       if (!isPersistableId(activeItemId)) {
-        toast.error("Save this field in the CRM before reordering it.");
+        toast.error("Create this module in the CRM before reordering it.");
         return;
       }
 
@@ -1930,7 +2071,7 @@ const Sidebar = () => {
           </div>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Configure sidebar groups, fields, visibility and ordering.
+            Configure sidebar groups, modules, visibility and ordering.
           </p>
         </div>
 
@@ -1947,7 +2088,7 @@ const Sidebar = () => {
           <button
             type="button"
             onClick={resetChanges}
-            disabled={updateLayoutPending || savingOrder}
+            disabled={savingLayout || savingOrder}
             className="
                             inline-flex
                             items-center
@@ -1971,6 +2112,7 @@ const Sidebar = () => {
           <button
             type="button"
             onClick={() => addGroup("New Group")}
+            disabled={savingLayout}
             className="
                             inline-flex
                             items-center
@@ -1982,6 +2124,8 @@ const Sidebar = () => {
                             text-sm
                             font-medium
                             text-primary-foreground
+                            disabled:pointer-events-none
+                            disabled:opacity-50
                         "
           >
             <Plus className="h-4 w-4" />
@@ -2102,7 +2246,7 @@ const Sidebar = () => {
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search groups or fields..."
+                placeholder="Search groups or modules..."
                 className="
                                     h-10
                                     w-full
@@ -2146,15 +2290,23 @@ const Sidebar = () => {
                         selectedItem?.type === "group" &&
                         selectedItem?.id === group.id
                       }
+                      expanded={search ? true : (expandedGroups[group.id] ?? true)}
+                      disabled={savingLayout}
                       onSelect={selectGroup}
+                      onToggleExpanded={() =>
+                        setExpandedGroups((current) => ({
+                          ...current,
+                          [group.id]: !(current[group.id] ?? true),
+                        }))
+                      }
                       onToggle={toggleGroup}
                       onAddField={() =>
                         addField({
                           groupId: group.id,
 
-                          name: "New Field",
+                          name: "New Module",
 
-                          icon: "Settings2",
+                          icon: "LuSettings2",
                         })
                       }
                     >
@@ -2175,6 +2327,7 @@ const Sidebar = () => {
                               }
                               onSelect={selectField}
                               onToggle={toggleField}
+                              disabled={savingLayout}
                             />
                           ))}
                         </div>
@@ -2191,7 +2344,7 @@ const Sidebar = () => {
                   </div>
                 ) : activeDrag?.type === "item" ? (
                   <div className="rounded-xl border border-primary/30 bg-card px-4 py-3 shadow-xl">
-                    <p className="text-sm font-medium">Moving field</p>
+                    <p className="text-sm font-medium">Moving module</p>
                   </div>
                 ) : null}
               </DragOverlay>
@@ -2213,30 +2366,17 @@ const Sidebar = () => {
           {selectedItem?.type === "group" && (
             <GroupEditor
               group={selectedObject}
-              onUpdate={(changes) => {
-                /**
-                 * is_active is a backend field, so the
-                 * editor toggles have to persist. Everything
-                 * else in this panel is still local-only.
-                 */
-                if (
-                  Object.prototype.hasOwnProperty.call(changes, "is_active")
-                ) {
-                  setGroupActive(selectedObject, changes.is_active);
-
-                  return;
-                }
-
-                updateGroup(selectedItem.id, changes);
-              }}
+              saving={savingLayout}
+              onSave={saveGroup}
+              onUpdate={(changes) => updateGroup(selectedItem.id, changes)}
               onDelete={deleteGroup}
               onAddField={() =>
                 addField({
                   groupId: selectedObject?.id,
 
-                  name: "New Field",
+                  name: "New Module",
 
-                  icon: "Settings2",
+                  icon: "LuSettings2",
                 })
               }
             />
@@ -2245,17 +2385,12 @@ const Sidebar = () => {
           {selectedItem?.type === "field" && (
             <ItemEditor
               item={selectedObject}
-              onUpdate={(changes) => {
-                if (
-                  Object.prototype.hasOwnProperty.call(changes, "is_active")
-                ) {
-                  setFieldActive(selectedObject, changes.is_active);
-
-                  return;
-                }
-
-                updateField(selectedItem.id, changes);
-              }}
+              saving={savingLayout}
+              crmModules={crmModules}
+              modulesLoading={crmModulesLoading}
+              modulesLoadError={crmModulesLoadError}
+              onSave={saveField}
+              onUpdate={(changes) => updateField(selectedItem.id, changes)}
               onDelete={deleteField}
             />
           )}

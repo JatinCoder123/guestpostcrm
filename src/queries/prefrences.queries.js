@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { fetchLayout, updateLayout } from "../api/prefrences.api";
+import {
+    fetchCrmModules,
+    fetchLayout,
+    updateLayout,
+} from "../api/prefrences.api";
 
 
 export const preferenceKeys = {
@@ -9,6 +13,11 @@ export const preferenceKeys = {
     layout: () => [
         "preferences",
         "layout"
+    ],
+
+    crmModules: () => [
+        "preferences",
+        "crm-modules"
     ],
 
 };
@@ -21,17 +30,27 @@ export const useLayoutPreferences = () =>
         staleTime:
             5 * 60 * 1000,
     });
+
+export const useCrmModules = () =>
+    useQuery({
+        queryKey: preferenceKeys.crmModules(),
+        queryFn: fetchCrmModules,
+        staleTime: 30 * 60 * 1000,
+    });
+
 export function useUpdateLayout() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: async ({
+            action,
             module,
             id,
             payload,
         }) => {
             return updateLayout(
                 {
+                    action,
                     module,
                     id,
                     payload
@@ -55,6 +74,7 @@ export function useUpdateLayout() {
             console.error(
                 "[layout] update rejected",
                 {
+                    action: variables?.action ?? "update",
                     module: variables?.module,
                     id: variables?.id,
                     payload: variables?.payload,

@@ -13,17 +13,26 @@ import * as Io5 from "react-icons/io5";
 import * as Ai from "react-icons/ai";
 import * as Bs from "react-icons/bs";
 import * as Bi from "react-icons/bi";
+import * as Cg from "react-icons/cg";
+import * as Ci from "react-icons/ci";
+import * as Di from "react-icons/di";
 import * as Fi from "react-icons/fi";
+import * as Fc from "react-icons/fc";
 import * as Gi from "react-icons/gi";
 import * as Go from "react-icons/go";
+import * as Gr from "react-icons/gr";
 import * as Hi from "react-icons/hi";
 import * as Hi2 from "react-icons/hi2";
 import * as Im from "react-icons/im";
+import * as Lia from "react-icons/lia";
 import * as Lu from "react-icons/lu";
 import * as Pi from "react-icons/pi";
 import * as Ri from "react-icons/ri";
+import * as Rx from "react-icons/rx";
 import * as Si from "react-icons/si";
+import * as Sl from "react-icons/sl";
 import * as Tb from "react-icons/tb";
+import * as Tfi from "react-icons/tfi";
 import * as Ti from "react-icons/ti";
 import * as Vsc from "react-icons/vsc";
 import * as Wi from "react-icons/wi";
@@ -84,9 +93,29 @@ const LIBRARIES = {
         icons: Bi,
     },
 
+    cg: {
+        label: "Circum Icons",
+        icons: Cg,
+    },
+
+    ci: {
+        label: "Circum",
+        icons: Ci,
+    },
+
+    di: {
+        label: "Devicons",
+        icons: Di,
+    },
+
     fi: {
         label: "Feather",
         icons: Fi,
+    },
+
+    fc: {
+        label: "Flat Color Icons",
+        icons: Fc,
     },
 
     gi: {
@@ -97,6 +126,11 @@ const LIBRARIES = {
     go: {
         label: "Github",
         icons: Go,
+    },
+
+    gr: {
+        label: "Grommet",
+        icons: Gr,
     },
 
     hi: {
@@ -114,6 +148,11 @@ const LIBRARIES = {
         icons: Im,
     },
 
+    lia: {
+        label: "Icons8 Line Awesome",
+        icons: Lia,
+    },
+
     lu: {
         label: "Lucide",
         icons: Lu,
@@ -129,14 +168,29 @@ const LIBRARIES = {
         icons: Ri,
     },
 
+    rx: {
+        label: "Radix Icons",
+        icons: Rx,
+    },
+
     si: {
         label: "Simple Icons",
         icons: Si,
     },
 
+    sl: {
+        label: "Simple Line Icons",
+        icons: Sl,
+    },
+
     tb: {
         label: "Tabler",
         icons: Tb,
+    },
+
+    tfi: {
+        label: "Themify",
+        icons: Tfi,
     },
 
     ti: {
