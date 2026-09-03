@@ -166,11 +166,10 @@ function SortableGroup({
                 border
                 transition-all
 
-                ${
-                  selected
-                    ? "border-primary/40 bg-primary/[0.03] shadow-sm"
-                    : "border-border bg-card"
-                }
+                ${selected
+          ? "border-primary/40 bg-primary/[0.03] shadow-sm"
+          : "border-border bg-card"
+        }
 
                 ${isDragging ? "opacity-50" : ""}
             `}
@@ -1086,9 +1085,9 @@ const Sidebar = () => {
     setRankError(
       rankProblems.length
         ? {
-            reports: rankProblems,
-            message: `Sidebar ordering data is invalid in ${rankProblems.length} place(s). Reordering is disabled until it is fixed.`,
-          }
+          reports: rankProblems,
+          message: `Sidebar ordering data is invalid in ${rankProblems.length} place(s). Reordering is disabled until it is fixed.`,
+        }
         : null,
     );
 
@@ -1115,8 +1114,8 @@ const Sidebar = () => {
           current.type === "group"
             ? normalized.some((group) => group.id === current.id)
             : normalized.some((group) =>
-                (group.data ?? []).some((item) => item.id === current.id),
-              );
+              (group.data ?? []).some((item) => item.id === current.id),
+            );
 
         if (stillThere) {
           return current;
@@ -1402,9 +1401,9 @@ const Sidebar = () => {
       current.map((item) =>
         item.id === group.id
           ? {
-              ...item,
-              is_active: nextActive,
-            }
+            ...item,
+            is_active: nextActive,
+          }
           : item,
       ),
     );
@@ -1439,9 +1438,9 @@ const Sidebar = () => {
         data: group.data.map((field) =>
           field.id === item.id
             ? {
-                ...field,
-                is_active: nextActive,
-              }
+              ...field,
+              is_active: nextActive,
+            }
             : field,
         ),
       })),
@@ -1461,9 +1460,9 @@ const Sidebar = () => {
       current.map((group) =>
         group.id === groupId
           ? {
-              ...group,
-              ...changes,
-            }
+            ...group,
+            ...changes,
+          }
           : group,
       ),
     );
@@ -1481,9 +1480,9 @@ const Sidebar = () => {
         data: group.data.map((item) =>
           item.id === itemId
             ? {
-                ...item,
-                ...changes,
-              }
+              ...item,
+              ...changes,
+            }
             : item,
         ),
       })),
@@ -2023,8 +2022,8 @@ const Sidebar = () => {
                   : ""}
                 {report.duplicates.length
                   ? ` - duplicate rank(s): ${report.duplicates
-                      .map((entry) => entry.rank)
-                      .join(", ")}`
+                    .map((entry) => entry.rank)
+                    .join(", ")}`
                   : ""}
               </li>
             ))}

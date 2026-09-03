@@ -138,7 +138,7 @@ export default function Footer() {
           iconColor="purple"
           icon={Sparkles}
           label="AI Credits"
-          onClick={() => navigate("ai-credits")}
+          onClick={() => navigate("/entity/ai-credits/list/table")}
         />
         {showPaymentReminders && (
           <IconButton
@@ -162,7 +162,7 @@ export default function Footer() {
             iconColor="red"
             label="Outbox Emails"
             count={outboxCount}
-            onClick={() => navigate("/outbox")}
+            onClick={() => navigate("/entity/outbox/list/table")}
           />
         )}
 
@@ -172,7 +172,7 @@ export default function Footer() {
           label="Hot Records"
           iconColor="orange"
           count={hotCount}
-          onClick={() => navigate("hot-records")}
+          onClick={() => navigate("/entity/hot-events/list/table")}
         />
 
         {/* Error Logs — conditional + shake animation */}
