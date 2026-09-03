@@ -31,14 +31,82 @@ export const fetchLayout = async () => {
 
   return data ?? {};
 };
-export const updateLayout = async ({ module, id, payload }) => {
+
+export const fetchSidebarComponentId = async () => {
   const response = await http({
     endpoint: METADATA_ENDPOINT,
     method: "POST",
     body: {
-      action: "update",
-      module: module,
-      id: id,
+      action: "fetch",
+      module: "outr_global_component",
+      order_by: "",
+      filters: { name: "Sidebar" },
+      per_page: 1,
+    },
+  });
+
+  const id = response?.records?.[0]?.id;
+
+  if (response?.success !== true || !id) {
+    throw new Error("The Sidebar global component could not be found.");
+  }
+
+  return id;
+};
+
+/**
+ * Return the modules installed in the current CRM.
+ *
+ * SmartGateway reads SuiteCRM's bean registry for this list, so the editor
+ * only offers modules that really exist in the connected CRM. The selected
+ * key is later saved to outr_ui_modules.fetch_from through SmartGateway.
+ */
+export const fetchCrmModules = async () => {
+  const response = await http({
+    endpoint: METADATA_ENDPOINT,
+    method: "POST",
+    body: {
+      action: "list_modules",
+      order_by: "",
+    },
+  });
+
+  if (response?.success !== true || !Array.isArray(response.modules)) {
+    throw new Error("The CRM module list could not be loaded.");
+  }
+
+  return response.modules
+    .filter((entry) => entry?.module?.trim())
+    .map((entry) => ({
+      value: entry.module,
+      label: String(entry.label || entry.module),
+    }))
+    .sort((left, right) =>
+      left.label.localeCompare(right.label, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      }),
+    );
+};
+
+export const updateLayout = async ({
+  action = "update",
+  module,
+  id,
+  payload,
+}) => {
+  if (action === "update" && !id) {
+    throw new Error(`Layout update failed for ${module}: a record id is required`);
+  }
+
+  const response = await http({
+    endpoint: METADATA_ENDPOINT,
+    method: "POST",
+    body: {
+      order_by: "",
+      action,
+      module,
+      ...(id ? { id } : {}),
       data: payload,
     },
   });
@@ -61,9 +129,9 @@ export const updateLayout = async ({ module, id, payload }) => {
       response?.error ||
       (response
         ? "unexpected response from smart_gateway"
-        : `no response body, the ${module} update handler did not complete`);
+        : `no response body, the ${module} ${action} handler did not complete`);
 
-    throw new Error(`Layout update failed for ${module}/${id}: ${reason}`);
+    throw new Error(`Layout ${action} failed for ${module}/${id ?? "new"}: ${reason}`);
   }
 
   return response;
