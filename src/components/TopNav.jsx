@@ -321,9 +321,10 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                       <div className="flex shrink-0 flex-col items-end gap-1">
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-semibold
-                            ${isOnline
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-amber-50  text-amber-700"
+                            ${
+                              isOnline
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-amber-50  text-amber-700"
                             }`}
                         >
                           {isOnline ? "Online" : "Idle"}
@@ -382,8 +383,9 @@ const StatBadge = ({ icon, label, value, colorClass, bgClass }) => {
         </span>
 
         <span
-          className={`text-[18px] font-medium text-gray-900 transition-all duration-300 ${animate ? "scale-110" : "scale-100"
-            }`}
+          className={`text-[18px] font-medium text-gray-900 transition-all duration-300 ${
+            animate ? "scale-110" : "scale-100"
+          }`}
         >
           {value ?? "—"}
         </span>
@@ -438,7 +440,7 @@ export function TopNav() {
   const isDesktop = useIsDesktop();
   // ↓ activeUsers added alongside existing notificationCount
   const { user, error } = useSelector((s) => s.user);
-  const { data: trainingCount, refetch: refetchTrainingStatus } =
+  const { data: trainingStatus, refetch: refetchTrainingStatus } =
     useGpcTrainingStatus(user?.email);
 
   /* ── Local state ── */
@@ -457,8 +459,12 @@ export function TopNav() {
 
   /* ── Derived ── */
   const isSearchActive = Boolean(enteredEmail?.trim());
-  // Keep the control hidden until the Rightee CRM training value is known.
-  const canOpenTraining = Number.isFinite(trainingCount) && trainingCount < 7;
+  // Keep the control hidden until both Rightee CRM values are known.
+  const canOpenTraining =
+    Number.isFinite(trainingStatus?.completedCount) &&
+    Number.isFinite(trainingStatus?.totalCount) &&
+    trainingStatus.totalCount > 0 &&
+    trainingStatus.completedCount < trainingStatus.totalCount;
 
   const onlineCount = activeUsers.filter((u) => u?.status === "online").length;
 
