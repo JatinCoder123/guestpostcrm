@@ -799,6 +799,31 @@ function LinkTableHeader() {
   );
 }
 
+/**
+ * Scrolls the header and rows of a link table together.
+ *
+ * The 7 columns are all `flex-1`, so on a phone each one gets roughly 45px and
+ * the anchor text, URLs and domain become unreadable. Since the header and the
+ * rows share COL_STYLES, they have to scroll as one unit to stay aligned —
+ * hence the min-width on a single inner track rather than per-row overflow.
+ * overflow-y is pinned because `overflow-x-auto` alone would compute it from
+ * visible to auto and let the row tooltips add a stray vertical scrollbar.
+ */
+function LinkTableScroller({ children, minWidth = 720, className = "" }) {
+  return (
+    <div
+      className={`overflow-x-auto overflow-y-hidden lg:overflow-x-visible lg:overflow-y-visible ${className}`}
+    >
+      <div
+        className="min-w-[var(--link-table-min-w)] lg:min-w-0"
+        style={{ "--link-table-min-w": `${minWidth}px` }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 const getSpamLabel = (score) => {
   if (score < 10) return { label: "Low", color: "text-green-600" };
   if (score < 40) return { label: "Moderate", color: "text-yellow-600" };
@@ -1338,7 +1363,7 @@ function GPLinksTable({
   return (
     <div className="overflow-hidden mb-4 border-2 border-blue-300 rounded-xl">
       <DocumentAnalysisCard
-      email={email}
+        email={email}
         website={rep.name}
         docLink={rep.gp_doc_url_c}
         orderId={orderId}
@@ -1481,92 +1506,96 @@ function DocumentAnalysisCard({
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="flex items-center gap-4 p-4">
-        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-5 gap-4">
-          <div className="text-sm font-semibold text-gray-500">Doc Name</div>
-          <div className="text-sm font-semibold text-gray-500">Niche</div>
-          <div className="text-sm font-semibold text-gray-500">
-            Content Verdict
-          </div>
-          <div className="text-sm font-semibold text-gray-500">
-            {treatAsPosted ? "Blog Status" : "ZeroGPT"}
-          </div>
-          <div className="text-sm font-semibold text-gray-500">Link Count</div>
+      {/* CONTENT — labels sit in row 1 and values in row 2 of one grid, so the
+          column count cannot be reduced without breaking that pairing. Scroll
+          sideways on narrow screens instead. */}
+      <div className="flex items-center gap-4 p-2 sm:p-4 min-w-0">
+        <LinkTableScroller className="flex-1 min-w-0" minWidth={620}>
+          <div className="bg-white rounded-lg px-2 py-3 shadow grid grid-cols-5 gap-4">
+            <div className="text-sm font-semibold text-gray-500">Doc Name</div>
+            <div className="text-sm font-semibold text-gray-500">Niche</div>
+            <div className="text-sm font-semibold text-gray-500">
+              Content Verdict
+            </div>
+            <div className="text-sm font-semibold text-gray-500">
+              {treatAsPosted ? "Blog Status" : "ZeroGPT"}
+            </div>
+            <div className="text-sm font-semibold text-gray-500">Link Count</div>
 
-          <a
-            href={docLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center gap-2 rounded-lg bg-indigo-50 px-1 py-1 text-sm hover:bg-indigo-100 transition w-full"
-          >
-            <span
-              className={`truncate max-w-[130px] font-medium text-slate-800 ${Number(link.is_content_valid) ? "" : "line-through"
-                }`}
+            <a
+              href={docLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-2 rounded-lg bg-indigo-50 px-1 py-1 text-sm hover:bg-indigo-100 transition w-full"
             >
-              {DocName || "Untitled Document"}
-            </span>
-            <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
-              ↗
-            </span>
-          </a>
-
-          <span className="text-md text-slate-500 truncate">
-            {docNiche || "No Niche"}
-          </span>
-
-          <div className="flex items-center gap-2">
-            {ContentVerdictPromptLedger && (
-              <button
-                onClick={() =>
-                  setActivePromptId(ContentVerdictPromptLedger)
-                }
-                className="text-yellow-600 hover:scale-110"
+              <span
+                className={`truncate max-w-[130px] font-medium text-slate-800 ${Number(link.is_content_valid) ? "" : "line-through"
+                  }`}
               >
-                <SparkleIcon size={18} />
-              </button>
-            )}
-            <ValidationBadge valid={ContentValid} />
-          </div>
+                {DocName || "Untitled Document"}
+              </span>
+              <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
+                ↗
+              </span>
+            </a>
 
-          <div className="flex items-center gap-2 min-w-0">
-            {treatAsPosted ? (
-              <PostStatusBadge state={postStatus} url={postedUrl} />
-            ) : (
-              <button
-                onClick={handleStartNow}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-all duration-200"
-                style={{
-                  background: isLoading ? "#9ca3af" : "#eab308",
-                  cursor: isLoading ? "not-allowed" : "pointer",
-                  opacity: isLoading ? 0.7 : 1,
-                }}
-              >
-                {isLoading ? (
-                  <>
-                    <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Start Now
-                    <ArrowRight size={16} />
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center">
-            <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">
-              {linkCount}
+            <span className="text-md text-slate-500 truncate">
+              {docNiche || "No Niche"}
             </span>
+
+            <div className="flex items-center gap-2">
+              {ContentVerdictPromptLedger && (
+                <button
+                  onClick={() =>
+                    setActivePromptId(ContentVerdictPromptLedger)
+                  }
+                  className="text-yellow-600 hover:scale-110"
+                >
+                  <SparkleIcon size={18} />
+                </button>
+              )}
+              <ValidationBadge valid={ContentValid} />
+            </div>
+
+            <div className="flex items-center gap-2 min-w-0">
+              {treatAsPosted ? (
+                <PostStatusBadge state={postStatus} url={postedUrl} />
+              ) : (
+                <button
+                  onClick={handleStartNow}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-all duration-200"
+                  style={{
+                    background: isLoading ? "#9ca3af" : "#eab308",
+                    cursor: isLoading ? "not-allowed" : "pointer",
+                    opacity: isLoading ? 0.7 : 1,
+                  }}
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      Start Now
+                      <ArrowRight size={16} />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center">
+              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">
+                {linkCount}
+              </span>
+            </div>
           </div>
-        </div>
+        </LinkTableScroller>
         {openPopup && analysisData && (
           <GPCContentPopup
-          email={email}
+            email={email}
             data={analysisData}
             website={website}
             orderId={orderId}
@@ -1613,66 +1642,69 @@ function LIAnalysisCard({ targetUrl, website, link, orderId }) {
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="flex items-center gap-4 p-4 min-w-0">
-        <div className="flex-1 min-w-0 bg-white rounded-lg px-3 py-3 shadow grid grid-cols-3 gap-6 items-center">
-          <div className="text-sm font-semibold text-gray-500 min-w-0">
-            Target URL
-          </div>
-          <div className="text-sm font-semibold text-gray-500 min-w-0">
-            Monthly Traffic
-          </div>
-          <div className="text-sm font-semibold text-gray-500 min-w-0">
-            Action
-          </div>
+      {/* CONTENT — same label-row/value-row grid as the GP card, so it scrolls
+          sideways on narrow screens rather than dropping to fewer columns. */}
+      <div className="flex items-center gap-4 p-2 sm:p-4 min-w-0">
+        <LinkTableScroller className="flex-1 min-w-0" minWidth={480}>
+          <div className="min-w-0 bg-white rounded-lg px-3 py-3 shadow grid grid-cols-3 gap-6 items-center">
+            <div className="text-sm font-semibold text-gray-500 min-w-0">
+              Target URL
+            </div>
+            <div className="text-sm font-semibold text-gray-500 min-w-0">
+              Monthly Traffic
+            </div>
+            <div className="text-sm font-semibold text-gray-500 min-w-0">
+              Action
+            </div>
 
-          <a
-            href={targetUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center gap-2 rounded-lg bg-emerald-50 px-1 py-1 text-sm hover:bg-emerald-100 transition w-full min-w-0"
-          >
-            <span className="font-semibold text-emerald-700 truncate min-w-0 flex-1">
-              {targetUrl || "No Target URL"}
-            </span>
-            <span className="opacity-0 group-hover:opacity-100 transition text-emerald-500 ml-1 shrink-0">
-              ↗
-            </span>
-          </a>
+            <a
+              href={targetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-2 rounded-lg bg-emerald-50 px-1 py-1 text-sm hover:bg-emerald-100 transition w-full min-w-0"
+            >
+              <span className="font-semibold text-emerald-700 truncate min-w-0 flex-1">
+                {targetUrl || "No Target URL"}
+              </span>
+              <span className="opacity-0 group-hover:opacity-100 transition text-emerald-500 ml-1 shrink-0">
+                ↗
+              </span>
+            </a>
 
-          {/* Traffic mini badges */}
-          <div className="flex flex-wrap gap-1.5 items-center min-w-0">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-50 text-red-600 text-xs font-semibold">
-              <FaGoogle size={10} /> 100
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50 text-orange-600 text-xs font-semibold">
-              <Fa500Px size={10} /> 100
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold">
-              <FaAccusoft size={10} /> 100
-            </span>
+            {/* Traffic mini badges */}
+            <div className="flex flex-wrap gap-1.5 items-center min-w-0">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-50 text-red-600 text-xs font-semibold">
+                <FaGoogle size={10} /> 100
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50 text-orange-600 text-xs font-semibold">
+                <Fa500Px size={10} /> 100
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold">
+                <FaAccusoft size={10} /> 100
+              </span>
+            </div>
+            <div className="flex items-center justify-start min-w-0">
+              {liTreatAsPosted ? (
+                <div className="min-w-0 max-w-[220px]">
+                  <LinkInsertionStatusBadge
+                    state={liStatus}
+                    postRef={liPostRef}
+                    size="sm"
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => setLiPopupOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition shadow whitespace-nowrap"
+                  title="Insert Backlink"
+                >
+                  <Link size={16} />
+                  <span>Insert Backlink</span>
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex items-center justify-start min-w-0">
-            {liTreatAsPosted ? (
-              <div className="min-w-0 max-w-[220px]">
-                <LinkInsertionStatusBadge
-                  state={liStatus}
-                  postRef={liPostRef}
-                  size="sm"
-                />
-              </div>
-            ) : (
-              <button
-                onClick={() => setLiPopupOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition shadow whitespace-nowrap"
-                title="Insert Backlink"
-              >
-                <Link size={16} />
-                <span>Insert Backlink</span>
-              </button>
-            )}
-          </div>
-        </div>
+        </LinkTableScroller>
       </div>
       {liPopupOpen && (
         <LIInsertPopup

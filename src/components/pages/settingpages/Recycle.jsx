@@ -212,7 +212,7 @@ const RecyclePage = () => {
   };
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-3 sm:p-6 lg:p-8">
       <Header text="Recycle Bin" />
 
       <div className="mt-5 rounded-md border border-slate-200 bg-white shadow-sm">

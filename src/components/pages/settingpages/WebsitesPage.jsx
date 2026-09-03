@@ -1041,7 +1041,7 @@ export default function WebsitesPage() {
   }, [dispatch, error]);
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-3 sm:p-6 lg:p-8">
       {/* ── Page Header Row ── */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <Header

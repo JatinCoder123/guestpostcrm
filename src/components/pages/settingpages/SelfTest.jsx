@@ -44,20 +44,20 @@ const actions = [
 
 const SelfTest = () => {
     return (
-        <div className="p-8">
+        <div className="p-3 sm:p-6 lg:p-8">
             {/* Header */}
             <Header
                 text={"Self Test"}
             />
-            <div className="flex flex-col items-center justify-center mt-10">
+            <div className="flex flex-col items-center justify-center mt-6 sm:mt-10">
 
                 {/* Title */}
-                <h1 className="text-3xl md:text-4xl font-bold text-black mb-10 tracking-wide">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-6 sm:mb-10 tracking-wide text-center">
                     🚀 Action Control Panel
                 </h1>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-5xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6 w-full min-w-0 max-w-5xl">
                     {actions.map((action, index) => (
                         <button
                             key={index}
@@ -66,7 +66,7 @@ const SelfTest = () => {
                                     "🚧 Coming soon!\n\nThis will help in test the GPC by sending an email."
                                 )
                             }
-                            className={`group relative flex items-center gap-3 justify-center px-6 cursor-pointer py-5 rounded-2xl text-white font-semibold text-lg bg-gradient-to-r ${action.color} shadow-lg hover:scale-105 active:scale-95 transition-all duration-300`}
+                            className={`group relative flex min-w-0 items-center gap-3 justify-center px-4 sm:px-6 cursor-pointer py-4 sm:py-5 rounded-2xl text-white font-semibold text-base sm:text-lg bg-gradient-to-r ${action.color} shadow-lg hover:scale-105 active:scale-95 transition-all duration-300`}
                         >
                             {/* Glow Effect */}
                             <span className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 blur-md transition" />

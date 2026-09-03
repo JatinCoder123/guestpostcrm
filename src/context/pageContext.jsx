@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ladgerAction } from "../store/Slices/ladger";
 import { toast } from "react-toastify";
 const STORAGE_KEY = "emailSearchHistory";
@@ -9,14 +9,20 @@ export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const showConsole = true;
   const navigateTo = useNavigate();
+  const { pathname } = useLocation();
   const dispatch = useDispatch();
   const [displayIntro, setDisplayIntro] = useState(
     localStorage.getItem("displayIntro") === "true",
   );
-  const [collapsed, setSidebarCollapsed] = useState(false);
+  const [showRefreshReminder, setShowRefreshReminder] = useState(false);
+
+  const [collapsed, setSidebarCollapsed] = useState(true);
+
+  /* Off-canvas sidebar (drawer) state — only used below the `lg` breakpoint */
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
@@ -122,6 +128,11 @@ export const PageContextProvider = (props) => {
   useEffect(() => {
     localStorage.setItem("currentIndex", currentIndex);
   }, [currentIndex]);
+
+  /* Close the mobile drawer whenever the route changes */
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [pathname]);
   const value = {
     activePage,
     setActivePage,
@@ -136,7 +147,6 @@ export const PageContextProvider = (props) => {
     setSidebarCollapsed,
     mobileSidebarOpen,
     setMobileSidebarOpen,
-    toggleMobileSidebar,
     handleDateClick,
     currentIndex,
     showNextPrev,

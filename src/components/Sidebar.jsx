@@ -32,7 +32,7 @@ export function Sidebar() {
     enteredEmail: email,
     activePage,
     setActivePage,
-    collapsed,
+    collapsed: desktopCollapsed,
     setSidebarCollapsed,
     mobileSidebarOpen,
     setMobileSidebarOpen,
@@ -240,9 +240,10 @@ export function Sidebar() {
       )}
 
       <motion.aside
+        id="app-sidebar"
         data-tour="sidebar"
         animate={{
-          width: collapsed ? 80 : 260,
+          width: desktopCollapsed ? 80 : 260,
         }}
         transition={{ duration: 0.25 }}
         className="
@@ -269,7 +270,7 @@ export function Sidebar() {
             {[1, 2, 3].map((group) => (
               <div key={group}>
                 {/* Group Header */}
-                {!collapsed && (
+                {!desktopCollapsed && (
                   <div className="mb-3 flex items-center justify-between px-3">
                     <div
                       className="
@@ -292,7 +293,7 @@ export function Sidebar() {
                   {[1, 2, 3, 4].map((item) => (
                     <div
                       key={item}
-                      className={`flex items-center gap-3 p-2 ${collapsed
+                      className={`flex items-center gap-3 p-2 ${desktopCollapsed
                         ? "justify-center"
                         : ""
                         }`}
@@ -305,7 +306,7 @@ export function Sidebar() {
                         "
                       />
 
-                      {!collapsed && (
+                      {!desktopCollapsed && (
                         <>
                           {/* Text */}
                           <div
@@ -342,12 +343,12 @@ export function Sidebar() {
             >
               <div className="group relative flex h-full items-center justify-center gap-3">
                 <img
-                  src={collapsed ? logo : headingLogo}
+                  src={desktopCollapsed ? logo : headingLogo}
                   className={`
                     h-9 w-auto max-w-[160px]
                     cursor-pointer object-contain
                     transition-all duration-200
-                    ${collapsed
+                    ${desktopCollapsed
                       ? "group-hover:hidden"
                       : ""
                     }
@@ -360,7 +361,7 @@ export function Sidebar() {
                 {/* Collapse / Expand Button */}
                 <button
                   onClick={() =>
-                    setSidebarCollapsed(!collapsed)
+                    setSidebarCollapsed(!desktopCollapsed)
                   }
                   className={`
                     flex h-7 w-7
@@ -369,7 +370,7 @@ export function Sidebar() {
                     shadow
                     cursor-pointer
                     transition-all duration-200
-                    ${collapsed
+                    ${desktopCollapsed
                       ? "hidden group-hover:flex"
                       : "flex"
                     }
@@ -411,7 +412,7 @@ export function Sidebar() {
               </div>
 
               {/* Live Preview */}
-              {!collapsed && (
+              {!desktopCollapsed && (
                 <div
                   className="
                     -ml-3 flex h-9 w-[170px]
@@ -451,7 +452,7 @@ export function Sidebar() {
                   className="mb-3"
                 >
                   {/* Group Header */}
-                  {!collapsed && (
+                  {!desktopCollapsed && (
                     <button
                       onClick={() =>
                         toggleGroup(group.id)
@@ -484,7 +485,7 @@ export function Sidebar() {
                   )}
 
                   {/* Group Items */}
-                  {(collapsed ||
+                  {(desktopCollapsed ||
                     expandedGroups[
                     group.id
                     ]) && (
@@ -510,7 +511,7 @@ export function Sidebar() {
                                 rounded-lg p-2
                                 transition-all duration-200
                                 hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
-                                ${collapsed
+                                ${desktopCollapsed
                                   ? "justify-center"
                                   : ""
                                 }
@@ -534,7 +535,7 @@ export function Sidebar() {
                                 `}
                               />
 
-                              {!collapsed && (
+                              {!desktopCollapsed && (
                                 <>
                                   <span className="flex-1 truncate text-left">
                                     {item.name}
@@ -631,7 +632,7 @@ export function Sidebar() {
                 </div>
 
                 {/* Automation Score Card */}
-                {!collapsed && (
+                {!desktopCollapsed && (
                   <div
                     className="
                       -ml-3

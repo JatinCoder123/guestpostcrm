@@ -1,4 +1,4 @@
-import { BellIcon, Flame, List, MailWarning, Settings, Sparkles } from "lucide-react";
+import { BellIcon, Flame, List, Mail, MailWarning, MessageCircle, Settings, Sparkles } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -65,7 +65,7 @@ function NavBtn({ icon: Icon, label, onClick, count, color = "indigo" }) {
 }
 export default function Footer() {
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
-  const { notificationCount } = useContext(SocketContext);
+  const { notificationCount, totalUnseenChatCount } = useContext(SocketContext);
   const { collapsed } = useContext(PageContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
   const dispatch = useDispatch()
@@ -76,7 +76,7 @@ export default function Footer() {
     isPending: paymentReminderPending,
   } = useTodayPaymentReminderStats();
   const { count: hotCount } = useSelector((s) => s.hot);
-  const { error } = useSelector((s) => s.user);
+  const { error, crmDomain, businessEmail } = useSelector((s) => s.user);
   const outboxCount = outboxData?.stats?.all?.count ?? 0;
   const paymentReminderCount =
     paymentReminderData?.total ??
@@ -119,11 +119,47 @@ export default function Footer() {
   }, [error, dispatch]);
   return (
     <footer
-      className={`fixed bottom-0 right-0 z-20 flex h-12 items-center justify-between bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-[820px]:left-0 ${collapsed ? "left-[80px]" : "left-[260px]"
+      className={`fixed bottom-0 right-0 z-40 flex h-12 items-center justify-between gap-2 overflow-x-auto overflow-y-hidden hide-scrollbar bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-lg:left-0 ${collapsed ? "lg:left-[80px]" : "lg:left-[260px]"
         }`}
     >
       <IconButton icon={Settings} label="Settings" onClick={() => navigate("/settings")} />
-      <div className="flex gap-2">
+      <div className="flex shrink-0 gap-2">
+        <div className="flex items-center gap-3">
+          {crmDomain && (
+            <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-all duration-400 cursor-pointer">
+              <Link2 className="w-4 h-4 text-purple-600 group-hover:scale-125 transition-transform duration-300" />
+
+              <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-64 transition-all duration-600">
+                CRM:{" "}
+                <span className="font-bold text-purple-700">
+                  {crmDomain?.split(".")[0]}
+                </span>
+              </span>
+            </div>
+          )}
+
+          {businessEmail && (
+            <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer">
+              <Mail className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
+
+              <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-80 transition-all duration-600">
+                Business Email:{" "}
+                <span className="font-bold text-blue-700">
+                  {businessEmail}
+                </span>
+              </span>
+            </div>
+          )}
+
+
+        </div>
+        <IconButton
+          onClick={() => navigate("/internal-chats")}
+          icon={MessageCircle}
+          label="Internal Chats"
+          count={totalUnseenChatCount}
+          iconColor="green"
+        />
         <IconButton
           onClick={() => navigate("/RecentEntry")}
           icon={List}

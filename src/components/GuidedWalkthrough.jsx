@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, X } from "lucide-react";
+import { PageContext } from "../context/pageContext";
+import { useIsDesktop } from "../hooks/useMediaQuery";
 
 const TOUR_STEPS = [
   {
@@ -16,12 +18,14 @@ const TOUR_STEPS = [
     selector: "[data-tour='sidebar']",
     title: "Main Sections",
     body: "Use the sidebar to move between inboxes, contacts, offers, deals, orders, invoices, reminders, reports, and more.",
+    needsSidebar: true,
   },
   {
     selector: "[data-tour='sidebar-live']",
     title: "Live Timeline",
     body: "Jump back to the live timeline whenever you want to review current communication history.",
     route: "/",
+    needsSidebar: true,
   },
   {
     selector: "[data-tour='main-workspace']",
@@ -33,6 +37,7 @@ const TOUR_STEPS = [
     selector: "[data-tour='sidebar-settings']",
     title: "Settings",
     body: "Settings contains templates, websites, users, automation controls, debugging, self-test, and data modelling tools.",
+    needsSidebar: true,
   },
 ];
 
@@ -70,6 +75,21 @@ export default function GuidedWalkthrough({ open, onClose, navigate }) {
   const [targetRect, setTargetRect] = useState(null);
   const step = TOUR_STEPS[stepIndex];
   const isLast = stepIndex === TOUR_STEPS.length - 1;
+
+  /* Below `lg` the sidebar is an off-canvas drawer — open it for the
+     steps that point at sidebar elements so they are actually on screen. */
+  const isDesktop = useIsDesktop();
+  const { setMobileSidebarOpen } = useContext(PageContext);
+
+  useEffect(() => {
+    if (!open || isDesktop) return;
+    setMobileSidebarOpen(Boolean(step?.needsSidebar));
+  }, [open, isDesktop, step, setMobileSidebarOpen]);
+
+  useEffect(() => {
+    if (open) return;
+    setMobileSidebarOpen(false);
+  }, [open, setMobileSidebarOpen]);
 
   const tooltipStyle = useMemo(
     () => getTooltipPosition(targetRect),
@@ -115,7 +135,15 @@ export default function GuidedWalkthrough({ open, onClose, navigate }) {
       });
     };
 
-    const timeoutId = window.setTimeout(measure, step.route ? 250 : 40);
+    /* Wait out route transitions and the mobile drawer slide-in
+       before measuring the target. */
+    const measureDelay = step.route
+      ? 250
+      : !isDesktop && step.needsSidebar
+        ? 320
+        : 40;
+
+    const timeoutId = window.setTimeout(measure, measureDelay);
     window.addEventListener("resize", measure);
     window.addEventListener("scroll", measure, true);
 
@@ -125,7 +153,7 @@ export default function GuidedWalkthrough({ open, onClose, navigate }) {
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure, true);
     };
-  }, [navigate, open, step]);
+  }, [navigate, open, step, isDesktop]);
 
   if (!open) return null;
 

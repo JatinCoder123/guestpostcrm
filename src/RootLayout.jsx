@@ -49,6 +49,10 @@ const RootLayout = () => {
         left: 0,
         behavior: "smooth",
       });
+
+      /* Smooth scrolling can be interrupted mid-flight, which would leave a
+         horizontal offset behind. Pin the inline axis synchronously. */
+      mainRef.current.scrollLeft = 0;
     }
   }, [pathname]);
 
@@ -103,22 +107,45 @@ const RootLayout = () => {
 
       {/* RIGHT */}
       <div className="flex flex-1 flex-col overflow-hidden p-2">
-        <TopNav />
         {/* <Breadcrumbs /> */}
         <main
           ref={mainRef}
           className="flex-1 overflow-y-auto hide-scrollbar w-full"
         >
-          <div className="p-0">
-            <LowCreditWarning
-              open={showRechargeWarn}
-              score={currentScore}
-              onClose={() => setShowRechargeWarn(false)}
-            />
-            <div className="m-3">
-              <Outlet />
+          {/* Top Navigation */}
+          <TopNav />
+
+
+
+          <main
+            ref={mainRef}
+            className="
+        min-h-0
+        flex-1
+        w-full
+        overflow-y-auto
+        overflow-x-hidden
+        hide-scrollbar
+    "
+          >
+            <div className="flex min-h-full w-full flex-col">
+
+              {/* Low credit warning */}
+
+              <LowCreditWarning
+                open={showRechargeWarn}
+                score={currentScore}
+                onClose={() => setShowRechargeWarn(false)}
+              />
+
+              {/* Page content */}
+
+              <div className="m-3 flex min-h-0 flex-1 flex-col">
+                <Outlet />
+              </div>
+
             </div>
-          </div>
+          </main>
         </main>
 
         {/* Bottom */}

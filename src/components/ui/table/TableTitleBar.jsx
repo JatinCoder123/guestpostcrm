@@ -13,7 +13,7 @@ function TableTitleBar({ Icon, title, iconClass }) {
             <div className={`flex items-center gap-3 `}>
                 <IconButton
                     onClick={() => navigate(-1)}
-                    className={`h-10 w-10 rounded-full border bg-white hover:bg-gray-100 transition flex items-center justify-center `}
+                    className={`h-9 w-9 shrink-0 rounded-full border bg-white hover:bg-gray-100 transition flex items-center justify-center sm:h-10 sm:w-10`}
                     icon={ArrowLeft}
                     label="Back"
                     tooltipPosition="bottom"
@@ -26,7 +26,7 @@ function TableTitleBar({ Icon, title, iconClass }) {
 
 
 
-                <button className="p-1 hover:bg-gray-100 rounded-md transition">
+                <button className="shrink-0 p-1 hover:bg-gray-100 rounded-md transition">
                     <BadgeInfo className="w-4 h-4 text-gray-500" />
                 </button>
             </div>

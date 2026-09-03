@@ -25,6 +25,7 @@ import { useContact } from "../../../queries/contact.queries";
 import { useTemplateByName } from "../../../queries/template.queries";
 import { queryClient } from "../../../lib/queryClient";
 import { useWebsites } from "../../../queries/web.queries";
+import Cell from "../../ui/table/RecordCell";
 
 export default function ThreadOffers({ email, id }) {
   const navigate = useNavigate();
@@ -181,8 +182,11 @@ export default function ThreadOffers({ email, id }) {
     );
   });
   return (
-    <div className="w-full flex gap-6 items-start">
-      <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
+    /* Stacks until `lg`, which is where SummaryCard switches to its fixed
+       `lg:w-80`. Side by side any earlier and the card — `w-full` plus
+       `shrink-0` — claims the whole row and squeezes the table to nothing. */
+    <div className="w-full flex flex-col gap-4 lg:flex-row lg:gap-6 lg:items-start">
+      <div className="min-w-0 flex-1 relative border rounded-2xl p-3 sm:p-6 bg-white shadow-sm">
         <PageHeader title={"OFFERS"} onAdd={() => handleCreate(email)} />
         {offersLoading && (
           <div className="space-y-3 mt-4">
@@ -203,7 +207,7 @@ export default function ThreadOffers({ email, id }) {
         )}
         {selectedOffers.length > 0 && (
           <div className="mb-4 flex items-center justify-end rounded-xl">
-            <div className="flex gap-3">
+            <div className="flex flex-wrap justify-end gap-2 sm:gap-3">
 
               {editingIds.length > 0 ? (
                 <>
@@ -276,8 +280,8 @@ export default function ThreadOffers({ email, id }) {
             </div>
           </div>
         )}
-        {/* HEADER */}
-        <div className={`grid ${showBrandTimeline ? "grid-cols-13" : "grid-cols-12"} px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b"`}>
+        {/* HEADER — grid only from `lg`; the stacked cards label themselves */}
+        <div className={`hidden lg:grid ${showBrandTimeline ? "lg:grid-cols-13" : "lg:grid-cols-12"} px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b`}>
           {!showBrandTimeline && <div onClick={handleSelectAll} className="col-span-1 cursor-pointer ">
             <input
               type="checkbox"
@@ -295,6 +299,22 @@ export default function ThreadOffers({ email, id }) {
           <div className="col-span-2 text-center ml-auto">Actions</div>
         </div>
 
+        {/* SELECT ALL — the header checkbox is hidden below `lg` */}
+        {!showBrandTimeline && currentOffers.length > 0 && (
+          <button
+            type="button"
+            onClick={handleSelectAll}
+            className="mt-2 flex w-full items-center gap-2 rounded-lg px-1 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 lg:hidden"
+          >
+            <input
+              type="checkbox"
+              readOnly
+              checked={selectedOffers.length === currentOffers.length}
+            />
+            Select all
+          </button>
+        )}
+
         {/* ROWS */}
         <div className="space-y-2 mt-2">
           {currentOffers.length === 0 && (
@@ -311,23 +331,27 @@ export default function ThreadOffers({ email, id }) {
             return (
               <motion.div
                 key={offer.id}
-                className={`grid ${showBrandTimeline ? "grid-cols-13" : "grid-cols-12"} items-center px-4 py-3 bg-gray-50 rounded-xl border`}
+                className={`flex flex-col gap-2 px-3 py-3 bg-gray-50 rounded-xl border lg:grid ${showBrandTimeline ? "lg:grid-cols-13" : "lg:grid-cols-12"} lg:items-center lg:gap-0 lg:px-4`}
               >
                 {/* No */}
                 {!showBrandTimeline && <div onClick={() => toggleSelect(offer.id)}
-                  className="col-span-1 font-semibold text-gray-500 cursor-pointer">
+                  className="flex items-center gap-2 font-semibold text-gray-500 cursor-pointer lg:col-span-1 lg:block">
                   <input
                     type="checkbox"
                     checked={selectedOffers.includes(offer.id)}
+                    readOnly
                   />
+                  <span className="text-xs uppercase tracking-wide lg:hidden">Select</span>
                 </div>}
-                <div className="col-span-2 flex gap-1 items-center">
-                  <Timer size={16} />
-                  <span>{offer.date_entered || "-"}</span>
-                </div>
+                <Cell label="Created At" className="lg:col-span-2">
+                  <div className="flex min-w-0 gap-1 items-center">
+                    <Timer size={16} className="shrink-0" />
+                    <span className="truncate">{offer.date_entered || "-"}</span>
+                  </div>
+                </Cell>
 
                 {/* Website */}
-                <div className="col-span-3">
+                <Cell label="Website" className="min-w-0 lg:col-span-3">
                   {isEditing ? (
                     <select
                       value={editData.website}
@@ -340,33 +364,33 @@ export default function ThreadOffers({ email, id }) {
                           }
                         }))
                       }
-                      className="w-full border rounded-lg px-2 py-1"
+                      className="min-w-0 max-w-full border rounded-lg px-2 py-1 lg:w-full"
                     >
-                      {validWebsite[itemEmail].map((site, i) => (
+                      {validWebsite[itemEmail]?.map((site, i) => (
                         <option key={i} value={site}>
                           {site}
                         </option>
                       ))}
                     </select>
                   ) : (
-                    <span className="text-blue-600 truncate block">
+                    <span title={offer.website} className="min-w-0 text-blue-600 truncate block">
                       {offer.website}
                     </span>
                   )}
-                </div>
-                {showBrandTimeline && <div className="col-span-2 ">
-                  <span>{itemEmail}</span>
-
-                </div>}
+                </Cell>
+                {showBrandTimeline && (
+                  <Cell label="Email" className="min-w-0 lg:col-span-2">
+                    <span title={itemEmail} className="min-w-0 truncate block">{itemEmail}</span>
+                  </Cell>
+                )}
 
                 {/* Client Offer */}
-                <div className="col-span-2 text-center">
+                <Cell label="Client Offer" className="lg:col-span-2 lg:text-center">
                   <span>${offer.client_offer_c || "-"}</span>
-
-                </div>
+                </Cell>
 
                 {/* Our Offer */}
-                <div className="col-span-2 text-center">
+                <Cell label="Our Offer" className="lg:col-span-2 lg:text-center">
                   {isEditing ? (
                     <input
                       type="number"
@@ -388,12 +412,16 @@ export default function ThreadOffers({ email, id }) {
                       ${offer.our_offer_c || "-"}
                     </span>
                   )}
-                </div>
+                </Cell>
 
                 {/* Actions */}
-                <div className="col-span-2 flex justify-center gap-2 ml-auto">
+                <Cell
+                  label="Actions"
+                  className="border-t border-gray-200 pt-2 lg:col-span-2 lg:border-0 lg:pt-0 lg:ml-auto"
+                >
+                  <div className="flex flex-wrap justify-end gap-2 lg:justify-center">
                   {selectedOffers.length == 0 ? (isEditing ? (
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <IconButton
                         icon={Save}
                         label="Save"
@@ -445,8 +473,8 @@ export default function ThreadOffers({ email, id }) {
                       />
                     </>
                   )) : "-"}
-
-                </div>
+                  </div>
+                </Cell>
               </motion.div>
             );
           })}

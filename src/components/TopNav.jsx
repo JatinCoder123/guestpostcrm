@@ -15,6 +15,8 @@ import {
   Send,
   Bell,
   ChevronRight,
+  Menu,
+  MoreVertical,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -40,6 +42,7 @@ import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
 import { useCrmUsers } from "../queries/users.queries";
 import { fetchGpc } from "../services/api";
+import { useIsDesktop } from "../hooks/useMediaQuery";
 import {
   THEMES,
   setTheme,
@@ -1101,6 +1104,12 @@ export function TopNav() {
   ] = useState(null);
 
 
+  // Responsive overflow menu: below lg the right-side controls
+  // are collapsed so the search field never gets squeezed off-screen.
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const mobileMenuRef = useRef(null);
+  const isDesktop = useIsDesktop();
+
   /* ── Derived ── */
 
   const isSearchActive =
@@ -1128,6 +1137,29 @@ export function TopNav() {
     user?.profileImage,
   ]);
 
+
+  // Close the compact mobile/tablet menu when clicking outside it.
+  useEffect(() => {
+    const handler = (e) => {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target)
+      ) {
+        setShowMobileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handler);
+    return () =>
+      document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Restore the full desktop layout when the viewport grows back to lg+.
+  useEffect(() => {
+    if (isDesktop && showMobileMenu) {
+      setShowMobileMenu(false);
+    }
+  }, [isDesktop, showMobileMenu]);
 
   /* ── Initialize theme ── */
 
@@ -1293,88 +1325,68 @@ export function TopNav() {
         top-0
         z-[999]
         flex
+        w-full
+        min-w-0
         items-center
         justify-between
-        gap-3
+        gap-2
         rounded-md
         border
         border-border
         bg-white
         p-2
+        sm:gap-3
       "
     >
-
       {/* =====================================================
           SEARCH
       ====================================================== */}
-
-      <div
-        className="
-          flex
-          items-center
-          justify-between
-        "
-      >
-
+      <div className="flex min-w-0 flex-1 items-center lg:flex-initial">
         <div
           className="
             flex
             min-w-0
+            flex-1
             items-center
             justify-center
             gap-2
             p-1
+            lg:flex-initial
           "
           data-tour="top-nav-search"
         >
-
           <AnimatePresence mode="wait">
-
             {isSearchActive ? (
-
               <motion.div
                 key="banner"
-                initial={{
-                  opacity: 0,
-                  y: -6,
-                  scale: 0.97,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                }}
-                exit={{
-                  opacity: 0,
-                  y: -6,
-                  scale: 0.97,
-                }}
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
                 transition={{
                   duration: 0.2,
-                  ease: [
-                    0.32,
-                    0.72,
-                    0,
-                    1,
-                  ],
+                  ease: [0.32, 0.72, 0, 1],
                 }}
                 role="status"
                 aria-live="polite"
                 className="
                   flex
-                  max-w-[400px]
+                  min-w-0
+                  max-w-full
+                  flex-1
                   items-center
                   gap-2.5
                   rounded-2xl
                   border
                   border-primary/20
                   bg-primary/5
-                  px-4
+                  px-3
                   py-2
                   shadow-sm
+                  sm:px-4
+                  lg:max-w-[400px]
+                  lg:flex-initial
                 "
               >
-
                 <span
                   aria-hidden="true"
                   className="
@@ -1385,69 +1397,48 @@ export function TopNav() {
                     rounded-full
                     bg-primary
                   "
-                  style={{
-                    animationDuration:
-                      "1.4s",
-                  }}
+                  style={{ animationDuration: "1.4s" }}
                 />
-
 
                 <span
                   className="
                     flex
+                    min-w-0
                     items-center
                     gap-1.5
-                    text-[16px]
+                    text-sm
                     leading-none
                     text-primary
+                    sm:text-[16px]
                   "
                 >
-
-                  <span className="shrink-0 font-normal">
+                  <span className="hidden shrink-0 font-normal sm:inline">
                     Viewing record for
                   </span>
-
 
                   <span
                     title={enteredEmail}
                     className="
-                      max-w-[220px]
-                      cursor-default
+                      min-w-0
                       truncate
                       font-bold
                       text-primary
                       underline
                       decoration-dashed
                       underline-offset-2
+                      lg:max-w-[220px]
                     "
                   >
                     {enteredEmail}
                   </span>
-
                 </span>
 
-
-                <div
-                  className="
-                    ml-1
-                    flex
-                    shrink-0
-                    items-center
-                    gap-1
-                  "
-                >
-
+                <div className="ml-1 flex shrink-0 items-center gap-1">
                   <button
                     type="button"
                     aria-label="Copy email"
-                    title={
-                      copied
-                        ? "Copied!"
-                        : "Copy email"
-                    }
-                    onClick={
-                      handleCopyEmail
-                    }
+                    title={copied ? "Copied!" : "Copy email"}
+                    onClick={handleCopyEmail}
                     className="
                       flex
                       h-[22px]
@@ -1463,25 +1454,16 @@ export function TopNav() {
                     "
                   >
                     {copied ? (
-                      <Check
-                        size={11}
-                        strokeWidth={2.5}
-                      />
+                      <Check size={11} strokeWidth={2.5} />
                     ) : (
-                      <Copy
-                        size={11}
-                        strokeWidth={2.5}
-                      />
+                      <Copy size={11} strokeWidth={2.5} />
                     )}
                   </button>
-
 
                   <button
                     type="button"
                     aria-label="Clear current record"
-                    onClick={
-                      handleClear
-                    }
+                    onClick={handleClear}
                     className="
                       flex
                       h-[22px]
@@ -1496,168 +1478,74 @@ export function TopNav() {
                       active:scale-90
                     "
                   >
-                    <X
-                      size={11}
-                      strokeWidth={2.5}
-                    />
+                    <X size={11} strokeWidth={2.5} />
                   </button>
-
                 </div>
-
               </motion.div>
-
             ) : (
-
               <GlobalSearch />
-
             )}
-
           </AnimatePresence>
-
         </div>
-
       </div>
 
-
       {/* =====================================================
-          RIGHT NAVIGATION
+          RIGHT NAVIGATION — DESKTOP
+          Full controls remain unchanged at lg and above.
       ====================================================== */}
-
-      <div
-        className="
-          flex
-          shrink-0
-          items-center
-          justify-end
-          gap-1.5
-        "
-      >
-
-        {/* User Activity */}
-
-        <div
-          className="
-            flex
-            shrink-0
-            items-center
-            gap-2
-          "
-        >
-
+      <div className="hidden shrink-0 items-center justify-end gap-1.5 lg:flex">
+        <div className="flex shrink-0 items-center gap-2">
           <UserActivityPanel
-            activeUsers={
-              activeUsers
-            }
-            currentUserEmail={
-              user?.email
-            }
+            activeUsers={activeUsers}
+            currentUserEmail={user?.email}
           />
-
         </div>
 
-
         <div
-          className="
-            mx-1
-            h-8
-            w-px
-            bg-border
-          "
+          className="mx-1 h-8 w-px bg-border"
           aria-hidden="true"
         />
 
-
-        {/* Stats */}
-
-        <div
-          className="
-            flex
-            shrink-0
-            items-center
-            gap-2
-            pr-2
-          "
-        >
-
+        <div className="flex shrink-0 items-center gap-2 pr-2">
           <StatBadge
             icon={MailOpen}
             label="Received"
-            value={
-              stats.reply_recieved
-            }
+            value={stats.reply_recieved}
             colorClass="text-emerald-500"
             bgClass="bg-emerald-100 group-hover:bg-emerald-200"
           />
 
-
-          <div
-            className="
-              mx-1
-              h-10
-              w-px
-              bg-border
-            "
-          />
-
+          <div className="mx-1 h-10 w-px bg-border" />
 
           <StatBadge
             icon={Send}
             label="Sent"
-            value={
-              stats.reply_sent
-            }
+            value={stats.reply_sent}
             colorClass="text-blue-600"
             bgClass="bg-blue-100 group-hover:bg-blue-200"
           />
 
-
-          <div
-            className="
-              mx-1
-              h-10
-              w-px
-              bg-border
-            "
-          />
-
+          <div className="mx-1 h-10 w-px bg-border" />
 
           <StatBadge
             icon={Bell}
             label="Reminders"
-            value={
-              stats.reminder_sent
-            }
+            value={stats.reminder_sent}
             colorClass="text-amber-500"
             bgClass="bg-amber-100 group-hover:bg-amber-200"
           />
-
         </div>
 
-
         <div
-          className="
-            mx-1
-            h-8
-            w-px
-            bg-border
-          "
+          className="mx-1 h-8 w-px bg-border"
           aria-hidden="true"
         />
 
-
-        {/* ===================================================
-            PROFILE BUTTON
-        ==================================================== */}
-
         <button
           type="button"
-          onClick={() =>
-            setShowProfileMenu(true)
-          }
+          onClick={() => setShowProfileMenu(true)}
           aria-label="Open profile"
-          aria-expanded={
-            showProfileMenu
-          }
+          aria-expanded={showProfileMenu}
           className="
             flex
             items-center
@@ -1676,25 +1564,13 @@ export function TopNav() {
             active:scale-95
           "
         >
-
           {profilePreview ? (
-
             <img
               src={profilePreview}
-              alt={
-                user?.name ??
-                "Profile"
-              }
-              className="
-                h-7
-                w-7
-                rounded-lg
-                object-cover
-              "
+              alt={user?.name ?? "Profile"}
+              className="h-7 w-7 rounded-lg object-cover"
             />
-
           ) : (
-
             <span
               className="
                 flex
@@ -1715,13 +1591,313 @@ export function TopNav() {
             >
               {getUserInitials()}
             </span>
-
           )}
-
         </button>
-
       </div>
 
+      {/* =====================================================
+          RIGHT NAVIGATION — MOBILE / TABLET
+          Stats + active users + profile are intentionally collapsed
+          into one menu below lg so the top bar remains usable.
+      ====================================================== */}
+      <div
+        ref={mobileMenuRef}
+        className="relative shrink-0 lg:hidden"
+      >
+        <button
+          type="button"
+          onClick={() =>
+            setShowMobileMenu((v) => !v)
+          }
+          aria-label="More navigation options"
+          aria-expanded={showMobileMenu}
+          aria-haspopup="true"
+          className="
+            relative
+            flex
+            h-9
+            w-9
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-border
+            bg-card
+            text-muted-foreground
+            shadow-sm
+            transition
+            hover:border-primary
+            hover:bg-accent
+            hover:text-primary
+            active:scale-90
+          "
+        >
+          {profilePreview ? (
+            <img
+              src={profilePreview}
+              alt=""
+              className="h-7 w-7 rounded-lg object-cover"
+            />
+          ) : (
+            <MoreVertical size={20} strokeWidth={2.2} />
+          )}
+
+          {activeUsers.some(
+            (u) => u?.status === "online"
+          ) && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full border border-card bg-emerald-500" />
+              </span>
+            )}
+        </button>
+
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{
+                duration: 0.18,
+                ease: [0.32, 0.72, 0, 1],
+              }}
+              role="menu"
+              className="
+                absolute
+                right-0
+                top-full
+                z-[1000]
+                mt-2.5
+                w-[min(20rem,calc(100vw-1.5rem))]
+                overflow-hidden
+                rounded-2xl
+                border
+                border-border
+                bg-card
+                shadow-2xl
+              "
+            >
+              {/* Profile summary */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  setShowProfileMenu(true);
+                }}
+                className="
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  border-b
+                  border-border
+                  p-3.5
+                  text-left
+                  transition
+                  hover:bg-accent
+                "
+              >
+                {profilePreview ? (
+                  <img
+                    src={profilePreview}
+                    alt=""
+                    className="h-10 w-10 shrink-0 rounded-xl object-cover"
+                  />
+                ) : (
+                  <span
+                    className="
+                      flex
+                      h-10
+                      w-10
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-xl
+                      text-sm
+                      font-bold
+                      text-primary-foreground
+                    "
+                    style={{
+                      background:
+                        "linear-gradient(135deg, var(--topbtn-primary), var(--topbtn-secondary))",
+                    }}
+                  >
+                    {getUserInitials()}
+                  </span>
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold">
+                    {data?.find(
+                      (d) => d.description === user?.email
+                    )?.name || user?.name || "User"}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {user?.email}
+                  </p>
+                </div>
+
+                <ChevronRight
+                  size={16}
+                  className="shrink-0 text-muted-foreground"
+                />
+              </button>
+
+              {/* Compact stats */}
+              <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
+                {[
+                  {
+                    icon: MailOpen,
+                    label: "Received",
+                    value: stats.reply_recieved,
+                    colorClass: "text-emerald-500",
+                    bgClass: "bg-emerald-100",
+                  },
+                  {
+                    icon: Send,
+                    label: "Sent",
+                    value: stats.reply_sent,
+                    colorClass: "text-blue-600",
+                    bgClass: "bg-blue-100",
+                  },
+                  {
+                    icon: Bell,
+                    label: "Reminders",
+                    value: stats.reminder_sent,
+                    colorClass: "text-amber-500",
+                    bgClass: "bg-amber-100",
+                  },
+                ].map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex flex-col items-center gap-1 px-2 py-3"
+                  >
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full ${s.bgClass}`}
+                    >
+                      {createElement(s.icon, {
+                        className: `h-3.5 w-3.5 ${s.colorClass}`,
+                      })}
+                    </span>
+                    <span className="text-[15px] font-semibold leading-none">
+                      {s.value ?? "—"}
+                    </span>
+                    <span className="text-[10px] font-medium leading-none text-muted-foreground">
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-0.5 p-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigateTo("/settings/user-activity");
+                    setShowMobileMenu(false);
+                  }}
+                  className="
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3
+                    py-2.5
+                    text-left
+                    text-sm
+                    font-medium
+                    transition
+                    hover:bg-accent
+                  "
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Users size={14} />
+                  </span>
+
+                  <span className="flex-1">
+                    Active users
+                  </span>
+
+                  <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {activeUsers.filter(
+                      (u) => u?.status === "online"
+                    ).length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMobileMenu(false);
+                    setShowProfileMenu(true);
+                  }}
+                  className="
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3
+                    py-2.5
+                    text-left
+                    text-sm
+                    font-medium
+                    transition
+                    hover:bg-accent
+                  "
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+                    <Sparkles size={14} />
+                  </span>
+
+                  <span className="flex-1">
+                    Profile & preferences
+                  </span>
+
+                  <ChevronRight
+                    size={16}
+                    className="text-muted-foreground"
+                  />
+                </button>
+
+                <div className="mx-2 my-1 h-px bg-border" />
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3
+                    py-2.5
+                    text-left
+                    text-sm
+                    font-semibold
+                    text-destructive
+                    transition
+                    hover:bg-destructive/10
+                  "
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
+                    <LogOut size={14} />
+                  </span>
+
+                  <span className="flex-1">
+                    Log out
+                  </span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* =====================================================
           PROFILE DRAWER
@@ -1783,7 +1959,7 @@ export function TopNav() {
                 z-[9999]
                 flex
                 h-screen
-                w-full
+                w-[min(420px,100vw)]
                 max-w-[420px]
                 flex-col
                 overflow-hidden

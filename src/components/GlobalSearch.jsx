@@ -192,157 +192,165 @@ const GlobalSearch = () => {
         setShowHistory(false);
     };
 
-return (
-    <div
-        ref={searchRef}
-        data-tour="top-nav-search"
-        className="
-            relative flex w-[450px] max-w-[60vw] p-1
+    return (
+        <div
+            ref={searchRef}
+            data-tour="top-nav-search"
+            className="
+            relative flex w-full min-w-0 p-1
             items-center rounded-full
             border border-gray-300 bg-white
             shadow-[0_4px_8px_rgba(0,0,0,0.22)]
+            lg:w-[450px] lg:max-w-[60vw]
         "
-    >
-        {/* SEARCH ICON */}
-        <Search
-            className="
-                ml-6 h-5 w-5 shrink-0
+        >
+            {/* SEARCH ICON */}
+            <Search
+                className="
+                ml-3 h-5 w-5 shrink-0
                 text-gray-400
+                lg:ml-6
             "
-        />
+            />
 
-        {/* INPUT */}
-        <input
-            value={search}
-            onFocus={() => setShowHistory(true)}
-            onChange={(e) => setSearch(e.target.value)}
-            autoComplete="off"
-            onKeyDown={handleKeyPress}
-            placeholder="Search anything..."
-            className="
-                min-w-0 flex-1
+            {/* INPUT */}
+            <input
+                value={search}
+                onFocus={() => setShowHistory(true)}
+                onChange={(e) => setSearch(e.target.value)}
+                autoComplete="off"
+                onKeyDown={handleKeyPress}
+                placeholder="Search anything..."
+                className="
+                w-0 min-w-0 flex-1
                 bg-transparent
                 px-2
-                text-base text-gray-700
+                text-sm text-gray-700
                 placeholder:text-gray-400
                 focus:outline-none
+                sm:text-base
             "
-        />
+            />
 
-        {/* COPY BUTTON */}
-        {search && (
-            <motion.button
-                type="button"
-                whileTap={{ scale: 0.9 }}
-                onClick={handleCopy}
-                aria-label="Copy search text"
-                className="
-                    mr-2 flex h-8 w-8 shrink-0
+            {/* COPY BUTTON */}
+            {search && (
+                <motion.button
+                    type="button"
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleCopy}
+                    aria-label="Copy search text"
+                    className="
+                    mr-1 flex h-7 w-7 shrink-0
                     items-center justify-center
                     rounded-full
                     text-blue-600
                     transition hover:bg-blue-50
+                    sm:mr-2 sm:h-8 sm:w-8
                 "
-            >
-                {copied ? (
-                    <Check className="h-4 w-4" />
-                ) : (
-                    <Copy className="h-4 w-4" />
-                )}
-            </motion.button>
-        )}
+                >
+                    {copied ? (
+                        <Check className="h-4 w-4" />
+                    ) : (
+                        <Copy className="h-4 w-4" />
+                    )}
+                </motion.button>
+            )}
 
-        {/* CLEAR BUTTON */}
-        {search && (
-            <motion.button
-                type="button"
-                whileTap={{ scale: 0.9 }}
-                onClick={handleInputClear}
-                aria-label="Clear search"
-                className="
-                    mr-2 flex h-8 w-8 shrink-0
+            {/* CLEAR BUTTON */}
+            {search && (
+                <motion.button
+                    type="button"
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleInputClear}
+                    aria-label="Clear search"
+                    className="
+                    mr-1 flex h-7 w-7 shrink-0
                     items-center justify-center
                     rounded-full
                     text-red-500
                     transition hover:bg-red-50
+                    sm:mr-2 sm:h-8 sm:w-8
                 "
-            >
-                <X className="h-4 w-4" />
-            </motion.button>
-        )}
+                >
+                    <X className="h-4 w-4" />
+                </motion.button>
+            )}
 
-        {/* SEARCH BUTTON */}
-        <button
-            type="button"
-            onClick={handleSearch}
-            className="
-                shrink-0 rounded-full
+            {/* SEARCH BUTTON */}
+            <button
+                type="button"
+                onClick={handleSearch}
+                aria-label="Search"
+                className="
+                flex shrink-0 items-center justify-center rounded-full
                 bg-gradient-to-r from-search-primary to-search-secondary
-                px-4 py-1
+                h-8 w-8
                 text-base font-small text-white
                 transition
                 hover:bg-blue-700
                 active:scale-[0.98]
+                sm:h-auto sm:w-auto sm:px-4 sm:py-1
             "
-        >
-            Search
-        </button>
+            >
+                <Search className="h-4 w-4 sm:hidden" />
+                <span className="hidden sm:inline">Search</span>
+            </button>
 
-        {/* SEARCH HISTORY */}
-        {showHistory && searchHistory.length > 0 && (
-            <div
-                className="
+            {/* SEARCH HISTORY */}
+            {showHistory && searchHistory.length > 0 && (
+                <div
+                    className="
                     absolute left-0 right-0 top-full
                     z-999 mt-3
                     overflow-hidden rounded-2xl
                     border border-gray-200
                     bg-white shadow-2xl
                 "
-            >
-                <div
-                    className="
+                >
+                    <div
+                        className="
                         border-b bg-gray-50
                         p-2 text-xs font-semibold
                         text-gray-500
                     "
-                >
-                    Recent Searches
-                </div>
+                    >
+                        Recent Searches
+                    </div>
 
-                {searchHistory.map((item, index) => (
-                    <button
-                        key={index}
-                        type="button"
-                        onClick={() =>
-                            handleHistoryClick(item.value)
-                        }
-                        className="
+                    {searchHistory.map((item, index) => (
+                        <button
+                            key={index}
+                            type="button"
+                            onClick={() =>
+                                handleHistoryClick(item.value)
+                            }
+                            className="
                             w-full border-b
                             px-4 py-3 text-left
                             transition
                             last:border-b-0
                             hover:bg-blue-50
                         "
-                    >
-                        <div className="flex items-center justify-between gap-3">
-                            <div className="flex min-w-0 items-center gap-2">
-                                <Search className="h-4 w-4 shrink-0 text-blue-600" />
+                        >
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex min-w-0 items-center gap-2">
+                                    <Search className="h-4 w-4 shrink-0 text-blue-600" />
 
-                                <span className="truncate text-sm text-gray-700">
-                                    {item.value}
+                                    <span className="truncate text-sm text-gray-700">
+                                        {item.value}
+                                    </span>
+                                </div>
+
+                                <span className="whitespace-nowrap text-[10px] text-gray-400">
+                                    {item.time}
                                 </span>
                             </div>
-
-                            <span className="whitespace-nowrap text-[10px] text-gray-400">
-                                {item.time}
-                            </span>
-                        </div>
-                    </button>
-                ))}
-            </div>
-        )}
-    </div>
-);
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default GlobalSearch;
