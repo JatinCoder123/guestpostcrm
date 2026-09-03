@@ -74,7 +74,6 @@ import Sidebar from "./components/layouts/sidebar/Sidebar";
 import Views from "./components/layouts/detail-view/Views";
 import CreateView from "./components/layouts/create-view/CreateView";
 import TableView from "./components/layouts/table-view/TableView";
-import IconPickerPage from "./components/IconPickerPage";
 
 const router = createBrowserRouter([
   {
@@ -362,10 +361,6 @@ const router = createBrowserRouter([
       {
         path: "reminder-management",
         element: <ReminderManagementPage />,
-      },
-      {
-        path: "icon-picker",
-        element: <IconPickerPage />,
       },
       {
         path: "thread",

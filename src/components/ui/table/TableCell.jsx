@@ -25,39 +25,123 @@ function TableCell({
             rowId,
             record,
         }) => {
+            /*
+             * IMPORTANT:
+             * Capture the value BEFORE updating it.
+             *
+             * Example:
+             * old value = "Active"
+             * new value = "Inactive"
+             *
+             * previousValue will remain "Active"
+             * even after the update request succeeds.
+             */
+            const previousValue =
+                record?.[field.accessor];
+
+            const newValue = value;
+
             const toastId = toast.loading(
                 "Saving changes..."
             );
 
             try {
+                /*
+                 * First request:
+                 * Save the new value.
+                 */
                 await updateMutation.mutateAsync({
                     entity: entity,
                     module: layout?.module,
                     id: rowId,
                     payload: {
-                        [field.accessor]: value,
+                        [field.accessor]: newValue,
                     },
                 });
 
+                /*
+                 * Update succeeded.
+                 *
+                 * The previousValue variable is captured
+                 * by this toast callback, so it will still
+                 * be available when the user clicks Undo.
+                 */
                 toast.success(
-                    (t) => (
-                        <div className="flex items-center gap-3">
-                            <span>
-                                Changes saved
-                            </span>
+                    (t) => {
+                        let undoClicked = false;
 
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    // Undo functionality will be added later
-                                    toast.dismiss(t.id);
-                                }}
-                                className="font-medium text-blue-600 hover:text-blue-700 underline"
-                            >
-                                Undo
-                            </button>
-                        </div>
-                    ),
+                        const handleUndo = async () => {
+                            if (undoClicked) {
+                                return;
+                            }
+
+                            undoClicked = true;
+
+                            /*
+                             * Close the current toast immediately
+                             * so the user knows Undo was clicked.
+                             */
+                            toast.loading(
+                                "Undoing changes...",
+                                {
+                                    id: toastId,
+                                }
+                            );
+
+                            try {
+                                /*
+                                 * Second request:
+                                 * Restore the OLD value.
+                                 */
+                                await updateMutation.mutateAsync({
+                                    entity: entity,
+                                    module: layout?.module,
+                                    id: rowId,
+                                    payload: {
+                                        [field.accessor]:
+                                            previousValue,
+                                    },
+                                });
+
+                                toast.success(
+                                    "Changes undone",
+                                    {
+                                        id: toastId,
+                                        duration: 3000,
+                                    }
+                                );
+                            } catch (error) {
+                                console.error(
+                                    "Undo failed:",
+                                    error
+                                );
+
+                                toast.error(
+                                    "Failed to undo changes",
+                                    {
+                                        id: toastId,
+                                    }
+                                );
+                            }
+                        };
+
+                        return (
+                            <div className="flex items-center gap-3">
+                                <span>
+                                    Changes saved
+                                </span>
+
+                                <button
+                                    type="button"
+                                    onClick={handleUndo}
+                                    disabled={undoClicked}
+                                    className="font-medium text-blue-600 hover:text-blue-700 underline disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Undo
+                                </button>
+                            </div>
+                        );
+                    },
                     {
                         id: toastId,
                         duration: 5000,
