@@ -187,16 +187,18 @@ const RootLayout = () => {
           <main
             ref={mainRef}
             className="
-              min-h-0
-              flex-1
-              w-full
-              overflow-y-auto
-              overflow-x-hidden
-              hide-scrollbar
-            "
+        min-h-0
+        flex-1
+        w-full
+        overflow-y-auto
+        overflow-x-hidden
+        hide-scrollbar
+    "
           >
-            <div className="w-full">
+            <div className="flex min-h-full w-full flex-col">
+
               {/* Low credit warning */}
+
               <LowCreditWarning
                 open={showRechargeWarn}
                 score={currentScore}
@@ -204,9 +206,11 @@ const RootLayout = () => {
               />
 
               {/* Page content */}
-              <div className="m-3">
+
+              <div className="m-3 flex min-h-0 flex-1 flex-col">
                 <Outlet />
               </div>
+
             </div>
           </main>
 

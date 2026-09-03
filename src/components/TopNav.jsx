@@ -11,6 +11,7 @@ import {
   Users,
   Copy,
   Check,
+  GraduationCap,
   MailOpen,
   Send,
   Bell,
@@ -34,6 +35,7 @@ import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
 import { useCrmUsers } from "../queries/users.queries";
+import { useGpcTrainingStatus } from "../queries/training.queries";
 import { fetchGpc } from "../services/api";
 import IconButton from "./ui/Buttons/IconButton";
 import { useIsDesktop } from "../hooks/useMediaQuery";
@@ -42,25 +44,64 @@ import { useIsDesktop } from "../hooks/useMediaQuery";
    Reusable icon button — coloured tint + badge + tooltip
 ───────────────────────────────────────────────────────────── */
 
-
-
 /* ─────────────────────────────────────────────────────────────
    Avatar colour palette — cycles through 8 distinct combos
 ───────────────────────────────────────────────────────────── */
 const AVATAR_COLORS = [
-  { bg: "bg-violet-100", text: "text-violet-700", ring: "ring-violet-400", dot: "bg-violet-400" },
-  { bg: "bg-emerald-100", text: "text-emerald-700", ring: "ring-emerald-400", dot: "bg-emerald-400" },
-  { bg: "bg-sky-100", text: "text-sky-700", ring: "ring-sky-400", dot: "bg-sky-400" },
-  { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-400", dot: "bg-amber-400" },
-  { bg: "bg-rose-100", text: "text-rose-700", ring: "ring-rose-400", dot: "bg-rose-400" },
-  { bg: "bg-teal-100", text: "text-teal-700", ring: "ring-teal-400", dot: "bg-teal-400" },
-  { bg: "bg-fuchsia-100", text: "text-fuchsia-700", ring: "ring-fuchsia-400", dot: "bg-fuchsia-400" },
-  { bg: "bg-orange-100", text: "text-orange-700", ring: "ring-orange-400", dot: "bg-orange-400" },
+  {
+    bg: "bg-violet-100",
+    text: "text-violet-700",
+    ring: "ring-violet-400",
+    dot: "bg-violet-400",
+  },
+  {
+    bg: "bg-emerald-100",
+    text: "text-emerald-700",
+    ring: "ring-emerald-400",
+    dot: "bg-emerald-400",
+  },
+  {
+    bg: "bg-sky-100",
+    text: "text-sky-700",
+    ring: "ring-sky-400",
+    dot: "bg-sky-400",
+  },
+  {
+    bg: "bg-amber-100",
+    text: "text-amber-700",
+    ring: "ring-amber-400",
+    dot: "bg-amber-400",
+  },
+  {
+    bg: "bg-rose-100",
+    text: "text-rose-700",
+    ring: "ring-rose-400",
+    dot: "bg-rose-400",
+  },
+  {
+    bg: "bg-teal-100",
+    text: "text-teal-700",
+    ring: "ring-teal-400",
+    dot: "bg-teal-400",
+  },
+  {
+    bg: "bg-fuchsia-100",
+    text: "text-fuchsia-700",
+    ring: "ring-fuchsia-400",
+    dot: "bg-fuchsia-400",
+  },
+  {
+    bg: "bg-orange-100",
+    text: "text-orange-700",
+    ring: "ring-orange-400",
+    dot: "bg-orange-400",
+  },
 ];
 
 function getColorForUser(email = "") {
   let hash = 0;
-  for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < email.length; i++)
+    hash = email.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
@@ -90,7 +131,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const navigateTo = useNavigate();
-  const { data: crmUsers } = useCrmUsers()
+  const { data: crmUsers } = useCrmUsers();
 
   /* Close on outside click */
   useEffect(() => {
@@ -106,9 +147,13 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const idleUsers = activeUsers.filter((u) => u?.status !== "online");
 
   const meOnline = onlineUsers?.find((u) => u?.email === currentUserEmail);
-  const otherOnlineUsers = onlineUsers.filter((u) => u?.email !== currentUserEmail);
+  const otherOnlineUsers = onlineUsers.filter(
+    (u) => u?.email !== currentUserEmail,
+  );
 
-  const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
+  const orderedOnline = meOnline
+    ? [meOnline, ...otherOnlineUsers]
+    : otherOnlineUsers;
   const ordered = [...orderedOnline, ...idleUsers];
 
   const stackVisible = orderedOnline.slice(0, 4);
@@ -118,7 +163,6 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
 
   return (
     <div ref={ref} className="relative flex items-center">
-
       {/* ── Trigger pill ── */}
       <button
         type="button"
@@ -138,7 +182,9 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         <div className="flex items-center w-full h-2">
           {stackVisible.map((u, i) => {
             const c = getColorForUser(u.email);
-            const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+            const name = crmUsers?.find(
+              (user) => user?.description === u.email,
+            )?.name;
             const initials = getInitials(name || u.name, u.email);
             const isMe = u.email === currentUserEmail;
             return (
@@ -198,7 +244,10 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               </div>
               <button
                 type="button"
-                onClick={() => { setOpen(false); navigateTo("/settings/user-activity"); }}
+                onClick={() => {
+                  setOpen(false);
+                  navigateTo("/settings/user-activity");
+                }}
                 className="text-[11px] font-medium text-indigo-500 hover:text-indigo-700 transition"
               >
                 View all →
@@ -214,7 +263,9 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               ) : (
                 ordered.map((u) => {
                   const c = getColorForUser(u.email);
-                  const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+                  const name = crmUsers?.find(
+                    (user) => user?.description === u.email,
+                  )?.name;
                   const initials = getInitials(name || u.name, u.email);
                   const isMe = u.email === currentUserEmail;
                   const isOnline = u?.status === "online";
@@ -222,7 +273,11 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                   return (
                     <div
                       key={u.email}
-                      onClick={() => navigateTo(`/view-reports?email=${encodeURIComponent(u.email)}`)}
+                      onClick={() =>
+                        navigateTo(
+                          `/view-reports?email=${encodeURIComponent(u.email)}`,
+                        )
+                      }
                       className="flex items-center gap-3 border-b border-slate-50 px-4 py-3 last:border-none hover:bg-slate-50/60 transition"
                     >
                       {/* Avatar */}
@@ -257,7 +312,6 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                         <div className="mt-0.5 flex items-center gap-1">
                           <span className="h-1 w-1 rounded-full bg-slate-300" />
                           <p className="truncate text-[11px] text-slate-500">
-
                             {u.page == "/" ? "Timeline" : u.page}
                           </p>
                         </div>
@@ -301,13 +355,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
     </div>
   );
 }
-const StatBadge = ({
-  icon,
-  label,
-  value,
-  colorClass,
-  bgClass,
-}) => {
+const StatBadge = ({ icon, label, value, colorClass, bgClass }) => {
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
@@ -380,28 +428,26 @@ export function TopNav() {
 
   const { activeUsers = [] } = useContext(SocketContext);
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
-  const { data } = useCrmUsers()
-  const {
-    data: paymentReminderData,
-    isPending: paymentReminderPending,
-  } = useTodayPaymentReminderStats();
-  const {
-    enteredEmail,
-    handleClear,
-    mobileSidebarOpen,
-    setMobileSidebarOpen,
-  } = useContext(PageContext);
+  const { data } = useCrmUsers();
+  const { data: paymentReminderData, isPending: paymentReminderPending } =
+    useTodayPaymentReminderStats();
+  const { enteredEmail, handleClear, mobileSidebarOpen, setMobileSidebarOpen } =
+    useContext(PageContext);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const isDesktop = useIsDesktop();
   // ↓ activeUsers added alongside existing notificationCount
   const { user, error } = useSelector((s) => s.user);
+  const { data: trainingCount, refetch: refetchTrainingStatus } =
+    useGpcTrainingStatus(user?.email);
 
   /* ── Local state ── */
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showTraining, setShowTraining] = useState(false);
   const [copied, setCopied] = useState(false);
   const [profilePreview, setProfilePreview] = useState(
-    () => sessionStorage.getItem("userProfileImage") || user?.profileImage || ""
+    () =>
+      sessionStorage.getItem("userProfileImage") || user?.profileImage || "",
   );
   const [showCropper, setShowCropper] = useState(false);
   const [cropImage, setCropImage] = useState(null);
@@ -411,20 +457,19 @@ export function TopNav() {
 
   /* ── Derived ── */
   const isSearchActive = Boolean(enteredEmail?.trim());
+  // Keep the control hidden until the Rightee CRM training value is known.
+  const canOpenTraining = Number.isFinite(trainingCount) && trainingCount < 7;
 
   const onlineCount = activeUsers.filter((u) => u?.status === "online").length;
 
   const displayName =
     data?.find((d) => d.description === user?.email)?.name || user?.name;
 
-
   /* ── Effects ── (unchanged) */
   useEffect(() => {
     const saved = sessionStorage.getItem("userProfileImage");
     setProfilePreview(saved || user?.profileImage || "");
   }, [user?.profileImage]);
-
-
 
   useEffect(() => {
     const handler = (e) => {
@@ -437,17 +482,20 @@ export function TopNav() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-
   /* Close the overflow menu once the header has room for everything again */
   useEffect(() => {
     if (isDesktop && showMobileMenu) setShowMobileMenu(false);
   }, [isDesktop, showMobileMenu]);
 
-
   const handleLogout = () => {
     dispatch(logout());
     setShowProfileMenu(false);
     setShowMobileMenu(false);
+  };
+
+  const handleTrainingClose = () => {
+    setShowTraining(false);
+    refetchTrainingStatus();
   };
 
   const handleCopyEmail = async () => {
@@ -465,12 +513,14 @@ export function TopNav() {
     }
   };
 
-
   const handleProfileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => { setCropImage(reader.result); setShowCropper(true); };
+    reader.onload = () => {
+      setCropImage(reader.result);
+      setShowCropper(true);
+    };
     reader.readAsDataURL(file);
   };
 
@@ -480,7 +530,8 @@ export function TopNav() {
   };
 
   const getUserInitials = () => {
-    const name = data?.find((d) => d.description === user?.email)?.name || user?.name;
+    const name =
+      data?.find((d) => d.description === user?.email)?.name || user?.name;
     if (!name) return "U";
     const parts = name.trim().split(" ");
     return parts.length === 1
@@ -497,15 +548,12 @@ export function TopNav() {
       className="sticky top-0 z-[999] flex w-full min-w-0 items-center justify-between p-2 gap-2 sm:gap-3 bg-white border  rounded-md "
     >
       <div className="flex min-w-0 flex-1 items-center gap-1.5 lg:flex-initial">
-
         {/* ── Sidebar drawer trigger — small screens only ── */}
         <button
           type="button"
           onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           aria-label={
-            mobileSidebarOpen
-              ? "Close navigation menu"
-              : "Open navigation menu"
+            mobileSidebarOpen ? "Close navigation menu" : "Open navigation menu"
           }
           aria-expanded={Boolean(mobileSidebarOpen)}
           aria-controls="app-sidebar"
@@ -587,13 +635,10 @@ export function TopNav() {
         </div>
       </div>
 
-
-
       {/* ─────────────────────────────────────────────────────────
           RIGHT CLUSTER — full layout, `lg` and up
       ───────────────────────────────────────────────────────── */}
       <div className="justify-end hidden shrink-0 items-center gap-1.5 lg:flex">
-
         {/* ── 🆕 User Activity Panel — sits before the other nav buttons ── */}
         <div className="flex-shrink-0 flex items-center gap-2">
           <UserActivityPanel
@@ -601,6 +646,16 @@ export function TopNav() {
             currentUserEmail={user?.email}
           />
         </div>
+        {canOpenTraining && (
+          <button
+            type="button"
+            onClick={() => setShowTraining(true)}
+            className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-xs font-semibold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 active:scale-95"
+          >
+            <GraduationCap size={16} aria-hidden="true" />
+            GPC Training
+          </button>
+        )}
         {/* Thin divider between activity panel and icon buttons */}
         <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
@@ -635,13 +690,10 @@ export function TopNav() {
           />
 
           {/* SUMMARY */}
-
         </div>
         {/* AI Credits */}
 
-
         {/* Payment Reminders */}
-
 
         {/* Divider */}
         <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
@@ -665,7 +717,9 @@ export function TopNav() {
             ) : (
               <span
                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white"
-                style={{ background: "linear-gradient(135deg,#6366f1,#06b6d4)" }}
+                style={{
+                  background: "linear-gradient(135deg,#6366f1,#06b6d4)",
+                }}
               >
                 {getUserInitials()}
               </span>
@@ -683,7 +737,10 @@ export function TopNav() {
               >
                 <button
                   type="button"
-                  onClick={() => { navigateTo("/profile"); setShowProfileMenu(false); }}
+                  onClick={() => {
+                    navigateTo("/profile");
+                    setShowProfileMenu(false);
+                  }}
                   className="flex w-full items-center gap-3 border-b border-slate-100 p-4 text-left transition hover:bg-slate-50"
                 >
                   {profilePreview ? (
@@ -695,14 +752,17 @@ export function TopNav() {
                   ) : (
                     <span
                       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-bold text-white"
-                      style={{ background: "linear-gradient(135deg,#6366f1,#06b6d4)" }}
+                      style={{
+                        background: "linear-gradient(135deg,#6366f1,#06b6d4)",
+                      }}
                     >
                       {getUserInitials()}
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-slate-800">
-                      {data?.find((d) => d.description === user?.email)?.name || user?.name}
+                      {data?.find((d) => d.description === user?.email)?.name ||
+                        user?.name}
                     </p>
                     <p className="truncate text-xs text-slate-400 mt-0.5">
                       {user?.email}
@@ -733,7 +793,10 @@ export function TopNav() {
 
                   <button
                     type="button"
-                    onClick={() => { navigateTo("/profile"); setShowProfileMenu(false); }}
+                    onClick={() => {
+                      navigateTo("/profile");
+                      setShowProfileMenu(false);
+                    }}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                   >
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
@@ -760,7 +823,6 @@ export function TopNav() {
           </AnimatePresence>
         </div>
       </div>
-
 
       {/* ─────────────────────────────────────────────────────────
           RIGHT CLUSTER — overflow menu, below `lg`
@@ -809,7 +871,10 @@ export function TopNav() {
               {/* ── Profile ── */}
               <button
                 type="button"
-                onClick={() => { navigateTo("/profile"); setShowMobileMenu(false); }}
+                onClick={() => {
+                  navigateTo("/profile");
+                  setShowMobileMenu(false);
+                }}
                 className="flex w-full items-center gap-3 border-b border-slate-100 p-3.5 text-left transition hover:bg-slate-50"
               >
                 {profilePreview ? (
@@ -821,7 +886,9 @@ export function TopNav() {
                 ) : (
                   <span
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
-                    style={{ background: "linear-gradient(135deg,#6366f1,#06b6d4)" }}
+                    style={{
+                      background: "linear-gradient(135deg,#6366f1,#06b6d4)",
+                    }}
                   >
                     {getUserInitials()}
                   </span>
@@ -887,7 +954,10 @@ export function TopNav() {
               <div className="flex flex-col gap-0.5 p-2">
                 <button
                   type="button"
-                  onClick={() => { navigateTo("/settings/user-activity"); setShowMobileMenu(false); }}
+                  onClick={() => {
+                    navigateTo("/settings/user-activity");
+                    setShowMobileMenu(false);
+                  }}
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
@@ -914,12 +984,18 @@ export function TopNav() {
                   type="file"
                   accept="image/*"
                   hidden
-                  onChange={(e) => { setShowMobileMenu(false); handleProfileUpload(e); }}
+                  onChange={(e) => {
+                    setShowMobileMenu(false);
+                    handleProfileUpload(e);
+                  }}
                 />
 
                 <button
                   type="button"
-                  onClick={() => { navigateTo("/profile"); setShowMobileMenu(false); }}
+                  onClick={() => {
+                    navigateTo("/profile");
+                    setShowMobileMenu(false);
+                  }}
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
@@ -953,6 +1029,63 @@ export function TopNav() {
         onClose={() => setShowCropper(false)}
         onSave={handleProfileSave}
       />
+      <AnimatePresence>
+        {showTraining && user?.email && (
+          <GpcTrainingFrame email={user.email} onClose={handleTrainingClose} />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+const getTrainingUrl = (email) =>
+  `https://training.guestpostcrm.com/?email=${encodeURIComponent(email)}`;
+
+function GpcTrainingFrame({ email, onClose }) {
+  const trainingUrl = getTrainingUrl(email);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[10000] flex bg-slate-950/65 p-3 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="gpc-training-title"
+    >
+      <motion.section
+        initial={{ opacity: 0, scale: 0.98, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: 12 }}
+        transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+      >
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5">
+          <div className="flex min-w-0 items-center gap-2 text-slate-800">
+            <GraduationCap size={20} className="shrink-0 text-indigo-600" />
+            <h2
+              id="gpc-training-title"
+              className="truncate text-base font-bold"
+            >
+              GPC Training
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            aria-label="Close GPC Training"
+          >
+            <X size={20} />
+          </button>
+        </header>
+        <iframe
+          title="GPC Training"
+          src={trainingUrl}
+          className="min-h-0 w-full flex-1 border-0 bg-white"
+        />
+      </motion.section>
+    </motion.div>
   );
 }

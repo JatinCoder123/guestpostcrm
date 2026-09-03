@@ -1,4 +1,4 @@
-import { BellIcon, CircleAlert, Flame, Link2, List, Mail, MailWarning, Settings, Sparkles, Unlink } from "lucide-react";
+import { BellIcon, CircleAlert, Flame, Link2, List, Mail, MailWarning, MessageCircle, Settings, Sparkles, Unlink } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -70,7 +70,7 @@ export default function Footer() {
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
   const { data: linkRemovalData } = useLinkRemovalCount();
   const { crmEndpoint, businessEmail } = useSelector(state => state.user)
-  const { notificationCount } = useContext(SocketContext);
+  const { notificationCount, totalUnseenChatCount } = useContext(SocketContext);
   const { collapsed } = useContext(PageContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
   const dispatch = useDispatch()
@@ -167,7 +167,13 @@ export default function Footer() {
 
 
         </div>
-
+        <IconButton
+          onClick={() => navigate("/internal-chats")}
+          icon={MessageCircle}
+          label="Internal Chats"
+          count={totalUnseenChatCount}
+          iconColor="green"
+        />
         <IconButton
           onClick={() => navigate("/RecentEntry")}
           icon={List}
