@@ -23,14 +23,19 @@ import { PageContext } from "../context/pageContext";
 import { useContact } from "../queries/contact.queries";
 import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail, useInfiniteDeals } from "../queries/deals.queries";
-import he from "he"
+import he from "he";
 import { useCrmUsers } from "../queries/users.queries";
+import ActionButton from "./ActionButton";
+import { useMailerSummary } from "../queries/mailerSummary.queries";
+import { Titletooltip } from "./TitleTooltip";
+import useRecordLock from "../hooks/useRecordLock";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
   return (
     <span
-      className={`px-2.5 py-1 rounded-full text-md font-semibold bg-gradient-to-r ${color} text-white shadow-sm hover:scale-105 hover:shadow-md transition-all duration-200`}
+      title={`#${text}`}
+      className={`max-w-[140px] truncate rounded-full px-3 py-1 text-xs font-medium ${color} text-white`}
     >
       #{text}
     </span>
@@ -39,19 +44,34 @@ function HashTag({ text, color }) {
 
 const ContactHeader = () => {
   const sidebarRef = useRef(null);
-  const { currentEmail } = useTimeline()
+  const { currentEmail } = useTimeline();
   const { data: users, isPending: loading } = useCrmUsers();
 
   const navigate = useNavigate();
   const { data, isPending } = useContact(currentEmail);
-  const contactInfo = data?.contact
-  const hashtags = contactInfo?.hashtag?.data?.hashtags
+
+
+  const contactInfo = data?.contact;
+  const hashtags = contactInfo?.hashtag?.data?.hashtags;
   const email = contactInfo?.email1;
+  const threadId = contactInfo?.thread_id;
+  const { data: summaryData, isPending: summaryLoading } =
+    useMailerSummary({ email, threadId });
   const { showNextPrev, handleDateClick } = useContext(PageContext);
   const { data: dealsData } = useDealsByEmail(currentEmail);
-  const emailDeals = dealsData?.data ?? []
-  const { showBrandTimeline, contacts = [] } = useSelector((state) => state.brandTimeline);
+  const emailDeals = dealsData?.data ?? [];
+  const mailersSummary = summaryData?.mailers_summary;
+
+  const { showBrandTimeline, contacts = [] } = useSelector(
+    (state) => state.brandTimeline
+  );
+  const { isLocked } = useRecordLock({ email: currentEmail, compareTo: 'currentTimeline', page: ['/'] })
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showAllTags, setShowAllTags] = useState(false);
+
+  useEffect(() => {
+    setShowAllTags(false);
+  }, [currentEmail]);
 
   const CountUpWithBlast = ({ value, email }) => {
     const storageKey = `maxDealAnimated_${email}`;
@@ -71,6 +91,7 @@ const ContactHeader = () => {
       const animate = (now) => {
         const progress = Math.min((now - startTime) / duration, 1);
         const current = Math.floor(progress * value);
+
         setCount(current);
 
         if (progress < 1) {
@@ -101,16 +122,14 @@ const ContactHeader = () => {
     return <span ref={amountRef}>{count.toLocaleString()}</span>;
   };
 
-
-
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
         ...emailDeals.map((d) =>
           Number(
-            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
-          ),
-        ),
+            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
+          )
+        )
       )
       : 0;
 
@@ -118,19 +137,39 @@ const ContactHeader = () => {
     { Icon: Tag, label: "Type", value: contactInfo?.type },
     { Icon: Rocket, label: "Stage", value: data?.stage },
     { Icon: Hourglass, label: "Status", value: data?.status },
-    { Icon: Lock, label: "Category", value: data?.customer_type },
-    { Icon: ArrowBigDown, label: "Direction", value: contactInfo?.direction ?? "-" },
-    { Icon: Flame, label: "Assign To", value: users?.find((user) => user.id === contactInfo?.gpc_assigned_to)?.name || "Unassigned" },
-    { Icon: Signature, label: "Last Activity", value: contactInfo?.last_activity ?? "-" },
-    { Icon: CircleUser, label: "Last Activity By", value: contactInfo?.last_user ?? "-" },
-    { Icon: Clock, label: "Last Updated At", value: contactInfo?.last_activity_date ?? "-" },
+    { Icon: Lock, label: "Category", value: contactInfo?.customer_type },
+    {
+      Icon: ArrowBigDown,
+      label: "Direction",
+      value: contactInfo?.direction ?? "-",
+    },
+    {
+      Icon: Flame,
+      label: "Assign To",
+      value:
+        users?.find((user) => user.id === contactInfo?.gpc_assigned_to)?.name ||
+        "Unassigned",
+    },
+    {
+      Icon: Signature,
+      label: "Last Activity",
+      value: contactInfo?.last_activity ?? "-",
+    },
+    {
+      Icon: CircleUser,
+      label: "Last Activity By",
+      value: contactInfo?.last_user ?? "-",
+    },
+    {
+      Icon: Clock,
+      label: "Last Updated At",
+      value: contactInfo?.last_activity_date ?? "-",
+    },
   ];
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target)
-      ) {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setShowSidebar(false);
       }
     };
@@ -141,6 +180,7 @@ const ContactHeader = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   const isBrand = contactInfo?.type?.toLowerCase() === "brand";
 
   return (
@@ -149,7 +189,8 @@ const ContactHeader = () => {
       {showBrandTimeline && (
         <div
           ref={sidebarRef}
-          className={`absolute top-28 right-0 z-50 h-[75vh] transition-all duration-300 ${showSidebar ? "w-72" : "w-10"}`}
+          className={`absolute top-28 right-0 z-30 h-[75vh] transition-all duration-300 ${showSidebar ? "w-72" : "w-10"
+            }`}
         >
           {/* Toggle */}
           <div
@@ -174,11 +215,18 @@ const ContactHeader = () => {
                   <div
                     key={index}
                     className="px-4 py-3 border-b hover:bg-gray-50 transition cursor-pointer"
-                    onClick={() => handleDateClick({ email: item?.email1, navigate: "/", showNextPrev: false })}
+                    onClick={() =>
+                      handleDateClick({
+                        email: item?.email1,
+                        navigate: "/",
+                        showNextPrev: false,
+                      })
+                    }
                   >
                     <p className="font-semibold text-sm text-gray-800">
                       {item?.name || "No Name"}
                     </p>
+
                     <p className="text-xs text-gray-500 truncate">
                       {item?.email1}
                     </p>
@@ -195,92 +243,182 @@ const ContactHeader = () => {
       )}
 
       {/* HEADER */}
-      <div className="flex items-center justify-between w-full py-4 px-4 rounded-t-xl bg-gradient-to-r from-sky-600 via-cyan-500 to-cyan-400 text-white shadow-lg">
-        {/* LEFT */}
-        <div className="flex items-center gap-4">
-          {!isPending && (
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <Link
-                  to={`/contacts?email=${currentEmail ?? ""}`}
-                  className="text-lg font-extrabold"
-                >
-                  {he.decode(
-                    contactInfo?.full_name?.trim()
-                      ? contactInfo.full_name
-                      : email ?? ""
-                  )}
-                </Link>
+      <div className="w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="flex min-h-[86px] flex-wrap items-center gap-y-3 py-3 2xl:flex-nowrap 2xl:py-0">
+          {/* LEFT */}
+          <div className="flex min-w-0 basis-full items-center gap-3 px-3 py-1 sm:basis-auto sm:flex-1 2xl:min-w-[360px] 2xl:flex-none 2xl:px-5">
+            {!isPending && (
+              <>
+                {/* USER INITIALS */}
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
+                  {(() => {
+                    const name = he.decode(
+                      contactInfo?.full_name?.trim() || email || ""
+                    );
 
-                {/* {isBrand && (
-                  <IconButton
-                    icon={showBrandTimeline ? Eye : EyeOff}
-                    variant="glass"
-                    label={
-                      showBrandTimeline
-                        ? "Hide Brand Timeline"
-                        : "Show Brand Timeline"
-                    }
-                    onClick={handleBrandTimeline}
-                  />
-                )} */}
-              </div>
-            </div>
-          )}
+                    const initials = name
+                      .split(/\s+/)
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map((word) => word.charAt(0).toUpperCase())
+                      .join("");
 
-          <SocialButtons displayCount={contactInfo?.duplicate_threads ?? 0} trust_score={contactInfo?.trust_score} />
-        </div>
+                    return initials || "U";
+                  })()}
+                </div>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-3">
-          <div className="flex gap-2 flex-wrap">
-            {hashtags?.map((tag) => (
-              <HashTag
-                key={tag.id}
-                text={tag.name}
-                color={
-                  tag.type === "dynamic"
-                    ? "from-emerald-500 to-teal-500"
-                    : "from-amber-500 to-orange-500"
-                }
-              />
-            ))}
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      to={`/contacts?email=${currentEmail ?? ""}`}
+                      className="text-[18px] font-semibold text-gray-900 hover:text-blue-600 mt-3"
+                      title={he.decode(
+                        contactInfo?.full_name?.trim()
+                          ? contactInfo.full_name
+                          : email ?? ""
+                      )}
+                    >
+                      {(() => {
+                        const text = he.decode(
+                          contactInfo?.full_name?.trim()
+                            ? contactInfo.full_name
+                            : email ?? ""
+                        );
+
+                        return text.length > 8
+                          ? `${text.slice(0, 9)}...`
+                          : text;
+                      })()}
+                    </Link>
+
+                    <SocialButtons
+                      displayCount={contactInfo?.duplicate_threads ?? 0}
+                      trust_score={contactInfo?.trust_score}
+                    />
+                  </div>
+
+                  <div className="mb-1 mt-1 flex max-w-full flex-wrap items-center gap-2">
+                    {(showAllTags
+                      ? hashtags
+                      : hashtags?.slice(0, 2)
+                    )?.map((tag) => (
+                      <HashTag
+                        key={tag.id}
+                        text={tag.name}
+                        color="bg-gradient-to-r from-search-primary to-search-secondary"
+                      />
+                    ))}
+
+                    {hashtags?.length > 2 && (
+                      <button
+                        type="button"
+                        className="shrink-0 rounded-full bg-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-300"
+                        onClick={() => setShowAllTags((visible) => !visible)}
+                        aria-expanded={showAllTags}
+                      >
+                        {showAllTags ? "Show less" : "..."}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {emailDeals?.length > 0 && (
-            <div
-              onClick={() => navigate("/deals")}
-              className="flex items-center gap-4 p-1 rounded-4xl bg-cyan-300 shadow-sm cursor-pointer hover:shadow-md transition-all"
-            >
-              <div className="flex items-center justify-center w-8 h-8 rounded-4xl bg-blue-500">
-                <Handshake size={20} className="text-white" />
-              </div>
+          <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
 
-              <span className="text-lg font-bold text-slate-800">
-                $<CountUpWithBlast value={maxDeal} />
-              </span>
+          <div className="flex min-w-0 flex-1 flex-wrap items-start gap-y-3 px-3 2xl:flex-nowrap 2xl:px-0">
+            <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
+              <p className="text-[12px] xl:text-[16px] font-semibold uppercase tracking-widest text-blue-600">
+                CREATED AT
+              </p>
+
+              <p className="text-[12px] font-semibold text-gray-900 mt-1">
+                {summaryLoading
+                  ? "Loading..."
+                  : mailersSummary?.date_entered_formatted || "N/A"}
+              </p>
+
+              <p className="text-xs text-gray-500 mt-1">
+                {mailersSummary?.date_entered || ""}
+              </p>
             </div>
-          )}
 
-          {/* TAGS */}
+            <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
 
-          {showNextPrev && <NextPrev />}
+            <div className="min-w-[170px] flex-1 px-3 2xl:min-w-[200px] 2xl:px-6">
+              <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
+                SUBJECT
+              </p>
+
+              <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+                <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[230px]">
+                  {summaryLoading
+                    ? "Loading..."
+                    : mailersSummary?.subject || "No Subject"}
+                </p>
+              </Titletooltip>
+            </div>
+
+            <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
+
+            <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
+              <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
+                MOTIVE
+              </p>
+
+              <Titletooltip
+                content={mailersSummary?.correct_motive || "N/A"}
+              >
+                <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[200px]">
+                  {summaryLoading
+                    ? "Loading..."
+                    : mailersSummary?.correct_motive || "N/A"}
+                </p>
+              </Titletooltip>
+            </div>
+          </div>
+
+          <div className="flex basis-full flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-3 pt-3 2xl:ml-auto 2xl:basis-auto 2xl:flex-nowrap 2xl:justify-end 2xl:border-0 2xl:px-5 2xl:pt-0">
+            {emailDeals?.length > 0 && (
+              <div
+                onClick={() => navigate("/deals")}
+                className="flex min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1.5 transition hover:bg-slate-200"
+              >
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                  <Handshake size={16} className="text-white" />
+                </div>
+
+                <span className="truncate text-sm font-semibold text-gray-900">
+                  $<CountUpWithBlast value={maxDeal} email={email} />
+                </span>
+              </div>
+            )}
+
+            {showNextPrev && <NextPrev />}
+          </div>
         </div>
       </div>
 
-      {/* STATUS */}
-      {!isPending && (
-        <div className="gap-3 p-2 flex flex-wrap items-center">
-          {statusItems.map((item, index) => (
-            <StatusCard
-              key={index}
-              Icon={item.Icon}
-              label={item.label}
-              value={item.value}
-            />
-          ))}
+      <div className="grid w-full grid-cols-1 gap-4 xl:min-h-[200px] xl:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)]">
+        {/* STATUS */}
+        {!isPending && (
+          <div className="flex flex-wrap items-stretch gap-2 overflow-hidden rounded-xl border border-sky-200 bg-white p-2 shadow-sm xl:items-center">
+            {statusItems.map((item, index) => (
+              <StatusCard
+                key={index}
+                Icon={item.Icon}
+                label={item.label}
+                value={item.value}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="relative  w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-visible">
+          <ActionButton classes={isLocked ? 'pointer-events-none opacity-50' : ''} />
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -289,17 +427,19 @@ export default ContactHeader;
 
 function StatusCard({ Icon, label, value }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl p-3 bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md transition-all min-w-[150px]">
+    <div className="flex min-w-0 flex-1 basis-[160px] items-start gap-3 rounded-xl border-gray-200 bg-background p-3 shadow-sm transition-all hover:shadow-md">
       <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100">
         <Icon className="text-blue-500" size={18} />
       </div>
 
-      <div className="flex flex-col">
+      <div className="flex min-w-0 flex-col">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
           {label}
         </p>
 
-        <p className="text-sm font-bold text-gray-800 mt-1">{value || "N/A"}</p>
+        <p className="mt-1 break-words text-sm font-semibold text-black-800">
+          {value || "N/A"}
+        </p>
       </div>
     </div>
   );

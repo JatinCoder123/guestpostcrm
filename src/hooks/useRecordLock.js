@@ -7,7 +7,7 @@ const useRecordLock = ({ email, compareTo, page = [] }) => {
     const [recordUsers, setRecordUsers] = useState([]);
     const activeOwner = useRef(null);
     const { user: currentUser } = useSelector(state => state.user)
-    console.log("activeUsers", activeUsers)
+
     useEffect(() => {
         if (activeUsers) {
             const users = activeUsers
@@ -24,8 +24,8 @@ const useRecordLock = ({ email, compareTo, page = [] }) => {
         }
     }, [activeUsers]);
     const isLocked = activeOwner.current && activeOwner.current !== currentUser.email;
-    console.log("recordUsers", recordUsers);
-    console.log("isLocked", isLocked);
+    // console.log("recordUsers", recordUsers);
+    // console.log("isLocked", isLocked);
 
     return (
         { recordUsers, isLocked }

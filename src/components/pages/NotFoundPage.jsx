@@ -1,11 +1,12 @@
 import React from "react";
+import logo from "../../assets/assets";
 
 export default function NotFoundPage() {
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center">
       {/* Logo */}
       <img
-        src="/logo.png"
+        src={logo}
         alt="GuestPostCRM"
         className="w-56 mb-10 select-none"
       />
@@ -17,7 +18,7 @@ export default function NotFoundPage() {
 
         <p className="md:text-lg lg:text-xl text-gray-600 mt-8">
           Sorry, the page you are looking for could not be found.
-        </p>                    
+        </p>
 
         <a
           href="/"

@@ -10,11 +10,18 @@ import {
   Camera,
   Users,
   Copy,
-  Check
+  Check,
+  GraduationCap,
+  MailOpen,
+  Send,
+  Bell,
+  Menu,
+  MoreVertical,
+  ChevronRight,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState, useRef, createElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,83 +35,73 @@ import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
 import { useCrmUsers } from "../queries/users.queries";
+import { useGpcTrainingStatus } from "../queries/training.queries";
+import { fetchGpc } from "../services/api";
+import IconButton from "./ui/Buttons/IconButton";
+import { useIsDesktop } from "../hooks/useMediaQuery";
 
 /* ─────────────────────────────────────────────────────────────
    Reusable icon button — coloured tint + badge + tooltip
 ───────────────────────────────────────────────────────────── */
-const VARIANTS = {
-  indigo: {
-    wrap: "bg-indigo-50 hover:bg-indigo-100 border-indigo-200",
-    icon: "text-indigo-600",
-  },
-  purple: {
-    wrap: "bg-purple-50 hover:bg-purple-100 border-purple-200",
-    icon: "text-purple-600",
-  },
-  orange: {
-    wrap: "bg-orange-50 hover:bg-orange-100 border-orange-200",
-    icon: "text-orange-500",
-  },
-  green: {
-    wrap: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
-    icon: "text-emerald-600",
-  },
-  red: {
-    wrap: "bg-red-50 hover:bg-red-100 border-red-200",
-    icon: "text-red-500",
-  },
-};
-
-function NavBtn({ icon: Icon, label, onClick, count, color = "indigo" }) {
-  const v = VARIANTS[color] ?? VARIANTS.indigo;
-  return (
-    <div className="group relative">
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={label}
-        className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-150 active:scale-95 ${v.wrap}`}
-      >
-        <Icon size={16} className={v.icon} strokeWidth={1.9} />
-        {count > 0 && (
-          <span
-            className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-0.5 text-[9px] font-bold leading-none text-white"
-            aria-label={`${count} notifications`}
-          >
-            {count > 99 ? "99+" : count}
-          </span>
-        )}
-      </button>
-
-      {/* Tooltip */}
-      <div
-        role="tooltip"
-        className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-slate-100 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 shadow-xl opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-      >
-        {label}
-        <span className="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 border-l border-t border-slate-100 bg-white" />
-      </div>
-    </div>
-  );
-}
 
 /* ─────────────────────────────────────────────────────────────
    Avatar colour palette — cycles through 8 distinct combos
 ───────────────────────────────────────────────────────────── */
 const AVATAR_COLORS = [
-  { bg: "bg-violet-100", text: "text-violet-700", ring: "ring-violet-400", dot: "bg-violet-400" },
-  { bg: "bg-emerald-100", text: "text-emerald-700", ring: "ring-emerald-400", dot: "bg-emerald-400" },
-  { bg: "bg-sky-100", text: "text-sky-700", ring: "ring-sky-400", dot: "bg-sky-400" },
-  { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-400", dot: "bg-amber-400" },
-  { bg: "bg-rose-100", text: "text-rose-700", ring: "ring-rose-400", dot: "bg-rose-400" },
-  { bg: "bg-teal-100", text: "text-teal-700", ring: "ring-teal-400", dot: "bg-teal-400" },
-  { bg: "bg-fuchsia-100", text: "text-fuchsia-700", ring: "ring-fuchsia-400", dot: "bg-fuchsia-400" },
-  { bg: "bg-orange-100", text: "text-orange-700", ring: "ring-orange-400", dot: "bg-orange-400" },
+  {
+    bg: "bg-violet-100",
+    text: "text-violet-700",
+    ring: "ring-violet-400",
+    dot: "bg-violet-400",
+  },
+  {
+    bg: "bg-emerald-100",
+    text: "text-emerald-700",
+    ring: "ring-emerald-400",
+    dot: "bg-emerald-400",
+  },
+  {
+    bg: "bg-sky-100",
+    text: "text-sky-700",
+    ring: "ring-sky-400",
+    dot: "bg-sky-400",
+  },
+  {
+    bg: "bg-amber-100",
+    text: "text-amber-700",
+    ring: "ring-amber-400",
+    dot: "bg-amber-400",
+  },
+  {
+    bg: "bg-rose-100",
+    text: "text-rose-700",
+    ring: "ring-rose-400",
+    dot: "bg-rose-400",
+  },
+  {
+    bg: "bg-teal-100",
+    text: "text-teal-700",
+    ring: "ring-teal-400",
+    dot: "bg-teal-400",
+  },
+  {
+    bg: "bg-fuchsia-100",
+    text: "text-fuchsia-700",
+    ring: "ring-fuchsia-400",
+    dot: "bg-fuchsia-400",
+  },
+  {
+    bg: "bg-orange-100",
+    text: "text-orange-700",
+    ring: "ring-orange-400",
+    dot: "bg-orange-400",
+  },
 ];
 
 function getColorForUser(email = "") {
   let hash = 0;
-  for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < email.length; i++)
+    hash = email.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
@@ -134,7 +131,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const navigateTo = useNavigate();
-  const { data: crmUsers } = useCrmUsers()
+  const { data: crmUsers } = useCrmUsers();
 
   /* Close on outside click */
   useEffect(() => {
@@ -150,9 +147,13 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const idleUsers = activeUsers.filter((u) => u?.status !== "online");
 
   const meOnline = onlineUsers?.find((u) => u?.email === currentUserEmail);
-  const otherOnlineUsers = onlineUsers.filter((u) => u?.email !== currentUserEmail);
+  const otherOnlineUsers = onlineUsers.filter(
+    (u) => u?.email !== currentUserEmail,
+  );
 
-  const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
+  const orderedOnline = meOnline
+    ? [meOnline, ...otherOnlineUsers]
+    : otherOnlineUsers;
   const ordered = [...orderedOnline, ...idleUsers];
 
   const stackVisible = orderedOnline.slice(0, 4);
@@ -162,7 +163,6 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
 
   return (
     <div ref={ref} className="relative flex items-center">
-
       {/* ── Trigger pill ── */}
       <button
         type="button"
@@ -170,7 +170,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         aria-label={`${onlineCount} online users`}
         aria-expanded={open}
         aria-haspopup="true"
-        className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 transition hover:bg-indigo-100 active:scale-95"
+        className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-background px-2.5 py-1.5 transition hover:bg-indigo-100 active:scale-95"
       >
         {/* Pulsing green dot */}
         <span className="relative flex h-2 w-2 shrink-0">
@@ -182,14 +182,16 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         <div className="flex items-center w-full h-2">
           {stackVisible.map((u, i) => {
             const c = getColorForUser(u.email);
-            const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+            const name = crmUsers?.find(
+              (user) => user?.description === u.email,
+            )?.name;
             const initials = getInitials(name || u.name, u.email);
             const isMe = u.email === currentUserEmail;
             return (
               <span
                 key={u.email}
                 title={isMe ? "You" : name || u.email}
-                className={`relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white
+                className={`relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white 
                   ${c.bg} ${c.text}
                   ${i > 0 ? "-ml-1.5" : ""}
                   ${isMe ? "ring-indigo-300" : ""}
@@ -242,7 +244,10 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               </div>
               <button
                 type="button"
-                onClick={() => { setOpen(false); navigateTo("/settings/user-activity"); }}
+                onClick={() => {
+                  setOpen(false);
+                  navigateTo("/settings/user-activity");
+                }}
                 className="text-[11px] font-medium text-indigo-500 hover:text-indigo-700 transition"
               >
                 View all →
@@ -258,7 +263,9 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               ) : (
                 ordered.map((u) => {
                   const c = getColorForUser(u.email);
-                  const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+                  const name = crmUsers?.find(
+                    (user) => user?.description === u.email,
+                  )?.name;
                   const initials = getInitials(name || u.name, u.email);
                   const isMe = u.email === currentUserEmail;
                   const isOnline = u?.status === "online";
@@ -266,7 +273,11 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                   return (
                     <div
                       key={u.email}
-                      onClick={() => navigateTo(`/view-reports?email=${encodeURIComponent(u.email)}`)}
+                      onClick={() =>
+                        navigateTo(
+                          `/view-reports?email=${encodeURIComponent(u.email)}`,
+                        )
+                      }
                       className="flex items-center gap-3 border-b border-slate-50 px-4 py-3 last:border-none hover:bg-slate-50/60 transition"
                     >
                       {/* Avatar */}
@@ -301,7 +312,6 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                         <div className="mt-0.5 flex items-center gap-1">
                           <span className="h-1 w-1 rounded-full bg-slate-300" />
                           <p className="truncate text-[11px] text-slate-500">
-
                             {u.page == "/" ? "Timeline" : u.page}
                           </p>
                         </div>
@@ -345,56 +355,115 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
     </div>
   );
 }
+const StatBadge = ({ icon, label, value, colorClass, bgClass }) => {
+  const [animate, setAnimate] = useState(false);
 
+  useEffect(() => {
+    setAnimate(true);
+    const t = setTimeout(() => setAnimate(false), 400);
+    return () => clearTimeout(t);
+  }, [value]);
+
+  return (
+    <div className="group flex items-center gap-3 px-3 py-2 cursor-default">
+      {/* Icon Circle */}
+      <div
+        className={`flex h-8 w-8 items-center justify-center rounded-full ${bgClass} transition-all duration-300`}
+      >
+        {createElement(icon, {
+          className: `h-4 w-4 ${colorClass} group-hover:scale-110 transition-transform duration-300`,
+        })}
+      </div>
+
+      {/* Text */}
+      <div className="flex flex-col leading-tight">
+        <span className="text-[15px] font-medium text-gray-700 whitespace-nowrap">
+          {label}
+        </span>
+
+        <span
+          className={`text-[18px] font-medium text-gray-900 transition-all duration-300 ${animate ? "scale-110" : "scale-100"
+            }`}
+        >
+          {value ?? "—"}
+        </span>
+      </div>
+    </div>
+  );
+};
 /* ─────────────────────────────────────────────────────────────
    Main TopNav
 ───────────────────────────────────────────────────────────── */
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
+  const [stats, setStats] = useState({
+    reply_recieved: null,
+    reply_sent: null,
+    reminder_sent: null,
+  });
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const data = await fetchGpc({
+          method: "GET",
+          params: { type: "statscount" },
+        });
 
+        if (data?.success && data?.stats) {
+          setStats({
+            reply_recieved: data.stats.reply_recieved,
+            reply_sent: data.stats.reply_sent,
+            reminder_sent: data.stats.reminder_sent,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
+      }
+    };
+
+    loadStats();
+  }, []);
   /* ── Data ── */
+
+  const { activeUsers = [] } = useContext(SocketContext);
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
-  const { data } = useCrmUsers()
-  const {
-    data: paymentReminderData,
-    isPending: paymentReminderPending,
-  } = useTodayPaymentReminderStats();
-  const { enteredEmail, handleClear } = useContext(PageContext);
+  const { data } = useCrmUsers();
+  const { data: paymentReminderData, isPending: paymentReminderPending } =
+    useTodayPaymentReminderStats();
+  const { enteredEmail, handleClear, mobileSidebarOpen, setMobileSidebarOpen } =
+    useContext(PageContext);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  const isDesktop = useIsDesktop();
   // ↓ activeUsers added alongside existing notificationCount
-  const { notificationCount, activeUsers = [] } = useContext(SocketContext);
   const { user, error } = useSelector((s) => s.user);
-  const { timeline } = useSelector((s) => s.ladger);
-  const { count: hotCount } = useSelector((s) => s.hot);
+  const { data: trainingCount, refetch: refetchTrainingStatus } =
+    useGpcTrainingStatus(user?.email);
 
   /* ── Local state ── */
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [animate, setAnimate] = useState(false);
-  const [errorLogCount, setErrorLogCount] = useState(0);
+  const [showTraining, setShowTraining] = useState(false);
   const [copied, setCopied] = useState(false);
   const [profilePreview, setProfilePreview] = useState(
-    () => sessionStorage.getItem("userProfileImage") || user?.profileImage || ""
+    () =>
+      sessionStorage.getItem("userProfileImage") || user?.profileImage || "",
   );
   const [showCropper, setShowCropper] = useState(false);
   const [cropImage, setCropImage] = useState(null);
 
   const profileMenuRef = useRef(null);
-  const prevCountRef = useRef(0);
+  const mobileMenuRef = useRef(null);
 
   /* ── Derived ── */
   const isSearchActive = Boolean(enteredEmail?.trim());
-  const outboxCount = outboxData?.stats?.all?.count ?? 0;
-  const paymentReminderCount =
-    paymentReminderData?.total ??
-    paymentReminderData?.total_records ??
-    paymentReminderData?.count ??
-    paymentReminderData?.records?.length ??
-    0;
+  // Keep the control hidden until the Rightee CRM training value is known.
+  const canOpenTraining = Number.isFinite(trainingCount) && trainingCount < 7;
 
-  const showPaymentReminders =
-    paymentReminderCount > 0 && !paymentReminderPending;
-  const showOutbox = outboxCount > 0 && !outboxPending;
-  const showErrorLog = Boolean(notificationCount?.error_log_created);
+  const onlineCount = activeUsers.filter((u) => u?.status === "online").length;
+
+  const displayName =
+    data?.find((d) => d.description === user?.email)?.name || user?.name;
 
   /* ── Effects ── (unchanged) */
   useEffect(() => {
@@ -403,39 +472,30 @@ export function TopNav() {
   }, [user?.profileImage]);
 
   useEffect(() => {
-    if (notificationCount?.error_log_created)
-      setErrorLogCount((n) => n + 1);
-  }, [notificationCount?.error_log_created]);
-
-  useEffect(() => {
-    if (errorLogCount > prevCountRef.current) {
-      setAnimate(true);
-      setTimeout(() => setAnimate(false), 400);
-    }
-    prevCountRef.current = errorLogCount;
-  }, [errorLogCount]);
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(userAction.clearAllErrors());
-    }
-  }, [error, dispatch]);
-
-  useEffect(() => {
     const handler = (e) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target))
         setShowProfileMenu(false);
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target))
+        setShowMobileMenu(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-
+  /* Close the overflow menu once the header has room for everything again */
+  useEffect(() => {
+    if (isDesktop && showMobileMenu) setShowMobileMenu(false);
+  }, [isDesktop, showMobileMenu]);
 
   const handleLogout = () => {
     dispatch(logout());
     setShowProfileMenu(false);
+    setShowMobileMenu(false);
+  };
+
+  const handleTrainingClose = () => {
+    setShowTraining(false);
+    refetchTrainingStatus();
   };
 
   const handleCopyEmail = async () => {
@@ -453,12 +513,14 @@ export function TopNav() {
     }
   };
 
-
   const handleProfileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => { setCropImage(reader.result); setShowCropper(true); };
+    reader.onload = () => {
+      setCropImage(reader.result);
+      setShowCropper(true);
+    };
     reader.readAsDataURL(file);
   };
 
@@ -468,7 +530,8 @@ export function TopNav() {
   };
 
   const getUserInitials = () => {
-    const name = data?.find((d) => d.description === user?.email)?.name || user?.name;
+    const name =
+      data?.find((d) => d.description === user?.email)?.name || user?.name;
     if (!name) return "U";
     const parts = name.trim().split(" ");
     return parts.length === 1
@@ -482,183 +545,158 @@ export function TopNav() {
   return (
     <div
       data-tour="top-nav"
-      className="sticky top-0 z-50 flex h-[70px] items-center px-3 gap-3"
-      style={{
-        background: "linear-gradient(135deg, #ddeaff 100%)",
-        borderRadius: "26px",
-        border: "1px solid rgba(99,102,241,0.16)",
-        borderBottom: "1.5px solid rgba(99,102,241,0.26)",
-        boxShadow: [
-          "inset 2px 3px 6px rgba(255,255,255,0.95)",
-          "inset -1px -2px 4px rgba(99,102,241,0.10)",
-          "0 5px 0 0 #c9cbe0",
-          "0 7px 20px rgba(60,63,120,0.16)",
-          "0 2px 4px rgba(0,0,0,0.06)",
-        ].join(","),
-      }}
+      className="sticky top-0 z-[999] flex w-full min-w-0 items-center justify-between p-2 gap-2 sm:gap-3 bg-white border  rounded-md "
     >
-      {/* ══════════════════════════════════════
-          LEFT — Logo (unchanged)
-      ══════════════════════════════════════ */}
-      <div className="flex shrink-0 items-center gap-3">
-        <img
-          src={headingLogo}
-          className="h-9 w-auto max-w-[160px] cursor-pointer object-contain"
-          alt="App logo"
-          onClick={() => navigateTo("")}
-          draggable={false}
-        />
-      </div>
-
-      {/* ══════════════════════════════════════
-          CENTER — Search OR Active banner (unchanged)
-      ══════════════════════════════════════ */}
-      <div
-        className="flex flex-1 items-center gap-2 min-w-0 ml-5 justify-center"
-        data-tour="top-nav-search"
-      >
-        <AnimatePresence mode="wait">
-          {isSearchActive ? (
-            <motion.div
-              key="banner"
-              initial={{ opacity: 0, y: -6, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6, scale: 0.97 }}
-              transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-              role="status"
-              aria-live="polite"
-              className="flex items-center gap-2.5 rounded-2xl border px-4 py-2 max-w-[440px]"
-              style={{
-                background: "linear-gradient(100deg,#eef2ff 0%,#e0f2fe 100%)",
-                border: "1px solid rgba(99,102,241,0.22)",
-                boxShadow: "0 2px 12px rgba(99,102,241,0.12)",
-              }}
-            >
-              <span
-                aria-hidden="true"
-                className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-indigo-500"
-                style={{ animationDuration: "1.4s" }}
-              />
-              <span className="flex items-center gap-1.5 text-[16px] text-indigo-800 leading-none">
-                <span className="shrink-0 font-normal text-indigo-600">
-                  Viewing record for
-                </span>
-                <span
-                  title={enteredEmail}
-                  className="max-w-[220px] truncate font-bold text-cyan-700 underline underline-offset-2 decoration-dashed cursor-default"
-                >
-                  {enteredEmail}
-                </span>
-              </span>
-              <div className="ml-1 flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  aria-label="Copy email"
-                  title={copied ? "Copied!" : "Copy email"}
-                  onClick={handleCopyEmail}
-                  className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 transition hover:bg-cyan-200 hover:text-cyan-700 active:scale-90"
-                >
-                  {copied ? (
-                    <Check size={11} strokeWidth={2.5} />
-                  ) : (
-                    <Copy size={11} strokeWidth={2.5} />
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  aria-label="Clear current record"
-                  onClick={handleClear}
-                  className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-indigo-100 text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-700 active:scale-90"
-                >
-                  <X size={11} strokeWidth={2.5} />
-                </button>
-              </div>
-            </motion.div>
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 lg:flex-initial">
+        {/* ── Sidebar drawer trigger — small screens only ── */}
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          aria-label={
+            mobileSidebarOpen ? "Close navigation menu" : "Open navigation menu"
+          }
+          aria-expanded={Boolean(mobileSidebarOpen)}
+          aria-controls="app-sidebar"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90 lg:hidden"
+        >
+          {mobileSidebarOpen ? (
+            <X size={20} strokeWidth={2.2} />
           ) : (
-            <GlobalSearch />
+            <Menu size={20} strokeWidth={2.2} />
           )}
-        </AnimatePresence>
+        </button>
+
+        <div
+          className="flex  items-center gap-2 min-w-0 flex-1 justify-center p-1 lg:flex-initial"
+          data-tour="top-nav-search"
+        >
+          <AnimatePresence mode="wait">
+            {isSearchActive ? (
+              <motion.div
+                key="banner"
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+                role="status"
+                aria-live="polite"
+                className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl border px-3 py-2 sm:px-4 lg:max-w-[400px] lg:flex-initial"
+                style={{
+                  background: "linear-gradient(100deg,#eef2ff 0%,#e0f2fe 100%)",
+                  border: "1px solid rgba(99,102,241,0.22)",
+                  boxShadow: "0 2px 12px rgba(99,102,241,0.12)",
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-indigo-500"
+                  style={{ animationDuration: "1.4s" }}
+                />
+                <span className="flex min-w-0 items-center gap-1.5 text-sm leading-none text-indigo-800 sm:text-[16px]">
+                  <span className="hidden shrink-0 font-normal text-indigo-600 sm:inline">
+                    Viewing record for
+                  </span>
+                  <span
+                    title={enteredEmail}
+                    className="min-w-0 truncate font-bold text-cyan-700 underline underline-offset-2 decoration-dashed cursor-default lg:max-w-[220px]"
+                  >
+                    {enteredEmail}
+                  </span>
+                </span>
+                <div className="ml-1 flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    aria-label="Copy email"
+                    title={copied ? "Copied!" : "Copy email"}
+                    onClick={handleCopyEmail}
+                    className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 transition hover:bg-cyan-200 hover:text-cyan-700 active:scale-90"
+                  >
+                    {copied ? (
+                      <Check size={11} strokeWidth={2.5} />
+                    ) : (
+                      <Copy size={11} strokeWidth={2.5} />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    aria-label="Clear current record"
+                    onClick={handleClear}
+                    className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-indigo-100 text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-700 active:scale-90"
+                  >
+                    <X size={11} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <GlobalSearch />
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* ══════════════════════════════════════
-          RIGHT — Action buttons
-      ══════════════════════════════════════ */}
-      <div className="flex shrink-0 items-center gap-1.5">
-
+      {/* ─────────────────────────────────────────────────────────
+          RIGHT CLUSTER — full layout, `lg` and up
+      ───────────────────────────────────────────────────────── */}
+      <div className="justify-end hidden shrink-0 items-center gap-1.5 lg:flex">
         {/* ── 🆕 User Activity Panel — sits before the other nav buttons ── */}
-        <UserActivityPanel
-          activeUsers={activeUsers}
-          currentUserEmail={user?.email}
-        />
-
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <UserActivityPanel
+            activeUsers={activeUsers}
+            currentUserEmail={user?.email}
+          />
+        </div>
+        {canOpenTraining && (
+          <button
+            type="button"
+            onClick={() => setShowTraining(true)}
+            className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-xs font-semibold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 active:scale-95"
+          >
+            <GraduationCap size={16} aria-hidden="true" />
+            GPC Training
+          </button>
+        )}
         {/* Thin divider between activity panel and icon buttons */}
-        <div className="mx-1 h-6 w-px bg-blue-500" aria-hidden="true" />
+        <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
+        <div className="flex-shrink-0 flex items-center gap-2 pr-2">
+          {/* Vertical Divider */}
+          <StatBadge
+            icon={MailOpen}
+            label="Received"
+            value={stats.reply_recieved}
+            colorClass="text-emerald-500"
+            bgClass="bg-emerald-100 group-hover:bg-emerald-200"
+          />
 
+          <div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
+
+          <StatBadge
+            icon={Send}
+            label="Sent"
+            value={stats.reply_sent}
+            colorClass="text-blue-600"
+            bgClass="bg-blue-100 group-hover:bg-blue-200"
+          />
+
+          <div className="mx-1 h-10 w-px bg-[#A8C6FF]" />
+
+          <StatBadge
+            icon={Bell}
+            label="Reminders"
+            value={stats.reminder_sent}
+            colorClass="text-amber-500"
+            bgClass="bg-amber-100 group-hover:bg-amber-200"
+          />
+
+          {/* SUMMARY */}
+        </div>
         {/* AI Credits */}
-        <NavBtn
-          icon={Sparkles}
-          label="AI Credits"
-          color="indigo"
-          onClick={() => navigateTo("ai-credits")}
-        />
 
         {/* Payment Reminders */}
-        {showPaymentReminders && (
-          <NavBtn
-            icon={BellIcon}
-            label="Payment Reminders"
-            color="purple"
-            count={paymentReminderCount}
-            onClick={() =>
-              navigateTo("/reminders", {
-                state: {
-                  reminderFilter: "today-payment",
-                },
-              })
-            }
-          />
-        )}
-
-        {/* Outbox — conditional */}
-        {showOutbox && (
-          <NavBtn
-            icon={MailWarning}
-            label="Outbox Emails"
-            color="green"
-            count={outboxCount}
-            onClick={() => navigateTo("/outbox")}
-          />
-        )}
-
-        {/* Hot Records */}
-        <NavBtn
-          icon={Flame}
-          label="Hot Records"
-          color="orange"
-          count={hotCount}
-          onClick={() => navigateTo("hot-records")}
-        />
-
-        {/* Error Logs — conditional + shake animation */}
-        {showErrorLog && (
-          <motion.div
-            animate={animate ? { x: [0, -3, 3, -3, 3, 0] } : {}}
-            transition={{ duration: 0.35 }}
-          >
-            <NavBtn
-              icon={CircleAlert}
-              label="Error Logs"
-              color="red"
-              count={errorLogCount}
-              onClick={() => navigateTo("/settings/debugging")}
-            />
-          </motion.div>
-        )}
 
         {/* Divider */}
-        <div className="mx-1.5 h-6 w-px bg-slate-200" aria-hidden="true" />
+        <div className="mx-1 h-8 w-px bg-[#A8C6FF]" aria-hidden="true" />
 
         {/* ── Profile chip (unchanged) ── */}
         <div ref={profileMenuRef} className="relative">
@@ -679,7 +717,9 @@ export function TopNav() {
             ) : (
               <span
                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white"
-                style={{ background: "linear-gradient(135deg,#6366f1,#06b6d4)" }}
+                style={{
+                  background: "linear-gradient(135deg,#6366f1,#06b6d4)",
+                }}
               >
                 {getUserInitials()}
               </span>
@@ -693,11 +733,14 @@ export function TopNav() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.96 }}
                 transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-                className="absolute right-0 mt-2.5 w-72 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10"
+                className="absolute right-0 mt-2.5 w-72 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10 z-9999"
               >
                 <button
                   type="button"
-                  onClick={() => { navigateTo("/profile"); setShowProfileMenu(false); }}
+                  onClick={() => {
+                    navigateTo("/profile");
+                    setShowProfileMenu(false);
+                  }}
                   className="flex w-full items-center gap-3 border-b border-slate-100 p-4 text-left transition hover:bg-slate-50"
                 >
                   {profilePreview ? (
@@ -709,14 +752,17 @@ export function TopNav() {
                   ) : (
                     <span
                       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-bold text-white"
-                      style={{ background: "linear-gradient(135deg,#6366f1,#06b6d4)" }}
+                      style={{
+                        background: "linear-gradient(135deg,#6366f1,#06b6d4)",
+                      }}
                     >
                       {getUserInitials()}
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-slate-800">
-                      {data?.find((d) => d.description === user?.email)?.name || user?.name}
+                      {data?.find((d) => d.description === user?.email)?.name ||
+                        user?.name}
                     </p>
                     <p className="truncate text-xs text-slate-400 mt-0.5">
                       {user?.email}
@@ -747,7 +793,10 @@ export function TopNav() {
 
                   <button
                     type="button"
-                    onClick={() => { navigateTo("/profile"); setShowProfileMenu(false); }}
+                    onClick={() => {
+                      navigateTo("/profile");
+                      setShowProfileMenu(false);
+                    }}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                   >
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
@@ -775,6 +824,204 @@ export function TopNav() {
         </div>
       </div>
 
+      {/* ─────────────────────────────────────────────────────────
+          RIGHT CLUSTER — overflow menu, below `lg`
+
+          Everything that does not fit next to the sidebar toggle and
+          the search field moves in here: stats, active users, and the
+          profile actions.
+      ───────────────────────────────────────────────────────── */}
+      <div ref={mobileMenuRef} className="relative shrink-0 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileMenu((v) => !v)}
+          aria-label="More options"
+          aria-expanded={showMobileMenu}
+          aria-haspopup="true"
+          className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90"
+        >
+          {profilePreview ? (
+            <img
+              src={profilePreview}
+              alt=""
+              className="h-7 w-7 rounded-lg object-cover"
+            />
+          ) : (
+            <MoreVertical size={20} strokeWidth={2.2} />
+          )}
+
+          {onlineCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full border border-white bg-emerald-500" />
+            </span>
+          )}
+        </button>
+
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+              role="menu"
+              className="absolute right-0 top-full z-[1000] mt-2.5 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10"
+            >
+              {/* ── Profile ── */}
+              <button
+                type="button"
+                onClick={() => {
+                  navigateTo("/profile");
+                  setShowMobileMenu(false);
+                }}
+                className="flex w-full items-center gap-3 border-b border-slate-100 p-3.5 text-left transition hover:bg-slate-50"
+              >
+                {profilePreview ? (
+                  <img
+                    src={profilePreview}
+                    alt=""
+                    className="h-10 w-10 shrink-0 rounded-xl object-cover"
+                  />
+                ) : (
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
+                    style={{
+                      background: "linear-gradient(135deg,#6366f1,#06b6d4)",
+                    }}
+                  >
+                    {getUserInitials()}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-slate-800">
+                    {displayName}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-slate-400">
+                    {user?.email}
+                  </p>
+                </div>
+                <ChevronRight size={16} className="shrink-0 text-slate-300" />
+              </button>
+
+              {/* ── Stats ── */}
+              <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
+                {[
+                  {
+                    icon: MailOpen,
+                    label: "Received",
+                    value: stats.reply_recieved,
+                    colorClass: "text-emerald-500",
+                    bgClass: "bg-emerald-100",
+                  },
+                  {
+                    icon: Send,
+                    label: "Sent",
+                    value: stats.reply_sent,
+                    colorClass: "text-blue-600",
+                    bgClass: "bg-blue-100",
+                  },
+                  {
+                    icon: Bell,
+                    label: "Reminders",
+                    value: stats.reminder_sent,
+                    colorClass: "text-amber-500",
+                    bgClass: "bg-amber-100",
+                  },
+                ].map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex flex-col items-center gap-1 px-2 py-3"
+                  >
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full ${s.bgClass}`}
+                    >
+                      {createElement(s.icon, {
+                        className: `h-3.5 w-3.5 ${s.colorClass}`,
+                      })}
+                    </span>
+                    <span className="text-[15px] font-semibold leading-none text-slate-900">
+                      {s.value ?? "—"}
+                    </span>
+                    <span className="text-[10px] font-medium leading-none text-slate-400">
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Actions ── */}
+              <div className="flex flex-col gap-0.5 p-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigateTo("/settings/user-activity");
+                    setShowMobileMenu(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
+                    <Users size={14} className="text-indigo-500" />
+                  </span>
+                  <span className="flex-1 text-left">Active users</span>
+                  <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {onlineCount}
+                  </span>
+                </button>
+
+                <label
+                  htmlFor="profile-upload-mobile"
+                  className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                    <Camera size={14} className="text-slate-500" />
+                  </span>
+                  Change profile photo
+                </label>
+                <input
+                  id="profile-upload-mobile"
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    setShowMobileMenu(false);
+                    handleProfileUpload(e);
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigateTo("/profile");
+                    setShowMobileMenu(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                    <User2 size={14} className="text-slate-500" />
+                  </span>
+                  Edit profile
+                </button>
+
+                <div className="mx-2 my-1 h-px bg-slate-100" />
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50">
+                    <LogOut size={14} className="text-red-500" />
+                  </span>
+                  Log out
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* ── Image cropper (unchanged) ── */}
       <ProfileImageCropper
         isOpen={showCropper}
@@ -782,6 +1029,63 @@ export function TopNav() {
         onClose={() => setShowCropper(false)}
         onSave={handleProfileSave}
       />
+      <AnimatePresence>
+        {showTraining && user?.email && (
+          <GpcTrainingFrame email={user.email} onClose={handleTrainingClose} />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+const getTrainingUrl = (email) =>
+  `https://training.guestpostcrm.com/?email=${encodeURIComponent(email)}`;
+
+function GpcTrainingFrame({ email, onClose }) {
+  const trainingUrl = getTrainingUrl(email);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[10000] flex bg-slate-950/65 p-3 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="gpc-training-title"
+    >
+      <motion.section
+        initial={{ opacity: 0, scale: 0.98, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: 12 }}
+        transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+      >
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5">
+          <div className="flex min-w-0 items-center gap-2 text-slate-800">
+            <GraduationCap size={20} className="shrink-0 text-indigo-600" />
+            <h2
+              id="gpc-training-title"
+              className="truncate text-base font-bold"
+            >
+              GPC Training
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            aria-label="Close GPC Training"
+          >
+            <X size={20} />
+          </button>
+        </header>
+        <iframe
+          title="GPC Training"
+          src={trainingUrl}
+          className="min-h-0 w-full flex-1 border-0 bg-white"
+        />
+      </motion.section>
+    </motion.div>
   );
 }

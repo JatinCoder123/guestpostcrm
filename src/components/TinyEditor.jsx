@@ -3,6 +3,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { queryClient } from "../lib/queryClient"
+import { useIsDesktop } from "../hooks/useMediaQuery"
 
 const TinyEditor = ({
   editorContent,
@@ -11,8 +12,16 @@ const TinyEditor = ({
   setEditorReady
 }) => {
   const TINY_EDITOR_API_KEY = queryClient.getQueryData(['tiny-key'])
+
+  /* The menubar and status bar cost ~60px of vertical space and duplicate what
+     the sliding toolbar already offers, which is a poor trade on a phone where
+     the compose area is the scarce resource. The `key` forces a re-init when
+     the breakpoint is crossed, since TinyMCE reads `init` only on mount —
+     content survives because it lives in the parent's state. */
+  const isDesktop = useIsDesktop();
+
   return (
-    <div className="flex-1  overflow-hidden">
+    <div className="min-h-0 flex-1 overflow-hidden">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -20,6 +29,7 @@ const TinyEditor = ({
         className="h-full w-full"
       >
         <Editor
+          key={isDesktop ? "wide" : "narrow"}
           // apiKey={TINY_EDITOR_API_KEY}
           value={editorContent}
           onEditorChange={setEditorContent}
@@ -31,7 +41,7 @@ const TinyEditor = ({
             license_key: 'gpl',
             height: "100%",
             branding: false,
-            statusbar: true,
+            statusbar: isDesktop,
 
             /* ================= PLUGINS ================= */
             plugins: `
@@ -59,7 +69,7 @@ const TinyEditor = ({
             toolbar_mode: "sliding",
 
             /* ================= MENUBAR ================= */
-            menubar: "file edit view insert format tools table ",
+            menubar: isDesktop ? "file edit view insert format tools table " : false,
 
             /* ================= QUICKBARS ================= */
             quickbars_selection_toolbar:
@@ -132,7 +142,7 @@ const TinyEditor = ({
 
             /* ================= UX ================= */
             contextmenu: "link image table",
-            resize: true,
+            resize: isDesktop,
           }}
         />
       </motion.div>
@@ -152,10 +162,15 @@ export const SmallTinyEditor = ({
 }) => {
   const TINY_EDITOR_API_KEY = queryClient.getQueryData(['tiny-key'])
   return (
-    <div className="overflow-hidden h-full">
+    /* h-full all the way down so the editor fills whatever box it is given.
+       It used to be hard-coded to 100vh inside an overflow-hidden wrapper,
+       which meant the bottom of the editor (and its scrollbar) was clipped
+       out of reach in any container shorter than the viewport. */
+    <div className="h-full min-h-0 overflow-hidden">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
+        className="h-full"
       >
         <Editor
           // apiKey={TINY_EDITOR_API_KEY}
@@ -167,7 +182,7 @@ export const SmallTinyEditor = ({
           }}
           init={{
             license_key: 'gpl',
-            height: "100vh",
+            height: "100%",
             menubar: false,
             branding: false,
             statusbar: false,
@@ -188,7 +203,7 @@ export const SmallTinyEditor = ({
 
             content_style: `
     html, body {
-      height: 100vh;
+      height: 100%;
       margin: 0;
       padding: 0;
     }

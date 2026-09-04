@@ -28,8 +28,9 @@ function TableBody(props) {
 
     return (
       <div
-        className={`${props.layoutStyle} border-b border-gray-100 hover:bg-gray-50 ${rowClass}`}
+        className={`${props.layoutStyle} border-b border-gray-100 hover:bg-gray-50 ${props.onRowClick ? "cursor-pointer" : ""} ${rowClass}`}
         style={style}
+        onClick={() => props.onRowClick?.(row, index)}
       >
         {visibleColumns.map((col) => {
           const value = row[col.accessor];
@@ -40,7 +41,7 @@ function TableBody(props) {
               onClick={() =>
                 col.onClick ? col.onClick(row, index) : undefined
               }
-              className={`px-6 py-4 ${col.classes} text-gray-700`}
+              className={`min-w-0 px-3 py-3 sm:px-6 sm:py-4 ${col.classes} text-gray-700`}
             >
               {col.render ? col.render(row, index) : value}
             </div>

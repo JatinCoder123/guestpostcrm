@@ -11,11 +11,12 @@ export const mailerSummaryKeys =
         "mailer-summary",
     ],
 
-    byEmail: (
-        email
+    byThread: (
+        { threadId, email }
     ) => [
             "mailer-summary",
-            email,
+            threadId,
+            email
         ],
     regen: (
         email
@@ -26,11 +27,11 @@ export const mailerSummaryKeys =
 };
 
 export const useMailerSummary =
-    (email) =>
+    ({ email, threadId }) =>
         useQuery({
-            queryKey: mailerSummaryKeys.byEmail(email),
-            queryFn: () => getMailerSummary(email),
-            enabled: Boolean(email),
+            queryKey: mailerSummaryKeys.byThread({ email, threadId }),
+            queryFn: () => getMailerSummary({ email, threadId }),
+            enabled: Boolean(email && threadId),
         });
 export const useRegenMailerSummary =
     () => {
@@ -42,16 +43,11 @@ export const useRegenMailerSummary =
             mutationFn:
                 regenMailerSummary,
 
-            onSuccess: (
-                _,
-                email
-            ) => {
+            onSuccess: (_,) => {
 
                 queryClient.invalidateQueries({
                     queryKey:
-                        mailerSummaryKeys.byEmail(
-                            email
-                        ),
+                        mailerSummaryKeys.all
                 });
             },
         });

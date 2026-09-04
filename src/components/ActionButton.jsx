@@ -1,4 +1,13 @@
-import { Globe, Mail, Heart, Link, CircleStop, NotebookPen, UserSquare, Send } from "lucide-react";
+import {
+  Globe,
+  Mail,
+  Heart,
+  Link,
+  CircleStop,
+  NotebookPen,
+  UserSquare,
+  Send,
+} from "lucide-react";
 import Loading, { LoadingChase } from "./Loading";
 import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
@@ -13,17 +22,27 @@ import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { MdOutlineHome } from "react-icons/md";
 import { viewEmailAction } from "../store/Slices/viewEmail";
 import { useNavigate } from "react-router-dom";
-import { applyHashtag, getCurrentUser, getRighteeUsers, updateActivity } from "../services/utils";
+import {
+  applyHashtag,
+  getCurrentUser,
+  getRighteeUsers,
+  updateActivity,
+} from "../services/utils";
 import { fetchGpc } from "../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import IconButton from "./ui/Buttons/IconButton"
+import IconButton from "./ui/Buttons/IconButton";
 import { useMarkTags } from "../queries/markTag.queries";
 import CustomDropdown from "./ui/CustomDropdown";
 import { useTimeline } from "../context/TimelineContext";
 import { contactKeys, useContact } from "../queries/contact.queries";
 import { queryClient } from "../lib/queryClient";
 import { forwardedKeys } from "../queries/forwarded.queries";
-import { marketPlaceKeys, useAddMarketPlace, useDelMarketPlace, useMarketPlace } from "../queries/marketplace.queries";
+import {
+  marketPlaceKeys,
+  useAddMarketPlace,
+  useDelMarketPlace,
+  useMarketPlace,
+} from "../queries/marketplace.queries";
 import { toggleFav } from "../api/contact.api";
 import { movedEmailsKeys } from "../queries/movedEmail.queries";
 import { useInfiniteTags } from "../queries/tag.queries";
@@ -45,15 +64,15 @@ const ActionButton = ({ classes = '' }) => {
   const [showUsers, setShowUsers] = useState(false);
   const [stopLoading, setStopLoading] = useState(false);
   const [showTags, setShowTags] = useState(false);
-  const [note, setNote] = useState('')
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [note, setNote] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
   const [showNotes, setShowNotes] = useState(false);
   const { isPending, data } = useQuery({
-    queryKey: ['righteeUsers'],
-    queryFn: getRighteeUsers
-  })
-  const { data: tagsData, isPending: tagLoading } = useMarkTags()
-  const tags = tagsData?.records ?? []
+    queryKey: ["righteeUsers"],
+    queryFn: getRighteeUsers,
+  });
+  const { data: tagsData, isPending: tagLoading } = useMarkTags();
+  const tags = tagsData?.records ?? [];
 
   const { mutate, isPending: sendingNote } = useMutation({
     mutationFn: async () => {
@@ -72,54 +91,51 @@ ${getCurrentUser()?.name}
 <a href="https://app.guestpostcrm.com/redirect?email=${email}">
 Open Contact
 </a>
-`
+`;
       const res = await fetchGpc({
-        method: "POST", params: { type: 'team_notes' }, body: {
+        method: "POST",
+        params: { type: "team_notes" },
+        body: {
           email: selectedUser.email,
-          notes: notes
-        }
-      })
-      return res
+          notes: notes,
+        },
+      });
+      return res;
     },
     onSuccess: () => {
-      toast.success(
-        `Your Note Is Sent To ${selectedUser?.name} Successfully!`
-      );
+      toast.success(`Your Note Is Sent To ${selectedUser?.name} Successfully!`);
       setShowNotes(false);
-      setNote("")
-      setSelectedUser(null)
+      setNote("");
+      setSelectedUser(null);
     },
     onError: () => {
-      toast.error(`Failed To Sent Note`)
-
+      toast.error(`Failed To Sent Note`);
     },
-  })
+  });
   const { mutate: applyTagMutation, isPending: applyTagLoading } = useMutation({
     mutationFn: async ({ tag, method = "GET" }) => {
       const { data } = await fetchGpc({
         method,
         params: { type: "hashtag", email, memo_no: tag, domain: false },
       });
-      console.log(data)
+      console.log(data);
       if (data.success) {
         toast.success(
-          `Tag ${method == "GET" ? "Applied" : "Removed"} Successfully!`
+          `Tag ${method == "GET" ? "Applied" : "Removed"} Successfully!`,
         );
-      }
-      else {
+      } else {
         toast.error(
-          data.message || `Tag ${method == "GET" ? "Failed" : "Failed"} `
+          data.message || `Tag ${method == "GET" ? "Failed" : "Failed"} `,
         );
       }
     },
     onSuccess: () => {
-      updateActivity(email, "Tag Applied")
-      queryClient.invalidateQueries({ queryKey: contactKeys.all })
-
+      updateActivity(email, "Tag Applied");
+      queryClient.invalidateQueries({ queryKey: contactKeys.all });
 
       setShowTags(false);
     },
-  })
+  });
 
   const noteRef = useRef(null);
   const [searchUser, setSearchUser] = useState("");
@@ -128,7 +144,7 @@ Open Contact
     if (!searchUser.trim()) return data || [];
 
     return (data || []).filter((user) =>
-      user.name.toLowerCase().includes(searchUser.toLowerCase())
+      user.name.toLowerCase().includes(searchUser.toLowerCase()),
     );
   }, [searchUser, data]);
   useEffect(() => {
@@ -139,40 +155,46 @@ Open Contact
         !noteRef.current.contains(event.target)
       ) {
         setShowNotes(false);
-
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showNotes]);
-  const { editMessage, contactLoading } =
-    useSelector((s) => s.viewEmail);
-  const { currentEmail } = useTimeline()
-  const { data: contactData } = useContact(currentEmail)
-  const contactInfo = contactData?.contact
+  const { editMessage, contactLoading } = useSelector((s) => s.viewEmail);
+  const { currentEmail } = useTimeline();
+  const { data: contactData } = useContact(currentEmail);
+  const contactInfo = contactData?.contact;
   const email = contactInfo?.email1;
-  const hashtags = contactInfo?.hashtag?.data?.hashtags
+  const hashtags = contactInfo?.hashtag?.data?.hashtags;
   const threadId = contactInfo?.thread_id;
   const assignedId = contactInfo?.gpc_assigned_to;
 
-  const { forward, error: forwardError, message: forwardMessage } = useSelector((s) => s.forwarded);
-  const { exchanging, error: changeError, message: changeMessage } = useSelector((s) => s.linkExchange);
-  const { favourite, error: favouriteError, message: favouriteMessage } = useSelector((s) => s.fav);
+  const {
+    forward,
+    error: forwardError,
+    message: forwardMessage,
+  } = useSelector((s) => s.forwarded);
+  const {
+    exchanging,
+    error: changeError,
+    message: changeMessage,
+  } = useSelector((s) => s.linkExchange);
+  const {
+    favourite,
+    error: favouriteError,
+    message: favouriteMessage,
+  } = useSelector((s) => s.fav);
   const navigate = useNavigate();
   const { isPending: loading, mutate: addToMarket } = useAddMarketPlace();
   const { isPending: removing, mutate: delMarket } = useDelMarketPlace();
-  const isMark = Number(contactInfo?.bulk) == 1
+  const isMark = Number(contactInfo?.bulk) == 1;
   /* highlight states from contactInfo */
   const isFavActive = contactInfo?.favorite == "1";
   const isExchangeActive = contactInfo?.exchange == "1";
-
 
   /* Helper to call applyHashtag util */
   const triggerHashtag = (memo_no, method = "GET") => {
@@ -192,7 +214,7 @@ Open Contact
     if (forwardMessage) {
       toast.success(forwardMessage);
       dispatch(forwardedAction.clearAllMessages());
-      queryClient.invalidateQueries({ queryKey: forwardedKeys.all })
+      queryClient.invalidateQueries({ queryKey: forwardedKeys.all });
     }
 
     if (changeMessage) {
@@ -204,8 +226,6 @@ Open Contact
       toast.error(changeError);
       dispatch(linkExchangeaction.clearAllErrors());
     }
-
-
 
     if (editMessage) {
       toast.success(editMessage);
@@ -237,11 +257,15 @@ Open Contact
       action: () => navigate("/ip"),
     },
     {
-      icon: applyTagLoading ? <LoadingChase /> : <img
-        src="https://img.icons8.com/color/48/tags--v1.png"
-        className="w-6 h-6"
-        alt="tag"
-      />,
+      icon: applyTagLoading ? (
+        <LoadingChase />
+      ) : (
+        <img
+          src="https://img.icons8.com/color/48/tags--v1.png"
+          className="w-6 h-6"
+          alt="tag"
+        />
+      ),
       label: "Mark Tag",
       disabled: false,
 
@@ -269,7 +293,7 @@ Open Contact
       },
       // GET when adding favourite, DELETE when removing
       action: () => {
-        toggleFav({ email })
+        toggleFav({ email });
         triggerHashtag(MEMO.favourite, isFavActive ? "DELETE" : "GET");
       },
     },
@@ -330,9 +354,15 @@ Open Contact
       // GET when adding to marketplace, DELETE when removing
       action: () => {
         if (isMark) {
-          delMarket({ email, domain: contactInfo.type?.toLowerCase() === 'brand' ? email.split('@')[1] : '' });
+          delMarket({
+            email,
+            domain:
+              contactInfo.type?.toLowerCase() === "brand"
+                ? email.split("@")[1]
+                : "",
+          });
         } else {
-          addToMarket({ email, brand: contactInfo.type == "Brand" })
+          addToMarket({ email, brand: contactInfo.type == "Brand" });
         }
       },
     },
@@ -355,26 +385,40 @@ Open Contact
         setStopLoading(true);
         const newValue = Number(contactInfo?.is_stop) == 1 ? "0" : "1";
         try {
-          const data = await fetchGpc({ params: { type: 'force_stop', id: contactInfo?.id, new_value: newValue, user: getCurrentUser().description } });
+          const data = await fetchGpc({
+            params: {
+              type: "force_stop",
+              id: contactInfo?.id,
+              new_value: newValue,
+              user: getCurrentUser().description,
+            },
+          });
           console.log(data);
-          updateActivity(email, Number(newValue) ? "Email Stopped  " : "Email Resumed ")
-          triggerHashtag(MEMO.stopfutureemails, newValue === "1" ? "GET" : "DELETE");
-          queryClient.invalidateQueries({ queryKey: movedEmailsKeys.all })
-          toast.success(newValue === "1" ? "Emails stopped successfully" : "Emails resumed successfully");
+          updateActivity(
+            email,
+            Number(newValue) ? "Email Stopped  " : "Email Resumed ",
+          );
+          triggerHashtag(
+            MEMO.stopfutureemails,
+            newValue === "1" ? "GET" : "DELETE",
+          );
+          queryClient.invalidateQueries({ queryKey: movedEmailsKeys.all });
+          toast.success(
+            newValue === "1"
+              ? "Emails stopped successfully"
+              : "Emails resumed successfully",
+          );
         } catch (err) {
-          toast.error(`Failed To ${newValue === '1' ? 'Stopped' : 'Resumed'} Email `);
+          toast.error(
+            `Failed To ${newValue === "1" ? "Stopped" : "Resumed"} Email `,
+          );
         } finally {
           setStopLoading(false);
         }
       },
     },
     {
-      icon: (
-        <NotebookPen
-          size={25}
-          color="#890993ff"
-        />
-      ),
+      icon: <NotebookPen size={25} color="#890993ff" />,
       disabled: false,
       label: "Add Notes",
       action: () => {
@@ -390,20 +434,27 @@ Open Contact
   };
 
   return (
-    <>
-      <div
-        className={`mt-4 flex items-center justify-center flex-wrap gap-10
-  p-4 rounded-b-2xl
-  bg-gradient-to-r from-cyan-50 via-orange-50 to-cyan-50
-  border-t border-gray-300
-  shadow-[0_8px_25px_rgba(0,0,0,0.08)] ${classes}`}
-      >
+    <div className={`${classes} `}>
+      <div className="flex items-center justify-between p-4">
+        <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
+
+        <button className="text-sm font-medium text-blue-600 hover:text-blue-700 mr-4">
+          View All
+        </button>
+      </div>
+
+      {/* z-30 lifts this grid's popovers (assign / move / tag / notes) above
+          sibling page cards, while staying below the fixed app chrome —
+          footer z-40, sidebar z-50, top nav z-999. */}
+      <div className="relative z-30 grid grid-cols-3 sm:grid-cols-5 gap-x-3 gap-y-5 place-items-center overflow-visible">
         {actionButtons.map((btn, i) => (
-          <div key={i} className="flex items-center gap-8 relative">
+          <div
+            key={i}
+            className="relative flex w-full items-center justify-center"
+          >
             {i == 2 ? (
               <>
                 <MoveToDropdown currentThreadId={threadId} />
-                <Separator />
               </>
             ) : (
               <>
@@ -424,15 +475,36 @@ Open Contact
                       }
                       : {}
                   }
-                  className={`group flex items-center cursor-pointer justify-center w-12 h-12
-  rounded-xl border border-gray-300
-  bg-gray-100
-  shadow-md
-  hover:shadow-xl hover:-translate-y-1
-  active:scale-95
-  transition-all duration-200
-  ${btn.active ? "ring-2 ring-black/30" : ""}
-  ${contactLoading && btn.label.includes("Emails") ? "opacity-60 pointer-events-none" : ""}
+                  className={`
+group
+relative
+flex
+items-center
+justify-center
+
+w-12
+h-12
+
+rounded-full
+border
+border-gray-200
+
+bg-white
+
+transition-all
+duration-200
+
+hover:border-blue-300
+hover:shadow-md
+
+active:scale-95
+
+${btn.active ? "border-blue-500 ring-2 ring-blue-100" : ""}
+
+${contactLoading && btn.label.includes("Emails")
+                      ? "opacity-60 pointer-events-none"
+                      : ""
+                    }
 `}
                 >
                   {btn.icon}
@@ -461,20 +533,33 @@ Open Contact
                         <div className="py-6 flex justify-center">
                           <LoadingChase />
                         </div>
-                      ) : <CustomDropdown defaultOpen={true} options={[
-                        ...new Map(tags.map(tag => [tag.name, tag])).values()
-                      ]?.map(tag => ({ label: tag.name, value: tag.memo_c }))} onChange={(tag) => {
-                        if (!hashtags.find((hashtag) => hashtag.memo_c == tag)) {
-                          applyTagMutation({ tag, method: "GET" })
+                      ) : (
+                        <CustomDropdown
+                          defaultOpen={true}
+                          options={[
+                            ...new Map(
+                              tags.map((tag) => [tag.name, tag]),
+                            ).values(),
+                          ]?.map((tag) => ({
+                            label: tag.name,
+                            value: tag.memo_c,
+                          }))}
+                          onChange={(tag) => {
+                            if (
+                              !hashtags.find(
+                                (hashtag) => hashtag.memo_c == tag,
+                              )
+                            ) {
+                              applyTagMutation({ tag, method: "GET" });
+                            } else {
+                              applyTagMutation({ tag, method: "DELETE" });
+                            }
 
-                        }
-                        else {
-                          applyTagMutation({ tag, method: "DELETE" })
-
-                        }
-
-                        setShowTags(false)
-                      }} outsideClickHandle={() => setShowTags(false)} />}
+                            setShowTags(false);
+                          }}
+                          outsideClickHandle={() => setShowTags(false)}
+                        />
+                      )}
                     </div>
                   </div>
                 )}
@@ -484,7 +569,6 @@ Open Contact
                     className="absolute top-14 right-0 w-96 z-50"
                   >
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl p-4 space-y-4">
-
                       {/* Search User */}
                       <div className="relative">
                         <input
@@ -581,20 +665,27 @@ Open Contact
                           Cancel
                         </button>
 
-
-                        <IconButton icon={Send} label="Send Note" loading={sendingNote} variant="primary" rounded="xl" disabled={isPending || !note.trim() || !selectedUser} onClick={() => mutate()}
+                        <IconButton
+                          icon={Send}
+                          label="Send Note"
+                          loading={sendingNote}
+                          variant="primary"
+                          rounded="xl"
+                          disabled={
+                            isPending || !note.trim() || !selectedUser
+                          }
+                          onClick={() => mutate()}
                         />
                       </div>
                     </div>
                   </div>
                 )}
-                {i !== actionButtons.length - 1 && <Separator />}
               </>
             )}
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 

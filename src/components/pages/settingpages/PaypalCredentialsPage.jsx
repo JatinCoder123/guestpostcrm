@@ -48,7 +48,7 @@ export function PaypalCredentials() {
   const rows = Array.isArray(data) ? data : [];
 
   return (
-    <div className="p-8">
+    <div className="p-3 sm:p-6 lg:p-8">
       {/* Header */}
       <Header text={"Paypal Credentials"} />
 
@@ -71,7 +71,7 @@ export function PaypalCredentials() {
       {/* TABLE */}
       {rows.length > 0 && (
         <div className="mt-8 overflow-x-auto bg-white shadow-md rounded-2xl border">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[820px] text-left border-collapse lg:min-w-0">
             <thead className="bg-gray-100 border-b">
               <tr>
                 <th className="p-4 text-gray-700 font-semibold">Name</th>

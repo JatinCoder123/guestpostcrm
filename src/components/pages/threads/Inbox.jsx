@@ -220,7 +220,7 @@ const Inbox = ({
 
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto bg-[#f3f4f6] px-6 py-5 space-y-6"
+        className="flex-1 min-h-0 overflow-y-auto bg-[#f3f4f6] px-3 py-4 space-y-5 sm:px-6 sm:py-5 sm:space-y-6"
       >
         {visibleMessages?.map((mail, idx) => {
           const fromEmail = mail?.from_email?.toLowerCase?.() || "";
@@ -244,10 +244,15 @@ const Inbox = ({
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.04 }}
-              className={`flex ${!isUser ? 'flex-row items-center justify-end gap-3' : 'flex-col items-end'}  `}
+              /* Incoming mail carries Fetch Deal / Fetch Order beside the
+                 bubble. Side-by-side steals too much width on a phone, so
+                 below `sm` they sit in a row above the bubble instead. */
+              className={`flex ${!isUser
+                ? 'flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3'
+                : 'flex-col items-end'}  `}
             >
               {!isUser && (
-                <div className="flex flex-col items-end gap-4">
+                <div className="flex shrink-0 flex-row items-center gap-2 sm:flex-col sm:items-end sm:gap-4">
                   <IconButton
                     icon={Handshake}
                     iconColor="blue"
@@ -302,9 +307,9 @@ const Inbox = ({
               )}
               <div
                 className={`relative
-w-full sm:w-[85%] 
-min-h-[220px] sm:min-h-[240px] md:min-h-[260px]
-p-5 rounded-2xl transition-all duration-300
+w-full min-w-0 sm:w-[85%]
+min-h-[170px] sm:min-h-[240px] md:min-h-[260px]
+p-3 sm:p-5 rounded-2xl transition-all duration-300
 flex flex-col justify-end
   ${isUser
                     ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
@@ -326,24 +331,24 @@ flex flex-col justify-end
                   )}
 
                   <div
-                    className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
+                    className={`mb-3 sm:mb-4 px-3 sm:px-4 py-2 rounded-xl flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs shadow-sm ${isUser
                       ? "bg-white/20 text-white"
                       : "bg-gray-100 text-gray-700 border border-gray-200"
                       }`}
                   >
                     {/* NAME */}
-                    <div className="flex items-center gap-2 font-semibold">
+                    <div className="flex min-w-0 flex-1 items-center gap-2 font-semibold">
 
 
-                      <User className="w-3.5 h-3.5 opacity-70" />
-                      <span>{mail.from_name}</span>
+                      <User className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                      <span className="truncate" title={mail.from_name}>{mail.from_name}</span>
                       {hastage &&
-                        <p className="font-medium text-sm text-white bg-violet-500 px-2 py-1 rounded-full">{hastage ? `#${hastage.toLowerCase().replace(/_/g, ' ')}` : ""}</p>
+                        <p className="shrink-0 max-w-[9rem] truncate font-medium text-xs sm:text-sm text-white bg-violet-500 px-2 py-1 rounded-full">{hastage ? `#${hastage.toLowerCase().replace(/_/g, ' ')}` : ""}</p>
                       }
                     </div>
 
                     {/* DATE & TIME */}
-                    <div className="flex flex-col text-right leading-tight">
+                    <div className="flex shrink-0 flex-col text-right leading-tight">
                       <span
                         className={`${isUser ? "opacity-90" : "text-gray-500"}`}
                       >
@@ -394,7 +399,7 @@ pr-2"
                     ref={attachmentBoxRef}
                     className="
       absolute z-30 bottom-14 left-0
-      w-72 max-h-64
+      w-[min(18rem,calc(100vw-3rem))] max-h-64
       bg-white border border-gray-200
       rounded-xl shadow-xl
       p-2

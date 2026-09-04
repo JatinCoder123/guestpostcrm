@@ -1,31 +1,28 @@
 import {
-  Mail,
-  Handshake,
-  Gift,
-  ShoppingCart,
-  FileText,
-  ChevronLeft,
+  ChevronDown,
   ChevronRight,
-  Settings,
+  PanelLeft,
   Radio,
-  Forward,
-  Heart,
-  RectangleEllipsis,
-  Link,
-  BellRing,
-  Contact2Icon,
-  CircleX,
-  Layers,
-  BellElectric,
+  Settings,
+  X,
 } from "lucide-react";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import Skeleton from "react-loading-skeleton";
+
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
+import { AnimatePresence, motion } from "framer-motion";
+
 import { PageContext } from "../context/pageContext";
-import { motion, } from "framer-motion";
-import { LoadingSpin } from "./Loading";
-import { BarChart3 } from "lucide-react";
+
+import { useQuery } from "@tanstack/react-query";
+import { userKeys } from "../queries/users.queries";
+import { getAllUsers } from "../api/users.api";
+
+import { useLayoutPreferences } from "../queries/prefrences.queries";
+
 import { useEmailStats } from "../queries/email.queries";
 import { useContactStats } from "../queries/contact.queries";
 import { useOrderStats } from "../queries/orders.queries";
@@ -36,300 +33,1299 @@ import { useExchangeStats } from "../queries/exchange.queries";
 import { useInvoiceStats } from "../queries/invoice.queries";
 import { useFavoriteStats } from "../queries/favourite.queries";
 import { useReminderStats } from "../queries/reminder.queries";
-import { useQuery } from "@tanstack/react-query";
-import { userKeys } from "../queries/users.queries";
-import { getAllUsers } from "../api/users.api";
+
+import { useGpcController } from "../queries/controller.queries";
+
+import logo, { headingLogo } from "../assets/assets";
+
+import { useIsDesktop } from "../hooks/useMediaQuery";
+
+import Icon from "./ui/Icon/Icon";
+
+import { LoadingSpin } from "./Loading";
+
 
 export function Sidebar() {
-  const navigateTo = useNavigate();
-  const { enteredEmail: email } = useContext(PageContext)
-  const { user } = useSelector(s => s.user)
-  const { data: usersData, isPending: usersPending } = useQuery({ queryKey: userKeys.lists, queryFn: getAllUsers })
 
-  const currentUser = usersData?.find((u) => u.description === user.email);
+  const navigateTo = useNavigate();
+
+  const {
+    enteredEmail: email,
+    activePage,
+    setActivePage,
+    collapsed: desktopCollapsed,
+    setSidebarCollapsed,
+    mobileSidebarOpen,
+    setMobileSidebarOpen,
+  } = useContext(PageContext);
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | RESPONSIVE MODE
+  |--------------------------------------------------------------------------
+  | At `lg` and up the sidebar is a permanent, collapsible column.
+  | Below `lg` it becomes an off-canvas drawer that is always shown in its
+  | full (expanded) form, so `collapsed` is forced off there.
+  */
+
+  const isDesktop = useIsDesktop();
+
+  const collapsed = isDesktop ? desktopCollapsed : false;
+
+  const drawerOpen = !isDesktop && mobileSidebarOpen;
+
+
+  /* Close the drawer on Escape */
+  useEffect(() => {
+
+    if (!drawerOpen) return;
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMobileSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => window.removeEventListener("keydown", onKeyDown);
+
+  }, [drawerOpen, setMobileSidebarOpen]);
+
+
+  /* Make sure the drawer never stays open once we cross into desktop */
+  useEffect(() => {
+
+    if (isDesktop && mobileSidebarOpen) {
+      setMobileSidebarOpen(false);
+    }
+
+  }, [isDesktop, mobileSidebarOpen, setMobileSidebarOpen]);
+
+
+  const { user } = useSelector((state) => state.user);
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | USERS
+  |--------------------------------------------------------------------------
+  */
+
+  const {
+    data: usersData,
+    isPending: usersPending,
+  } = useQuery({
+    queryKey: userKeys.lists,
+    queryFn: getAllUsers,
+  });
+
+
+  const currentUser = usersData?.find(
+    (u) => u.description === user.email
+  );
+
   const currentUserId = currentUser?.id;
 
 
-  const { activePage, setActivePage, collapsed, setSidebarCollapsed } =
-    useContext(PageContext);
+  /*
+  |--------------------------------------------------------------------------
+  | SIDEBAR LAYOUT
+  |--------------------------------------------------------------------------
+  */
 
-  const [openSettingsCard, setOpenSettingsCard] = useState(false);
-  const cardRef = useRef(null);
+  const {
+    data: layoutData,
+    isPending: layoutLoading,
+  } = useLayoutPreferences();
 
-  // Close modal when clicked outside
+
+  const sidebarSections =
+    layoutData ?? [];
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | EXPANDED GROUPS
+  |--------------------------------------------------------------------------
+  */
+
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | INITIALIZE GROUPS
+  |--------------------------------------------------------------------------
+  */
+
   useEffect(() => {
-    function handleClickOutside(e) {
-      if (cardRef.current && !cardRef.current.contains(e.target)) {
-        setOpenSettingsCard(false);
-      }
+
+    if (!sidebarSections?.length) {
+      return;
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
-  const { isPending: contactStatLoading, data: contactStats } = useContactStats()
-  const { isPending: emailStatsLoading, data: emailsStats } = useEmailStats()
-  const { isPending: forwardStatLoading, data: forwardStats } = useForwardedStats(currentUserId)
-  const { isPending: favStatLoading, data: favStats } = useFavoriteStats()
-  const { isPending: exchangeStatLoading, data: exchangeStats } = useExchangeStats()
-  const { isPending: offerStatLoading, data: offerStats } = useOfferStats({ email })
-  const { isPending: dealStatLoading, data: dealStats } = useDealStats({ email })
-  const { isPending: orderStatsLoading, data: ordersStats } = useOrderStats({ email })
-  const { isPending: invoiceStatLoading, data: invoiceStats } = useInvoiceStats({ email })
-  const { isPending: reminderStatLoading, data: reminderStats } = useReminderStats({ email })
+    setExpandedGroups((previous) => {
+
+      const next = {};
+
+      sidebarSections.forEach((group) => {
+
+        /*
+         * Keep existing state if already initialized.
+         * Otherwise open the group.
+         */
+        next[group.group_name] =
+          previous[group.group_name] ?? true;
+
+      });
+
+      return next;
+
+    });
+
+  }, [sidebarSections]);
 
 
+  /*
+  |--------------------------------------------------------------------------
+  | GROUP TOGGLE
+  |--------------------------------------------------------------------------
+  */
 
-  // MENU ITEMS WITH COLORS
-  const menuItems = [
-    {
-      id: "unreplied-emails",
-      label: "Unreplied ",
-      icon: Mail,
-      loading: emailStatsLoading,
+  const toggleGroup = (groupName) => {
+
+    setExpandedGroups((previous) => ({
+      ...previous,
+      [groupName]: !previous[groupName],
+    }));
+
+  };
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | STATS
+  |--------------------------------------------------------------------------
+  */
+
+  const {
+    isPending: emailStatsLoading,
+    data: emailsStats,
+  } = useEmailStats();
+
+
+  const {
+    isPending: contactStatLoading,
+    data: contactStats,
+  } = useContactStats();
+
+
+  const {
+    isPending: forwardStatLoading,
+    data: forwardStats,
+  } = useForwardedStats(currentUserId);
+
+
+  const {
+    isPending: favStatLoading,
+    data: favStats,
+  } = useFavoriteStats();
+
+
+  const {
+    isPending: exchangeStatLoading,
+    data: exchangeStats,
+  } = useExchangeStats();
+
+
+  const {
+    isPending: offerStatLoading,
+    data: offerStats,
+  } = useOfferStats({
+    email,
+  });
+
+
+  const {
+    isPending: dealStatLoading,
+    data: dealStats,
+  } = useDealStats({
+    email,
+  });
+
+
+  const {
+    isPending: orderStatsLoading,
+    data: ordersStats,
+  } = useOrderStats({
+    email,
+  });
+
+
+  const {
+    isPending: invoiceStatLoading,
+    data: invoiceStats,
+  } = useInvoiceStats({
+    email,
+  });
+
+
+  const {
+    isPending: reminderStatLoading,
+    data: reminderStats,
+  } = useReminderStats({
+    email,
+  });
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | CONTROLLER / AUTOMATION SCORE
+  |--------------------------------------------------------------------------
+  */
+
+  const {
+    data: controllerData,
+  } = useGpcController();
+
+
+  const summary =
+    controllerData?.summary ?? {};
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | MENU METADATA
+  |
+  | This keeps your old individual API counts.
+  | We are NOT using useSidebarStats.
+  |--------------------------------------------------------------------------
+  */
+
+  const menuMeta = useMemo(() => ({
+
+    "Inbox": {
+      route: "/unreplied-emails",
       count: emailsStats?.stats?.inbound?.count,
-      color: "text-rose-600",
-      hover: "hover:bg-rose-50",
-      countBg: "bg-rose-500 text-white",
-    },
-    {
-      id: "contacts",
-      label: "Contacts",
-      icon: Contact2Icon,
-      loading: contactStatLoading,
-      count: contactStats?.stats?.all?.count,
-      color: "text-fuchsia-600",
-      hover: "hover:bg-fuchsia-50",
-      countBg: "bg-fuchsia-500 text-white",
-    },
-    {
-      id: "forwarded-emails",
-      label: "Assigned",
-      icon: Forward,
-      loading: forwardStatLoading || usersPending,
-      count: forwardStats?.stats?.forwarded?.count,
-      color: "text-sky-600",
-      hover: "hover:bg-sky-50",
-      countBg: "bg-sky-500 text-white",
-    },
-    {
-      id: "favourite-emails",
-      label: "Favourite ",
-      icon: Heart,
-      loading: favStatLoading,
-      count: favStats?.stats?.favorite?.count,
-      color: "text-pink-600",
-      hover: "hover:bg-pink-50",
-      countBg: "bg-pink-500 text-white",
-    },
-    {
-      id: "link-exchange",
-      label: "Links Exchange",
-      icon: Link,
-      loading: exchangeStatLoading,
-      count: exchangeStats?.stats?.exchange?.count,
-      color: "text-violet-600",
-      hover: "hover:bg-violet-50",
-      countBg: "bg-violet-500 text-white",
-    },
-    {
-      id: "offers",
-      label: "Offers",
-      icon: Gift,
-      loading: offerStatLoading,
-      count: offerStats?.stats?.active?.count,
-      color: "text-green-600",
-      hover: "hover:bg-green-50",
-      countBg: "bg-green-500 text-white",
-    },
-    {
-      id: "deals",
-      label: "Deals",
-      icon: Handshake,
-      loading: dealStatLoading,
-      count: dealStats?.stats?.active?.count,
-      color: "text-blue-600",
-      hover: "hover:bg-blue-50",
-      countBg: "bg-blue-500 text-white",
-    },
-    {
-      id: "orders",
-      label: "Orders",
-      icon: ShoppingCart,
-      loading: orderStatsLoading,
-      count: ordersStats?.stats?.new?.count,
-      color: "text-cyan-600",
-      hover: "hover:bg-cyan-50",
-      countBg: "bg-cyan-500 text-white",
-    },
-    {
-      id: "invoices",
-      label: "Invoices",
-      icon: FileText,
-      loading: invoiceStatLoading,
-      count: invoiceStats?.stats?.all?.count,
-      color: "text-orange-600",
-      hover: "hover:bg-orange-50",
-      countBg: "bg-orange-500 text-white",
+      loading: emailStatsLoading,
     },
 
-    {
-      id: "reminders",
-      label: "Reminders",
-      icon: BellRing,
-      loading: reminderStatLoading,
+    "Assigned To Me": {
+      route: "/forwarded-emails",
+      count: forwardStats?.stats?.forwarded?.count,
+      loading: forwardStatLoading || usersPending,
+    },
+
+    "Favourites": {
+      route: "/favourite-emails",
+      count: favStats?.stats?.favorite?.count,
+      loading: favStatLoading,
+    },
+
+
+
+    "Contacts": {
+      route: "/contacts",
+      count: contactStats?.stats?.all?.count,
+      loading: contactStatLoading,
+    },
+
+    "Offers": {
+      route: "/offers",
+      count: offerStats?.stats?.active?.count,
+      loading: offerStatLoading,
+    },
+
+    "Deals": {
+      route: "/deals",
+      count: dealStats?.stats?.active?.count,
+      loading: dealStatLoading,
+    },
+
+    "Orders": {
+      route: "/orders",
+      count: ordersStats?.stats?.new?.count,
+      loading: orderStatsLoading,
+    },
+
+    "Invoices": {
+      route: "/invoices",
+      count: invoiceStats?.stats?.all?.count,
+      loading: invoiceStatLoading,
+    },
+
+    "Link Exchange": {
+      route: "/link-exchange",
+      count: exchangeStats?.stats?.exchange?.count,
+      loading: exchangeStatLoading,
+    },
+
+    "Link Removal": {
+      route: "/link-removal",
+      count: null,
+      loading: false,
+    },
+
+    "Reminders": {
+      route: "/reminders",
       count: reminderStats?.stats?.all?.count,
-      color: "text-lime-600",
-      hover: "hover:bg-lime-50",
-      countBg: "bg-lime-500 text-white",
+      loading: reminderStatLoading,
     },
-    {
-      id: "Duplicate Rejected",
-      label: "Duplicate Rejected",
-      icon: CircleX,
-      loading: false,
-      count: null,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-red-500 text-white",
+    "Reports": {
+      route: "/view-reports",
+      count: reminderStats?.stats?.all?.count,
+      loading: reminderStatLoading,
     },
-    {
-      id: "Listicle",
-      label: "Listicle",
-      icon: Layers,
-      loading: false,
-      count: null,
-      color: "text-blue-600",
-      hover: "hover:bg-blue-50",
-      countBg: "bg-blue-500 text-white",
-    },
-    {
-      id: "reminder-management",
-      label: "Reminder Management",
-      icon: BellElectric,
-      loading: null,
-      count: null,
-      color: "text-lime-600",
-      hover: "hover:bg-lime-50",
-      countBg: "bg-lime-500 text-white",
-    },
-    {
-      id: "other",
-      label: "Others",
-      icon: RectangleEllipsis,
-      count: null,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-blue-500 text-white",
-    },
-    {
-      id: "view-reports",
-      label: "Reports",
-      icon: BarChart3,
-      loading: false,
-      count: null,
-      color: "text-teal-600",
-      hover: "hover:bg-teal-50",
-      countBg: "bg-teal-500 text-white ",
+
+
+
+  }), [
+    emailsStats,
+    emailStatsLoading,
+
+    forwardStats,
+    forwardStatLoading,
+    usersPending,
+
+    favStats,
+    favStatLoading,
+
+    contactStats,
+    contactStatLoading,
+
+    offerStats,
+    offerStatLoading,
+
+    dealStats,
+    dealStatLoading,
+
+    ordersStats,
+    orderStatsLoading,
+
+    invoiceStats,
+    invoiceStatLoading,
+
+    exchangeStats,
+    exchangeStatLoading,
+
+    reminderStats,
+    reminderStatLoading,
+  ]);
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | GET MENU META
+  |--------------------------------------------------------------------------
+  */
+
+  const getMenuMeta = (item) => {
+
+    return (
+      menuMeta[item.name] ?? {
+        route:
+          item.endpoint ||
+          `/${item.name
+            ?.toLowerCase()
+            ?.trim()
+            ?.replace(/\s+/g, "-")}`,
+
+        count: null,
+
+        loading: false,
+      }
+    );
+
+  };
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | NAVIGATION
+  |--------------------------------------------------------------------------
+  */
+
+  const handleMenuClick = (item) => {
+
+    const meta = getMenuMeta(item);
+
+    setActivePage(item.name);
+
+    /*
+     * On mobile or when selecting a menu,
+     * collapse sidebar as before.
+     */
+    setSidebarCollapsed(true);
+
+    navigateTo(meta.route);
+
+    /*
+     * Close mobile sidebar.
+     */
+    if (mobileSidebarOpen) {
+      setMobileSidebarOpen(false);
     }
-  ];
+
+  };
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | SORT GROUPS
+  |--------------------------------------------------------------------------
+  */
+
+  const sortedGroups = useMemo(() => {
+
+    return [...sidebarSections].sort(
+      (a, b) =>
+        Number(a.group_priority ?? 0) -
+        Number(b.group_priority ?? 0)
+    );
+
+  }, [sidebarSections]);
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | SIDEBAR
+  |--------------------------------------------------------------------------
+  */
 
   return (
     <>
+      {/* ---------------------------------------------------------------- */}
+      {/* MOBILE OVERLAY */}
+      {/* ---------------------------------------------------------------- */}
+
+      <AnimatePresence>
+
+        {drawerOpen && (
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+
+            aria-hidden="true"
+
+            /* z-[1000] clears the sticky TopNav (z-[999]) so the open drawer
+               dims the header too, instead of the header punching through it. */
+            className="
+              fixed
+              inset-0
+              z-[1000]
+              bg-black/50
+              backdrop-blur-[1px]
+              lg:hidden
+            "
+
+            onClick={() =>
+              setMobileSidebarOpen(false)
+            }
+          />
+
+        )}
+
+      </AnimatePresence>
+
+
+      {/* ---------------------------------------------------------------- */}
       {/* SIDEBAR */}
-      <motion.div
+      {/* ---------------------------------------------------------------- */}
+
+      <motion.aside
+        id="app-sidebar"
         data-tour="sidebar"
-        animate={{ width: collapsed ? 100 : 260 }}
-        transition={{ duration: 0.25 }}
-        className="bg-white border-r border-gray-200 min-h-full
-                   p-2 relative flex flex-col shadow-sm"
+
+        role={!isDesktop ? "dialog" : undefined}
+        aria-modal={!isDesktop ? drawerOpen : undefined}
+        aria-label="Main navigation"
+        aria-hidden={!isDesktop && !drawerOpen}
+        inert={!isDesktop && !drawerOpen ? "" : undefined}
+
+        initial={false}
+
+        animate={{
+          width: collapsed ? 80 : 260,
+
+          x: isDesktop || drawerOpen ? 0 : "-100%",
+        }}
+
+        transition={{
+          duration: 0.25,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+
+        /* As a drawer it must sit above the sticky TopNav (z-[999]) and its own
+           backdrop (z-[1000]). `lg:z-auto` drops it back out of the stack on
+           desktop, where the aside is in-flow (`lg:static`) and never overlaps. */
+        className="
+          fixed
+          left-0
+          top-0
+          z-[1010]
+
+          flex
+          h-screen
+          max-w-[85vw]
+          flex-col
+
+          overflow-hidden
+
+          bg-gradient-to-b
+          from-sidebar-primary
+          via-sidebar-primary
+          to-sidebar-secondary
+
+          px-1
+
+          text-white
+
+          shadow-2xl
+
+          lg:static
+          lg:z-auto
+          lg:max-w-none
+          lg:shadow-none
+        "
       >
-        {/* COLLAPSE BUTTON */}
-        <button
-          onClick={() => setSidebarCollapsed(!collapsed)}
-          className={`fixed ${collapsed ? "left-23" : "left-62"
-            } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
-                     rounded-full flex items-center justify-center hover:bg-gray-100 shadow`}
-        >
-          {collapsed ? <ChevronRight /> : <ChevronLeft />}
-        </button>
 
-        {/* LIVE BUTTON */}
-        <button
-          data-tour="sidebar-live"
-          onClick={() => {
-            setActivePage("");
-            navigateTo("");
-          }}
-          className={`w-full flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-            ${activePage === ""
-              ? "bg-green-500 text-white"
-              : "bg-green-50 text-green-700"
-            }`}
-        >
-          <Radio className="w-5 h-5 animate-pulse" />
-          {!collapsed && <span className="font-medium">Live</span>}
-        </button>
+        {/* ============================================================ */}
+        {/* LOADING */}
+        {/* ============================================================ */}
 
-        {/* MENU ITEMS */}
-        <div className="mt-4 space-y-2 flex-1">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setSidebarCollapsed(true);
-                setActivePage(item.id);
-                navigateTo(item.id);
-              }}
-              className={`w-full flex items-center gap-2 p-2  transition-all duration-200 cursor-pointer
-                ${collapsed ? "justify-center" : ""}
-                    ${activePage === item.id
-                  ? `${item.countBg}  shadow-2xl rounded-full `
-                  : `text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${item.hover} rounded-lg`
-                }
-                `}
-            >
-              {/* FIXED ICON SIZE ALWAYS */}
-              <item.icon
-                className={`w-5 h-5 transition-all duration-100 ease-out
-    ${activePage === item.id
-                    ? " scale-120" : ""
+        {layoutLoading ? (
 
-                  }`}
-              />
+          <div className="animate-pulse space-y-5 p-3">
 
-              {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
-              {!collapsed && (
-                <>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.count != null && (
-                    <span
-                      className={`px-2 py-0.5 rounded-full ${activePage == item.id ? "text-md" : "text-xs"} ${item.countBg}`}
+            {[1, 2, 3, 4].map((group) => (
+
+              <div key={group}>
+
+                {!collapsed && (
+                  <div className="mb-3 flex items-center justify-between px-3">
+
+                    <div className="h-3 w-28 rounded bg-white/10" />
+
+                    <div className="h-4 w-4 rounded bg-white/10" />
+
+                  </div>
+                )}
+
+
+                <div className="space-y-2">
+
+                  {[1, 2, 3].map((item) => (
+
+                    <div
+                      key={item}
+                      className={`
+                        flex
+                        items-center
+                        gap-3
+                        rounded-xl
+                        p-2
+
+                        ${collapsed
+                          ? "justify-center"
+                          : ""
+                        }
+                      `}
                     >
-                      {item.loading ? <LoadingSpin /> : item.count}
-                    </span>
-                  )}
-                </>
+
+                      <div
+                        className="
+                          h-9
+                          w-9
+                          shrink-0
+                          rounded-lg
+                          bg-white/10
+                        "
+                      />
+
+                      {!collapsed && (
+                        <>
+                          <div
+                            className="
+                              h-4
+                              flex-1
+                              rounded
+                              bg-white/10
+                            "
+                          />
+
+                          <div
+                            className="
+                              h-5
+                              w-8
+                              rounded-full
+                              bg-white/10
+                            "
+                          />
+                        </>
+                      )}
+
+                    </div>
+
+                  ))}
+
+                </div>
+
+              </div>
+
+            ))}
+
+          </div>
+
+        ) : (
+
+          <>
+            {/* ======================================================== */}
+            {/* LOGO */}
+            {/* ======================================================== */}
+
+            <div
+              className="
+                group
+                mx-3
+                my-4
+                h-11
+                shrink-0
+                rounded-xl
+                bg-white/95
+                shadow
+              "
+            >
+
+              <div
+                className="
+                  flex
+                  h-full
+                  items-center
+                  justify-center
+                  gap-3
+                "
+              >
+
+                <img
+                  src={
+                    collapsed
+                      ? logo
+                      : headingLogo
+                  }
+
+                  className={`
+                    h-9
+                    w-auto
+                    max-w-[160px]
+                    cursor-pointer
+                    object-contain
+                    transition-all
+                    duration-200
+
+                    ${collapsed
+                      ? "group-hover:hidden"
+                      : ""
+                    }
+                  `}
+
+                  alt="App logo"
+
+                  onClick={() =>
+                    navigateTo("")
+                  }
+
+                  draggable={false}
+                />
+
+
+                {/* COLLAPSE BUTTON — desktop only */}
+
+                {isDesktop && (
+                  <button
+                    type="button"
+
+                    aria-label={
+                      collapsed
+                        ? "Expand sidebar"
+                        : "Collapse sidebar"
+                    }
+
+                    title={
+                      collapsed
+                        ? "Expand sidebar"
+                        : "Collapse sidebar"
+                    }
+
+                    onClick={() =>
+                      setSidebarCollapsed(
+                        !collapsed
+                      )
+                    }
+
+                    className={`
+                      h-7
+                      w-7
+                      shrink-0
+                      cursor-pointer
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-white
+                      shadow
+                      transition-all
+
+                      ${collapsed
+                        ? "hidden group-hover:flex"
+                        : "flex"
+                      }
+                    `}
+                  >
+
+                    <PanelLeft
+                      className="
+                        h-5
+                        w-5
+                      "
+                      color="#0a3687"
+                    />
+
+                  </button>
+                )}
+
+
+                {/* CLOSE BUTTON — drawer only */}
+
+                {!isDesktop && (
+                  <button
+                    type="button"
+
+                    aria-label="Close navigation"
+
+                    onClick={() =>
+                      setMobileSidebarOpen(false)
+                    }
+
+                    className="
+                      flex
+                      h-7
+                      w-7
+                      shrink-0
+                      cursor-pointer
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-white
+                      shadow
+                      transition-all
+                      active:scale-90
+                    "
+                  >
+
+                    <X
+                      className="
+                        h-5
+                        w-5
+                      "
+                      color="#0a3687"
+                    />
+
+                  </button>
+                )}
+
+              </div>
+
+            </div>
+
+
+            {/* ======================================================== */}
+            {/* LIVE BUTTON */}
+            {/* ======================================================== */}
+
+            <button
+              data-tour="sidebar-live"
+
+              onClick={() => {
+
+                setActivePage("");
+
+                navigateTo("");
+
+                if (mobileSidebarOpen) {
+                  setMobileSidebarOpen(false);
+                }
+
+              }}
+
+              className="
+                group
+                flex
+                w-full
+                shrink-0
+                items-center
+                justify-center
+                px-2
+              "
+            >
+
+              {/* LIVE ICON */}
+
+              <div
+                className={`
+                  z-10
+                  flex
+                  h-12
+                  w-12
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-full
+                  border-4
+                  bg-white
+                  shadow-md
+
+                  ${activePage === ""
+                    ? "border-blue-500"
+                    : "border-blue-400"
+                  }
+                `}
+              >
+
+                <Radio
+                  className="
+                    h-5
+                    w-5
+                    text-black
+                  "
+                />
+
+              </div>
+
+
+              {/* LIVE LABEL */}
+
+              {!collapsed && (
+
+                <div
+                  className="
+                    -ml-3
+                    flex
+                    h-9
+                    flex-1
+                    items-center
+                    justify-center
+                    rounded-r-xl
+                    bg-gradient-to-r
+                    from-[#0b6dfd]
+                    to-[#074197]
+                    pl-6
+                    pr-4
+                    text-sm
+                    font-medium
+                    text-white
+                    shadow-md
+                  "
+                >
+
+                  Live Preview
+
+                </div>
+
               )}
+
             </button>
-          ))}
-        </div>
-
-        {/* SETTINGS BUTTON */}
-        <button
-          data-tour="sidebar-settings"
-          onClick={() => {
-            setSidebarCollapsed(true);
-            navigateTo("settings");
-          }}
-          className=" fixed bottom-2 cursor-pointer mt-auto flex items-center gap-3 px-3 py-2.5 
-                     bg-gray-200 hover:bg-gray-300 rounded-lg transition-all shadow"
-        >
-          <Settings className="w-5 h-5 text-gray-700" />
-        </button>
-      </motion.div>
 
 
+            {/* ======================================================== */}
+            {/* MENU */}
+            {/* ======================================================== */}
+
+            <div
+              className="
+                mt-4
+                flex-1
+                min-h-0
+                overflow-y-auto
+                rounded-lg
+                border-t
+                border-sidebar-border
+                p-1
+                pr-1
+                custom-scrollbar
+              "
+            >
+
+              {sortedGroups.map((group) => {
+
+                const isExpanded =
+                  expandedGroups[
+                  group.group_name
+                  ];
+
+
+                const sortedItems =
+                  [...(group.data ?? [])].sort(
+                    (a, b) =>
+                      Number(a.weight ?? 0) -
+                      Number(b.weight ?? 0)
+                  );
+
+
+                return (
+
+                  <div
+                    key={group.group_name}
+                    className="mb-3"
+                  >
+
+                    {/* ================================================= */}
+                    {/* GROUP HEADER */}
+                    {/* ================================================= */}
+
+                    {!collapsed && (
+
+                      <button
+                        type="button"
+
+                        onClick={() =>
+                          toggleGroup(
+                            group.group_name
+                          )
+                        }
+
+                        className="
+                          flex
+                          w-full
+                          items-center
+                          justify-between
+                          rounded-lg
+                          px-3
+                          py-2
+
+                          text-[11px]
+                          font-semibold
+                          uppercase
+                          tracking-wider
+
+                          text-slate-300
+
+                          transition
+
+                          hover:bg-white/5
+                          hover:text-white
+                        "
+                      >
+
+                        <span>
+                          {group.group_name}
+                        </span>
+
+
+                        {isExpanded ? (
+
+                          <ChevronDown
+                            className="
+                              h-4
+                              w-4
+                            "
+                          />
+
+                        ) : (
+
+                          <ChevronRight
+                            className="
+                              h-4
+                              w-4
+                            "
+                          />
+
+                        )}
+
+                      </button>
+
+                    )}
+
+
+                    {/* ================================================= */}
+                    {/* COLLAPSED GROUP DIVIDER */}
+                    {/* ================================================= */}
+
+                    {collapsed && (
+                      <div
+                        className="
+                          mx-2
+                          mb-2
+                          border-t
+                          border-white/10
+                        "
+                      />
+                    )}
+
+
+                    {/* ================================================= */}
+                    {/* GROUP ITEMS */}
+                    {/* ================================================= */}
+
+                    {(collapsed ||
+                      isExpanded) && (
+
+                        <div className="space-y-1">
+
+                          {sortedItems.map((item) => {
+
+                            const meta =
+                              getMenuMeta(item);
+
+
+                            const isActive =
+                              activePage === item.name;
+
+
+                            const hasCount =
+                              meta.count !== null &&
+                              meta.count !== undefined;
+
+
+                            return (
+
+                              <button
+                                key={item.id}
+
+                                type="button"
+
+                                onClick={() =>
+                                  handleMenuClick(item)
+                                }
+
+                                title={
+                                  collapsed
+                                    ? item.name
+                                    : undefined
+                                }
+
+                                className={`
+                                group
+                                relative
+                                flex
+                                w-full
+                                cursor-pointer
+                                items-center
+                                gap-1
+                                rounded-xl
+                                px-2
+                                py-2
+                                transition-all
+                                duration-200
+
+                                ${collapsed
+                                    ? "justify-center"
+                                    : ""
+                                  }
+
+                                ${isActive
+                                    ? "bg-white/12 text-white shadow-lg"
+                                    : "text-slate-300 hover:bg-white/5 hover:text-white"
+                                  }
+                              `}
+                              >
+
+                                {/* ACTIVE INDICATOR */}
+
+                                {isActive && (
+
+                                  <span
+                                    className="
+                                    absolute
+                                    left-0
+                                    h-7
+                                    w-1
+                                    rounded-r-full
+                                    bg-blue-400
+                                  "
+                                  />
+
+                                )}
+
+
+                                {/* ICON */}
+
+                                <div
+                                  className={`
+                                  flex
+                                  h-9
+                                  w-9
+                                  shrink-0
+                                  items-center
+                                  justify-center
+                                  rounded-lg
+                                  transition-all
+                                  duration-200
+
+                                  ${isActive
+                                      ? " text-blue-300"
+                                      : ""
+                                    }
+                                `}
+                                >
+
+                                  <Icon
+                                    name={item.icon}
+                                    library={item.library}
+
+                                    className={`
+                                    h-5
+                                    w-5
+                                    transition-transform
+                                    duration-200
+
+                                    ${isActive
+                                        ? "scale-110"
+                                        : "group-hover:scale-105"
+                                      }
+                                  `}
+                                  />
+
+                                </div>
+
+
+                                {/* LABEL + COUNT */}
+
+                                {!collapsed && (
+
+                                  <>
+                                    <span
+                                      className={`
+                                      flex-1
+                                      truncate
+                                      text-left
+                                      text-sm
+
+                                      ${isActive
+                                          ? "font-semibold"
+                                          : "font-medium"
+                                        }
+                                    `}
+                                    >
+                                      {item.name}
+                                    </span>
+
+
+                                    {/* COUNT */}
+
+                                    {hasCount && (
+
+                                      <span
+                                        className={`
+                                        min-w-7
+                                        rounded-full
+                                        px-2
+                                        py-0.5
+                                        text-center
+                                        text-[11px]
+                                        font-semibold
+
+                                        ${isActive
+                                            ? "bg-blue-500 text-white"
+                                            : "bg-white/10 text-slate-300"
+                                          }
+                                      `}
+                                      >
+
+                                        {meta.loading ? (
+
+                                          <Skeleton
+                                            width={14}
+                                            height={12}
+                                            baseColor="rgba(255,255,255,0.12)"
+                                            highlightColor="rgba(255,255,255,0.20)"
+                                          />
+
+                                        ) : (
+
+                                          meta.count ?? 0
+
+                                        )}
+
+                                      </span>
+
+                                    )}
+
+                                  </>
+
+                                )}
+
+                              </button>
+
+                            );
+
+                          })}
+
+                        </div>
+
+                      )}
+
+                  </div>
+
+                );
+
+              })}
+
+            </div>
+
+
+            {/* ======================================================== */}
+            {/* SETTINGS */}
+            {/* ======================================================== */}
+
+            <div onClick={() => navigateTo("/settings/controller")}
+              className="my-6 flex items-center justify-center cursor-pointer border-t border-sidebar-border p-2 rounded-full shadow-lg shadow-black">
+              {/* Progress Circle */}
+              <div
+                className="
+    relative z-10 grid size-14 place-items-center rounded-full
+    after:absolute after:inset-1.5 after:rounded-full after:bg-[#042158]
+    shrink-0
+  "
+                style={{
+                  background: `conic-gradient(
+      #1775ef ${summary?.total_score ?? 0}%,
+      rgba(107,141,189,.33) 0%
+    )`,
+                }}
+              >
+                <span className="relative z-10 text-sm font-semibold text-white ">
+                  {summary?.total_score ?? 0}%
+                </span>
+              </div>
+
+              {/* Automation Score Card */}
+              {!collapsed && (
+                <div
+                  className="
+        -ml-3 flex h-12 w-[170px]
+        items-center rounded-r-xl
+        border border-[#3973c9]
+        bg-gradient-to-b from-[#011334] to-[#032e7e]
+        pl-6 pr-4 shadow-md
+        max-h-[850px]:hidden
+      "
+                >
+                  <p className="text-sm font-medium leading-5 text-white">
+                    Automation Score
+
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
+
+        )}
+
+      </motion.aside>
     </>
   );
 }

@@ -16,11 +16,13 @@ const UserActivity = () => {
   });
 
   return (
-    <div className="p-8">
+    <div className="p-3 sm:p-6 lg:p-8">
       <Header text={"User Activity"} />
 
-      <div className="mt-6 bg-white border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
+      {/* The wrapper was `overflow-hidden`, which clipped the 5-column table on
+          narrow screens instead of letting it scroll. */}
+      <div className="mt-6 bg-white border rounded-lg overflow-x-auto">
+        <table className="w-full min-w-[720px] text-sm lg:min-w-0">
           <thead className="bg-gray-50 text-left">
             <tr
             >

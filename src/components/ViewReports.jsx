@@ -7,8 +7,13 @@ import {
   ChevronRight,
   ChevronUp,
   Filter,
+  Inbox,
   Loader2,
   MessageSquare,
+  Search,
+  Send,
+  ShieldAlert,
+  Users,
   Activity,
   Layers,
 } from "lucide-react";
@@ -29,7 +34,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { DateRangeFilter } from "./DateRangeFilter.jsx";
 import { useCrmUsers } from "../queries/users.queries.js";
 import CustomDropdown from "./ui/CustomDropdown.jsx";
-import { preferencesAction } from "../store/Slices/preferencesSlice.js";
+import { FETCH_GPC_X_API_KEY } from "../store/constants.js";
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const PHASES = [
@@ -69,6 +74,12 @@ const STAT_THEMES = [
   { bg: "bg-teal-50", border: "border-teal-200", text: "text-teal-700", label: "text-teal-500" },
   { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700", label: "text-orange-500" },
 ];
+
+const LABEL_CONFIG = {
+  INBOX: { icon: Inbox, label: "Inbox", accent: "text-blue-600", iconBg: "bg-blue-50" },
+  SENT: { icon: Send, label: "Sent", accent: "text-emerald-600", iconBg: "bg-emerald-50" },
+  SPAM: { icon: ShieldAlert, label: "Spam", accent: "text-rose-600", iconBg: "bg-rose-50" },
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -168,8 +179,8 @@ const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false
 
   if (compact) {
     return (
-      <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-white/60">
-        <span className="text-xs text-slate-400 font-medium tabular-nums">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-t border-slate-100 bg-white/60 sm:px-5">
+        <span className="text-xs text-slate-400 font-medium tabular-nums whitespace-nowrap">
           Page {pageIndex} of {pageCount}
         </span>
         <div className="flex items-center gap-1">
@@ -210,8 +221,8 @@ const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false
   }
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 border-t border-slate-100 sm:px-6">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={handlePrev}
           disabled={pageIndex === 1}
@@ -247,7 +258,7 @@ const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false
         </button>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-slate-400">Jump to</span>
+        <span className="hidden text-sm text-slate-400 sm:inline">Jump to</span>
         <input
           type="number"
           min="1"
@@ -311,28 +322,15 @@ export default function ViewReports() {
   const error = useSelector(selectReportError);
 
   const [selectedUser, setSelectedUser] = useState("");
-  const [appliedFilters, setAppliedFilters] = useState({
-    user: '',
-    date: "today",
-  });
-  useEffect(() => {
-    if (!users?.length) return;
-
-    if (email) {
-      const user = users.find(
-        (u) => u.description?.toLowerCase() === email.toLowerCase()
-      );
-
-      const userId = user?.id || "";
-
-      setSelectedUser(userId);
-      setAppliedFilters(prev => ({
-        ...prev,
-        user: userId,
-      }));
-    }
-  }, [email, users]);
-  const [activeSection, setActiveSection] = useState(storedReportFilter.phase || "conversations");
+  // Below `sm` the filter controls stack into full-width rows and swallow the
+  // viewport, so they collapse behind a toggle. From `sm` up they're always shown.
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("today");
+  const [appliedFilters, setAppliedFilters] = useState({ user: "", date: "today" });
+  const [activeSection, setActiveSection] = useState("filtration");
+  const [labelCounts, setLabelCounts] = useState([]);
+  const [labelCountsLoading, setLabelCountsLoading] = useState(true);
+  const [labelCountsError, setLabelCountsError] = useState(false);
 
   const phaseConfig = useMemo(
     () => PHASES.find((p) => p.key === activeSection) || PHASES[0],
@@ -466,18 +464,43 @@ export default function ViewReports() {
 
   useEffect(() => {
     dispatch(resetReport());
+    loadStages(1);
+  }, [activeSection, appliedFilters]); // eslint-disable-line
 
-    loadStages(1).then(() => {
-      if (
-        !restoredStageRef.current &&
-        storedReportFilter.stage &&
-        storedReportFilter.phase === activeSection
-      ) {
-        restoredStageRef.current = true;
-        loadCategories(storedReportFilter.stage, 1);
+  useEffect(() => {
+    let active = true;
+
+    const loadLabelCounts = async () => {
+      try {
+        const response = await fetch(
+          "https://anshik.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=label_count",
+          {
+          method: "GET",
+          headers: { "X-Api-Key": FETCH_GPC_X_API_KEY },
+          },
+        );
+        if (!response.ok) throw new Error(`Label count request failed: ${response.status}`);
+        const data = await response.json();
+        const labels = Array.isArray(data) ? data : data?.records || data?.data || [];
+        if (active) {
+          setLabelCounts(labels);
+          setLabelCountsError(false);
+        }
+      } catch {
+        if (active) {
+          setLabelCounts([]);
+          setLabelCountsError(true);
+        }
+      } finally {
+        if (active) setLabelCountsLoading(false);
       }
-    });
-  }, [activeSection, appliedFilters, dateFilter]);
+    };
+
+    loadLabelCounts();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const grandTotal = stages.rows.reduce((s, r) => s + getCount(r), 0);
   const statsEntries = Object.entries(stats);
@@ -485,9 +508,51 @@ export default function ViewReports() {
   return (
     <div className="min-h-screen bg-[#f5f5f3] font-sans">
 
-      {/* ── Sticky top nav ── */}
-      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+      {/* ── Top nav: scrolls away below `lg`, sticky from `lg` up ── */}
+      <div className="relative z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 lg:sticky lg:top-0">
+        <div className="max-w-7xl mx-auto px-3 pt-3 sm:px-6 sm:pt-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            {labelCountsLoading
+              ? [...Array(3)].map((_, index) => (
+                <div key={index} className="h-[68px] rounded-xl border border-slate-200 bg-slate-50 animate-pulse sm:h-[92px] sm:rounded-2xl" />
+              ))
+              : ["INBOX", "SENT", "SPAM"].map((labelId) => {
+                const count = labelCounts.find(
+                  (label) => String(label.id || label.name).toUpperCase() === labelId,
+                );
+                const config = LABEL_CONFIG[labelId];
+                const Icon = config.icon;
+
+                return (
+                  <div key={labelId} className="rounded-xl border border-slate-200 bg-white px-2 py-2 shadow-sm sm:rounded-2xl sm:px-4 sm:py-3">
+                    <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                      <div className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
+                        <span className={`h-6 w-6 shrink-0 rounded-lg flex items-center justify-center sm:h-9 sm:w-9 sm:rounded-xl ${config.iconBg}`}>
+                          <Icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${config.accent}`} />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-semibold text-slate-900 sm:text-sm">{config.label}</p>
+                          {/* Unread subline is dropped below `sm` to keep the header short */}
+                          <p className="hidden truncate text-xs text-slate-400 sm:block">
+                            {labelCountsError || !count
+                              ? "Count unavailable"
+                              : `${Number(count.messages_unread ?? 0).toLocaleString()} unread messages`}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-base font-bold tracking-tight text-slate-800 tabular-nums sm:text-2xl">
+                        {labelCountsError || !count
+                          ? "—"
+                          : Number(count.messages_total ?? 0).toLocaleString()}
+                      </span>
+                    </div>
+                    
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-3 py-3 flex flex-wrap items-center justify-between gap-3 sm:px-6 lg:h-16 lg:flex-nowrap lg:gap-6 lg:py-0">
 
           <div className="flex items-center gap-3 shrink-0">
             <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center">
@@ -496,7 +561,33 @@ export default function ViewReports() {
             <span className="font-semibold text-slate-900 tracking-tight text-[15px]">Reports</span>
           </div>
 
-          <div className="flex items-center gap-2 flex-1 justify-end mr-30">
+          <button
+            type="button"
+            onClick={() => setShowFilters((prev) => !prev)}
+            aria-expanded={showFilters}
+            aria-controls="report-filters"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 sm:hidden"
+          >
+            <Filter className="h-3.5 w-3.5" />
+            Filters
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showFilters ? "rotate-180" : ""}`} />
+          </button>
+
+          <div
+            id="report-filters"
+            className={`${showFilters ? "grid" : "hidden"} w-full min-w-0 grid-cols-1 items-center gap-2 sm:grid sm:grid-cols-3 lg:flex lg:w-auto lg:flex-1 lg:justify-end`}
+          >
+
+            <CustomDropdown
+              options={(Array.isArray(users) ? users : []).map((user) => ({
+                value: user.id,
+                label: user.name,
+              }))}
+              onChange={(user) => setSelectedUser(user)}
+              placeholder="Select User"
+            />
+
+
             <DateRangeFilter
               fromDate={
                 dateFilter.fromDate
@@ -577,10 +668,10 @@ export default function ViewReports() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-5">
+      <div className="max-w-7xl mx-auto px-3 py-5 space-y-4 sm:px-6 sm:py-8 sm:space-y-5">
 
         {/* ── Phase switcher ── */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {PHASES?.map((phase) => {
             const Icon = phase.icon;
             const isActive = activeSection === phase.key;
@@ -588,23 +679,23 @@ export default function ViewReports() {
               <button
                 key={phase.key}
                 onClick={() => { if (phase.key !== activeSection) setActiveSection(phase.key); }}
-                className={`group text-left rounded-2xl p-5 border transition-all duration-200 ${isActive
+                className={`group text-left rounded-2xl p-4 border transition-all duration-200 sm:p-5 ${isActive
                   ? "bg-white border-slate-200 shadow-sm ring-1 ring-slate-900/5"
                   : "bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-sm"
                   }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${isActive ? "bg-slate-900" : "bg-slate-100 group-hover:bg-slate-200"
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-all ${isActive ? "bg-slate-900" : "bg-slate-100 group-hover:bg-slate-200"
                       }`}>
                       <Icon size={16} className={isActive ? "text-white" : "text-slate-500"} />
                     </div>
-                    <div>
-                      <p className="font-semibold text-slate-900 text-sm">{phase.label}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{phase.sublabel}</p>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-slate-900 text-sm">{phase.label}</p>
+                      <p className="truncate text-xs text-slate-400 mt-0.5">{phase.sublabel}</p>
                     </div>
                   </div>
-                  <div className={`w-2 h-2 rounded-full transition-all ${isActive ? phase.dot : "bg-slate-200"}`} />
+                  <div className={`w-2 h-2 shrink-0 rounded-full transition-all ${isActive ? phase.dot : "bg-slate-200"}`} />
                 </div>
               </button>
             );
@@ -617,9 +708,9 @@ export default function ViewReports() {
             {statsEntries?.map(([key, value], i) => {
               const t = STAT_THEMES[i % STAT_THEMES.length];
               return (
-                <div key={key} className={`${t.bg} border ${t.border} rounded-2xl p-4`}>
-                  <span className={`text-2xl font-bold tracking-tight ${t.text}`}>{value}</span>
-                  <p className={`text-[11px] font-semibold uppercase tracking-wider mt-1 ${t.label}`}>
+                <div key={key} className={`${t.bg} border ${t.border} min-w-0 rounded-2xl p-3 sm:p-4`}>
+                  <span className={`text-xl font-bold tracking-tight tabular-nums sm:text-2xl ${t.text}`}>{value}</span>
+                  <p className={`break-words text-[11px] font-semibold uppercase tracking-wider mt-1 ${t.label}`}>
                     {key.replace(/_/g, " ")}
                   </p>
                 </div>
@@ -637,8 +728,8 @@ export default function ViewReports() {
         )}
 
         {/* ── Section header ── */}
-        <div className="flex items-center justify-between pt-1">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div className="min-w-0">
             <h2 className="text-[17px] font-semibold text-slate-900 tracking-tight">
               {phaseConfig.label} breakdown
             </h2>
@@ -650,7 +741,7 @@ export default function ViewReports() {
             </p>
           </div>
           {!stagesLoading && stages.rows.length > 0 && (
-            <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${phaseConfig.badge}`}>
+            <span className={`inline-flex shrink-0 items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${phaseConfig.badge}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${phaseConfig.dot}`} />
               {phaseConfig.label}
             </span>
@@ -671,7 +762,7 @@ export default function ViewReports() {
           ) : (
             <>
               {/* Table header */}
-              <div className="grid grid-cols-[1fr_auto] px-6 py-3 border-b border-slate-100 bg-slate-50/80">
+              <div className="grid grid-cols-[1fr_auto] px-4 py-3 border-b border-slate-100 bg-slate-50/80 sm:px-6">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Stage</span>
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Count</span>
               </div>
@@ -688,23 +779,23 @@ export default function ViewReports() {
                       {/* ── Stage row ── */}
                       <div
                         onClick={() => loadCategories(stageName, 1)}
-                        className={`group flex items-center justify-between px-6 py-4 cursor-pointer select-none transition-colors ${isStageOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50"
+                        className={`group flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer select-none transition-colors sm:px-6 sm:py-4 ${isStageOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50"
                           }`}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                           <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-bold flex items-center justify-center shrink-0 tabular-nums">
                             {String(idx + 1).padStart(2, "0")}
                           </span>
-                          <div>
-                            <p className="font-semibold text-slate-800 text-sm capitalize">{stageName}</p>
-                            <p className="text-xs text-slate-400 mt-0.5">{phaseConfig.label} stage</p>
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-slate-800 text-sm capitalize">{stageName}</p>
+                            <p className="truncate text-xs text-slate-400 mt-0.5">{phaseConfig.label} stage</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2.5">
-                          <span className={`text-xs font-semibold px-3 py-1.5 rounded-xl border ${phaseConfig.badge}`}>
+                        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+                          <span className={`text-xs font-semibold px-2.5 py-1.5 rounded-xl border tabular-nums sm:px-3 ${phaseConfig.badge}`}>
                             {count.toLocaleString()}
                           </span>
-                          <span className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all ${isStageOpen
+                          <span className={`w-8 h-8 shrink-0 rounded-xl border flex items-center justify-center transition-all ${isStageOpen
                             ? "bg-slate-100 border-slate-200"
                             : "bg-white border-slate-200 group-hover:border-slate-300"
                             }`}>
@@ -728,7 +819,7 @@ export default function ViewReports() {
                           ) : (
                             <>
                               {/* Category sub-header */}
-                              <div className="grid grid-cols-[1fr_auto] px-6 py-2.5 border-b border-slate-100">
+                              <div className="grid grid-cols-[1fr_auto] px-4 py-2.5 border-b border-slate-100 sm:px-6">
                                 <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 pl-[calc(1rem+1px)]">Category</span>
                                 <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Count</span>
                               </div>
@@ -744,14 +835,14 @@ export default function ViewReports() {
                                     {/* ── Category row ── */}
                                     <div
                                       onClick={() => loadDetails(stageName, catName)}
-                                      className={`flex items-center justify-between px-6 py-3.5 cursor-pointer select-none transition-colors ${isCatOpen ? "bg-white" : "hover:bg-white/70"
+                                      className={`flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer select-none transition-colors sm:px-6 ${isCatOpen ? "bg-white" : "hover:bg-white/70"
                                         }`}
                                     >
-                                      <div className="flex items-center gap-3">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${phaseConfig.dot} opacity-50`} />
-                                        <span className="text-sm font-medium text-slate-700">{catName}</span>
+                                      <div className="flex min-w-0 items-center gap-3">
+                                        <div className={`w-1.5 h-1.5 shrink-0 rounded-full ${phaseConfig.dot} opacity-50`} />
+                                        <span className="truncate text-sm font-medium text-slate-700">{catName}</span>
                                       </div>
-                                      <div className="flex items-center gap-2.5">
+                                      <div className="flex shrink-0 items-center gap-2.5">
                                         <span className="text-sm font-bold text-slate-900 tabular-nums">
                                           {catCount.toLocaleString()}
                                         </span>
@@ -774,7 +865,7 @@ export default function ViewReports() {
                                         ) : (
                                           <>
                                             <div className="overflow-x-auto">
-                                              <table className="w-full text-xs">
+                                              <table className="w-full min-w-[640px] text-xs">
                                                 <thead>
                                                   <tr className="border-b border-slate-100 bg-slate-50/60">
                                                     <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider">Sender</th>
@@ -842,18 +933,18 @@ export default function ViewReports() {
 
         {/* ── Grand total ── */}
         {!stagesLoading && stages.rows.length > 0 && (
-          <div className="rounded-2xl bg-slate-900 px-7 py-5 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+          <div className="rounded-2xl bg-slate-900 px-4 py-4 flex flex-wrap items-center justify-between gap-3 sm:px-7 sm:py-5">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+              <div className="w-9 h-9 shrink-0 rounded-xl bg-white/10 flex items-center justify-center">
                 <Layers size={16} className="text-white" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Grand Total</p>
-                <p className="text-xs text-slate-400 mt-0.5">{phaseConfig.label} · all stages</p>
+                <p className="truncate text-xs text-slate-400 mt-0.5">{phaseConfig.label} · all stages</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-4xl font-bold text-white tracking-tight tabular-nums leading-none">
+              <p className="text-3xl font-bold text-white tracking-tight tabular-nums leading-none sm:text-4xl">
                 {grandTotal.toLocaleString()}
               </p>
               <p className="text-[11px] text-slate-500 mt-1 tabular-nums">

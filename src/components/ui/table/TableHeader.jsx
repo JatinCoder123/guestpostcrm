@@ -28,7 +28,7 @@ function TableHeader(props) {
     return (
         <div
 
-            className={`${props.headerStyle} ${props.layoutStyle} `}
+            className={`bg-blue-600 ${props.layoutStyle} `}
 
         >
 
@@ -40,16 +40,16 @@ function TableHeader(props) {
 
                     <div
                         key={col.accessor}
-                        className={`px-6 py-4 flex items-center gap-2 ${col.headerClasses}   font-bold text-white`}
+                        className={`min-w-0 px-3 py-3 sm:px-6 sm:py-4 flex items-center gap-1.5 sm:gap-2 ${col.headerClasses}   text-xs sm:text-sm font-bold text-white`}
                     >
 
                         {Icon && (
-                            <div className={`p-1 rounded `}>
+                            <div className={`shrink-0 p-1 rounded `}>
                                 <Icon className="w-4 h-4" />
                             </div>
                         )}
 
-                        {col.label.toUpperCase()}
+                        <span className="truncate">{col.label.toUpperCase()}</span>
 
                     </div>
 

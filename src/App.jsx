@@ -67,6 +67,9 @@ import Recharge from "./components/pages/Recharge";
 import PlansPage from "./components/pages/PlansPage";
 import BillingSettings from "./components/pages/BillingSettings";
 import InternetStatus from "./components/InternetStatus";
+import { LinkRemovalPage } from "./components/pages/LinkRemovalpage";
+import LinkRemovalDetailPage from "./components/pages/LinkRemovalDetailPage";
+import InternalChats from "./components/pages/internal-chats/InternalChats";
 
 const router = createBrowserRouter([
   {
@@ -183,7 +186,14 @@ const router = createBrowserRouter([
         element: <ReminderPage />,
       },
 
-
+      {
+        path: "link-removal",
+        element: <LinkRemovalPage />,
+      },
+      {
+        path: "link-removal/:id",
+        element: <LinkRemovalDetailPage />,
+      },
 
       {
         path: "view-reports",
@@ -247,6 +257,10 @@ const router = createBrowserRouter([
       {
         path: "reminder-management",
         element: <ReminderManagementPage />,
+      },
+      {
+        path: "internal-chats",
+        element: <InternalChats />,
       },
       {
         path: "thread",
@@ -384,8 +398,8 @@ export default function App() {
 
       {isAuthenticated && !loading && (
         <>
-          <MeetingWidget />
-          {/* <TwakChat /> */}
+          {/* <MeetingWidget />
+          <TwakChat /> */}
           <RouterProvider router={router} />
         </>
       )}

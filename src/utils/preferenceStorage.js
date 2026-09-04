@@ -84,6 +84,9 @@ export const INITIAL_TABLE_FILTERS = {
     deals: {
         status: "active",
     },
+    tag: {
+        is_locked: "0",
+    }
 
 
 };

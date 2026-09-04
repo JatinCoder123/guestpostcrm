@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "framer-motion";
-import StatusDonut from "./StatusDonut";
 import { useTableContext } from "./Table";
 
 function StatusRow({ statusCount }) {
@@ -88,98 +87,192 @@ function StatusRow({ statusCount }) {
         setFilters(updated);
     };
 
-    const isStatusActive = (
-        status
-    ) => {
+    const isStatusActive = (status) => {
         const field =
             status.filter ||
             status.field ||
             statusKey;
 
-        return (
-            filters?.[field] ===
-            status.value
-        );
+        return filters?.[field] === status.value;
     };
 
     return (
         <div className="w-full">
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
                 {showStatus && (
                     <motion.div
                         key="status-row"
                         initial={{
-                            y: -100,
                             opacity: 0,
+                            height: 0,
                         }}
                         animate={{
-                            y: 0,
                             opacity: 1,
+                            height: "auto",
                         }}
                         exit={{
-                            y: 100,
                             opacity: 0,
+                            height: 0,
                         }}
                         transition={{
-                            duration: 0.4,
-                            ease: "easeInOut",
+                            duration: 0.2,
+                            ease: "easeOut",
                         }}
-                        className="flex flex-wrap items-end justify-center gap-4 py-2"
+                        className="
+                            grid
+                            grid-cols-2
+                            sm:grid-cols-3
+                            md:grid-cols-4
+                            lg:grid-cols-5
+                            xl:grid-cols-6
+                            2xl:grid-cols-8
+                            gap-2
+                            overflow-hidden
+                        "
                     >
-                        {statusList.map(
-                            (status) => {
-                                const Icon =
-                                    status.icon;
+                        {statusList.map((status, index) => {
+                            const count = status.count ?? 0;
+                            const amount = status.amount ?? 0;
 
-                                return (
-                                    <StatusDonut
-                                        key={
-                                            status.key || status.value
+                            const active = status?.checkActive
+                                ? status.checkActive()
+                                : isStatusActive(status);
+
+                            const color = status.color || "#64748b";
+
+                            const countLabel =
+                                status.countLabel || "items";
+
+                            const StatusIcon = status.icon;
+
+                            return (
+                                <motion.button
+                                    key={
+                                        status.key ||
+                                        status.value ||
+                                        index
+                                    }
+                                    type="button"
+                                    onClick={() => {
+                                        if (
+                                            status?.handleStatusClick
+                                        ) {
+                                            status.handleStatusClick();
+                                        } else {
+                                            toggleStatus(status);
                                         }
-                                        label={
-                                            status.label
+                                    }}
+                                    whileTap={{
+                                        scale: 0.98,
+                                    }}
+                                    transition={{
+                                        duration: 0.12,
+                                    }}
+                                    className={`
+                                        group
+                                        relative
+                                        flex
+                                        min-w-0
+                                        items-center
+                                        gap-3
+                                        rounded-xl
+                                        border
+                                        px-3
+                                        py-2.5
+                                        text-left
+                                        transition-colors
+                                        duration-150
+
+                                        ${active
+                                            ? "border-primary/40 bg-white"
+                                            : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
                                         }
-                                        value={
-                                            status.count
-                                        }
-                                        total={
-                                            statusCount ??
-                                            total
-                                        }
-                                        color={
-                                            status.color
-                                        }
-                                        icon={
-                                            Icon
-                                        }
-                                        active={
-                                            status?.checkActive
-                                                ? status.checkActive()
-                                                : isStatusActive(
-                                                    status
-                                                )
-                                        }
-                                        amount={
-                                            status.showAmount
-                                                ? status.amount
-                                                : null
-                                        }
-                                        showAmount={status.showAmount}
-                                        onClick={() => {
-                                            if (
-                                                status?.handleStatusClick
-                                            ) {
-                                                status.handleStatusClick();
-                                            } else {
-                                                toggleStatus(
-                                                    status
-                                                );
-                                            }
+                                    `}
+                                >
+                                    {/* ICON */}
+                                    <div
+                                        className="
+                                            flex
+                                            h-8
+                                            w-8
+                                            shrink-0
+                                            items-center
+                                            justify-center
+                                            rounded-lg
+                                        "
+                                        style={{
+                                            backgroundColor: `${color}12`,
+                                            color: color,
                                         }}
-                                    />
-                                );
-                            }
-                        )}
+                                    >
+                                        <span className="text-[16px]">
+                                            {StatusIcon && < StatusIcon
+                                                size={16}
+                                            />}
+                                        </span>
+                                    </div>
+
+                                    {/* CONTENT */}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center justify-between gap-2">
+                                            {/* STATUS LABEL */}
+                                            <span
+                                                className={`
+                                                    truncate
+                                                    text-xs
+                                                    font-medium
+                                                    ${active
+                                                        ? "text-gray-900"
+                                                        : "text-gray-600"
+                                                    }
+                                                `}
+                                            >
+                                                {status.label}
+                                            </span>
+
+                                            {/* MAIN VALUE */}
+                                            {status.showAmount ? (
+                                                <span className="shrink-0 text-sm font-bold text-gray-900">
+                                                    $
+                                                    {Number(
+                                                        amount
+                                                    ).toLocaleString()}
+                                                </span>
+                                            ) : (
+                                                <span className="shrink-0 text-sm font-bold text-gray-900">
+                                                    {count.toLocaleString()}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* SECONDARY VALUE */}
+                                        <div className="mt-0.5 text-[13px] text-gray-500">
+                                            {status.showAmount
+                                                ? `${count.toLocaleString()} ${countLabel}`
+                                                : ''}
+                                        </div>
+                                    </div>
+
+                                    {/* ACTIVE INDICATOR */}
+                                    {active && (
+                                        <span
+                                            className="
+                                                absolute
+                                                bottom-0
+                                                left-3
+                                                right-3
+                                                h-0.5
+                                                rounded-full
+                                            "
+                                            style={{
+                                                backgroundColor:
+                                                    color,
+                                            }}
+                                        />
+                                    )}
+                                </motion.button>
+                            );
+                        })}
                     </motion.div>
                 )}
             </AnimatePresence>

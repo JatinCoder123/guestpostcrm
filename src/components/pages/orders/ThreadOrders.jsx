@@ -86,9 +86,9 @@ export default function ThreadOrders({ email, id }) {
     }
   }, [message, error]);
   return (
-    <div className="w-full min-w-0 flex gap-6 items-start">
+    <div className="w-full min-w-0">
       {/* 🔥 TABLE */}
-      <div className="flex-1 min-w-0 relative border rounded-2xl p-6 bg-white shadow-sm overflow-hidden">
+      <div className="min-w-0 relative border rounded-2xl p-3 sm:p-6 bg-white shadow-sm overflow-hidden">
         <PageHeader
           title={"ORDERS"}
           onAdd={() => handleCreate(email)}
@@ -116,9 +116,12 @@ export default function ThreadOrders({ email, id }) {
             <div
               key={item.id}
               className="relative rounded-xl border overflow-hidden transition-all 
-                        border-l-4 border-l-indigo-500 bg-indigo-50/30 mb-10"
+                        border-l-4 border-l-indigo-500 bg-indigo-50/30 mb-6 sm:mb-10"
             >
-              <div className="absolute top-2 right-4 flex gap-2 z-30">
+              {/* In flow on small screens: overlaying the card corner here sits
+                  right on top of the order id / proximity row, which has no
+                  spare width to give up. Absolute again from `sm`. */}
+              <div className="flex justify-end gap-2 px-3 pt-3 sm:absolute sm:top-2 sm:right-4 sm:z-30 sm:px-0 sm:pt-0">
                 {showBrandTimeline && (
                   <button
                     onClick={() =>

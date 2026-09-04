@@ -1,5 +1,10 @@
 import { http } from "../services/api";
 import { buildTableRequestBody } from "../utils/preferenceStorage";
+import axios from "axios";
+
+const BLOG_LINK_EXTRACTOR_API_KEY =
+    import.meta.env.VITE_BLOG_LINK_EXTRACTOR_API_KEY ||
+    "9lEMZM1wd9vBtoYDxpoYQRdTDPmwCBOClDiCxj06";
 
 export const getAllBacklinks = ({
     preferences,
@@ -9,17 +14,7 @@ export const getAllBacklinks = ({
         method: "POST",
         body: {
             action: "fetch",
-            module: "outr_seo_backlinks",
-
-            fields: [
-                "post_author_name_c",
-                "post_author_email_c",
-                "target_url_c",
-                "anchor_text_c",
-                "expiry_date_c",
-                "link_type",
-                "date_entered",
-            ],
+            module: "outr_link_queue",
 
             page,
 
@@ -78,15 +73,34 @@ export const getBacklinkStats = (filters = {}) =>
         },
     });
 
+export const getLinkRemovalCount = () =>
+    http({
+        method: "POST",
+        body: {
+            action: "get_stats",
+            date_range: "today",
+            date_field: "gp_li_date_c",
+            queries: [
+                {
+                    key: "all",
+                    module: "outr_link_queue",
+                    filters: { status_c: "Added" },
+                },
+            ],
+        },
+    });
+
 export const updateBacklink =
     (backlink) =>
         http({
             method: "POST",
             body: {
                 "action": "update",
-                "module": "outr_seo_backlinks",
+                "module": "outr_link_queue",
                 id: backlink.id,
-                data: { ...backlink },
+                data: Object.fromEntries(
+                    Object.entries(backlink).filter(([key]) => key !== "id"),
+                ),
             },
         });
 
@@ -96,7 +110,36 @@ export const getBacklinkById =
             method: "POST",
             body: {
                 action: "fetch",
-                module: "outr_seo_backlinks",
-                filter: { id }
+                module: "outr_link_queue",
+                filters: { id }
             },
         });
+
+/**
+ * Loads the links currently present in a published post. The WordPress API is
+ * hosted by the same domain as the source URL, so no domain needs to be stored
+ * separately on the CRM record.
+ */
+export const getExtractedBlogLinks = async (sourceUrl) => {
+    console.log("getExtractedBlogLinks", sourceUrl);
+    if (!sourceUrl) {
+        throw new Error("This record does not have a source URL.");
+    }
+
+    let domainUrl;
+    try {
+        domainUrl = new URL(sourceUrl).origin;
+    } catch {
+        throw new Error("The source URL is not valid.");
+    }
+
+    const response = await axios.get(
+        `${domainUrl}/wp-json/blog-link-extractor/v2/links`,
+        {
+            params: { url: sourceUrl },
+            headers: { "X-BLE-API-Key": BLOG_LINK_EXTRACTOR_API_KEY },
+        },
+    );
+
+    return response.data;
+};

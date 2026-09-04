@@ -490,7 +490,7 @@ export function MachineLearningPage() {
   }, [activeStage]);
 
   return (
-    <div className="p-8 relative">
+    <div className="p-3 sm:p-6 lg:p-8 relative">
       <Header
         text="Machine Learning Manager"
         handleCreate={() => setShowCreateModal(true)}
@@ -558,7 +558,7 @@ export function MachineLearningPage() {
       {/* ===================================================== */}
       {rows.length > 0 && (
         <div className="mt-8 overflow-x-auto bg-white shadow-md rounded-2xl border">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[820px] text-left border-collapse lg:min-w-0">
             <thead className="bg-gray-100 border-b">
               <tr>
                 <th className="p-4">Name</th>

@@ -25,7 +25,7 @@ import { LoadingChase } from "./Loading";
 import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import GPCContentPopup from "./GPCContentPopup";
-import { apiRequest, fetchGpc } from "../services/api";
+import { apiRequest, fetchGpc, http } from "../services/api";
 import { toast } from "react-toastify";
 import PromptLadger from "./PromptLadger";
 import { getCurrentUser } from "../services/utils";
@@ -40,6 +40,83 @@ function ValidTick() {
         Valid
       </span>
     </span>
+  );
+}
+
+const isDefaulter = (value) => String(value ?? "").trim() === "1";
+
+// The gateway can return either an array, a { data: [] } response, or a
+// single record. Keeping this normalised here avoids coupling the delete
+// check to one response shape.
+const firstRecord = (response) => {
+  if (Array.isArray(response)) return response[0] ?? null;
+  if (!response || typeof response !== "object") return null;
+  if (Array.isArray(response.records)) return response.records[0] ?? null;
+  if (Array.isArray(response.data)) return response.data[0] ?? null;
+  if (response.record && typeof response.record === "object") return firstRecord(response.record);
+  // Smart Gateway sometimes returns { data: { records: [...] } }. Recurse
+  // into that wrapper so we read the actual queue, order, or invoice record.
+  if (response.data && typeof response.data === "object") return firstRecord(response.data);
+  return response;
+};
+
+function DeletionStatusPopup({ result, onClose, onDelete, deleting }) {
+  if (!result) return null;
+
+  const rows = [
+    {
+      label: "Order status",
+      value: result.orderStatus,
+      valid: result.orderIsDefaulter,
+      expected: "defaulter",
+    },
+    {
+      label: "Invoice status",
+      value: result.invoiceStatus,
+      valid: result.invoiceIsCancelled,
+      expected: "CANCELLED",
+    },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deletion-status-title"
+        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+      >
+        <h3 id="deletion-status-title" className="text-lg font-semibold text-slate-900">
+          Linked record status
+        </h3>
+        <p className="mt-1 text-sm text-slate-500">
+          This link is marked as a defaulter. Review the linked CRM records before deleting it.
+        </p>
+        <div className="mt-5 space-y-3">
+          {rows.map((row) => (
+            <div key={row.label} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+              <div>
+                <p className="font-medium text-slate-800">{row.label}</p>
+                <p className="text-xs text-slate-500">
+                  {row.value || "Not found"} - expected {row.expected}
+                </p>
+              </div>
+              <span className={row.valid ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
+                {row.valid ? <Check size={20} strokeWidth={3} aria-label="True" /> : "False"}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <button onClick={onClose} disabled={deleting} className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+            Close
+          </button>
+          <button onClick={onDelete} disabled={deleting} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
+            {deleting ? "Deleting..." : "Delete record"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -506,6 +583,9 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
   const [linkId, setLinkId] = useState(null);
+  const [checkingDefaulter, setCheckingDefaulter] = useState(false);
+  const [deletionStatus, setDeletionStatus] = useState(null);
+  const [pendingDeleteLink, setPendingDeleteLink] = useState(null);
   const dispatch = useDispatch();
 
   const handleUpdate = (data) => {
@@ -519,8 +599,74 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
     }
   }, [updateLinkMessage]);
 
-  const handleDelete = (linkId) => {
-    dispatch(deleteLink(id, linkId));
+  const handleDelete = async (link) => {
+    setCheckingDefaulter(true);
+    setLinkId(link.id);
+    try {
+      // The queue record is the CRM source of truth for these three fields.
+      // Do not use any WordPress response or the backlink row's stale fields.
+      const queueRecordId = link.link_queue_id ?? link.link_queue_id_c ?? link.id;
+      const queueResponse = await http({
+        method: "POST",
+        body: {
+          action: "fetch",
+          module: "outr_link_queue",
+          filters: { id: queueRecordId },
+        },
+      });
+      const queueRecord = firstRecord(queueResponse);
+
+      // Non-defaulters retain the existing direct-delete behaviour.
+      if (!isDefaulter(queueRecord?.defaulter)) {
+        dispatch(deleteLink(id, link.id));
+        return;
+      }
+
+      const [orderResponse, invoiceResponse] = await Promise.all([
+        queueRecord.order_id
+          ? http({
+              method: "POST",
+              body: {
+                action: "fetch",
+                module: "outr_order_gp_li",
+                filter: { order_id: queueRecord.order_id },
+              },
+            })
+          : Promise.resolve(null),
+        queueRecord.invoice_record_id
+          ? http({
+              method: "POST",
+              body: {
+                action: "fetch",
+                module: "outr_paypal_invoice_links",
+                filter: { id: queueRecord.invoice_record_id },
+              },
+            })
+          : Promise.resolve(null),
+      ]);
+      const orderStatus = firstRecord(orderResponse)?.order_status ?? "";
+      const invoiceStatus = firstRecord(invoiceResponse)?.status_c ?? "";
+
+      setDeletionStatus({
+        orderStatus,
+        invoiceStatus,
+        orderIsDefaulter: String(orderStatus).toLowerCase() === "defaulter",
+        invoiceIsCancelled: String(invoiceStatus) === "CANCELLED",
+      });
+      setPendingDeleteLink(link);
+    } catch {
+      // If the CRM queue record cannot be read, preserve the safe direct-delete path.
+      dispatch(deleteLink(id, link.id));
+    } finally {
+      setCheckingDefaulter(false);
+    }
+  };
+
+  const confirmDefaulterDelete = () => {
+    if (!pendingDeleteLink) return;
+    dispatch(deleteLink(id, pendingDeleteLink.id));
+    setDeletionStatus(null);
+    setPendingDeleteLink(null);
   };
 
   const gpLinkGroups = gpLinks.reduce((acc, link) => {
@@ -608,6 +754,15 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
           onUpdate={handleUpdate}
         />
       )}
+      <DeletionStatusPopup
+        result={deletionStatus}
+        deleting={deleting}
+        onClose={() => {
+          setDeletionStatus(null);
+          setPendingDeleteLink(null);
+        }}
+        onDelete={confirmDefaulterDelete}
+      />
 
       <div className="flex flex-col gap-10 w-full min-w-0">
         <div className="flex flex-col gap-3 group relative w-full min-w-0">
@@ -631,6 +786,7 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
                   setItem={setItem}
                   setOpen={setOpen}
                   deleting={deleting}
+                  checkingDefaulter={checkingDefaulter}
                   setLinkId={setLinkId}
                   handleDelete={handleDelete}
                 />
@@ -654,6 +810,7 @@ export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
                     setItem={setItem}
                     setOpen={setOpen}
                     deleting={deleting}
+                    checkingDefaulter={checkingDefaulter}
                     setLinkId={setLinkId}
                     linkId={linkId}
                     handleDelete={handleDelete}
@@ -700,6 +857,31 @@ function LinkTableHeader() {
           {label}
         </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Scrolls the header and rows of a link table together.
+ *
+ * The 7 columns are all `flex-1`, so on a phone each one gets roughly 45px and
+ * the anchor text, URLs and domain become unreadable. Since the header and the
+ * rows share COL_STYLES, they have to scroll as one unit to stay aligned —
+ * hence the min-width on a single inner track rather than per-row overflow.
+ * overflow-y is pinned because `overflow-x-auto` alone would compute it from
+ * visible to auto and let the row tooltips add a stray vertical scrollbar.
+ */
+function LinkTableScroller({ children, minWidth = 720, className = "" }) {
+  return (
+    <div
+      className={`overflow-x-auto overflow-y-hidden lg:overflow-x-visible lg:overflow-y-visible ${className}`}
+    >
+      <div
+        className="min-w-[var(--link-table-min-w)] lg:min-w-0"
+        style={{ "--link-table-min-w": `${minWidth}px` }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -1079,6 +1261,7 @@ function LinkTableRow({
   setLinkId,
   linkId,
   deleting,
+  checkingDefaulter,
   handleDelete,
   orderId,
 }) {
@@ -1211,12 +1394,12 @@ function LinkTableRow({
         <button
           onClick={() => {
             setLinkId(link.id);
-            handleDelete(link.id);
+            handleDelete(link);
           }}
-          disabled={deleting}
+          disabled={deleting || checkingDefaulter}
           className="px-2 py-1 rounded-xl bg-red-600 text-white hover:bg-red-700 transition shadow"
         >
-          {deleting && linkId === link.id ? (
+          {(deleting || checkingDefaulter) && linkId === link.id ? (
             <LoadingChase size="16" color="white" />
           ) : (
             <Trash size={14} />
@@ -1237,6 +1420,7 @@ function GPLinksTable({
   setItem,
   setOpen,
   deleting,
+  checkingDefaulter,
   setLinkId,
   linkId,
   orderId,
@@ -1260,20 +1444,23 @@ function GPLinksTable({
         gpLinks={gpLinks}
         ContentVerdictPromptLedger={rep.guestpost_prompt_ledger[0]}
       />
-      <LinkTableHeader />
-      {gpLinks.map((gpLink, rowIndex) => (
-        <LinkTableRow
-          key={gpLink.id}
-          link={gpLink}
-          rowIndex={rowIndex}
-          setItem={setItem}
-          setOpen={setOpen}
-          setLinkId={setLinkId}
-          linkId={linkId}
-          deleting={deleting}
-          handleDelete={handleDelete}
-        />
-      ))}
+      <LinkTableScroller>
+        <LinkTableHeader />
+        {gpLinks.map((gpLink, rowIndex) => (
+          <LinkTableRow
+            key={gpLink.id}
+            link={gpLink}
+            rowIndex={rowIndex}
+            setItem={setItem}
+            setOpen={setOpen}
+            setLinkId={setLinkId}
+            linkId={linkId}
+            deleting={deleting}
+            checkingDefaulter={checkingDefaulter}
+            handleDelete={handleDelete}
+          />
+        ))}
+      </LinkTableScroller>
     </div>
   );
 }
@@ -1287,6 +1474,7 @@ function LILinksTable({
   setItem,
   setOpen,
   deleting,
+  checkingDefaulter,
   setLinkId,
   linkId,
   handleDelete,
@@ -1302,21 +1490,24 @@ function LILinksTable({
         link={rep}
         orderId={orderId}
       />
-      <LinkTableHeader />
-      {liLinks.map((liLink, rowIndex) => (
-        <LinkTableRow
-          key={liLink.id}
-          link={liLink}
-          rowIndex={rowIndex}
-          setItem={setItem}
-          setOpen={setOpen}
-          setLinkId={setLinkId}
-          linkId={linkId}
-          deleting={deleting}
-          handleDelete={handleDelete}
-          orderId={orderId}
-        />
-      ))}
+      <LinkTableScroller>
+        <LinkTableHeader />
+        {liLinks.map((liLink, rowIndex) => (
+          <LinkTableRow
+            key={liLink.id}
+            link={liLink}
+            rowIndex={rowIndex}
+            setItem={setItem}
+            setOpen={setOpen}
+            setLinkId={setLinkId}
+            linkId={linkId}
+            deleting={deleting}
+            checkingDefaulter={checkingDefaulter}
+            handleDelete={handleDelete}
+            orderId={orderId}
+          />
+        ))}
+      </LinkTableScroller>
     </div>
   );
 }
@@ -1390,9 +1581,12 @@ function DocumentAnalysisCard({
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="flex items-center gap-4 p-4">
-        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-5 gap-4">
+      {/* CONTENT — labels sit in row 1 and values in row 2 of one grid, so the
+          column count cannot be reduced without breaking that pairing. Scroll
+          sideways on narrow screens instead. */}
+      <div className="flex items-center gap-4 p-2 sm:p-4 min-w-0">
+        <LinkTableScroller className="flex-1 min-w-0" minWidth={620}>
+        <div className="bg-white rounded-lg px-2 py-3 shadow grid grid-cols-5 gap-4">
           <div className="text-sm font-semibold text-gray-500">Doc Name</div>
           <div className="text-sm font-semibold text-gray-500">Niche</div>
           <div className="text-sm font-semibold text-gray-500">
@@ -1473,6 +1667,7 @@ function DocumentAnalysisCard({
             </span>
           </div>
         </div>
+        </LinkTableScroller>
         {openPopup && analysisData && (
           <GPCContentPopup
           email={email}
@@ -1522,9 +1717,11 @@ function LIAnalysisCard({ targetUrl, website, link, orderId }) {
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="flex items-center gap-4 p-4 min-w-0">
-        <div className="flex-1 min-w-0 bg-white rounded-lg px-3 py-3 shadow grid grid-cols-3 gap-6 items-center">
+      {/* CONTENT — same label-row/value-row grid as the GP card, so it scrolls
+          sideways on narrow screens rather than dropping to fewer columns. */}
+      <div className="flex items-center gap-4 p-2 sm:p-4 min-w-0">
+        <LinkTableScroller className="flex-1 min-w-0" minWidth={480}>
+        <div className="min-w-0 bg-white rounded-lg px-3 py-3 shadow grid grid-cols-3 gap-6 items-center">
           <div className="text-sm font-semibold text-gray-500 min-w-0">
             Target URL
           </div>
@@ -1582,6 +1779,7 @@ function LIAnalysisCard({ targetUrl, website, link, orderId }) {
             )}
           </div>
         </div>
+        </LinkTableScroller>
       </div>
       {liPopupOpen && (
         <LIInsertPopup

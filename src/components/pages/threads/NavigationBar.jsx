@@ -17,6 +17,11 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { useDuplicateThreads } from "../../../queries/threads.queries";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 
+/* Compact on small screens so the whole action row still fits, full size once
+   there is room. Applied to every button in the bar. */
+const NAV_BTN =
+    "shrink-0 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg lg:px-5";
+
 function NavigationBar({
     messageLimit,
     setMessageLimit,
@@ -24,7 +29,7 @@ function NavigationBar({
     scrollRef,
     showReplyPanel,
     setShowReplyPanel,
-
+    showReplyToggle = true,
 }) {
     const { email, threadId } = useOutletContext()
     const { handleMove } = useThreadContext()
@@ -47,9 +52,15 @@ function NavigationBar({
           shadow-sm
         "
             >
-                <div className="flex flex-wrap justify-between items-center  gap-3 px-4 py-3">
+                {/* Scrolls sideways when it cannot fit rather than wrapping into
+                    a tall stack or dropping actions. */}
+                {/* overflow-y is pinned explicitly: `overflow-x-auto` alone would
+                    compute overflow-y from visible to auto and let the hover
+                    tooltips create a phantom vertical scrollbar. Both axes go
+                    back to visible at `lg`, where the row wraps instead. */}
+                <div className="flex items-center justify-between gap-2 overflow-x-auto overflow-y-hidden hide-scrollbar px-3 py-2 lg:flex-wrap lg:overflow-x-visible lg:overflow-y-visible lg:px-4 lg:py-3">
                     {/* LEFT ACTIONS */}
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex shrink-0 items-center gap-2 lg:flex-wrap lg:gap-3">
                         {messageLimit < emails?.length && (
                             <>
                                 {/* LOAD MORE */}
@@ -59,15 +70,7 @@ function NavigationBar({
                                     onClick={() =>
                                         setMessageLimit((p) => p + 3)
                                     }
-                                    className="
-                    px-5 py-2
-                    rounded-xl
-                    bg-gradient-to-r from-purple-500 to-indigo-600
-                    text-white text-sm font-semibold
-                    shadow-md hover:shadow-lg
-                    transition-all duration-300
-                    flex items-center gap-2
-                  "
+                                    className={NAV_BTN}
                                     label={'Show All'}
                                 />
 
@@ -79,14 +82,7 @@ function NavigationBar({
                                     onClick={() => {
                                         setMessageLimit(emails.length)
                                     }}
-                                    className="
-                    px-5 py-2
-                    rounded-xl
-                    bg-gradient-to-r from-purple-500 to-indigo-500
-                    text-white text-sm font-semibold
-                    shadow-md hover:shadow-lg
-                    transition-all duration-300
-                  "
+                                    className={NAV_BTN}
                                     label={"Load More"}
                                 />
 
@@ -108,28 +104,14 @@ function NavigationBar({
                             tooltipPosition="bottom"
                             icon={ArrowBigUpDash}
                             label={'First Email'}
-                            className="
-                   px-5 py-2
-                    rounded-xl
-                    bg-gradient-to-r from-purple-500 to-indigo-500
-                    text-white text-sm font-semibold
-                    shadow-md hover:shadow-lg
-                    transition-all duration-300
-                  "/>
+                            className={NAV_BTN} />
                         <IconButton onClick={() => {
                             scrollRef.current?.scrollTo({
                                 top: scrollRef.current.scrollHeight,
                                 behavior: "smooth",
                             });
                         }}
-                            className="
-                   px-5 py-2
-                    rounded-xl
-                    bg-gradient-to-r from-purple-500 to-indigo-500
-                    text-white text-sm font-semibold
-                    shadow-md hover:shadow-lg
-                    transition-all duration-300
-                  "
+                            className={NAV_BTN}
                             tooltipPosition="bottom"
                             icon={ArrowBigDownDash}
                             label={"Last Email"} />
@@ -140,15 +122,7 @@ function NavigationBar({
                                     setShowThreads(true);
                                 }
                             }}
-                            className="
-        px-5 py-2
-        rounded-xl
-        bg-gradient-to-r from-purple-500 to-indigo-500
-        text-white text-sm font-semibold
-        shadow-md hover:shadow-lg
-        transition-all duration-300
-        relative
-    "
+                            className={`${NAV_BTN} relative`}
                             tooltipPosition="bottom"
                             text={`(${duplicateEmail?.length || 0})`}
                             icon={Link2}
@@ -161,19 +135,16 @@ function NavigationBar({
                         />
                     </div>
 
-                    <IconButton
-                        className="
-        px-5 py-2
-        rounded-xl
-        bg-gradient-to-r from-purple-500 to-indigo-500
-        text-white text-sm font-semibold
-        shadow-md hover:shadow-lg
-        transition-all duration-300
-    "
-                        text={showReplyPanel ? "Hide Reply" : "Show Reply"}
-                        icon={ChevronsUpDown}
-                        onClick={() => setShowReplyPanel((p) => !p)}
-                    />
+                    {/* Below `lg` the two panes are tabs, so this toggle would be
+                        a duplicate of the tab bar — ThreadView hides it there. */}
+                    {showReplyToggle && (
+                        <IconButton
+                            className={NAV_BTN}
+                            text={showReplyPanel ? "Hide Reply" : "Show Reply"}
+                            icon={ChevronsUpDown}
+                            onClick={() => setShowReplyPanel((p) => !p)}
+                        />
+                    )}
 
                 </div>
             </div>
@@ -188,7 +159,7 @@ function NavigationBar({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowThreads(false)}
-                            className="fixed inset-0 bg-black/20 z-40"
+                            className="fixed inset-0 bg-black/20 z-[1000]"
                         />
 
                         {/* SIDEBAR */}
@@ -200,13 +171,15 @@ function NavigationBar({
                                 type: "spring",
                                 damping: 24,
                             }}
+                            /* Full-height drawer: must clear the sticky TopNav
+                               (z-[999]) and its own backdrop (z-[1000]). */
                             className="
                 fixed left-0 top-0
-                h-screen w-[320px]
+                h-screen w-[320px] max-w-[85vw]
                 bg-white
                 border-l
                 shadow-2xl
-                z-50
+                z-[1010]
                 flex flex-col rounded-r-3xl
               "
                         >
