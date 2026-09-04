@@ -1,16 +1,8 @@
-// detail/components/DetailField.jsx
-
 import {
     useCallback,
     useEffect,
     useState,
 } from "react";
-
-import {
-    Check,
-    X,
-    Loader2,
-} from "lucide-react";
 
 import FieldRenderer from "@/components/fields2/FieldRenderer";
 import { useDetailEdit } from "@/context/DetailEditContext";
@@ -33,41 +25,80 @@ const DetailField = ({
 
     /*
      * ---------------------------------------------------------
-     * LOCAL DISPLAY VALUE
+     * DRAFT
      * ---------------------------------------------------------
-     *
-     * This is the value shown when the field is not editing.
-     */
-    const [displayValue, setDisplayValue] =
-        useState(value);
-
-    /*
-     * ---------------------------------------------------------
-     * DRAFT VALUE
-     * ---------------------------------------------------------
-     *
-     * Temporary value while editing.
      */
     const [draftValue, setDraftValue] =
         useState(value);
 
     /*
      * ---------------------------------------------------------
-     * SYNC WITH PARENT
+     * OPTIMISTIC VALUE
      * ---------------------------------------------------------
      *
-     * Only synchronize when we are NOT editing.
+     * null means there is no optimistic update.
      *
-     * IMPORTANT:
-     * Don't reset displayValue immediately after our own
-     * successful save. The parent/query can update later.
+     * Otherwise this is the value we want to display
+     * immediately while the API request is running.
      */
+    const [optimisticValue, setOptimisticValue] =
+        useState(null);
 
+    /*
+     * ---------------------------------------------------------
+     * SYNC SERVER VALUE
+     * ---------------------------------------------------------
+     *
+     * Once the parent/query receives the updated value,
+     * remove the optimistic value and use the server value.
+     */
     useEffect(() => {
-        if (!editing && !updating) {
-            setDisplayValue(value);
+        if (
+            optimisticValue !== null &&
+            Object.is(value, optimisticValue)
+        ) {
+            setOptimisticValue(null);
+            setDraftValue(value);
         }
-    }, [value, editing, updating]);
+    }, [
+        value,
+        optimisticValue,
+    ]);
+
+    /*
+     * ---------------------------------------------------------
+     * INITIAL / EXTERNAL VALUE SYNC
+     * ---------------------------------------------------------
+     */
+    useEffect(() => {
+        if (
+            !editing &&
+            optimisticValue === null
+        ) {
+            setDraftValue(value);
+        }
+    }, [
+        value,
+        editing,
+        optimisticValue,
+    ]);
+
+    /*
+     * ---------------------------------------------------------
+     * VALUE TO DISPLAY
+     * ---------------------------------------------------------
+     *
+     * Priority:
+     *
+     * 1. Editing -> draft
+     * 2. Optimistic update -> optimistic value
+     * 3. Server value
+     */
+    const displayValue = editing
+        ? draftValue
+        : optimisticValue !== null
+            ? optimisticValue
+            : value;
 
     /*
      * ---------------------------------------------------------
@@ -77,10 +108,6 @@ const DetailField = ({
 
     const handleStartEditing = useCallback(
         (event) => {
-            /*
-             * Don't start editing if the click/double click
-             * originated from an action button.
-             */
             if (
                 event?.target?.closest(
                     "[data-detail-field-action]"
@@ -92,12 +119,13 @@ const DetailField = ({
             if (
                 field.readOnly ||
                 field.editable === false ||
-                updating
+                updating ||
+                optimisticValue !== null
             ) {
                 return;
             }
 
-            setDraftValue(displayValue);
+            setDraftValue(value);
 
             startEditing(fieldKey);
         },
@@ -105,7 +133,8 @@ const DetailField = ({
             field.readOnly,
             field.editable,
             updating,
-            displayValue,
+            optimisticValue,
+            value,
             fieldKey,
             startEditing,
         ]
@@ -125,58 +154,62 @@ const DetailField = ({
             return;
         }
 
+        const previousValue = value;
+        const newValue = draftValue;
+
         /*
          * Nothing changed.
          */
         if (
             Object.is(
-                draftValue,
-                displayValue
+                newValue,
+                previousValue
             )
         ) {
             stopEditing();
             return;
         }
 
+        /*
+         * -----------------------------------------------------
+         * IMPORTANT
+         * -----------------------------------------------------
+         *
+         * Set optimistic value BEFORE calling onSave.
+         *
+         * React will render this value immediately.
+         */
+        setOptimisticValue(newValue);
+
+        /*
+         * Exit edit mode.
+         */
+        stopEditing();
+
         try {
-            /*
-             * Parent mutation must throw when it fails.
-             */
-            await onSave(
-                draftValue,
-                field
-            );
+            await onSave?.({
+                value: newValue,
+                previousValue,
+                field,
+                record,
+            });
 
             /*
-             * -----------------------------------------------
-             * SUCCESS
-             * -----------------------------------------------
+             * Parent/query should eventually provide
+             * the new value.
              *
-             * Immediately show the new value.
+             * If it already did, the effect above will
+             * remove optimisticValue automatically.
              */
-            setDisplayValue(draftValue);
-
-            /*
-             * Keep draft synchronized as well.
-             */
-            setDraftValue(draftValue);
-
-            /*
-             * Now leave edit mode.
-             */
-            stopEditing();
         } catch (error) {
             /*
-             * -----------------------------------------------
-             * FAILURE
-             * -----------------------------------------------
+             * API failed.
              *
-             * DO NOT change displayValue.
-             *
-             * Old value remains available.
-             *
-             * Keep editing open so user can retry/cancel.
+             * Restore the previous server value.
              */
+            setOptimisticValue(null);
+            setDraftValue(previousValue);
+
             console.error(
                 "Field save failed:",
                 error
@@ -198,14 +231,12 @@ const DetailField = ({
             return;
         }
 
-        /*
-         * Throw away draft.
-         */
-        setDraftValue(displayValue);
+        setDraftValue(
+            optimisticValue !== null
+                ? optimisticValue
+                : value
+        );
 
-        /*
-         * Leave edit mode.
-         */
         stopEditing();
     };
 
@@ -213,14 +244,6 @@ const DetailField = ({
      * ---------------------------------------------------------
      * BLUR
      * ---------------------------------------------------------
-     *
-     * IMPORTANT:
-     *
-     * We DO NOT save on blur.
-     *
-     * If focus moves outside the field, cancel the edit.
-     *
-     * If focus moves to Check/X, do nothing.
      */
 
     const handleBlur = (event) => {
@@ -231,15 +254,6 @@ const DetailField = ({
         const relatedTarget =
             event.relatedTarget;
 
-        /*
-         * Focus moved to something inside
-         * this DetailField.
-         *
-         * Example:
-         *
-         * Input → Check
-         * Input → Cancel
-         */
         if (
             relatedTarget &&
             event.currentTarget.contains(
@@ -249,11 +263,6 @@ const DetailField = ({
             return;
         }
 
-        /*
-         * Focus actually left the field.
-         *
-         * Cancel the draft.
-         */
         handleCancel();
     };
 
@@ -268,22 +277,12 @@ const DetailField = ({
             return;
         }
 
-        /*
-         * Escape = cancel
-         */
         if (event.key === "Escape") {
             event.preventDefault();
-
             handleCancel(event);
-
             return;
         }
 
-        /*
-         * Enter = save
-         *
-         * Don't do this for textarea-like fields.
-         */
         if (
             event.key === "Enter" &&
             !event.shiftKey &&
@@ -291,7 +290,6 @@ const DetailField = ({
             field.type !== "long_text"
         ) {
             event.preventDefault();
-
             handleSave(event);
         }
     };
@@ -299,17 +297,11 @@ const DetailField = ({
     return (
         <div
             className="group min-w-0"
-            onDoubleClick={
-                handleStartEditing
-            }
+            onDoubleClick={handleStartEditing}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             tabIndex={-1}
         >
-            {/* =====================================================
-                LABEL
-            ===================================================== */}
-
             <div className="mb-1 flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-500">
                     {field.label}
@@ -331,10 +323,6 @@ const DetailField = ({
                     )}
             </div>
 
-            {/* =====================================================
-                VALUE
-            ===================================================== */}
-
             <div
                 className={`
                     flex
@@ -352,16 +340,10 @@ const DetailField = ({
                     }
                 `}
             >
-                {/* FIELD */}
-
                 <div className="min-w-0 flex-1">
                     <FieldRenderer
                         field={field}
-                        value={
-                            editing
-                                ? draftValue
-                                : displayValue
-                        }
+                        value={displayValue}
                         record={record}
                         presentation={
                             editing
@@ -380,7 +362,6 @@ const DetailField = ({
                         disabled={updating}
                     />
                 </div>
-
             </div>
         </div>
     );

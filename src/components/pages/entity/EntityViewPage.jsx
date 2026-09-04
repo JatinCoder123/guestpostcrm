@@ -41,7 +41,7 @@ const EntityViewPage = ({ entity, email }) => {
     }
 
     if (!record) {
-        return <div>No record found.</div>;
+        return <div>No record found.</div>; f
     }
 
     return (
