@@ -31,12 +31,20 @@ export default function TableBody({
           transform: `translateY(${virtualRows[0]?.start ?? 0}px)`
         }}
       >
-        {virtualRows.map(v => (
-          <TableRow
-            key={v.key}
-            row={data[v.index]}
-          />
-        ))}
+        {virtualRows.map((v) => {
+          const row = data[v.index];
+
+          if (!row) {
+            return null;
+          }
+
+          return (
+            <TableRow
+              key={row.id}
+              row={row}
+            />
+          );
+        })}
         {isFetchingNextPage && (
           <div className="p-4 text-center text-gray-500">
             Loading more...

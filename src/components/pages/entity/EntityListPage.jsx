@@ -50,6 +50,7 @@ const EntityListPage = ({ entity }) => {
         isFetchingNextPage,
         isPending,
     } = useInfiniteEntity({
+        layout,
         preferences,
         email,
         entity,

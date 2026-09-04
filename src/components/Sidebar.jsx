@@ -213,7 +213,10 @@ export function Sidebar() {
         (group.data ?? []).map((item) => ({
           key: item.key,
           module: item.module_name,
-          ignore_email: item.email_by_filter == "1" ? false : true,
+          ignore_email:
+            item.filter_by_email == "1"
+              ? false
+              : true,
           filters: item.count_filters ?? {},
         })),
       ),
@@ -312,9 +315,8 @@ export function Sidebar() {
                   {[1, 2, 3, 4].map((item) => (
                     <div
                       key={item}
-                      className={`flex items-center gap-3 p-2 ${
-                        collapsed ? "justify-center" : ""
-                      }`}
+                      className={`flex items-center gap-3 p-2 ${collapsed ? "justify-center" : ""
+                        }`}
                     >
                       {/* Icon */}
                       <div
@@ -537,11 +539,10 @@ export function Sidebar() {
                                 transition-all duration-200
                                 hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
                                 ${collapsed ? "justify-center" : ""}
-                                ${
-                                  activePage === item.id
-                                    ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)] rounded-full shadow-lg"
-                                    : ""
-                                }
+                                ${activePage === item.id
+                              ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)] rounded-full shadow-lg"
+                              : ""
+                            }
                               `}
                         >
                           <Icon
@@ -549,11 +550,10 @@ export function Sidebar() {
                             library={item.library}
                             className={`
                                   h-4 w-4 shrink-0
-                                  ${
-                                    activePage === item.id
-                                      ? "scale-125 text-[var(--topbtn-primary)]"
-                                      : ""
-                                  }
+                                  ${activePage === item.id
+                                ? "scale-125 text-[var(--topbtn-primary)]"
+                                : ""
+                              }
                                 `}
                           />
 
@@ -564,8 +564,8 @@ export function Sidebar() {
                               </span>
 
                               {item.key &&
-                              sidebarCounts?.stats?.[item.key] &&
-                              sidebarCountPending ? (
+                                sidebarCounts?.stats?.[item.key] &&
+                                sidebarCountPending ? (
                                 <Skeleton count={1} />
                               ) : (
                                 <span

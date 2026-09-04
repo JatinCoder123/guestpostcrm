@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
+import { useTableContext } from "./Table";
 import TableHeader from "./TableHeader";
 import TableBody from "./TableBody";
-import { useTableContext } from "./Table";
 import useVirtualRows from "./hooks/useVirtualRows";
 
 export default function TableViewport() {
@@ -19,17 +19,26 @@ export default function TableViewport() {
         count: data.length,
         estimateSize: 48,
         overscan: 10,
+
+        // IMPORTANT:
+        // Use the actual record ID instead of
+        // the array index as the virtual row key.
+        getItemKey: (index) => data[index]?.id,
     });
 
     /**
      * Infinite loading
      */
     useEffect(() => {
-        const items = rowVirtualizer.getVirtualItems();
+        const items =
+            rowVirtualizer.getVirtualItems();
 
-        if (!items.length) return;
+        if (!items.length) {
+            return;
+        }
 
-        const lastItem = items[items.length - 1];
+        const lastItem =
+            items[items.length - 1];
 
         if (
             lastItem.index >= data.length - 5 &&
@@ -39,7 +48,7 @@ export default function TableViewport() {
             fetchNextPage();
         }
     }, [
-        rowVirtualizer.getVirtualItems(),
+        rowVirtualizer,
         data.length,
         hasNextPage,
         isFetchingNextPage,

@@ -5,14 +5,22 @@ export default function useVirtualRows({
     count,
     estimateSize = 48,
     overscan = 10,
+    getItemKey,
 }) {
     return useVirtualizer({
         count,
 
-        getScrollElement: () => parentRef.current,
+        getScrollElement: () =>
+            parentRef.current,
 
-        estimateSize: () => estimateSize,
+        estimateSize: () =>
+            estimateSize,
 
         overscan,
+
+        // IMPORTANT:
+        // Keep virtual rows tied to the actual
+        // record ID instead of the array index.
+        getItemKey,
     });
 }
