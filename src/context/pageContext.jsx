@@ -26,7 +26,7 @@ export const PageContextProvider = (props) => {
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
-    localStorage.getItem("searchTerm") || '',
+    localStorage.getItem("searchTerm") || "",
   );
 
   const [superfastReply, setSuperfastReply] = useState(() => {
@@ -71,14 +71,10 @@ export const PageContextProvider = (props) => {
     // SAVE SEARCH HISTORY
     const STORAGE_KEY = "emailSearchHistory";
 
-    let history = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || "[]"
-    );
+    let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 
     // REMOVE DUPLICATES
-    history = history.filter(
-      (item) => item.value !== email
-    );
+    history = history.filter((item) => item.value !== email);
 
     // ADD NEW SEARCH
     history.unshift({
@@ -89,10 +85,7 @@ export const PageContextProvider = (props) => {
     // KEEP ONLY LAST 3
     history = history.slice(0, 3);
 
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(history)
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
 
     // UPDATE STATE
     setEnteredEmail(email);
@@ -114,8 +107,8 @@ export const PageContextProvider = (props) => {
     }
   };
   const toggleMobileSidebar = () => {
-    setMobileSidebarOpen(prev => !prev)
-  }
+    setMobileSidebarOpen((prev) => !prev);
+  };
 
   // Set activePage based on current URL
   useEffect(() => {
@@ -147,6 +140,7 @@ export const PageContextProvider = (props) => {
     setSidebarCollapsed,
     mobileSidebarOpen,
     setMobileSidebarOpen,
+    toggleMobileSidebar,
     handleDateClick,
     currentIndex,
     showNextPrev,
