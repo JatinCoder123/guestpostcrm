@@ -41,6 +41,79 @@ const socket = io(
 );
 
 
+let notificationAudioContext;
+
+
+const playInternalChatBell = async () => {
+  try {
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+    if (!AudioContext) {
+      return;
+    }
+
+    notificationAudioContext ??=
+      new AudioContext();
+
+    if (
+      notificationAudioContext.state ===
+      "suspended"
+    ) {
+      await notificationAudioContext.resume();
+    }
+
+    const now =
+      notificationAudioContext.currentTime;
+
+    [
+      { frequency: 880, start: 0 },
+      { frequency: 1320, start: 0.12 },
+    ].forEach(({ frequency, start }) => {
+      const oscillator =
+        notificationAudioContext.createOscillator();
+
+      const gain =
+        notificationAudioContext.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(
+        frequency,
+        now + start
+      );
+
+      gain.gain.setValueAtTime(
+        0.0001,
+        now + start
+      );
+      gain.gain.exponentialRampToValueAtTime(
+        0.18,
+        now + start + 0.015
+      );
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + start + 0.38
+      );
+
+      oscillator.connect(gain);
+      gain.connect(
+        notificationAudioContext.destination
+      );
+
+      oscillator.start(now + start);
+      oscillator.stop(now + start + 0.4);
+    });
+  } catch (error) {
+    // Some browsers block audio until the user interacts with the page.
+    console.debug(
+      "Internal chat notification sound could not play:",
+      error
+    );
+  }
+};
+
+
 export const SocketContext =
   createContext();
 
@@ -613,6 +686,13 @@ export const SocketContextProvider = ({
       const senderName =
         sender?.name ||
         fromEmail;
+
+
+      /* =================================================
+         PLAY NOTIFICATION BELL
+      ================================================= */
+
+      playInternalChatBell();
 
 
       /* =================================================
