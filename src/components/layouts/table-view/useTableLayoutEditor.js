@@ -38,6 +38,9 @@ import {
   buildColumnVisibilityMutation,
   buildColumnWidthMutation,
   buildFieldCreatePayload,
+  buildStatusIconMutation,
+  buildStatusRankMutation,
+  buildStatusVisibilityMutation,
   buildViewRankMutation,
   buildViewVisibilityMutation,
   clampWidth,
@@ -85,6 +88,9 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
    */
   const [columns, setColumns] = useState([]);
 
+  /** Status stats as displayed, ordered by their presentation ranks. */
+  const [statuses, setStatuses] = useState([]);
+
   /** View-level presentation as displayed. */
   const [view, setView] = useState(null);
 
@@ -95,17 +101,29 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
   /** Held for the whole of a reorder, so two drags cannot interleave. */
   const [savingOrder, setSavingOrder] = useState(false);
 
+  /** Held for the whole of a status reorder. */
+  const [savingStatusOrder, setSavingStatusOrder] = useState(false);
+
   /** Accessor currently being written, for per-row spinners. */
   const [busyAccessor, setBusyAccessor] = useState(null);
 
+  /** Status key currently being written. */
+  const [busyStatusKey, setBusyStatusKey] = useState(null);
+
   /** Missing or duplicated column ranks. Reordering is blocked while set. */
   const [rankError, setRankError] = useState(null);
+
+  /** Missing or duplicated status ranks. */
+  const [statusRankError, setStatusRankError] = useState(null);
 
   /**
    * Writes in flight. While non-zero the sync effect leaves local state
    * alone, so a refetch landing mid-request cannot undo the optimistic view.
    */
   const pendingWrites = useRef(0);
+
+  /** Re-run server-to-local sync after the final in-flight write settles. */
+  const [settledWriteVersion, setSettledWriteVersion] = useState(0);
 
   /* ------------------------------------------------------- server -> local */
 
@@ -115,14 +133,20 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     }
 
     const reports = [];
+    const statusReports = [];
 
     const normalized = normalizeTableContract(contract, {
       moduleKey,
       viewKey,
       onInvalidRanks: (report) => reports.push(report),
+      onInvalidStatusRanks: (report) => statusReports.push(report),
     });
 
-    return { ...normalized, rankReports: reports };
+    return {
+      ...normalized,
+      rankReports: reports,
+      statusRankReports: statusReports,
+    };
   }, [contract, moduleKey, viewKey]);
 
   /**
@@ -170,11 +194,15 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         syncedKey.current = null;
 
         setColumns([]);
+        setStatuses([]);
         setView(null);
         setSelection(null);
         setRankError(null);
+        setStatusRankError(null);
         setBusyAccessor(null);
+        setBusyStatusKey(null);
         setSavingOrder(false);
+        setSavingStatusOrder(false);
       }
 
       return;
@@ -191,6 +219,7 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     syncedKey.current = key;
 
     setColumns(model.columns);
+    setStatuses(model.statuses);
     setView(model.view);
 
     setRankError(
@@ -202,6 +231,18 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
             message: model.rankReport?.unranked
               ? "These columns have no ranks yet, so they cannot be reordered here."
               : "Column ordering data is invalid, so reordering is disabled until it is fixed.",
+          },
+    );
+
+    setStatusRankError(
+      model.statusRankOrderable || model.statuses.length === 0
+        ? null
+        : {
+            reports: model.statusRankReports,
+            unranked: Boolean(model.statusRankReport?.unranked),
+            message: model.statusRankReport?.unranked
+              ? "These status stats have no ranks yet, so they cannot be reordered here."
+              : "Status ordering data is invalid, so reordering is disabled until it is fixed.",
           },
     );
 
@@ -223,9 +264,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         return current;
       }
 
+      if (
+        current?.type === "status" &&
+        model.statuses.some((status) => status.key === current.key)
+      ) {
+        return current;
+      }
+
       return { type: "view" };
     });
-  }, [model, moduleKey, viewKey]);
+  }, [model, moduleKey, settledWriteVersion, viewKey]);
 
   /* ------------------------------------------------------------ selection */
 
@@ -238,6 +286,14 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
       columns.find((column) => column.accessor === selection.accessor) ?? null
     );
   }, [columns, selection]);
+
+  const selectedStatus = useMemo(() => {
+    if (selection?.type !== "status") {
+      return null;
+    }
+
+    return statuses.find((status) => status.key === selection.key) ?? null;
+  }, [selection, statuses]);
 
   const filteredColumns = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -254,6 +310,21 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     );
   }, [columns, search]);
 
+  const filteredStatuses = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) {
+      return statuses;
+    }
+
+    return statuses.filter(
+      (status) =>
+        status.label?.toLowerCase().includes(query) ||
+        status.key?.toLowerCase().includes(query) ||
+        status.icon?.name?.toLowerCase().includes(query),
+    );
+  }, [search, statuses]);
+
   /* ------------------------------------------------------------- plumbing */
 
   /**
@@ -265,11 +336,15 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
    * server's answer, so the editor never sits on a value that was not stored.
    */
   const runWrite = useCallback(
-    async ({ mutation, restore, accessor = null }) => {
+    async ({ mutation, restore, accessor = null, statusKey = null }) => {
       pendingWrites.current += 1;
 
       if (accessor) {
         setBusyAccessor(accessor);
+      }
+
+      if (statusKey) {
+        setBusyStatusKey(statusKey);
       }
 
       try {
@@ -298,8 +373,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
       } finally {
         pendingWrites.current = Math.max(0, pendingWrites.current - 1);
 
+        if (pendingWrites.current === 0) {
+          setSettledWriteVersion((version) => version + 1);
+        }
+
         if (accessor) {
           setBusyAccessor(null);
+        }
+
+        if (statusKey) {
+          setBusyStatusKey(null);
         }
       }
     },
@@ -585,6 +668,236 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     ],
   );
 
+  /* ------------------------------------------------ status presentation */
+
+  const setStatusVisible = useCallback(
+    async (status, nextVisible) => {
+      const entry = status?.presentation?.visible;
+
+      if (!assertWritable(entry, `Visibility for "${status?.label}"`)) {
+        return;
+      }
+
+      const next = Boolean(nextVisible);
+
+      if (isNoOpChange(entry, next)) {
+        return;
+      }
+
+      const previous = statuses;
+
+      setStatuses((current) =>
+        current.map((item) =>
+          item.key === status.key ? { ...item, visible: next } : item,
+        ),
+      );
+
+      await runWrite({
+        mutation: buildStatusVisibilityMutation(status, next),
+        restore: () => setStatuses(previous),
+        statusKey: status.key,
+      });
+    },
+    [assertWritable, runWrite, statuses],
+  );
+
+  const toggleStatusVisible = useCallback(
+    (status) => setStatusVisible(status, !status?.visible),
+    [setStatusVisible],
+  );
+
+  const setStatusIcon = useCallback(
+    async (status, selection) => {
+      const entry = status?.presentation?.icon;
+
+      if (!assertWritable(entry, `Icon for "${status?.label}"`)) {
+        return;
+      }
+
+      const next = {
+        color: status?.icon?.color ?? "",
+        library: selection?.library ?? "",
+        name: selection?.name ?? "",
+      };
+
+      if (isNoOpChange(entry, next)) {
+        return;
+      }
+
+      const previous = statuses;
+
+      setStatuses((current) =>
+        current.map((item) =>
+          item.key === status.key ? { ...item, icon: next } : item,
+        ),
+      );
+
+      await runWrite({
+        mutation: buildStatusIconMutation(status, next),
+        restore: () => setStatuses(previous),
+        statusKey: status.key,
+      });
+    },
+    [assertWritable, runWrite, statuses],
+  );
+
+  /** Rewrite every status rank into fresh space when no midpoint remains. */
+  const rebalanceStatuses = useCallback(
+    async (displayOrder) => {
+      const keys = displayOrder.map((status) => status.key);
+
+      const ranks = RighteeUiRank.rebalanceAbove(
+        statuses.map((status) => status.rank),
+        keys.length,
+      );
+
+      let currentContract = contract;
+
+      for (let index = 0; index < keys.length; index += 1) {
+        const normalized = normalizeTableContract(currentContract, {
+          moduleKey,
+          viewKey,
+        });
+
+        const target = normalized?.statuses.find(
+          (status) => status.key === keys[index],
+        );
+
+        if (!target) {
+          continue;
+        }
+
+        const entry = target.presentation?.rank;
+
+        if (!entry?.writable) {
+          throw new Error(
+            `Rank for "${target.label}" is not writable, so the status order cannot be rebalanced.`,
+          );
+        }
+
+        if (isNoOpChange(entry, ranks[index])) {
+          continue;
+        }
+
+        pendingWrites.current += 1;
+
+        try {
+          const result = await propertyWrite.mutateAsync({
+            mutation: buildStatusRankMutation(target, ranks[index]),
+            moduleKey,
+            viewKey,
+          });
+
+          currentContract = result.contract;
+        } finally {
+          pendingWrites.current = Math.max(0, pendingWrites.current - 1);
+        }
+      }
+    },
+    [contract, moduleKey, propertyWrite, statuses, viewKey],
+  );
+
+  const moveStatus = useCallback(
+    async (activeKey, destinationIndex) => {
+      if (savingStatusOrder) {
+        return;
+      }
+
+      if (statusRankError) {
+        toast.error(statusRankError.message);
+
+        return;
+      }
+
+      const moved = statuses.find((status) => status.key === activeKey);
+
+      if (!moved) {
+        return;
+      }
+
+      const entry = moved.presentation?.rank;
+
+      if (!assertWritable(entry, `Position for "${moved.label}"`)) {
+        return;
+      }
+
+      const previous = statuses;
+      const reordered = reorderCopy(statuses, activeKey, destinationIndex);
+      const landedIndex = reordered.findIndex(
+        (status) => status.key === activeKey,
+      );
+
+      if (landedIndex === -1) {
+        return;
+      }
+
+      const siblings = reordered.filter((status) => status.key !== activeKey);
+      const { lower, upper } = RighteeUiRank.neighborRanksAt(
+        siblings,
+        landedIndex,
+      );
+
+      setSavingStatusOrder(true);
+      setBusyStatusKey(activeKey);
+
+      try {
+        let nextRank;
+
+        try {
+          nextRank = between(lower, upper);
+        } catch (error) {
+          if (!(error instanceof UiRankError)) {
+            throw error;
+          }
+
+          console.warn(
+            "[ui-metadata] falling back to a full status rank rebalance",
+            { lower, upper, error },
+          );
+
+          setStatuses(reordered);
+          await rebalanceStatuses(reordered);
+          toast.success("Status order rebalanced.");
+
+          return;
+        }
+
+        setStatuses(
+          reordered.map((status) =>
+            status.key === activeKey ? { ...status, rank: nextRank } : status,
+          ),
+        );
+
+        await runWrite({
+          mutation: buildStatusRankMutation(moved, nextRank),
+          restore: () => setStatuses(previous),
+          statusKey: activeKey,
+        });
+      } catch (error) {
+        setStatuses(previous);
+        toast.error(describeWriteError(error));
+
+        try {
+          await refetchContractQuery();
+        } catch {
+          /* Reported by the query itself. */
+        }
+      } finally {
+        setSavingStatusOrder(false);
+        setBusyStatusKey(null);
+      }
+    },
+    [
+      assertWritable,
+      rebalanceStatuses,
+      refetchContractQuery,
+      runWrite,
+      savingStatusOrder,
+      statusRankError,
+      statuses,
+    ],
+  );
+
   /* --------------------------------------------------- view presentation */
 
   const setViewVisible = useCallback(
@@ -733,7 +1046,10 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
   /* ------------------------------------------------------------- result */
 
   const writing =
-    propertyWrite.isPending || fieldCreate.isPending || savingOrder;
+    propertyWrite.isPending ||
+    fieldCreate.isPending ||
+    savingOrder ||
+    savingStatusOrder;
 
   return {
     /* Data */
@@ -741,6 +1057,8 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     view,
     columns,
     filteredColumns,
+    statuses,
+    filteredStatuses,
 
     /* Read state */
     contractPending,
@@ -750,16 +1068,20 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     /* Write state */
     writing,
     savingOrder,
+    savingStatusOrder,
     busyAccessor,
+    busyStatusKey,
     publishing: fieldCreate.isPending,
 
     /* Problems */
     rankError,
+    statusRankError,
 
     /* Selection */
     selection,
     setSelection,
     selectedColumn,
+    selectedStatus,
 
     /* Search */
     search,
@@ -770,6 +1092,10 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     setColumnVisible,
     setColumnWidth,
     moveColumn,
+    toggleStatusVisible,
+    setStatusVisible,
+    setStatusIcon,
+    moveStatus,
     setViewVisible,
     setViewRank,
     addField,

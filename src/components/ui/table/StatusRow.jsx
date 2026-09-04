@@ -8,14 +8,13 @@ import { PageContext } from "@/context/pageContext";
 function StatusRow() {
     const {
         layout,
+        statusConfig: STATUS_CONFIG,
         entity,
         filters,
         setFilters,
         showStatus,
         preferences
     } = useTableContext();
-
-    const STATUS_CONFIG = layout?.config?.statusConfig ?? [];
 
     const { enteredEmail: email } = useContext(PageContext);
 

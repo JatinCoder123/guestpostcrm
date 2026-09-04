@@ -248,7 +248,7 @@ const ContactHeader = () => {
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
-                      to={`/contacts?email=${currentEmail ?? ""}`}
+                      to={`/entity/contacts/${currentEmail}`}
                       className="text-[18px] font-semibold text-gray-900 hover:text-blue-600 mt-3"
                       title={he.decode(
                         contactInfo?.full_name?.trim()

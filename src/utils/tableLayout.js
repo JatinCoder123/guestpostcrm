@@ -61,6 +61,7 @@ export const PRESENTATION_KINDS = {
   visible: { valueField: "value_boolean", valueType: "boolean" },
   width: { valueField: "value_integer", valueType: "integer" },
   rank: { valueField: "value_text", valueType: "string" },
+  icon: { valueField: "value_text", valueType: "string" },
 };
 
 /** Raised when the contract cannot support the edit that was asked for. */
@@ -84,6 +85,14 @@ export class TableLayoutError extends Error {
 export const columnScope = (moduleKey, viewKey) => ({
   collection: "ui_view_columns",
   label: `columns of ${moduleKey ?? "?"}/${viewKey ?? "?"}`,
+  module_key: moduleKey ?? "",
+  view_key: viewKey ?? "",
+});
+
+/** Status-stat ranks are unique inside one compiled view. */
+export const statusScope = (moduleKey, viewKey) => ({
+  collection: "ui_view_statuses",
+  label: `status stats of ${moduleKey ?? "?"}/${viewKey ?? "?"}`,
   module_key: moduleKey ?? "",
   view_key: viewKey ?? "",
 });
@@ -226,6 +235,73 @@ function toColumn(raw) {
   };
 }
 
+/** Normalize an icon from either the resolved object or its stored JSON. */
+export function normalizeStatusIcon(value) {
+  let source = value;
+
+  if (typeof source === "string") {
+    try {
+      source = JSON.parse(source);
+    } catch {
+      source = {};
+    }
+  }
+
+  if (!source || typeof source !== "object") {
+    source = {};
+  }
+
+  return {
+    color: typeof source.color === "string" ? source.color : "",
+    library: typeof source.library === "string" ? source.library : "",
+    name: typeof source.name === "string" ? source.name : "",
+  };
+}
+
+/** Normalize one item of `config.statusConfig`. */
+function toStatus(raw) {
+  const presentation = toPresentation(raw?.presentation);
+  const key = raw?.key ?? "";
+
+  return {
+    /* Preserve legacy filters/click handlers used by the live status row. */
+    ...raw,
+    id: key,
+    key,
+    label: raw?.label ?? key,
+    color: raw?.color ?? "",
+    filters: raw?.filters ?? {},
+    amountKey: raw?.amountKey ?? "",
+    showAmount: toBoolean(raw?.showAmount, false),
+    visible: toBoolean(presentationValue(presentation.visible, raw?.visible), true),
+    rank: isRankValue(presentationValue(presentation.rank, raw?.rank))
+      ? presentationValue(presentation.rank, raw?.rank)
+      : null,
+    icon: normalizeStatusIcon(
+      presentationValue(presentation.icon, raw?.icon),
+    ),
+    presentation,
+    definition: raw,
+  };
+}
+
+/**
+ * Resolve, normalize and rank-order the status stats used by both the editor
+ * and the live table. Keeping one path here is important: the compiler's
+ * `presentation.*.currentValue` is authoritative over the plain fallback
+ * fields, including when visibility resolves to `false`.
+ */
+export function normalizeStatusConfig(
+  rawStatuses,
+  { moduleKey, viewKey, onInvalidRanks } = {},
+) {
+  const statuses = (Array.isArray(rawStatuses) ? rawStatuses : []).map(toStatus);
+
+  return orderByRank(statuses, statusScope(moduleKey, viewKey), {
+    onInvalid: onInvalidRanks,
+  });
+}
+
 /**
  * Turn a Flexibility response into the shape the editor holds in state.
  *
@@ -240,7 +316,7 @@ function toColumn(raw) {
  */
 export function normalizeTableContract(
   contract,
-  { moduleKey, viewKey, onInvalidRanks } = {},
+  { moduleKey, viewKey, onInvalidRanks, onInvalidStatusRanks } = {},
 ) {
   if (!contract || typeof contract !== "object") {
     return null;
@@ -252,6 +328,10 @@ export function normalizeTableContract(
 
   const columns = rawColumns.map(toColumn);
 
+  const rawStatuses = Array.isArray(contract?.config?.statusConfig)
+    ? contract.config.statusConfig
+    : [];
+
   const scope = columnScope(
     contract.moduleKey ?? moduleKey,
     contract.viewKey ?? viewKey,
@@ -260,6 +340,13 @@ export function normalizeTableContract(
   const { items: ordered, report } = orderByRank(columns, scope, {
     onInvalid: onInvalidRanks,
   });
+
+  const { items: orderedStatuses, report: statusRankReport } =
+    normalizeStatusConfig(rawStatuses, {
+      moduleKey: contract.moduleKey ?? moduleKey,
+      viewKey: contract.viewKey ?? viewKey,
+      onInvalidRanks: onInvalidStatusRanks,
+    });
 
   /*
    * `config.view.available` is where the real payload lists sibling views.
@@ -308,8 +395,14 @@ export function normalizeTableContract(
 
     columns: ordered,
 
+    statuses: orderedStatuses,
+
     rankReport: report,
     rankOrderable: Boolean(report?.valid) && !report?.unranked,
+
+    statusRankReport,
+    statusRankOrderable:
+      Boolean(statusRankReport?.valid) && !statusRankReport?.unranked,
 
     /* Transient request state the compiler echoed back. */
     current: contract.current ?? null,
@@ -404,6 +497,17 @@ export function isNoOpChange(entry, nextValue) {
     return compareRankValues(current, nextValue) === 0;
   }
 
+  if (entry?.kind === "icon") {
+    const currentIcon = normalizeStatusIcon(current);
+    const nextIcon = normalizeStatusIcon(nextValue);
+
+    return (
+      currentIcon.color === nextIcon.color &&
+      currentIcon.library === nextIcon.library &&
+      currentIcon.name === nextIcon.name
+    );
+  }
+
   return current === nextValue;
 }
 
@@ -451,6 +555,33 @@ export function buildViewRankMutation(view, nextRank) {
   }
 
   return withTypedValue(view?.presentation?.rank, nextRank);
+}
+
+/** Hide or show one status stat. */
+export function buildStatusVisibilityMutation(status, nextVisible) {
+  return withTypedValue(status?.presentation?.visible, Boolean(nextVisible));
+}
+
+/** Reposition one status stat with a generated opaque rank. */
+export function buildStatusRankMutation(status, nextRank) {
+  if (!isRankValue(nextRank)) {
+    throw new TableLayoutError(
+      `a status rank must be a non-empty string, received ${JSON.stringify(nextRank)}`,
+      { rank: nextRank },
+    );
+  }
+
+  return withTypedValue(status?.presentation?.rank, nextRank);
+}
+
+/** Replace the icon JSON while preserving the icon color supplied by the contract. */
+export function buildStatusIconMutation(status, nextIcon) {
+  const icon = normalizeStatusIcon({
+    color: status?.icon?.color ?? "",
+    ...nextIcon,
+  });
+
+  return withTypedValue(status?.presentation?.icon, JSON.stringify(icon));
 }
 
 /* =========================================================================

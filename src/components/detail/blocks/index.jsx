@@ -243,10 +243,11 @@ const Section = ({
     const updateMutation = useUpdateEntity();
 
     const handleSave = useCallback(
-        async (
+        async ({
             value,
-            field
-        ) => {
+            previousValue,
+            field,
+        }) => {
             const rowId =
                 resolveFieldValue({
                     record,
@@ -258,44 +259,35 @@ const Section = ({
                 toast.error(
                     "Record ID not found"
                 );
-                return;
+
+                throw new Error(
+                    "Record ID not found"
+                );
             }
 
             /*
-             * -------------------------------------------------
-             * IMPORTANT:
-             * Capture the OLD value BEFORE updating.
-             * -------------------------------------------------
-             *
-             * Example:
-             *
-             * record.status = "active"
-             * value = "accepted"
-             *
-             * previousValue = "active"
-             * newValue = "accepted"
+             * -----------------------------------------------------
+             * NEW VALUE
+             * -----------------------------------------------------
              */
-
-            const previousValue =
-                record?.[field.accessor];
-
             const newValue = value;
 
             /*
-             * Optional safety:
-             * If nothing actually changed, don't make
-             * an unnecessary API request.
+             * Nothing actually changed.
              */
             if (
-                previousValue === newValue
+                Object.is(
+                    previousValue,
+                    newValue
+                )
             ) {
                 return;
             }
 
             /*
-             * -------------------------------------------------
+             * -----------------------------------------------------
              * SAVE TOAST
-             * -------------------------------------------------
+             * -----------------------------------------------------
              */
 
             const toastId =
@@ -307,7 +299,7 @@ const Section = ({
                 /*
                  * -------------------------------------------------
                  * FIRST REQUEST
-                 * Save the NEW value.
+                 * Save NEW value.
                  * -------------------------------------------------
                  */
 
@@ -322,7 +314,7 @@ const Section = ({
                 });
 
                 /*
-                 * Refresh entity data after successful save.
+                 * Refresh entity data.
                  */
                 await queryClient.invalidateQueries({
                     queryKey: [
@@ -336,35 +328,22 @@ const Section = ({
                  * SUCCESS + UNDO
                  * -------------------------------------------------
                  *
-                 * previousValue is captured inside this callback.
-                 * Therefore it will still contain the OLD value
-                 * when the user clicks Undo.
+                 * previousValue is already captured by this
+                 * callback and represents the value BEFORE save.
                  */
 
                 toast.success(
                     (t) => {
-                        let undoClicked =
-                            false;
+                        let undoClicked = false;
 
                         const handleUndo =
                             async () => {
-                                /*
-                                 * Prevent clicking Undo multiple
-                                 * times while the request is running.
-                                 */
-                                if (
-                                    undoClicked
-                                ) {
+                                if (undoClicked) {
                                     return;
                                 }
 
-                                undoClicked =
-                                    true;
+                                undoClicked = true;
 
-                                /*
-                                 * Show loading state in the
-                                 * existing toast.
-                                 */
                                 toast.loading(
                                     "Undoing changes...",
                                     {
@@ -374,15 +353,17 @@ const Section = ({
 
                                 try {
                                     /*
-                                     * -------------------------------------------------
+                                     * ---------------------------------
                                      * SECOND REQUEST
-                                     * Restore the OLD value.
-                                     * -------------------------------------------------
+                                     * Restore OLD value.
+                                     * ---------------------------------
                                      */
 
                                     await updateMutation.mutateAsync({
-                                        module: config.module,
-                                        entity: config.module,
+                                        module:
+                                            config.module,
+                                        entity:
+                                            config.module,
                                         id: rowId,
                                         payload: {
                                             [field.accessor]:
@@ -391,8 +372,7 @@ const Section = ({
                                     });
 
                                     /*
-                                     * Refresh the entity after
-                                     * restoring the old value.
+                                     * Refresh entity.
                                      */
                                     await queryClient.invalidateQueries({
                                         queryKey: [
@@ -408,9 +388,7 @@ const Section = ({
                                             duration: 3000,
                                         }
                                     );
-                                } catch (
-                                error
-                                ) {
+                                } catch (error) {
                                     console.error(
                                         "Undo failed:",
                                         error
@@ -441,13 +419,13 @@ const Section = ({
                                         undoClicked
                                     }
                                     className="
-                                        font-medium
-                                        text-blue-600
-                                        hover:text-blue-700
-                                        underline
-                                        disabled:opacity-50
-                                        disabled:cursor-not-allowed
-                                    "
+                                    font-medium
+                                    text-blue-600
+                                    hover:text-blue-700
+                                    underline
+                                    disabled:opacity-50
+                                    disabled:cursor-not-allowed
+                                "
                                 >
                                     Undo
                                 </button>
@@ -472,6 +450,14 @@ const Section = ({
                     }
                 );
 
+                /*
+                 * VERY IMPORTANT:
+                 *
+                 * Throw the error back to DetailField.
+                 *
+                 * DetailField uses this to rollback its
+                 * optimistic display value.
+                 */
                 throw error;
             }
         },

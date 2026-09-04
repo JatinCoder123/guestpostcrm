@@ -213,7 +213,10 @@ export function Sidebar() {
         (group.data ?? []).map((item) => ({
           key: item.key,
           module: item.module_name,
-          ignore_email: item.email_by_filter == "1" ? false : true,
+          ignore_email:
+            item.filter_by_email == "1"
+              ? false
+              : true,
           filters: item.count_filters ?? {},
         })),
       ),
@@ -312,9 +315,8 @@ export function Sidebar() {
                   {[1, 2, 3, 4].map((item) => (
                     <div
                       key={item}
-                      className={`flex items-center gap-3 p-2 ${
-                        collapsed ? "justify-center" : ""
-                      }`}
+                      className={`flex items-center gap-3 p-2 ${collapsed ? "justify-center" : ""
+                        }`}
                     >
                       {/* Icon */}
                       <div
@@ -566,8 +568,8 @@ export function Sidebar() {
                               </span>
 
                               {item.key &&
-                              sidebarCounts?.stats?.[item.key] &&
-                              sidebarCountPending ? (
+                                sidebarCounts?.stats?.[item.key] &&
+                                sidebarCountPending ? (
                                 <Skeleton count={1} />
                               ) : (
                                 <span
