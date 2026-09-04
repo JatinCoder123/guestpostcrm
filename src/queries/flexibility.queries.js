@@ -139,6 +139,7 @@ export function useRefetchContract() {
  */
 export function useUiPropertyWrite() {
   const refetchContract = useRefetchContract();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ mutation, moduleKey, viewKey }) => {
@@ -150,6 +151,16 @@ export function useUiPropertyWrite() {
        * and continuing to send them would produce duplicate writes.
        */
       const contract = await refetchContract({ moduleKey, viewKey });
+
+      /*
+       * The settings editor and live table use separate cache entries. Mark
+       * the live one stale after every editor write so a mounted table
+       * refetches immediately and a later navigation cannot reuse old stats.
+       */
+      await queryClient.invalidateQueries({
+        queryKey: entityLayoutKey(moduleKey, viewKey),
+        exact: true,
+      });
 
       return { response, contract };
     },

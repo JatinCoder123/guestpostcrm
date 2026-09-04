@@ -26,6 +26,7 @@ import { useSearchParams } from "react-router-dom";
 
 import {
   AlertCircle,
+  BarChart3,
   Columns3,
   Eye,
   EyeOff,
@@ -49,6 +50,8 @@ import ColumnList from "./parts/ColumnList";
 import ColumnInspector from "./parts/ColumnInspector";
 import ViewInspector from "./parts/ViewInspector";
 import AddFieldDialog from "./parts/AddFieldDialog";
+import StatusInspector from "./parts/StatusInspector";
+import StatusList from "./parts/StatusList";
 
 import useTableLayoutEditor from "./useTableLayoutEditor";
 
@@ -77,6 +80,8 @@ const TableView = () => {
 
   const [addOpen, setAddOpen] = useState(false);
 
+  const [editorSection, setEditorSection] = useState("columns");
+
   const editor = useTableLayoutEditor({
     moduleKey: moduleKey || null,
     viewKey: moduleKey ? viewKey : null,
@@ -87,31 +92,56 @@ const TableView = () => {
     view,
     columns,
     filteredColumns,
+    statuses,
+    filteredStatuses,
     contractPending,
     contractFetching,
     contractError,
     writing,
     savingOrder,
+    savingStatusOrder,
     busyAccessor,
+    busyStatusKey,
     publishing,
     rankError,
+    statusRankError,
     selection,
     setSelection,
     selectedColumn,
+    selectedStatus,
     search,
     setSearch,
     toggleColumnVisible,
     setColumnWidth,
     moveColumn,
+    toggleStatusVisible,
+    setStatusIcon,
+    moveStatus,
     setViewVisible,
     addField,
     reload,
   } = editor;
 
+  const showingStatuses = editorSection === "statuses";
+
   const selectView = ({ moduleKey: nextModule, viewKey: nextView }) => {
     setSearchParams(
       { module: nextModule, view: nextView || DEFAULT_VIEW_KEY },
       { replace: true },
+    );
+  };
+
+  const showColumnSettings = () => {
+    setEditorSection("columns");
+    setSearch("");
+    setSelection({ type: "view" });
+  };
+
+  const showStatusSettings = () => {
+    setEditorSection("statuses");
+    setSearch("");
+    setSelection(
+      statuses[0] ? { type: "status", key: statuses[0].key } : { type: "view" },
     );
   };
 
@@ -156,12 +186,27 @@ const TableView = () => {
     }
   }, [contractError, model, moduleKey, viewKey]);
 
+  /* Keep the status inspector on a real item after a contract refresh. */
+  useEffect(() => {
+    if (!showingStatuses || !model || selectedStatus || !statuses.length) {
+      return;
+    }
+
+    setSelection({ type: "status", key: statuses[0].key });
+  }, [model, selectedStatus, setSelection, showingStatuses, statuses]);
+
   const hiddenCount = useMemo(
     () => columns.filter((column) => !column.visible).length,
     [columns],
   );
 
+  const hiddenStatusCount = useMemo(
+    () => statuses.filter((status) => !status.visible).length,
+    [statuses],
+  );
+
   const searching = search.trim().length > 0;
+  const activeRankError = showingStatuses ? statusRankError : rankError;
 
   /* ===================================================================== */
 
@@ -199,13 +244,12 @@ const TableView = () => {
           </div>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Configure column visibility, width and order for every published
-            table view.
+            Configure columns and status stats for every published table view.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {savingOrder && (
+          {(savingOrder || savingStatusOrder) && (
             <span
               role="status"
               className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary"
@@ -214,7 +258,7 @@ const TableView = () => {
             </span>
           )}
 
-          {contractFetching && !savingOrder && (
+          {contractFetching && !savingOrder && !savingStatusOrder && (
             <span
               role="status"
               className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
@@ -231,13 +275,15 @@ const TableView = () => {
             Reload
           </GhostButton>
 
-          <PrimaryButton
-            icon={Plus}
-            onClick={() => setAddOpen(true)}
-            disabled={!model || writing}
-          >
-            Add field
-          </PrimaryButton>
+          {!showingStatuses && (
+            <PrimaryButton
+              icon={Plus}
+              onClick={() => setAddOpen(true)}
+              disabled={!model || writing}
+            >
+              Add field
+            </PrimaryButton>
+          )}
         </div>
       </div>
 
@@ -340,6 +386,70 @@ const TableView = () => {
               {/* TOOLBAR */}
 
               <div className="shrink-0 space-y-3 border-b border-border p-3">
+                <div
+                  role="tablist"
+                  aria-label="Table layout sections"
+                  className="grid grid-cols-2 rounded-lg bg-muted/60 p-1"
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={!showingStatuses}
+                    onClick={showColumnSettings}
+                    className={`
+                      flex
+                      items-center
+                      justify-center
+                      gap-2
+                      rounded-md
+                      px-3
+                      py-2
+                      text-xs
+                      font-medium
+                      transition-colors
+
+                      ${
+                        !showingStatuses
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }
+                    `}
+                  >
+                    <Columns3 className="h-3.5 w-3.5" />
+                    Columns
+                    <Badge tone="neutral">{columns.length}</Badge>
+                  </button>
+
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={showingStatuses}
+                    onClick={showStatusSettings}
+                    className={`
+                      flex
+                      items-center
+                      justify-center
+                      gap-2
+                      rounded-md
+                      px-3
+                      py-2
+                      text-xs
+                      font-medium
+                      transition-colors
+
+                      ${
+                        showingStatuses
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }
+                    `}
+                  >
+                    <BarChart3 className="h-3.5 w-3.5" />
+                    Status stats
+                    <Badge tone="neutral">{statuses.length}</Badge>
+                  </button>
+                </div>
+
                 <div className="relative">
                   <Search
                     className="
@@ -357,8 +467,14 @@ const TableView = () => {
                   <input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Search columns..."
-                    aria-label="Search columns"
+                    placeholder={
+                      showingStatuses
+                        ? "Search status stats..."
+                        : "Search columns..."
+                    }
+                    aria-label={
+                      showingStatuses ? "Search status stats" : "Search columns"
+                    }
                     className="
                       h-10
                       w-full
@@ -376,69 +492,86 @@ const TableView = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setSelection({ type: "view" })}
-                    className={`
-                      inline-flex
-                      items-center
-                      gap-1.5
-                      rounded-full
-                      px-2.5
-                      py-1
-                      text-[11px]
-                      font-medium
-                      transition-colors
+                  {showingStatuses ? (
+                    <>
+                      <Badge tone="neutral">
+                        <BarChart3 className="h-3 w-3" />
+                        {statuses.length} configured
+                      </Badge>
 
-                      ${
-                        selection?.type === "view"
-                          ? "bg-primary/10 text-primary ring-1 ring-primary/30"
-                          : "text-muted-foreground hover:bg-accent"
-                      }
-                    `}
-                  >
-                    {view?.visible ? (
-                      <Eye className="h-3 w-3" />
-                    ) : (
-                      <EyeOff className="h-3 w-3" />
-                    )}
-                    View settings
-                  </button>
+                      {hiddenStatusCount > 0 && (
+                        <Badge tone="warning">
+                          {hiddenStatusCount} hidden
+                        </Badge>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setSelection({ type: "view" })}
+                        className={`
+                          inline-flex
+                          items-center
+                          gap-1.5
+                          rounded-full
+                          px-2.5
+                          py-1
+                          text-[11px]
+                          font-medium
+                          transition-colors
 
-                  <Badge tone="neutral">
-                    <Columns3 className="h-3 w-3" />
-                    {columns.length}
-                  </Badge>
+                          ${
+                            selection?.type === "view"
+                              ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                              : "text-muted-foreground hover:bg-accent"
+                          }
+                        `}
+                      >
+                        {view?.visible ? (
+                          <Eye className="h-3 w-3" />
+                        ) : (
+                          <EyeOff className="h-3 w-3" />
+                        )}
+                        View settings
+                      </button>
 
-                  {hiddenCount > 0 && (
-                    <Badge tone="warning">{hiddenCount} hidden</Badge>
+                      <Badge tone="neutral">
+                        <Columns3 className="h-3 w-3" />
+                        {columns.length}
+                      </Badge>
+
+                      {hiddenCount > 0 && (
+                        <Badge tone="warning">{hiddenCount} hidden</Badge>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
 
               {/* RANK PROBLEMS */}
 
-              {rankError && (
+              {activeRankError && (
                 <div className="shrink-0 border-b border-border p-3">
                   <InlineAlert
                     tone="warning"
-                    title={rankError.message}
+                    title={activeRankError.message}
                     actions={
                       <GhostButton icon={RotateCcw} onClick={reload}>
                         Reload from server
                       </GhostButton>
                     }
                   >
-                    {rankError.reports?.length ? (
+                    {activeRankError.reports?.length ? (
                       <ul className="space-y-0.5">
-                        {rankError.reports.map((report) => (
+                        {activeRankError.reports.map((report) => (
                           <li key={report.scopeLabel}>
                             {report.scopeLabel}
                             {report.missing?.length
-                              ? ` — ${report.missing.length} column(s) without a rank`
+                              ? `, ${report.missing.length} item(s) without a rank`
                               : ""}
                             {report.duplicates?.length
-                              ? ` — duplicate rank(s): ${report.duplicates
+                              ? `, duplicate rank(s): ${report.duplicates
                                   .map((entry) => entry.rank)
                                   .join(", ")}`
                               : ""}
@@ -447,8 +580,8 @@ const TableView = () => {
                       </ul>
                     ) : (
                       <p>
-                        Visibility and width can still be changed; only ordering
-                        is blocked.
+                        Other settings can still be changed; only ordering is
+                        blocked.
                       </p>
                     )}
                   </InlineAlert>
@@ -457,11 +590,11 @@ const TableView = () => {
 
               {/* SEARCH BLOCKS REORDER */}
 
-              {searching && !rankError && (
+              {searching && !activeRankError && (
                 <div className="shrink-0 border-b border-border px-3 py-2">
                   <p className="text-[10px] leading-4 text-muted-foreground">
-                    Reordering is disabled while searching, because the
-                    neighbours on screen are not the neighbours in the view.
+                    Reordering is disabled while searching because the visible
+                    neighbours are not the full saved order.
                   </p>
                 </div>
               )}
@@ -469,19 +602,39 @@ const TableView = () => {
               {/* LIST */}
 
               <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-3">
-                <ColumnList
-                  columns={filteredColumns}
-                  allColumns={columns}
-                  selection={selection}
-                  onSelect={(column) =>
-                    setSelection({ type: "column", accessor: column.accessor })
-                  }
-                  onToggleVisible={toggleColumnVisible}
-                  onMove={moveColumn}
-                  busyAccessor={busyAccessor}
-                  reorderDisabled={Boolean(rankError) || savingOrder || writing}
-                  searching={searching}
-                />
+                {showingStatuses ? (
+                  <StatusList
+                    statuses={filteredStatuses}
+                    allStatuses={statuses}
+                    selection={selection}
+                    onSelect={(status) =>
+                      setSelection({ type: "status", key: status.key })
+                    }
+                    onToggleVisible={toggleStatusVisible}
+                    onMove={moveStatus}
+                    busyStatusKey={busyStatusKey}
+                    reorderDisabled={
+                      Boolean(statusRankError) || savingStatusOrder || writing
+                    }
+                    searching={searching}
+                  />
+                ) : (
+                  <ColumnList
+                    columns={filteredColumns}
+                    allColumns={columns}
+                    selection={selection}
+                    onSelect={(column) =>
+                      setSelection({ type: "column", accessor: column.accessor })
+                    }
+                    onToggleVisible={toggleColumnVisible}
+                    onMove={moveColumn}
+                    busyAccessor={busyAccessor}
+                    reorderDisabled={
+                      Boolean(rankError) || savingOrder || writing
+                    }
+                    searching={searching}
+                  />
+                )}
               </div>
             </>
           )}
@@ -494,11 +647,14 @@ const TableView = () => {
             <EmptyState
               icon={AlertCircle}
               title="Nothing to configure"
-              description="Select a published table view to edit its columns."
+              description="Select a published table view to edit its presentation."
             />
           )}
 
-          {model && selection?.type === "column" && selectedColumn && (
+          {model &&
+            !showingStatuses &&
+            selection?.type === "column" &&
+            selectedColumn && (
             <ColumnInspector
               column={selectedColumn}
               onToggleVisible={toggleColumnVisible}
@@ -507,12 +663,31 @@ const TableView = () => {
             />
           )}
 
-          {model && (selection?.type === "view" || !selectedColumn) && (
+          {model &&
+            !showingStatuses &&
+            (selection?.type === "view" || !selectedColumn) && (
             <ViewInspector
               model={model}
               view={view}
               onToggleVisible={setViewVisible}
               busy={writing}
+            />
+          )}
+
+          {model && showingStatuses && selectedStatus && (
+            <StatusInspector
+              status={selectedStatus}
+              onToggleVisible={toggleStatusVisible}
+              onSetIcon={setStatusIcon}
+              busy={busyStatusKey === selectedStatus.key}
+            />
+          )}
+
+          {model && showingStatuses && statuses.length === 0 && (
+            <EmptyState
+              icon={BarChart3}
+              title="No status stats"
+              description="This published view does not include a statusConfig section."
             />
           )}
         </div>

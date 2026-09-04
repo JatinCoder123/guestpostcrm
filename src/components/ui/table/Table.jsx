@@ -32,6 +32,7 @@ import { useNavigate } from "react-router-dom";
 import TableTitleBar from "./TableTitleBar";
 import { entityKeys } from "@/hooks/useEntity";
 import useColumnWidthPersistence from "./hooks/useColumnWidthPersistence";
+import { normalizeStatusConfig } from "@/utils/tableLayout";
 const EMPTY_ARRAY = [];
 const EMPTY_OBJECT = {};
 
@@ -149,10 +150,14 @@ const TableView = ({
     [filterColumnsKey]
   );
 
-  const STATUS_CONFIG = useMemo(
-    () => rawStatusConfig,
-    [statusConfigKey]
-  );
+  const STATUS_CONFIG = useMemo(() => {
+    const { items } = normalizeStatusConfig(rawStatusConfig, {
+      moduleKey: layout?.moduleKey ?? entity,
+      viewKey: layout?.viewKey ?? "table",
+    });
+
+    return items.filter((status) => status.visible);
+  }, [entity, layout?.moduleKey, layout?.viewKey, statusConfigKey]);
 
   const timefilterField =
     filterColumns?.[0]?.name || "date_entered";
@@ -512,6 +517,7 @@ const TableView = ({
       tableName,
       layout,
       columns,
+      statusConfig: STATUS_CONFIG,
 
       visibleColumns,
 
@@ -566,6 +572,7 @@ const TableView = ({
       tableName,
       layout,
       columns,
+      STATUS_CONFIG,
       visibleColumns,
       columnWidths,
       resizeColumn,
