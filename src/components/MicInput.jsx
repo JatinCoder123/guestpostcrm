@@ -125,7 +125,7 @@ const MicInput = ({ editorRef }) => {
       onClick={toggleMic}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      className={`relative w-10 h-10 rounded-full shadow-lg flex items-center justify-center overflow-hidden ${listening ? "bg-gradient-to-r from-red-500 to-pink-600" : "bg-blue-600"
+      className={`relative w-10 h-10 rounded-full shadow-lg flex items-center justify-center overflow-hidden ${listening ? "bg-gradient-to-r from-red-500 to-pink-600" : "bg-[var(--topbtn-primary)]"
         }`}
     >
       {!listening ? (

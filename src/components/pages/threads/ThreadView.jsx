@@ -357,7 +357,7 @@ export default function ThreadView() {
     "
       >
         {/* HEADER */}
-        <div className="flex flex-wrap items-center justify-between gap-x-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-2 py-1.5 text-white shadow-lg sm:px-6 sm:py-1">
+        <div className="flex flex-wrap items-center justify-between gap-x-2 bg-primary px-2 py-1.5 text-white shadow-lg sm:px-6 sm:py-1">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
             <motion.button
               whileHover={{ scale: 1.05 }}

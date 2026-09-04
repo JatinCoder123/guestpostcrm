@@ -311,14 +311,14 @@ min-h-[170px] sm:min-h-[240px] md:min-h-[260px]
 p-3 sm:p-5 rounded-2xl transition-all duration-300
 flex flex-col justify-end
   ${isUser
-                    ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                    ? "bg-primary text-black rounded-br-sm"
                     : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
                   }
   ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
 `}
               >
                 <div>
-                  <div className="absolute -top-4 left-4 px-2 py-1 mt-5 ml-0 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
+                  <div className="absolute -top-4 left-4 px-2 py-1 mt-5 ml-0 text-xs font-semibold text-white bg-[var(--topbtn-secondary)] rounded-full shadow-sm">
                     {realIndex}
                   </div>
                   {isLast && (
@@ -342,7 +342,7 @@ flex flex-col justify-end
                       <User className="w-3.5 h-3.5 shrink-0 opacity-70" />
                       <span className="truncate" title={mail.from_name}>{mail.from_name}</span>
                       {hastage &&
-                        <p className="shrink-0 max-w-[9rem] truncate font-medium text-xs sm:text-sm text-white bg-violet-500 px-2 py-1 rounded-full">{hastage ? `#${hastage.toLowerCase().replace(/_/g, ' ')}` : ""}</p>
+                        <p className="shrink-0 max-w-[9rem] truncate font-medium text-xs sm:text-sm text-white bg-[var(--topbtn-secondary)] px-2 py-1 rounded-full">{hastage ? `#${hastage.toLowerCase().replace(/_/g, ' ')}` : ""}</p>
                       }
                     </div>
 
