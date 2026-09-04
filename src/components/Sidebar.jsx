@@ -1,16 +1,11 @@
-import {
-  ChevronDown,
-  ChevronRight,
-  Radio,
-  PanelLeft,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Radio, PanelLeft, X } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useForwardedStats } from "../queries/forwarded.queries";
 import { useQuery } from "@tanstack/react-query";
 import { userKeys } from "../queries/users.queries";
@@ -24,6 +19,7 @@ import {
   normalizeSidebarResponse,
   selectVisibleGroups,
 } from "../utils/sidebarLayout";
+import { useIsDesktop } from "../hooks/useMediaQuery";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -32,11 +28,44 @@ export function Sidebar() {
     enteredEmail: email,
     activePage,
     setActivePage,
-    collapsed,
+    collapsed: desktopCollapsed,
     setSidebarCollapsed,
     mobileSidebarOpen,
     setMobileSidebarOpen,
   } = useContext(PageContext);
+
+  /*
+  |--------------------------------------------------------------------------
+  | RESPONSIVE MODE
+  |--------------------------------------------------------------------------
+  | At `lg` and up the sidebar is a permanent, collapsible column.
+  | Below `lg` it becomes an off-canvas drawer that is always shown in its
+  | full (expanded) form, so `collapsed` is forced off there.
+  */
+  const isDesktop = useIsDesktop();
+  const collapsed = isDesktop ? desktopCollapsed : false;
+  const drawerOpen = !isDesktop && mobileSidebarOpen;
+
+  /* Close the drawer on Escape */
+  useEffect(() => {
+    if (!drawerOpen) return;
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMobileSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [drawerOpen, setMobileSidebarOpen]);
+
+  /* Make sure the drawer never stays open once we cross into desktop */
+  useEffect(() => {
+    if (isDesktop && mobileSidebarOpen) {
+      setMobileSidebarOpen(false);
+    }
+  }, [isDesktop, mobileSidebarOpen, setMobileSidebarOpen]);
 
   const [sidebarStatsQuery, setSidebarStatsQuery] = useState();
   const [expandedGroups, setExpandedGroups] = useState({});
@@ -99,13 +128,9 @@ export function Sidebar() {
     refetchLayout?.();
   }, [rankReports, refetchLayout]);
 
-
   const { user } = useSelector((s) => s.user);
 
-  const {
-    data: usersData,
-    isPending: usersPending,
-  } = useQuery({
+  const { data: usersData, isPending: usersPending } = useQuery({
     queryKey: userKeys.lists,
     queryFn: getAllUsers,
   });
@@ -114,9 +139,7 @@ export function Sidebar() {
 
   const summary = data?.summary ?? {};
 
-  const currentUser = usersData?.find(
-    (u) => u.description === user.email
-  );
+  const currentUser = usersData?.find((u) => u.description === user.email);
 
   const currentUserId = currentUser?.id;
 
@@ -126,38 +149,24 @@ export function Sidebar() {
   // Close modal when clicked outside
   useEffect(() => {
     function handleClickOutside(e) {
-      if (
-        cardRef.current &&
-        !cardRef.current.contains(e.target)
-      ) {
+      if (cardRef.current && !cardRef.current.contains(e.target)) {
         setOpenSettingsCard(false);
       }
     }
 
-    document.addEventListener(
-      "mousedown",
-      handleClickOutside
-    );
+    document.addEventListener("mousedown", handleClickOutside);
 
-    return () =>
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const {
-    isPending: forwardStatLoading,
-    data: forwardStats,
-  } = useForwardedStats(currentUserId);
+  const { isPending: forwardStatLoading, data: forwardStats } =
+    useForwardedStats(currentUserId);
 
-  const {
-    isPending: sidebarCountPending,
-    data: sidebarCounts,
-  } = useSidebarStats({
-    email,
-    queries: sidebarStatsQuery,
-  });
+  const { isPending: sidebarCountPending, data: sidebarCounts } =
+    useSidebarStats({
+      email,
+      queries: sidebarStatsQuery,
+    });
 
   /**
    * Keyed on the record id, not the group name. Names are
@@ -181,29 +190,18 @@ export function Sidebar() {
    */
   const activeSidebarGroups =
     sidebarSections?.data
-      ?.filter(
-        (group) => Number(group.is_active) === 1
-      )
+      ?.filter((group) => Number(group.is_active) === 1)
       ?.map((group) => ({
         ...group,
-        data: (group.data ?? []).filter(
-          (item) => Number(item.is_active) === 1
-        ),
+        data: (group.data ?? []).filter((item) => Number(item.is_active) === 1),
       }))
-      ?.filter(
-        (group) => group.data.length > 0
-      ) ?? [];
+      ?.filter((group) => group.data.length > 0) ?? [];
 
   useEffect(() => {
     if (!visibleGroups.length) return;
 
     setExpandedGroups(
-      Object.fromEntries(
-        visibleGroups.map((group) => [
-          group.id,
-          true,
-        ])
-      )
+      Object.fromEntries(visibleGroups.map((group) => [group.id, true])),
     );
 
     /**
@@ -215,42 +213,58 @@ export function Sidebar() {
         (group.data ?? []).map((item) => ({
           key: item.key,
           module: item.module_name,
-          ignore_email:
-            item.email_by_filter == "1"
-              ? false
-              : true,
+          ignore_email: item.email_by_filter == "1" ? false : true,
           filters: item.count_filters ?? {},
-        }))
-      )
+        })),
+      ),
     );
   }, [visibleGroups]);
 
   return (
     <>
       {/* Mobile Overlay */}
-      {mobileSidebarOpen && (
-        <div
-          className="
-            fixed inset-0 z-40
-            bg-[color-mix(in_srgb,var(--foreground)_50%,transparent)]
-            lg:hidden
-          "
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {drawerOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            aria-hidden="true"
+            className="
+              fixed inset-0 z-[1000]
+              bg-black/50 backdrop-blur-[1px]
+              lg:hidden
+            "
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <motion.aside
+        id="app-sidebar"
         data-tour="sidebar"
+        role={!isDesktop ? "dialog" : undefined}
+        aria-modal={!isDesktop ? drawerOpen : undefined}
+        aria-label="Main navigation"
+        aria-hidden={!isDesktop && !drawerOpen}
+        initial={false}
         animate={{
           width: collapsed ? 80 : 260,
+          x: isDesktop || drawerOpen ? 0 : "-100%",
         }}
-        transition={{ duration: 0.25 }}
+        transition={{
+          duration: 0.25,
+          ease: [0.22, 1, 0.36, 1],
+        }}
         className="
-          h-screen
-          lg:static
-          lg:translate-x-0
-          px-1
+          fixed
+          left-0
+          top-0
+          z-[1010]
           flex
+          h-screen
+          max-w-[85vw]
           flex-col
           overflow-hidden
           bg-gradient-to-b
@@ -262,6 +276,12 @@ export function Sidebar() {
           to-100%
           text-[var(--sidebar-primary-foreground)]
           shadow-2xl
+          px-1
+
+          lg:static
+          lg:z-auto
+          lg:max-w-none
+          lg:shadow-none
         "
       >
         {layoutLoading ? (
@@ -292,10 +312,9 @@ export function Sidebar() {
                   {[1, 2, 3, 4].map((item) => (
                     <div
                       key={item}
-                      className={`flex items-center gap-3 p-2 ${collapsed
-                        ? "justify-center"
-                        : ""
-                        }`}
+                      className={`flex items-center gap-3 p-2 ${
+                        collapsed ? "justify-center" : ""
+                      }`}
                     >
                       {/* Icon */}
                       <div
@@ -347,46 +366,71 @@ export function Sidebar() {
                     h-9 w-auto max-w-[160px]
                     cursor-pointer object-contain
                     transition-all duration-200
-                    ${collapsed
-                      ? "group-hover:hidden"
-                      : ""
-                    }
+                    ${collapsed ? "group-hover:hidden" : ""}
                   `}
                   alt="App logo"
-                  onClick={() => navigateTo("")}
+                  onClick={() => {
+                    if (!isDesktop) setMobileSidebarOpen(false);
+                    navigateTo("");
+                  }}
                   draggable={false}
                 />
 
-                {/* Collapse / Expand Button */}
-                <button
-                  onClick={() =>
-                    setSidebarCollapsed(!collapsed)
-                  }
-                  className={`
-                    flex h-7 w-7
-                    items-center justify-center
-                    rounded-full
-                    shadow
-                    cursor-pointer
-                    transition-all duration-200
-                    ${collapsed
-                      ? "hidden group-hover:flex"
-                      : "flex"
+                {/* Collapse / Expand Button — desktop only */}
+                {isDesktop && (
+                  <button
+                    type="button"
+                    aria-label={
+                      collapsed ? "Expand sidebar" : "Collapse sidebar"
                     }
-                    bg-[var(--card)]
-                  `}
-                >
-                  <PanelLeft
-                    className="h-5 w-5"
-                    color="var(--sidebar-primary)"
-                  />
-                </button>
+                    title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    onClick={() => setSidebarCollapsed(!collapsed)}
+                    className={`
+                      flex h-7 w-7
+                      items-center justify-center
+                      rounded-full
+                      shadow
+                      cursor-pointer
+                      transition-all duration-200
+                      ${collapsed ? "hidden group-hover:flex" : "flex"}
+                      bg-[var(--card)]
+                    `}
+                  >
+                    <PanelLeft
+                      className="h-5 w-5"
+                      color="var(--sidebar-primary)"
+                    />
+                  </button>
+                )}
+
+                {/* Close Button — drawer only */}
+                {!isDesktop && (
+                  <button
+                    type="button"
+                    aria-label="Close navigation"
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className="
+                      flex h-7 w-7
+                      shrink-0
+                      cursor-pointer
+                      items-center justify-center
+                      rounded-full
+                      bg-[var(--card)]
+                      shadow
+                      transition-all
+                      active:scale-90
+                    "
+                  >
+                    <X className="h-5 w-5" color="var(--sidebar-primary)" />
+                  </button>
+                )}
               </div>
             </div>
 
             {/* LIVE BUTTON */}
             <button
               onClick={() => {
+                if (!isDesktop) setMobileSidebarOpen(false);
                 setActivePage("");
                 navigateTo("");
               }}
@@ -404,10 +448,7 @@ export function Sidebar() {
                   shadow-md
                 "
               >
-                <Radio
-                  className="h-6 w-6"
-                  color="var(--foreground)"
-                />
+                <Radio className="h-6 w-6" color="var(--foreground)" />
               </div>
 
               {/* Live Preview */}
@@ -446,16 +487,11 @@ export function Sidebar() {
               "
             >
               {visibleGroups.map((group) => (
-                <div
-                  key={group.id}
-                  className="mb-3"
-                >
+                <div key={group.id} className="mb-3">
                   {/* Group Header */}
                   {!collapsed && (
                     <button
-                      onClick={() =>
-                        toggleGroup(group.id)
-                      }
+                      onClick={() => toggleGroup(group.id)}
                       className="
                           flex w-full
                           items-center justify-between
@@ -469,13 +505,9 @@ export function Sidebar() {
                           hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
                         "
                     >
-                      <span>
-                        {group.group_name}
-                      </span>
+                      <span>{group.group_name}</span>
 
-                      {expandedGroups[
-                        group.id
-                      ] ? (
+                      {expandedGroups[group.id] ? (
                         <ChevronDown size={16} />
                       ) : (
                         <ChevronRight size={16} />
@@ -484,91 +516,75 @@ export function Sidebar() {
                   )}
 
                   {/* Group Items */}
-                  {(collapsed ||
-                    expandedGroups[
-                    group.id
-                    ]) && (
-                      <div className="mt-1 ml-2 space-y-1">
-                        {group.data
-                          .map((item) => (
-                            <button
-                              key={item.id}
-                              onClick={() => {
-                                setSidebarCollapsed(
-                                  true
-                                );
-                                setActivePage(
-                                  item.id
-                                );
-                                navigateTo(
-                                  `/${item.navigation}`
-                                );
-                              }}
-                              className={`
+                  {(collapsed || expandedGroups[group.id]) && (
+                    <div className="mt-1 ml-2 space-y-1">
+                      {group.data.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            if (isDesktop) {
+                              setSidebarCollapsed(true);
+                            } else {
+                              setMobileSidebarOpen(false);
+                            }
+                            setActivePage(item.id);
+                            navigateTo(`/${item.navigation}`);
+                          }}
+                          className={`
                                 flex w-full
                                 items-center gap-3
                                 rounded-lg p-2
                                 transition-all duration-200
                                 hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
-                                ${collapsed
-                                  ? "justify-center"
-                                  : ""
-                                }
-                                ${activePage ===
-                                  item.id
-                                  ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)] rounded-full shadow-lg"
-                                  : ""
+                                ${collapsed ? "justify-center" : ""}
+                                ${
+                                  activePage === item.id
+                                    ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)] rounded-full shadow-lg"
+                                    : ""
                                 }
                               `}
-                            >
-                              <Icon
-                                name={item.icon}
-                                library={item.library}
-                                className={`
+                        >
+                          <Icon
+                            name={item.icon}
+                            library={item.library}
+                            className={`
                                   h-4 w-4 shrink-0
-                                  ${activePage ===
-                                    item.id
-                                    ? "scale-125 text-[var(--topbtn-primary)]"
-                                    : ""
+                                  ${
+                                    activePage === item.id
+                                      ? "scale-125 text-[var(--topbtn-primary)]"
+                                      : ""
                                   }
                                 `}
-                              />
+                          />
 
-                              {!collapsed && (
-                                <>
-                                  <span className="flex-1 truncate text-left">
-                                    {item.name}
-                                  </span>
+                          {!collapsed && (
+                            <>
+                              <span className="flex-1 truncate text-left">
+                                {item.name}
+                              </span>
 
-                                  {item.key &&
-                                    sidebarCounts
-                                      ?.stats?.[
-                                    item.key
-                                    ] &&
-                                    sidebarCountPending ? (
-                                    <Skeleton count={1} />
-                                  ) : (
-                                    <span
-                                      className="
+                              {item.key &&
+                              sidebarCounts?.stats?.[item.key] &&
+                              sidebarCountPending ? (
+                                <Skeleton count={1} />
+                              ) : (
+                                <span
+                                  className="
                                         rounded-full
                                         bg-[color-mix(in_srgb,var(--primary)_20%,transparent)]
                                         px-2 py-0.5
                                         text-xs
                                       "
-                                    >
-                                      {sidebarCounts
-                                        ?.stats?.[
-                                        item.key
-                                      ]?.count ||
-                                        0}
-                                    </span>
-                                  )}
-                                </>
+                                >
+                                  {sidebarCounts?.stats?.[item.key]?.count || 0}
+                                </span>
                               )}
-                            </button>
-                          ))}
-                      </div>
-                    )}
+                            </>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -576,9 +592,10 @@ export function Sidebar() {
             {/* SIDEBAR FOOTER */}
             {sidebarSections?.sidebar_footer && (
               <div
-                onClick={() =>
-                  navigateTo("/settings/controller")
-                }
+                onClick={() => {
+                  if (!isDesktop) setMobileSidebarOpen(false);
+                  navigateTo("/settings/controller");
+                }}
                 className="
                   my-6
                   flex
@@ -608,8 +625,7 @@ export function Sidebar() {
                   "
                   style={{
                     background: `conic-gradient(
-                      var(--topbtn-primary) ${summary?.total_score ?? 0
-                      }%,
+                      var(--topbtn-primary) ${summary?.total_score ?? 0}%,
                       color-mix(
                         in srgb,
                         var(--sidebar-primary) 33%,
@@ -656,11 +672,7 @@ export function Sidebar() {
                         text-[var(--sidebar-primary-foreground)]
                       "
                     >
-                      {
-                        sidebarSections
-                          ?.sidebar_footer
-                          ?.description
-                      }
+                      {sidebarSections?.sidebar_footer?.description}
                     </p>
                   </div>
                 )}

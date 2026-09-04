@@ -106,7 +106,7 @@ export default function ThreadOrders({ email, id }) {
       : threadId;
 
   return (
-    <div className="w-full min-w-0 flex gap-6 items-start">
+    <div className="w-full min-w-0">
       {/* 🔥 TABLE */}
       <div className="flex-1 min-w-0 relative border border-blue-100 rounded-lg p-5 bg-white shadow-sm overflow-hidden">
         <PageHeader

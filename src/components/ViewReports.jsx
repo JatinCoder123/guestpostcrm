@@ -149,8 +149,8 @@ const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false
 
   if (compact) {
     return (
-      <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-white/60">
-        <span className="text-xs text-slate-400 font-medium tabular-nums">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-t border-slate-100 bg-white/60 sm:px-5">
+        <span className="text-xs text-slate-400 font-medium tabular-nums whitespace-nowrap">
           Page {pageIndex} of {pageCount}
         </span>
         <div className="flex items-center gap-1">
@@ -191,8 +191,8 @@ const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false
   }
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 border-t border-slate-100 sm:px-6">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={handlePrev}
           disabled={pageIndex === 1}
@@ -228,7 +228,7 @@ const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false
         </button>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-slate-400">Jump to</span>
+        <span className="hidden text-sm text-slate-400 sm:inline">Jump to</span>
         <input
           type="number"
           min="1"
@@ -613,7 +613,7 @@ export default function ViewReports() {
             <span className="text-[15px] font-semibold tracking-tight text-foreground">Analytics &amp; Reports</span>
           </div>
 
-          
+
 
           <div className="flex items-center gap-2 flex-1 justify-end mr-30">
             <DateRangeFilter
@@ -731,8 +731,8 @@ export default function ViewReports() {
         )}
 
         {/* ── Section header ── */}
-        <div className="flex items-center justify-between pt-1">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div className="min-w-0">
             <h2 className="text-[17px] font-semibold text-slate-900 tracking-tight">
               Stage &amp; subgroup breakdown
             </h2>
@@ -744,7 +744,7 @@ export default function ViewReports() {
             </p>
           </div>
           {!stagesLoading && stages.rows.length > 0 && (
-            <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${phaseConfig.badge}`}>
+            <span className={`inline-flex shrink-0 items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${phaseConfig.badge}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${phaseConfig.dot}`} />
               {phaseConfig.label}
             </span>
@@ -782,23 +782,23 @@ export default function ViewReports() {
                       {/* ── Stage row ── */}
                       <div
                         onClick={() => loadCategories(stageName, 1)}
-                        className={`group flex items-center justify-between px-6 py-4 cursor-pointer select-none transition-colors ${isStageOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50"
+                        className={`group flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer select-none transition-colors sm:px-6 sm:py-4 ${isStageOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50"
                           }`}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                           <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-bold flex items-center justify-center shrink-0 tabular-nums">
                             {String(idx + 1).padStart(2, "0")}
                           </span>
-                          <div>
-                            <p className="font-semibold text-slate-800 text-sm capitalize">{stageName}</p>
-                            <p className="text-xs text-slate-400 mt-0.5">{phaseConfig.label} stage</p>
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-slate-800 text-sm capitalize">{stageName}</p>
+                            <p className="truncate text-xs text-slate-400 mt-0.5">{phaseConfig.label} stage</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2.5">
-                          <span className={`text-xs font-semibold px-3 py-1.5 rounded-xl border ${phaseConfig.badge}`}>
+                        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+                          <span className={`text-xs font-semibold px-2.5 py-1.5 rounded-xl border tabular-nums sm:px-3 ${phaseConfig.badge}`}>
                             {count.toLocaleString()}
                           </span>
-                          <span className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all ${isStageOpen
+                          <span className={`w-8 h-8 shrink-0 rounded-xl border flex items-center justify-center transition-all ${isStageOpen
                             ? "bg-slate-100 border-slate-200"
                             : "bg-white border-slate-200 group-hover:border-slate-300"
                             }`}>
@@ -838,14 +838,14 @@ export default function ViewReports() {
                                     {/* ── Category row ── */}
                                     <div
                                       onClick={() => loadDetails(stageName, catName)}
-                                      className={`flex items-center justify-between px-6 py-3.5 cursor-pointer select-none transition-colors ${isCatOpen ? "bg-white" : "hover:bg-white/70"
+                                      className={`flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer select-none transition-colors sm:px-6 ${isCatOpen ? "bg-white" : "hover:bg-white/70"
                                         }`}
                                     >
-                                      <div className="flex items-center gap-3">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${phaseConfig.dot} opacity-50`} />
-                                        <span className="text-sm font-medium text-slate-700">{catName}</span>
+                                      <div className="flex min-w-0 items-center gap-3">
+                                        <div className={`w-1.5 h-1.5 shrink-0 rounded-full ${phaseConfig.dot} opacity-50`} />
+                                        <span className="truncate text-sm font-medium text-slate-700">{catName}</span>
                                       </div>
-                                      <div className="flex items-center gap-2.5">
+                                      <div className="flex shrink-0 items-center gap-2.5">
                                         <span className="text-sm font-bold text-slate-900 tabular-nums">
                                           {catCount.toLocaleString()}
                                         </span>
@@ -868,7 +868,7 @@ export default function ViewReports() {
                                         ) : (
                                           <>
                                             <div className="overflow-x-auto">
-                                              <table className="w-full text-xs">
+                                              <table className="w-full min-w-[640px] text-xs">
                                                 <thead>
                                                   <tr className="border-b border-slate-100 bg-slate-50/60">
                                                     <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider">Sender</th>
@@ -941,13 +941,13 @@ export default function ViewReports() {
               <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
                 <Layers size={16} className="text-white" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Grand Total</p>
-                <p className="text-xs text-slate-400 mt-0.5">{phaseConfig.label} · all stages</p>
+                <p className="truncate text-xs text-slate-400 mt-0.5">{phaseConfig.label} · all stages</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-4xl font-bold text-white tracking-tight tabular-nums leading-none">
+              <p className="text-3xl font-bold text-white tracking-tight tabular-nums leading-none sm:text-4xl">
                 {grandTotal.toLocaleString()}
               </p>
               <p className="text-[11px] text-slate-500 mt-1 tabular-nums">

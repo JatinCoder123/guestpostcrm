@@ -17,6 +17,7 @@ import { dealKeys, useDealsByEmail } from "../../../queries/deals.queries";
 import { useContact } from "../../../queries/contact.queries";
 import { queryClient } from "../../../lib/queryClient";
 import { useWebsites } from "../../../queries/web.queries";
+import Cell from "../../ui/table/RecordCell";
 
 // 🔥 renamed component also
 export default function CreateDeals({ email }) {
@@ -155,13 +156,15 @@ export default function CreateDeals({ email }) {
     }
   }, [deals, offers, email]);
   return (
-    <div className="w-full flex gap-6 items-start">
+    /* Stacks until `lg`, matching SummaryCard's `lg:w-80`. Side by side any
+       earlier and the card — `w-full` plus `shrink-0` — takes the whole row. */
+    <div className="w-full flex flex-col gap-4 lg:flex-row lg:gap-6 lg:items-start">
       {/* LEFT SIDE */}
-      <div className="flex-1 border rounded-2xl p-6 bg-white shadow-sm">
+      <div className="min-w-0 flex-1 border rounded-2xl p-3 sm:p-6 bg-white shadow-sm">
         <PageHeader title={"Create Deals"} showAdd={false} />
 
-        {/* HEADER */}
-        <div className="grid grid-cols-8 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
+        {/* HEADER — grid only from `lg`; the stacked cards label themselves */}
+        <div className="hidden lg:grid lg:grid-cols-8 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
           <div className="col-span-3">Website</div>
           <div className="col-span-3 text-center">Deal Amount</div>
           <div className="col-span-1 text-center ml-auto">Action</div>
@@ -172,17 +175,17 @@ export default function CreateDeals({ email }) {
           {newDeals.map((row, index) => (
             <motion.div
               key={index}
-              className="grid grid-cols-8 items-center px-4 py-3 bg-gray-50 rounded-xl border"
+              className="flex flex-col gap-2 px-3 py-3 bg-gray-50 rounded-xl border lg:grid lg:grid-cols-8 lg:items-center lg:gap-0 lg:px-4"
             >
 
               {/* WEBSITE */}
-              <div className="col-span-3 relative">
+              <Cell label="Website" className="min-w-0 lg:col-span-3 lg:relative">
                 <select
                   value={row.website_c}
                   onChange={(e) =>
                     handleChangeRow(index, "website_c", e.target.value)
                   }
-                  className="w-full border rounded-lg px-2 py-1"
+                  className="min-w-0 max-w-full border rounded-lg px-2 py-1 lg:w-full"
                 >
                   <option value="">Select</option>
                   {getAvailableWebsites(index).map((site, i) => (
@@ -191,10 +194,10 @@ export default function CreateDeals({ email }) {
                     </option>
                   ))}
                 </select>
-              </div>
+              </Cell>
 
               {/* DEAL AMOUNT */}
-              <div className="col-span-3 text-center">
+              <Cell label="Deal Amount" className="lg:col-span-3 lg:text-center">
                 <input
                   type="number"
                   value={row.dealamount}
@@ -204,17 +207,21 @@ export default function CreateDeals({ email }) {
                   }
                   className="w-24 border rounded px-2 py-1 text-center"
                 />
-              </div>
+              </Cell>
 
               {/* DELETE */}
-              <div className="text-center ml-auto">
+              <Cell
+                label="Action"
+                className="border-t border-gray-200 pt-2 lg:col-span-1 lg:border-0 lg:pt-0 lg:ml-auto lg:text-center"
+              >
                 <button
                   onClick={() => handleRemoveRow(index)}
+                  aria-label="Remove deal row"
                   className="text-red-500 cursor-pointer"
                 >
                   <Trash2 />
                 </button>
-              </div>
+              </Cell>
             </motion.div>
           ))}
         </div>

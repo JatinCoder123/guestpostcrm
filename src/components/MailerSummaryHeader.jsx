@@ -305,8 +305,12 @@ function SummaryCard({
 
   return (
     <div
+      /* No `scale-*` here on purpose: a transform on an in-flow card adds
+         horizontal scrollable overflow to the scrolling <main>, and makes the
+         card the containing block for any position:fixed descendant. The ring
+         and shadow carry the emphasis without touching layout. */
       className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${highlight
-        ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
+        ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 transition-all duration-500 ease-out"
         : "transition-all duration-300"
         }`}
     >

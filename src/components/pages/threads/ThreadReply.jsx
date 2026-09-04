@@ -101,21 +101,25 @@ const ThreadReply = () => {
         overflow-hidden
     "
       >
-        {/* HEADER */}
-        <div className="flex gap-3 justify-between items-center px-6 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
-          <div className="flex items-center gap-3">
+        {/* HEADER
+            flex-wrap is required, not cosmetic: RightThreadHeader is `w-full`
+            below `sm`, so without wrapping it claims the whole row and crushes
+            the title and buttons into each other. */}
+        <div className="flex flex-wrap gap-x-2 gap-y-1 justify-between items-center px-2 py-1.5 sm:gap-3 sm:px-6 sm:py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(-1)}
-              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+              aria-label="Back"
+              className="shrink-0 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </motion.button>
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
               {/* OPEN GMAIL */}
               <div
-                className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition"
+                className="flex min-w-0 items-center gap-2 cursor-pointer hover:opacity-90 transition sm:gap-3"
                 onClick={() =>
                   window.open(
                     `https://mail.google.com/mail/u/0/#inbox/${threadId}`,
@@ -123,8 +127,8 @@ const ThreadReply = () => {
                   )
                 }
               >
-                <Send className="w-5 h-5" />
-                <h2 className="text-xl font-bold tracking-tight">
+                <Send className="w-5 h-5 shrink-0" />
+                <h2 className="min-w-0 truncate text-base sm:text-xl font-bold tracking-tight">
                   Compose Email
                 </h2>
               </div>
@@ -134,7 +138,8 @@ const ThreadReply = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowMessageModal(true)}
-                className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-full bg-white/20 hover:bg-white/30 transition shadow-sm"
+                aria-label="View last message"
+                className="flex shrink-0 items-center gap-2 cursor-pointer px-2 py-2 sm:px-3 rounded-full bg-white/20 hover:bg-white/30 transition shadow-sm"
               >
                 <TbMessageStar className="w-5 h-5 text-yellow-400" />
               </motion.button>
@@ -146,7 +151,10 @@ const ThreadReply = () => {
         {isLocked && (
           <LockedBar recordUsers={recordUsers} recordName="Thread" />
         )}
-        <div className={`flex flex-col h-full w-full ${isLocked ? "pointer-events-none opacity-20" : ""
+        {/* `min-h-0 flex-1` rather than `h-full`: this is a flex child of a
+            100vh column that has already spent height on the header, so
+            `h-full` overflows and pushes the action bar past the fold. */}
+        <div className={`flex min-h-0 w-full flex-1 flex-col ${isLocked ? "pointer-events-none opacity-20" : ""
           }`}>
           <TinyEditor
             setEditorContent={setEditorContent}
@@ -157,7 +165,7 @@ const ThreadReply = () => {
 
           {/* ✅ SUCCESS OVERLAY */}
 
-          <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
+          <div className="shrink-0 p-2 sm:p-6 border-t bg-gradient-to-r from-white to-gray-50 shadow-2xl">
             <ReplyButtons editorRef={editorRef} editorReady={editorReady} />
           </div>
         </div>
@@ -165,7 +173,7 @@ const ThreadReply = () => {
       <AnimatePresence>
         {showFailedModal && sendFailedResponse && (
           <motion.div
-            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[1000] flex items-center justify-center p-2 sm:p-4 bg-black/50 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -176,14 +184,16 @@ const ThreadReply = () => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 40 }}
               transition={{ type: "spring", stiffness: 120 }}
-              className="bg-white w-[90%] max-w-3xl rounded-2xl shadow-2xl p-6"
+              className="flex max-h-[92vh] w-full min-w-0 max-w-3xl flex-col overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl sm:p-6"
             >
               {/* HEADER */}
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-bold text-red-600">
+              <div className="flex shrink-0 justify-between items-center gap-3 mb-4">
+                <h2 className="min-w-0 text-base sm:text-lg font-bold text-red-600">
                   ⚠️ Email Not Sent
                 </h2>
                 <button
+                  aria-label="Close"
+                  className="shrink-0"
                   onClick={() => {
                     setShowFailedModal(false);
                     dispatch(viewEmailAction.clearFailedResponse());
@@ -221,8 +231,9 @@ const ThreadReply = () => {
                 <p className="text-sm font-semibold text-indigo-600">
                   Suggested Reply:
                 </p>
-                <div className="text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-3 rounded-lg border max-h-60 overflow-auto">
+                <div className="min-w-0 text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-3 rounded-lg border max-h-60 overflow-auto">
                   <div
+                    className="break-words [&_*]:max-w-full [&_a]:break-all"
                     dangerouslySetInnerHTML={{
                       __html: sendFailedResponse.suggested_reply,
                     }}
@@ -231,7 +242,7 @@ const ThreadReply = () => {
               </div>
 
               {/* ACTIONS */}
-              <div className="flex justify-end gap-3">
+              <div className="flex flex-wrap justify-end gap-2 sm:gap-3">
                 {/* USE BRIEF REASON */}
                 <button
                   onClick={() => setShowBriefReason(!showBriefReason)}

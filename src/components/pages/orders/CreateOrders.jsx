@@ -167,15 +167,15 @@ const CreateOrders = ({ email }) => {
   }, [message, error]);
   /* ---------------- RENDER ---------------- */
   return (
-    <div className="flex-1 flex flex-col gap-3 relative border rounded-2xl p-6 bg-white shadow-sm">
+    <div className="w-full min-w-0 flex flex-col gap-3 relative border rounded-2xl p-3 sm:p-6 bg-white shadow-sm">
       <PageHeader title={"CREATE ORDER"} showAdd={false} />
       {/* ---------------- TABS ---------------- */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-2 sm:gap-3">
         {ORDER_TYPES.map((type) => (
           <button
             key={type}
             onClick={() => handleChange("order_type", type)}
-            className={`px-3 py-2 rounded-lg  transition ${order.order_type === type
+            className={`px-3 py-2 rounded-lg text-sm sm:text-base transition ${order.order_type === type
               ? "bg-blue-600 text-white"
               : "bg-gray-200 hover:bg-gray-300"
               }`}
@@ -265,7 +265,7 @@ const CreateOrders = ({ email }) => {
       </button>
 
       {/* ACTIONS */}
-      <div className="flex justify-end gap-3">
+      <div className="flex flex-wrap justify-end gap-2 sm:gap-3">
         <IconButton
           icon={Save}
           label="Save"

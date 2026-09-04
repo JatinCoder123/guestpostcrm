@@ -89,6 +89,15 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
   const [tempHtml, setTempHtml] = useState(htmlfile || "");
   const [editorReadyLocal, setEditorReadyLocal] = useState(false);
 
+  /* Below `lg` the template/AI toolbar folds behind a disclosure. It holds a
+     dozen buttons which would otherwise wrap into 4-5 rows and squeeze the
+     editor off screen. Nothing is removed — it is all one tap away, and the
+     send/attach/mic row below stays visible at all times.
+     Note this is a wrapped grid rather than a sideways scroller on purpose:
+     the dynamic template buttons open absolute dropdowns, which an
+     overflow-x container would clip. */
+  const [showTools, setShowTools] = useState(false);
+
   const editorRefLocal = useRef(null);
 
   const {
@@ -289,9 +298,30 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
         setFavourites={setFavourites}
       />
 
-      <div className="w-full overflow-visible rounded-2xl border border-[#E8ECF3] bg-white">
+      <div className="w-full min-w-0 overflow-visible rounded-2xl border border-[#E8ECF3] bg-white">
+        {/* ═══ TOOLBAR DISCLOSURE — small screens only ═══ */}
+        <button
+          type="button"
+          onClick={() => setShowTools((v) => !v)}
+          aria-expanded={showTools}
+          className="flex w-full items-center justify-between gap-2 border-b border-[#E8ECF3] px-3 py-2.5 text-left lg:hidden"
+        >
+          <span className="flex items-center gap-2 text-[13px] font-semibold text-[#2A2F3A]">
+            <Sparkles className="h-4 w-4 text-violet-500" />
+            Reply tools
+          </span>
+
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-gray-500 transition-transform duration-200 ${showTools ? "rotate-180" : ""
+              }`}
+          />
+        </button>
+
         {/* ═══ TOP ACTION BAR ═══ */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#E8ECF3] px-3 py-3">
+        <div
+          className={`${showTools ? "flex" : "hidden"
+            } flex-wrap items-center gap-2 border-b border-[#E8ECF3] px-2 py-2 lg:flex lg:px-3 lg:py-3`}
+        >
           {/* AI Reply */}
           <ActionBtn
             active
@@ -489,9 +519,9 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
         </div>
 
         {/* ═══ BOTTOM ACTION BAR ═══ */}
-        <div className="flex items-center justify-between gap-3 px-3 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-2 sm:gap-3 sm:px-3 sm:py-3">
           {/* Left utility icons */}
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-1 sm:gap-2">
             <motion.button
               whileTap={{ scale: 0.96 }}
               whileHover={{ y: -1 }}
@@ -537,17 +567,17 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
           </div>
 
           {/* Right CTA */}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             <div className="flex overflow-hidden rounded-xl bg-blue-600 text-white shadow-sm">
               <button
                 type="button"
-                className="inline-flex h-9 items-center gap-2 px-5 text-[13px] font-semibold hover:bg-blue-700"
+                className="inline-flex h-9 items-center gap-2 px-4 text-[13px] font-semibold hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
                 onClick={handleSendClick}
                 disabled={
                   checkingThreadId || sending
                 }
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-4 w-4 shrink-0" />
                 Send reply
               </button>
             </div>

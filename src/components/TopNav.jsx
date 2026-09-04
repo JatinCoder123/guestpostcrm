@@ -11,26 +11,20 @@ import {
   Users,
   Copy,
   Check,
+  GraduationCap,
   MailOpen,
   Send,
   Bell,
   ChevronRight,
+  Menu,
+  MoreVertical,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
-import {
-  useContext,
-  useEffect,
-  useState,
-  createElement,
-  useRef,
-} from "react";
+import { useContext, useEffect, useState, createElement, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
-import {
-  motion,
-  AnimatePresence,
-} from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { logout } from "../store/Slices/userSlice";
 import { SocketContext } from "../context/SocketContext";
@@ -39,13 +33,10 @@ import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
 import { useCrmUsers } from "../queries/users.queries";
+import { useGpcTrainingStatus } from "../queries/training.queries";
 import { fetchGpc } from "../services/api";
-import {
-  THEMES,
-  setTheme,
-  getTheme,
-} from "../utils/theme";
-
+import { useIsDesktop } from "../hooks/useMediaQuery";
+import { THEMES, setTheme, getTheme } from "../utils/theme";
 
 /* ─────────────────────────────────────────────────────────────
    Avatar colour palette
@@ -102,21 +93,15 @@ const AVATAR_COLORS = [
   },
 ];
 
-
 function getColorForUser(email = "") {
   let hash = 0;
 
   for (let i = 0; i < email.length; i++) {
-    hash =
-      email.charCodeAt(i) +
-      ((hash << 5) - hash);
+    hash = email.charCodeAt(i) + ((hash << 5) - hash);
   }
 
-  return AVATAR_COLORS[
-    Math.abs(hash) % AVATAR_COLORS.length
-  ];
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
-
 
 function getInitials(name = "", email = "") {
   if (name?.trim()) {
@@ -124,139 +109,75 @@ function getInitials(name = "", email = "") {
 
     return parts.length === 1
       ? parts[0][0].toUpperCase()
-      : (
-        parts[0][0] +
-        parts[parts.length - 1][0]
-      ).toUpperCase();
+      : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
-  return (
-    email?.[0] ?? "?"
-  ).toUpperCase();
+  return (email?.[0] ?? "?").toUpperCase();
 }
-
 
 function formatLastActive(ts) {
   if (!ts) return "";
 
-  const diff = Math.floor(
-    (Date.now() -
-      new Date(ts).getTime()) /
-    1000
-  );
+  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
 
   if (diff < 10) return "just now";
   if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600)
-    return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
 
   return `${Math.floor(diff / 3600)}h ago`;
 }
-
 
 /* ─────────────────────────────────────────────────────────────
    User Activity Panel
 ───────────────────────────────────────────────────────────── */
 
-function UserActivityPanel({
-  activeUsers = [],
-  currentUserEmail = "",
-}) {
+function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const [open, setOpen] = useState(false);
 
   const ref = useRef(null);
   const navigateTo = useNavigate();
 
-  const { data: crmUsers } =
-    useCrmUsers();
-
+  const { data: crmUsers } = useCrmUsers();
 
   useEffect(() => {
     const handler = (e) => {
-      if (
-        ref.current &&
-        !ref.current.contains(e.target)
-      ) {
+      if (ref.current && !ref.current.contains(e.target)) {
         setOpen(false);
       }
     };
 
-    document.addEventListener(
-      "mousedown",
-      handler
-    );
+    document.addEventListener("mousedown", handler);
 
-    return () =>
-      document.removeEventListener(
-        "mousedown",
-        handler
-      );
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const onlineUsers = activeUsers.filter((u) => u?.status === "online");
 
-  const onlineUsers =
-    activeUsers.filter(
-      (u) => u?.status === "online"
-    );
+  const idleUsers = activeUsers.filter((u) => u?.status !== "online");
 
-  const idleUsers =
-    activeUsers.filter(
-      (u) => u?.status !== "online"
-    );
+  const meOnline = onlineUsers?.find((u) => u?.email === currentUserEmail);
 
-
-  const meOnline =
-    onlineUsers?.find(
-      (u) =>
-        u?.email === currentUserEmail
-    );
-
-
-  const otherOnlineUsers =
-    onlineUsers.filter(
-      (u) =>
-        u?.email !== currentUserEmail
-    );
-
-
-  const orderedOnline = meOnline
-    ? [
-      meOnline,
-      ...otherOnlineUsers,
-    ]
-    : otherOnlineUsers;
-
-
-  const ordered = [
-    ...orderedOnline,
-    ...idleUsers,
-  ];
-
-
-  const stackVisible =
-    orderedOnline.slice(0, 4);
-
-  const overflow = Math.max(
-    0,
-    orderedOnline.length - 4
+  const otherOnlineUsers = onlineUsers.filter(
+    (u) => u?.email !== currentUserEmail,
   );
 
+  const orderedOnline = meOnline
+    ? [meOnline, ...otherOnlineUsers]
+    : otherOnlineUsers;
 
-  const onlineCount =
-    onlineUsers.length;
+  const ordered = [...orderedOnline, ...idleUsers];
 
+  const stackVisible = orderedOnline.slice(0, 4);
+
+  const overflow = Math.max(0, orderedOnline.length - 4);
+
+  const onlineCount = onlineUsers.length;
 
   return (
-    <div
-      ref={ref}
-      className="relative flex items-center"
-    >
-
+    <div ref={ref} className="relative flex items-center">
       <button
         type="button"
-        onClick={() =>
-          setOpen((v) => !v)
-        }
+        onClick={() => setOpen((v) => !v)}
         aria-label={`${onlineCount} online users`}
         aria-expanded={open}
         aria-haspopup="true"
@@ -275,7 +196,6 @@ function UserActivityPanel({
           active:scale-95
         "
       >
-
         <span className="relative flex h-2 w-2 shrink-0">
           <span
             className="
@@ -302,41 +222,22 @@ function UserActivityPanel({
           />
         </span>
 
-
         <div className="flex h-2 w-full items-center">
-
           {stackVisible.map((u, i) => {
-            const c =
-              getColorForUser(
-                u.email
-              );
+            const c = getColorForUser(u.email);
 
-            const name =
-              crmUsers?.find(
-                (user) =>
-                  user?.description ===
-                  u.email
-              )?.name;
+            const name = crmUsers?.find(
+              (user) => user?.description === u.email,
+            )?.name;
 
-            const initials =
-              getInitials(
-                name || u.name,
-                u.email
-              );
+            const initials = getInitials(name || u.name, u.email);
 
-            const isMe =
-              u.email ===
-              currentUserEmail;
-
+            const isMe = u.email === currentUserEmail;
 
             return (
               <span
                 key={u.email}
-                title={
-                  isMe
-                    ? "You"
-                    : name || u.email
-                }
+                title={isMe ? "You" : name || u.email}
                 className={`
                   relative
                   flex
@@ -353,10 +254,7 @@ function UserActivityPanel({
                   ${c.bg}
                   ${c.text}
                   ${i > 0 ? "-ml-1.5" : ""}
-                  ${isMe
-                    ? "ring-primary"
-                    : ""
-                  }
+                  ${isMe ? "ring-primary" : ""}
                 `}
               >
                 {initials}
@@ -371,16 +269,14 @@ function UserActivityPanel({
                     rounded-full
                     border
                     border-card
-                    ${u?.status === "online"
-                      ? "bg-emerald-500"
-                      : "bg-amber-400"
+                    ${
+                      u?.status === "online" ? "bg-emerald-500" : "bg-amber-400"
                     }
                   `}
                 />
               </span>
             );
           })}
-
 
           {overflow > 0 && (
             <span
@@ -404,9 +300,7 @@ function UserActivityPanel({
               +{overflow}
             </span>
           )}
-
         </div>
-
 
         <span
           className="
@@ -417,12 +311,9 @@ function UserActivityPanel({
         >
           {onlineCount}
         </span>
-
       </button>
 
-
       <AnimatePresence>
-
         {open && (
           <motion.div
             initial={{
@@ -442,12 +333,7 @@ function UserActivityPanel({
             }}
             transition={{
               duration: 0.18,
-              ease: [
-                0.32,
-                0.72,
-                0,
-                1,
-              ],
+              ease: [0.32, 0.72, 0, 1],
             }}
             className="
               absolute
@@ -464,7 +350,6 @@ function UserActivityPanel({
               shadow-2xl
             "
           >
-
             <div
               className="
                 flex
@@ -476,7 +361,6 @@ function UserActivityPanel({
                 py-3
               "
             >
-
               <div
                 className="
                   flex
@@ -484,16 +368,9 @@ function UserActivityPanel({
                   gap-2
                 "
               >
+                <Users size={18} className="text-primary" strokeWidth={2} />
 
-                <Users
-                  size={18}
-                  className="text-primary"
-                  strokeWidth={2}
-                />
-
-                <span className="text-sm font-semibold">
-                  Active users
-                </span>
+                <span className="text-sm font-semibold">Active users</span>
 
                 <span
                   className="
@@ -508,17 +385,13 @@ function UserActivityPanel({
                 >
                   {onlineCount}
                 </span>
-
               </div>
-
 
               <button
                 type="button"
                 onClick={() => {
                   setOpen(false);
-                  navigateTo(
-                    "/settings/user-activity"
-                  );
+                  navigateTo("/settings/user-activity");
                 }}
                 className="
                   text-[11px]
@@ -530,14 +403,10 @@ function UserActivityPanel({
               >
                 View all →
               </button>
-
             </div>
 
-
             <div className="max-h-[340px] overflow-y-auto">
-
               {ordered.length === 0 ? (
-
                 <p
                   className="
                     p-4
@@ -548,46 +417,26 @@ function UserActivityPanel({
                 >
                   No active users right now.
                 </p>
-
               ) : (
-
                 ordered.map((u) => {
+                  const c = getColorForUser(u.email);
 
-                  const c =
-                    getColorForUser(
-                      u.email
-                    );
+                  const name = crmUsers?.find(
+                    (user) => user?.description === u.email,
+                  )?.name;
 
-                  const name =
-                    crmUsers?.find(
-                      (user) =>
-                        user?.description ===
-                        u.email
-                    )?.name;
+                  const initials = getInitials(name || u.name, u.email);
 
-                  const initials =
-                    getInitials(
-                      name || u.name,
-                      u.email
-                    );
+                  const isMe = u.email === currentUserEmail;
 
-                  const isMe =
-                    u.email ===
-                    currentUserEmail;
-
-                  const isOnline =
-                    u?.status ===
-                    "online";
-
+                  const isOnline = u?.status === "online";
 
                   return (
                     <div
                       key={u.email}
                       onClick={() =>
                         navigateTo(
-                          `/view-reports?email=${encodeURIComponent(
-                            u.email
-                          )}`
+                          `/view-reports?email=${encodeURIComponent(u.email)}`,
                         )
                       }
                       className="
@@ -603,14 +452,12 @@ function UserActivityPanel({
                         hover:bg-accent
                       "
                     >
-
                       <div
                         className="
                           relative
                           shrink-0
                         "
                       >
-
                         <span
                           className={`
                             flex
@@ -638,18 +485,12 @@ function UserActivityPanel({
                             rounded-full
                             border-2
                             border-card
-                            ${isOnline
-                              ? "bg-emerald-500"
-                              : "bg-amber-400"
-                            }
+                            ${isOnline ? "bg-emerald-500" : "bg-amber-400"}
                           `}
                         />
-
                       </div>
 
-
                       <div className="min-w-0 flex-1">
-
                         <div
                           className="
                             flex
@@ -657,7 +498,6 @@ function UserActivityPanel({
                             gap-1.5
                           "
                         >
-
                           <p
                             className="
                               truncate
@@ -683,9 +523,7 @@ function UserActivityPanel({
                               you
                             </span>
                           )}
-
                         </div>
-
 
                         <p
                           className="
@@ -697,7 +535,6 @@ function UserActivityPanel({
                           {u.email}
                         </p>
 
-
                         <div
                           className="
                             mt-0.5
@@ -706,7 +543,6 @@ function UserActivityPanel({
                             gap-1
                           "
                         >
-
                           <span
                             className="
                               h-1
@@ -723,15 +559,10 @@ function UserActivityPanel({
                               text-muted-foreground
                             "
                           >
-                            {u.page == "/"
-                              ? "Timeline"
-                              : u.page}
+                            {u.page == "/" ? "Timeline" : u.page}
                           </p>
-
                         </div>
-
                       </div>
-
 
                       <div
                         className="
@@ -742,7 +573,6 @@ function UserActivityPanel({
                           gap-1
                         "
                       >
-
                         <span
                           className={`
                             rounded-full
@@ -750,15 +580,14 @@ function UserActivityPanel({
                             py-0.5
                             text-[10px]
                             font-semibold
-                            ${isOnline
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-amber-50 text-amber-700"
+                            ${
+                              isOnline
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-amber-50 text-amber-700"
                             }
                           `}
                         >
-                          {isOnline
-                            ? "Online"
-                            : "Idle"}
+                          {isOnline ? "Online" : "Idle"}
                         </span>
 
                         <span
@@ -767,20 +596,14 @@ function UserActivityPanel({
                             text-muted-foreground
                           "
                         >
-                          {formatLastActive(
-                            u.lastActiveAt
-                          )}
+                          {formatLastActive(u.lastActiveAt)}
                         </span>
-
                       </div>
-
                     </div>
                   );
                 })
               )}
-
             </div>
-
 
             <div
               className="
@@ -794,7 +617,6 @@ function UserActivityPanel({
                 py-2.5
               "
             >
-
               <span
                 className="
                   flex
@@ -834,47 +656,28 @@ function UserActivityPanel({
                 />
                 Idle — 5–15 min
               </span>
-
             </div>
-
           </motion.div>
         )}
-
       </AnimatePresence>
-
     </div>
   );
 }
-
 
 /* ─────────────────────────────────────────────────────────────
    Stat Badge
 ───────────────────────────────────────────────────────────── */
 
-const StatBadge = ({
-  icon,
-  label,
-  value,
-  colorClass,
-  bgClass,
-}) => {
-
-  const [animate, setAnimate] =
-    useState(false);
-
+const StatBadge = ({ icon, label, value, colorClass, bgClass }) => {
+  const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
     setAnimate(true);
 
-    const t = setTimeout(
-      () => setAnimate(false),
-      400
-    );
+    const t = setTimeout(() => setAnimate(false), 400);
 
-    return () =>
-      clearTimeout(t);
+    return () => clearTimeout(t);
   }, [value]);
-
 
   return (
     <div
@@ -888,7 +691,6 @@ const StatBadge = ({
         py-2
       "
     >
-
       <div
         className={`
           flex
@@ -914,7 +716,6 @@ const StatBadge = ({
         })}
       </div>
 
-
       <div
         className="
           flex
@@ -922,7 +723,6 @@ const StatBadge = ({
           leading-tight
         "
       >
-
         <span
           className="
             whitespace-nowrap
@@ -934,7 +734,6 @@ const StatBadge = ({
           {label}
         </span>
 
-
         <span
           className={`
             text-[18px]
@@ -942,348 +741,219 @@ const StatBadge = ({
             text-foreground
             transition-all
             duration-300
-            ${animate
-              ? "scale-110"
-              : "scale-100"
-            }
+            ${animate ? "scale-110" : "scale-100"}
           `}
         >
           {value ?? "—"}
         </span>
-
       </div>
-
     </div>
   );
 };
-
 
 /* ─────────────────────────────────────────────────────────────
    Main TopNav
 ───────────────────────────────────────────────────────────── */
 
 export function TopNav() {
-
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
-
-  const [stats, setStats] =
-    useState({
-      reply_recieved: null,
-      reply_sent: null,
-      reminder_sent: null,
-    });
-
+  const [stats, setStats] = useState({
+    reply_recieved: null,
+    reply_sent: null,
+    reminder_sent: null,
+  });
 
   useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const data = await fetchGpc({
+          method: "GET",
+          params: {
+            type: "statscount",
+          },
+        });
 
-    const loadStats =
-      async () => {
+        if (data?.success && data?.stats) {
+          setStats({
+            reply_recieved: data.stats.reply_recieved,
 
-        try {
+            reply_sent: data.stats.reply_sent,
 
-          const data =
-            await fetchGpc({
-              method: "GET",
-              params: {
-                type: "statscount",
-              },
-            });
-
-
-          if (
-            data?.success &&
-            data?.stats
-          ) {
-
-            setStats({
-              reply_recieved:
-                data.stats.reply_recieved,
-
-              reply_sent:
-                data.stats.reply_sent,
-
-              reminder_sent:
-                data.stats.reminder_sent,
-            });
-
-          }
-
-        } catch (err) {
-
-          console.error(
-            "Failed to fetch stats:",
-            err
-          );
-
+            reminder_sent: data.stats.reminder_sent,
+          });
         }
-
-      };
-
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
+      }
+    };
 
     loadStats();
-
   }, []);
-
 
   /* ── Data ── */
 
-  const {
-    activeUsers = [],
-  } = useContext(SocketContext);
+  const { activeUsers = [] } = useContext(SocketContext);
 
+  const { data } = useCrmUsers();
 
-  const { data } =
-    useCrmUsers();
-
-
-
-
-  const {
-    enteredEmail,
-    handleClear,
-  } =
+  const { enteredEmail, handleClear, mobileSidebarOpen, setMobileSidebarOpen } =
     useContext(PageContext);
 
-
-  const {
-    user,
-    error,
-  } =
-    useSelector(
-      (s) => s.user
-    );
-
+  const { user, error } = useSelector((s) => s.user);
+  const { data: trainingStatus, refetch: refetchTrainingStatus } =
+    useGpcTrainingStatus(user?.email);
 
   /* ── Local state ── */
 
-  const [
-    showProfileMenu,
-    setShowProfileMenu,
-  ] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+  const [showTraining, setShowTraining] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const [
-    copied,
-    setCopied,
-  ] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState(getTheme);
 
-
-  const [
-    selectedTheme,
-    setSelectedTheme,
-  ] = useState(getTheme);
-
-
-  const [
-    profilePreview,
-    setProfilePreview,
-  ] = useState(
+  const [profilePreview, setProfilePreview] = useState(
     () =>
-      sessionStorage.getItem(
-        "userProfileImage"
-      ) ||
-      user?.profileImage ||
-      ""
+      sessionStorage.getItem("userProfileImage") || user?.profileImage || "",
   );
 
+  const [showCropper, setShowCropper] = useState(false);
 
-  const [
-    showCropper,
-    setShowCropper,
-  ] = useState(false);
+  const [cropImage, setCropImage] = useState(null);
 
-
-  const [
-    cropImage,
-    setCropImage,
-  ] = useState(null);
-
+  // Responsive overflow menu: below lg the right-side controls
+  // are collapsed so the search field never gets squeezed off-screen.
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const mobileMenuRef = useRef(null);
+  const isDesktop = useIsDesktop();
 
   /* ── Derived ── */
 
-  const isSearchActive =
-    Boolean(
-      enteredEmail?.trim()
-    );
-
+  const isSearchActive = Boolean(enteredEmail?.trim());
+  // Keep the control hidden until both Rightee CRM values are known.
+  const canOpenTraining =
+    Number.isFinite(trainingStatus?.completedCount) &&
+    Number.isFinite(trainingStatus?.totalCount) &&
+    trainingStatus.totalCount > 0 &&
+    trainingStatus.completedCount < trainingStatus.totalCount;
 
   /* ── Profile image ── */
 
   useEffect(() => {
+    const saved = sessionStorage.getItem("userProfileImage");
 
-    const saved =
-      sessionStorage.getItem(
-        "userProfileImage"
-      );
+    setProfilePreview(saved || user?.profileImage || "");
+  }, [user?.profileImage]);
 
-    setProfilePreview(
-      saved ||
-      user?.profileImage ||
-      ""
-    );
+  // Close the compact mobile/tablet menu when clicking outside it.
+  useEffect(() => {
+    const handler = (e) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
+        setShowMobileMenu(false);
+      }
+    };
 
-  }, [
-    user?.profileImage,
-  ]);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
+  // Restore the full desktop layout when the viewport grows back to lg+.
+  useEffect(() => {
+    if (isDesktop && showMobileMenu) {
+      setShowMobileMenu(false);
+    }
+  }, [isDesktop, showMobileMenu]);
 
   /* ── Initialize theme ── */
 
   useEffect(() => {
-
     const theme = getTheme();
 
     setTheme(theme);
 
     setSelectedTheme(theme);
-
   }, []);
-
 
   /* ── Theme change ── */
 
-  const handleThemeChange = (
-    theme
-  ) => {
+  const handleThemeChange = (theme) => {
+    const appliedTheme = setTheme(theme);
 
-    const appliedTheme =
-      setTheme(theme);
-
-    setSelectedTheme(
-      appliedTheme
-    );
-
+    setSelectedTheme(appliedTheme);
   };
-
 
   /* ── Logout ── */
 
   const handleLogout = () => {
-
     dispatch(logout());
 
     setShowProfileMenu(false);
-
   };
 
-
+  const handleTrainingClose = () => {
+    setShowTraining(false);
+    refetchTrainingStatus();
+  };
   /* ── Copy email ── */
 
-  const handleCopyEmail =
-    async () => {
+  const handleCopyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(enteredEmail || user?.email || "");
 
-      try {
+      setCopied(true);
 
-        await navigator.clipboard.writeText(
-          enteredEmail ||
-          user?.email ||
-          ""
-        );
+      toast.success("Email copied");
 
-        setCopied(true);
-
-        toast.success(
-          "Email copied"
-        );
-
-
-        setTimeout(() => {
-          setCopied(false);
-        }, 1500);
-
-      } catch (err) {
-
-        toast.error(
-          "Failed to copy email"
-        );
-
-      }
-
-    };
-
+      setTimeout(() => {
+        setCopied(false);
+      }, 1500);
+    } catch (err) {
+      toast.error("Failed to copy email");
+    }
+  };
 
   /* ── Profile upload ── */
 
-  const handleProfileUpload =
-    (e) => {
+  const handleProfileUpload = (e) => {
+    const file = e.target.files?.[0];
 
-      const file =
-        e.target.files?.[0];
+    if (!file) return;
 
-      if (!file) return;
+    const reader = new FileReader();
 
+    reader.onload = () => {
+      setCropImage(reader.result);
 
-      const reader =
-        new FileReader();
-
-
-      reader.onload = () => {
-
-        setCropImage(
-          reader.result
-        );
-
-        setShowCropper(true);
-
-      };
-
-
-      reader.readAsDataURL(file);
-
+      setShowCropper(true);
     };
 
+    reader.readAsDataURL(file);
+  };
 
   /* ── Profile save ── */
 
-  const handleProfileSave =
-    (croppedImage) => {
+  const handleProfileSave = (croppedImage) => {
+    setProfilePreview(croppedImage);
 
-      setProfilePreview(
-        croppedImage
-      );
-
-      sessionStorage.setItem(
-        "userProfileImage",
-        croppedImage
-      );
-
-    };
-
+    sessionStorage.setItem("userProfileImage", croppedImage);
+  };
 
   /* ── Initials ── */
 
-  const getUserInitials =
-    () => {
+  const getUserInitials = () => {
+    const name =
+      data?.find((d) => d.description === user?.email)?.name || user?.name;
 
-      const name =
-        data?.find(
-          (d) =>
-            d.description ===
-            user?.email
-        )?.name ||
-        user?.name;
+    if (!name) return "U";
 
+    const parts = name.trim().split(" ");
 
-      if (!name) return "U";
-
-
-      const parts =
-        name.trim().split(" ");
-
-
-      return parts.length === 1
-        ? parts[0][0].toUpperCase()
-        : (
-          parts[0][0] +
-          parts[
-          parts.length - 1
-          ][0]
-        ).toUpperCase();
-
-    };
-
+    return parts.length === 1
+      ? parts[0][0].toUpperCase()
+      : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
 
   return (
     <div
@@ -1293,88 +963,85 @@ export function TopNav() {
         top-0
         z-[999]
         flex
+        w-full
+        min-w-0
         items-center
         justify-between
-        gap-3
+        gap-2
         rounded-md
         border
         border-border
         bg-white
         p-2
+        sm:gap-3
       "
     >
-
       {/* =====================================================
-          SEARCH
+          SEARCH & MOBILE SIDEBAR TRIGGER
       ====================================================== */}
-
-      <div
-        className="
-          flex
-          items-center
-          justify-between
-        "
-      >
-
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 lg:flex-initial">
+        {/* ── Sidebar drawer trigger — small screens only ── */}
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          aria-label={
+            mobileSidebarOpen ? "Close navigation menu" : "Open navigation menu"
+          }
+          aria-expanded={Boolean(mobileSidebarOpen)}
+          aria-controls="app-sidebar"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 active:scale-90 lg:hidden"
+        >
+          {mobileSidebarOpen ? (
+            <X size={20} strokeWidth={2.2} />
+          ) : (
+            <Menu size={20} strokeWidth={2.2} />
+          )}
+        </button>
         <div
           className="
             flex
             min-w-0
+            flex-1
             items-center
             justify-center
             gap-2
             p-1
+            lg:flex-initial
           "
           data-tour="top-nav-search"
         >
-
           <AnimatePresence mode="wait">
-
             {isSearchActive ? (
-
               <motion.div
                 key="banner"
-                initial={{
-                  opacity: 0,
-                  y: -6,
-                  scale: 0.97,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                }}
-                exit={{
-                  opacity: 0,
-                  y: -6,
-                  scale: 0.97,
-                }}
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
                 transition={{
                   duration: 0.2,
-                  ease: [
-                    0.32,
-                    0.72,
-                    0,
-                    1,
-                  ],
+                  ease: [0.32, 0.72, 0, 1],
                 }}
                 role="status"
                 aria-live="polite"
                 className="
                   flex
-                  max-w-[400px]
+                  min-w-0
+                  max-w-full
+                  flex-1
                   items-center
                   gap-2.5
                   rounded-2xl
                   border
                   border-primary/20
                   bg-primary/5
-                  px-4
+                  px-3
                   py-2
                   shadow-sm
+                  sm:px-4
+                  lg:max-w-[400px]
+                  lg:flex-initial
                 "
               >
-
                 <span
                   aria-hidden="true"
                   className="
@@ -1385,69 +1052,48 @@ export function TopNav() {
                     rounded-full
                     bg-primary
                   "
-                  style={{
-                    animationDuration:
-                      "1.4s",
-                  }}
+                  style={{ animationDuration: "1.4s" }}
                 />
-
 
                 <span
                   className="
                     flex
+                    min-w-0
                     items-center
                     gap-1.5
-                    text-[16px]
+                    text-sm
                     leading-none
                     text-primary
+                    sm:text-[16px]
                   "
                 >
-
-                  <span className="shrink-0 font-normal">
+                  <span className="hidden shrink-0 font-normal sm:inline">
                     Viewing record for
                   </span>
-
 
                   <span
                     title={enteredEmail}
                     className="
-                      max-w-[220px]
-                      cursor-default
+                      min-w-0
                       truncate
                       font-bold
                       text-primary
                       underline
                       decoration-dashed
                       underline-offset-2
+                      lg:max-w-[220px]
                     "
                   >
                     {enteredEmail}
                   </span>
-
                 </span>
 
-
-                <div
-                  className="
-                    ml-1
-                    flex
-                    shrink-0
-                    items-center
-                    gap-1
-                  "
-                >
-
+                <div className="ml-1 flex shrink-0 items-center gap-1">
                   <button
                     type="button"
                     aria-label="Copy email"
-                    title={
-                      copied
-                        ? "Copied!"
-                        : "Copy email"
-                    }
-                    onClick={
-                      handleCopyEmail
-                    }
+                    title={copied ? "Copied!" : "Copy email"}
+                    onClick={handleCopyEmail}
                     className="
                       flex
                       h-[22px]
@@ -1463,25 +1109,16 @@ export function TopNav() {
                     "
                   >
                     {copied ? (
-                      <Check
-                        size={11}
-                        strokeWidth={2.5}
-                      />
+                      <Check size={11} strokeWidth={2.5} />
                     ) : (
-                      <Copy
-                        size={11}
-                        strokeWidth={2.5}
-                      />
+                      <Copy size={11} strokeWidth={2.5} />
                     )}
                   </button>
-
 
                   <button
                     type="button"
                     aria-label="Clear current record"
-                    onClick={
-                      handleClear
-                    }
+                    onClick={handleClear}
                     className="
                       flex
                       h-[22px]
@@ -1496,168 +1133,79 @@ export function TopNav() {
                       active:scale-90
                     "
                   >
-                    <X
-                      size={11}
-                      strokeWidth={2.5}
-                    />
+                    <X size={11} strokeWidth={2.5} />
                   </button>
-
                 </div>
-
               </motion.div>
-
             ) : (
-
               <GlobalSearch />
-
             )}
-
           </AnimatePresence>
-
         </div>
-
       </div>
 
-
       {/* =====================================================
-          RIGHT NAVIGATION
+          RIGHT NAVIGATION — DESKTOP
+          Full controls remain unchanged at lg and above.
       ====================================================== */}
-
-      <div
-        className="
-          flex
-          shrink-0
-          items-center
-          justify-end
-          gap-1.5
-        "
-      >
-
-        {/* User Activity */}
-
-        <div
-          className="
-            flex
-            shrink-0
-            items-center
-            gap-2
-          "
-        >
-
+      <div className="hidden shrink-0 items-center justify-end gap-1.5 lg:flex">
+        <div className="flex shrink-0 items-center gap-2">
           <UserActivityPanel
-            activeUsers={
-              activeUsers
-            }
-            currentUserEmail={
-              user?.email
-            }
+            activeUsers={activeUsers}
+            currentUserEmail={user?.email}
           />
-
         </div>
 
+        {canOpenTraining && (
+          <button
+            type="button"
+            onClick={() => setShowTraining(true)}
+            className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-xs font-semibold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 active:scale-95"
+          >
+            <GraduationCap size={16} aria-hidden="true" />
+            GPC Training
+          </button>
+        )}
 
-        <div
-          className="
-            mx-1
-            h-8
-            w-px
-            bg-border
-          "
-          aria-hidden="true"
-        />
+        <div className="mx-1 h-8 w-px bg-border" aria-hidden="true" />
 
-
-        {/* Stats */}
-
-        <div
-          className="
-            flex
-            shrink-0
-            items-center
-            gap-2
-            pr-2
-          "
-        >
-
+        <div className="flex shrink-0 items-center gap-2 pr-2">
           <StatBadge
             icon={MailOpen}
             label="Received"
-            value={
-              stats.reply_recieved
-            }
+            value={stats.reply_recieved}
             colorClass="text-emerald-500"
             bgClass="bg-emerald-100 group-hover:bg-emerald-200"
           />
 
-
-          <div
-            className="
-              mx-1
-              h-10
-              w-px
-              bg-border
-            "
-          />
-
+          <div className="mx-1 h-10 w-px bg-border" />
 
           <StatBadge
             icon={Send}
             label="Sent"
-            value={
-              stats.reply_sent
-            }
+            value={stats.reply_sent}
             colorClass="text-blue-600"
             bgClass="bg-blue-100 group-hover:bg-blue-200"
           />
 
-
-          <div
-            className="
-              mx-1
-              h-10
-              w-px
-              bg-border
-            "
-          />
-
+          <div className="mx-1 h-10 w-px bg-border" />
 
           <StatBadge
             icon={Bell}
             label="Reminders"
-            value={
-              stats.reminder_sent
-            }
+            value={stats.reminder_sent}
             colorClass="text-amber-500"
             bgClass="bg-amber-100 group-hover:bg-amber-200"
           />
-
         </div>
 
-
-        <div
-          className="
-            mx-1
-            h-8
-            w-px
-            bg-border
-          "
-          aria-hidden="true"
-        />
-
-
-        {/* ===================================================
-            PROFILE BUTTON
-        ==================================================== */}
+        <div className="mx-1 h-8 w-px bg-border" aria-hidden="true" />
 
         <button
           type="button"
-          onClick={() =>
-            setShowProfileMenu(true)
-          }
+          onClick={() => setShowProfileMenu(true)}
           aria-label="Open profile"
-          aria-expanded={
-            showProfileMenu
-          }
+          aria-expanded={showProfileMenu}
           className="
             flex
             items-center
@@ -1676,25 +1224,13 @@ export function TopNav() {
             active:scale-95
           "
         >
-
           {profilePreview ? (
-
             <img
               src={profilePreview}
-              alt={
-                user?.name ??
-                "Profile"
-              }
-              className="
-                h-7
-                w-7
-                rounded-lg
-                object-cover
-              "
+              alt={user?.name ?? "Profile"}
+              className="h-7 w-7 rounded-lg object-cover"
             />
-
           ) : (
-
             <span
               className="
                 flex
@@ -1715,20 +1251,333 @@ export function TopNav() {
             >
               {getUserInitials()}
             </span>
-
           )}
-
         </button>
-
       </div>
 
+      {/* =====================================================
+          RIGHT NAVIGATION — MOBILE / TABLET
+          Stats + active users + profile are intentionally collapsed
+          into one menu below lg so the top bar remains usable.
+      ====================================================== */}
+      <div ref={mobileMenuRef} className="relative shrink-0 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileMenu((v) => !v)}
+          aria-label="More navigation options"
+          aria-expanded={showMobileMenu}
+          aria-haspopup="true"
+          className="
+            relative
+            flex
+            h-9
+            w-9
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-border
+            bg-card
+            text-muted-foreground
+            shadow-sm
+            transition
+            hover:border-primary
+            hover:bg-accent
+            hover:text-primary
+            active:scale-90
+          "
+        >
+          {profilePreview ? (
+            <img
+              src={profilePreview}
+              alt=""
+              className="h-7 w-7 rounded-lg object-cover"
+            />
+          ) : (
+            <MoreVertical size={20} strokeWidth={2.2} />
+          )}
+
+          {activeUsers.some((u) => u?.status === "online") && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full border border-card bg-emerald-500" />
+            </span>
+          )}
+        </button>
+
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{
+                duration: 0.18,
+                ease: [0.32, 0.72, 0, 1],
+              }}
+              role="menu"
+              className="
+                absolute
+                right-0
+                top-full
+                z-[1000]
+                mt-2.5
+                w-[min(20rem,calc(100vw-1.5rem))]
+                overflow-hidden
+                rounded-2xl
+                border
+                border-border
+                bg-card
+                shadow-2xl
+              "
+            >
+              {/* Profile summary */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  setShowProfileMenu(true);
+                }}
+                className="
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  border-b
+                  border-border
+                  p-3.5
+                  text-left
+                  transition
+                  hover:bg-accent
+                "
+              >
+                {profilePreview ? (
+                  <img
+                    src={profilePreview}
+                    alt=""
+                    className="h-10 w-10 shrink-0 rounded-xl object-cover"
+                  />
+                ) : (
+                  <span
+                    className="
+                      flex
+                      h-10
+                      w-10
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-xl
+                      text-sm
+                      font-bold
+                      text-primary-foreground
+                    "
+                    style={{
+                      background:
+                        "linear-gradient(135deg, var(--topbtn-primary), var(--topbtn-secondary))",
+                    }}
+                  >
+                    {getUserInitials()}
+                  </span>
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold">
+                    {data?.find((d) => d.description === user?.email)?.name ||
+                      user?.name ||
+                      "User"}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {user?.email}
+                  </p>
+                </div>
+
+                <ChevronRight
+                  size={16}
+                  className="shrink-0 text-muted-foreground"
+                />
+              </button>
+
+              {/* Compact stats */}
+              <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
+                {[
+                  {
+                    icon: MailOpen,
+                    label: "Received",
+                    value: stats.reply_recieved,
+                    colorClass: "text-emerald-500",
+                    bgClass: "bg-emerald-100",
+                  },
+                  {
+                    icon: Send,
+                    label: "Sent",
+                    value: stats.reply_sent,
+                    colorClass: "text-blue-600",
+                    bgClass: "bg-blue-100",
+                  },
+                  {
+                    icon: Bell,
+                    label: "Reminders",
+                    value: stats.reminder_sent,
+                    colorClass: "text-amber-500",
+                    bgClass: "bg-amber-100",
+                  },
+                ].map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex flex-col items-center gap-1 px-2 py-3"
+                  >
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full ${s.bgClass}`}
+                    >
+                      {createElement(s.icon, {
+                        className: `h-3.5 w-3.5 ${s.colorClass}`,
+                      })}
+                    </span>
+                    <span className="text-[15px] font-semibold leading-none">
+                      {s.value ?? "—"}
+                    </span>
+                    <span className="text-[10px] font-medium leading-none text-muted-foreground">
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-0.5 p-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigateTo("/settings/user-activity");
+                    setShowMobileMenu(false);
+                  }}
+                  className="
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3
+                    py-2.5
+                    text-left
+                    text-sm
+                    font-medium
+                    transition
+                    hover:bg-accent
+                  "
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Users size={14} />
+                  </span>
+
+                  <span className="flex-1">Active users</span>
+
+                  <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {activeUsers.filter((u) => u?.status === "online").length}
+                  </span>
+                </button>
+
+                {canOpenTraining && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMobileMenu(false);
+                      setShowTraining(true);
+                    }}
+                    className="
+                      flex
+                      w-full
+                      items-center
+                      gap-3
+                      rounded-xl
+                      px-3
+                      py-2.5
+                      text-left
+                      text-sm
+                      font-medium
+                      transition
+                      hover:bg-accent
+                    "
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <GraduationCap size={14} />
+                    </span>
+
+                    <span className="flex-1">GPC Training</span>
+
+                    <ChevronRight size={16} className="text-muted-foreground" />
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMobileMenu(false);
+                    setShowProfileMenu(true);
+                  }}
+                  className="
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3
+                    py-2.5
+                    text-left
+                    text-sm
+                    font-medium
+                    transition
+                    hover:bg-accent
+                  "
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+                    <Sparkles size={14} />
+                  </span>
+
+                  <span className="flex-1">Profile & preferences</span>
+
+                  <ChevronRight size={16} className="text-muted-foreground" />
+                </button>
+
+                <div className="mx-2 my-1 h-px bg-border" />
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3
+                    py-2.5
+                    text-left
+                    text-sm
+                    font-semibold
+                    text-destructive
+                    transition
+                    hover:bg-destructive/10
+                  "
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
+                    <LogOut size={14} />
+                  </span>
+
+                  <span className="flex-1">Log out</span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* =====================================================
           PROFILE DRAWER
       ====================================================== */}
 
       <AnimatePresence>
-
         {showProfileMenu && (
           <>
             {/* Backdrop */}
@@ -1753,11 +1602,8 @@ export function TopNav() {
                 bg-foreground/45
                 backdrop-blur-[2px]
               "
-              onClick={() =>
-                setShowProfileMenu(false)
-              }
+              onClick={() => setShowProfileMenu(false)}
             />
-
 
             {/* Drawer */}
 
@@ -1783,7 +1629,7 @@ export function TopNav() {
                 z-[9999]
                 flex
                 h-screen
-                w-full
+                w-[min(420px,100vw)]
                 max-w-[420px]
                 flex-col
                 overflow-hidden
@@ -1794,7 +1640,6 @@ export function TopNav() {
                 shadow-2xl
               "
             >
-
               {/* =================================================
                   HEADER
               ================================================== */}
@@ -1811,7 +1656,6 @@ export function TopNav() {
                   py-4
                 "
               >
-
                 <div
                   className="
                     flex
@@ -1819,7 +1663,6 @@ export function TopNav() {
                     gap-3
                   "
                 >
-
                   <div
                     className="
                       flex
@@ -1835,9 +1678,7 @@ export function TopNav() {
                     <User2 size={19} />
                   </div>
 
-
                   <div>
-
                     <h2
                       className="
                         text-base
@@ -1855,19 +1696,12 @@ export function TopNav() {
                     >
                       Profile & preferences
                     </p>
-
                   </div>
-
                 </div>
-
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowProfileMenu(
-                      false
-                    )
-                  }
+                  onClick={() => setShowProfileMenu(false)}
                   className="
                     flex
                     h-9
@@ -1883,9 +1717,7 @@ export function TopNav() {
                 >
                   <X size={19} />
                 </button>
-
               </div>
-
 
               {/* =================================================
                   CONTENT
@@ -1898,7 +1730,6 @@ export function TopNav() {
                   custom-scrollbar
                 "
               >
-
                 {/* PROFILE */}
 
                 <section
@@ -1908,7 +1739,6 @@ export function TopNav() {
                     p-5
                   "
                 >
-
                   <div
                     className="
                       relative
@@ -1920,7 +1750,6 @@ export function TopNav() {
                       p-4
                     "
                   >
-
                     <div
                       className="
                         absolute
@@ -1934,14 +1763,12 @@ export function TopNav() {
                       }}
                     />
 
-
                     <div
                       className="
                         relative
                         pt-7
                       "
                     >
-
                       <div
                         className="
                           flex
@@ -1949,7 +1776,6 @@ export function TopNav() {
                           gap-3
                         "
                       >
-
                         {/* Avatar */}
 
                         <div
@@ -1958,17 +1784,10 @@ export function TopNav() {
                             shrink-0
                           "
                         >
-
                           {profilePreview ? (
-
                             <img
-                              src={
-                                profilePreview
-                              }
-                              alt={
-                                user?.name ??
-                                "Profile"
-                              }
+                              src={profilePreview}
+                              alt={user?.name ?? "Profile"}
                               className="
                                 h-20
                                 w-20
@@ -1979,9 +1798,7 @@ export function TopNav() {
                                 shadow-lg
                               "
                             />
-
                           ) : (
-
                             <span
                               className="
                                 flex
@@ -2004,9 +1821,7 @@ export function TopNav() {
                             >
                               {getUserInitials()}
                             </span>
-
                           )}
-
 
                           <label
                             htmlFor="drawer-profile-upload"
@@ -2030,7 +1845,6 @@ export function TopNav() {
                               hover:opacity-90
                             "
                           >
-
                             <Camera size={14} />
 
                             <input
@@ -2038,15 +1852,10 @@ export function TopNav() {
                               type="file"
                               accept="image/*"
                               hidden
-                              onChange={
-                                handleProfileUpload
-                              }
+                              onChange={handleProfileUpload}
                             />
-
                           </label>
-
                         </div>
-
 
                         {/* User */}
 
@@ -2057,7 +1866,6 @@ export function TopNav() {
                             pb-1
                           "
                         >
-
                           <h3
                             className="
                               truncate
@@ -2065,14 +1873,9 @@ export function TopNav() {
                               font-semibold
                             "
                           >
-                            {data?.find(
-                              (d) =>
-                                d.description ===
-                                user?.email
-                            )?.name ||
-                              user?.name}
+                            {data?.find((d) => d.description === user?.email)
+                              ?.name || user?.name}
                           </h3>
-
 
                           <p
                             className="
@@ -2083,11 +1886,8 @@ export function TopNav() {
                           >
                             {user?.email}
                           </p>
-
                         </div>
-
                       </div>
-
 
                       <div
                         className="
@@ -2097,17 +1897,12 @@ export function TopNav() {
                           gap-2
                         "
                       >
-
                         <button
                           type="button"
                           onClick={() => {
-                            navigateTo(
-                              "/profile"
-                            );
+                            navigateTo("/profile");
 
-                            setShowProfileMenu(
-                              false
-                            );
+                            setShowProfileMenu(false);
                           }}
                           className="
                             flex
@@ -2129,7 +1924,6 @@ export function TopNav() {
                           <User2 size={15} />
                           View profile
                         </button>
-
 
                         <label
                           htmlFor="drawer-profile-upload"
@@ -2153,15 +1947,10 @@ export function TopNav() {
                           <Camera size={15} />
                           Change photo
                         </label>
-
                       </div>
-
                     </div>
-
                   </div>
-
                 </section>
-
 
                 {/* ACCOUNT */}
 
@@ -2172,9 +1961,7 @@ export function TopNav() {
                     p-5
                   "
                 >
-
                   <div className="mb-3">
-
                     <h3
                       className="
                         text-sm
@@ -2192,22 +1979,15 @@ export function TopNav() {
                     >
                       Manage your account
                     </p>
-
                   </div>
 
-
                   <div className="space-y-1">
-
                     <button
                       type="button"
                       onClick={() => {
-                        navigateTo(
-                          "/profile"
-                        );
+                        navigateTo("/profile");
 
-                        setShowProfileMenu(
-                          false
-                        );
+                        setShowProfileMenu(false);
                       }}
                       className="
                         flex
@@ -2222,7 +2002,6 @@ export function TopNav() {
                         hover:bg-accent
                       "
                     >
-
                       <span
                         className="
                           flex
@@ -2238,9 +2017,7 @@ export function TopNav() {
                         <User2 size={16} />
                       </span>
 
-
                       <span className="flex-1">
-
                         <span
                           className="
                             block
@@ -2258,12 +2035,9 @@ export function TopNav() {
                             text-muted-foreground
                           "
                         >
-                          Update your personal
-                          information
+                          Update your personal information
                         </span>
-
                       </span>
-
 
                       <ChevronRight
                         size={16}
@@ -2271,15 +2045,11 @@ export function TopNav() {
                           text-muted-foreground
                         "
                       />
-
                     </button>
-
 
                     <button
                       type="button"
-                      onClick={
-                        handleCopyEmail
-                      }
+                      onClick={handleCopyEmail}
                       className="
                         flex
                         w-full
@@ -2293,7 +2063,6 @@ export function TopNav() {
                         hover:bg-accent
                       "
                     >
-
                       <span
                         className="
                           flex
@@ -2306,18 +2075,10 @@ export function TopNav() {
                           text-secondary-foreground
                         "
                       >
-
-                        {copied ? (
-                          <Check size={16} />
-                        ) : (
-                          <Copy size={16} />
-                        )}
-
+                        {copied ? <Check size={16} /> : <Copy size={16} />}
                       </span>
 
-
                       <span className="flex-1">
-
                         <span
                           className="
                             block
@@ -2325,9 +2086,7 @@ export function TopNav() {
                             font-medium
                           "
                         >
-                          {copied
-                            ? "Email copied"
-                            : "Copy email"}
+                          {copied ? "Email copied" : "Copy email"}
                         </span>
 
                         <span
@@ -2341,15 +2100,10 @@ export function TopNav() {
                         >
                           {user?.email}
                         </span>
-
                       </span>
-
                     </button>
-
                   </div>
-
                 </section>
-
 
                 {/* =================================================
                     COLOR THEME
@@ -2362,9 +2116,7 @@ export function TopNav() {
                     p-5
                   "
                 >
-
                   <div className="mb-4">
-
                     <h3
                       className="
                         text-sm
@@ -2382,9 +2134,7 @@ export function TopNav() {
                     >
                       Choose how your CRM looks
                     </p>
-
                   </div>
-
 
                   <div
                     className="
@@ -2393,25 +2143,15 @@ export function TopNav() {
                       gap-3
                     "
                   >
+                    {THEMES.map((theme) => {
+                      const active = selectedTheme === theme.id;
 
-                    {THEMES.map(
-                      (theme) => {
-
-                        const active =
-                          selectedTheme ===
-                          theme.id;
-
-
-                        return (
-                          <button
-                            key={theme.id}
-                            type="button"
-                            onClick={() =>
-                              handleThemeChange(
-                                theme.id
-                              )
-                            }
-                            className={`
+                      return (
+                        <button
+                          key={theme.id}
+                          type="button"
+                          onClick={() => handleThemeChange(theme.id)}
+                          className={`
                               group
                               relative
                               overflow-hidden
@@ -2421,144 +2161,126 @@ export function TopNav() {
                               text-left
                               transition-all
 
-                              ${active
-                                ? "border-primary ring-2 ring-primary/20"
-                                : "border-border hover:border-primary/50"
+                              ${
+                                active
+                                  ? "border-primary ring-2 ring-primary/20"
+                                  : "border-border hover:border-primary/50"
                               }
                             `}
-                          >
+                        >
+                          {/* Theme preview */}
 
-                            {/* Theme preview */}
-
-                            <div
-                              className="
+                          <div
+                            className="
                                 mb-3
                                 h-14
                                 overflow-hidden
                                 rounded-lg
                               "
-                              style={{
-                                background:
-                                  theme.colors.primary,
-                              }}
-                            >
-
-                              <div
-                                className="
+                            style={{
+                              background: theme.colors.primary,
+                            }}
+                          >
+                            <div
+                              className="
                                   flex
                                   h-full
                                 "
-                              >
-
-                                <div
-                                  className="
+                            >
+                              <div
+                                className="
                                     w-1/3
                                   "
-                                  style={{
-                                    background:
-                                      theme.colors.secondary,
-                                  }}
-                                />
+                                style={{
+                                  background: theme.colors.secondary,
+                                }}
+                              />
 
-
-                                <div
-                                  className="
+                              <div
+                                className="
                                     flex
                                     flex-1
                                     flex-col
                                     p-2
                                   "
-                                >
-
-                                  <div
-                                    className="
+                              >
+                                <div
+                                  className="
                                       mb-1
                                       h-1.5
                                       w-12
                                       rounded-full
                                     "
-                                    style={{
-                                      background:
-                                        theme.colors.accent,
-                                    }}
-                                  />
+                                  style={{
+                                    background: theme.colors.accent,
+                                  }}
+                                />
 
-
-                                  <div className="space-y-1">
-
-                                    <div
-                                      className="
+                                <div className="space-y-1">
+                                  <div
+                                    className="
                                         h-1
                                         w-16
                                         rounded-full
                                         bg-white/30
                                       "
-                                    />
+                                  />
 
-                                    <div
-                                      className="
+                                  <div
+                                    className="
                                         h-1
                                         w-10
                                         rounded-full
                                         bg-white/20
                                       "
-                                    />
+                                  />
 
-                                    <div
-                                      className="
+                                  <div
+                                    className="
                                         h-1
                                         w-14
                                         rounded-full
                                         bg-white/20
                                       "
-                                    />
-
-                                  </div>
-
+                                  />
                                 </div>
-
                               </div>
-
                             </div>
+                          </div>
 
-
-                            <div
-                              className="
+                          <div
+                            className="
                                 flex
                                 items-center
                                 justify-between
                                 gap-2
                               "
-                            >
-
-                              <div className="min-w-0">
-
-                                <p
-                                  className="
+                          >
+                            <div className="min-w-0">
+                              <p
+                                className="
                                     truncate
                                     text-sm
                                     font-medium
                                   "
-                                >
-                                  {theme.name}
-                                </p>
+                              >
+                                {theme.name}
+                              </p>
 
-                                <p
-                                  className="
+                              <p
+                                className="
                                     truncate
                                     text-[11px]
                                     text-muted-foreground
                                   "
-                                >
-                                  {theme.description}
-                                </p>
+                              >
+                                {theme.description}
+                              </p>
+                            </div>
 
-                              </div>
-
-
-                              {active && (
-                                <span
-                                  className="
+                            {active && (
+                              <span
+                                className="
                                     flex
                                     h-5
                                     w-5
@@ -2569,22 +2291,16 @@ export function TopNav() {
                                     bg-primary
                                     text-primary-foreground
                                   "
-                                >
-                                  <Check size={12} />
-                                </span>
-                              )}
-
-                            </div>
-
-                          </button>
-                        );
-                      }
-                    )}
-
+                              >
+                                <Check size={12} />
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-
                 </section>
-
 
                 {/* PREFERENCES */}
 
@@ -2595,9 +2311,7 @@ export function TopNav() {
                     p-5
                   "
                 >
-
                   <div className="mb-3">
-
                     <h3
                       className="
                         text-sm
@@ -2615,20 +2329,14 @@ export function TopNav() {
                     >
                       Customize your workspace
                     </p>
-
                   </div>
-
 
                   <button
                     type="button"
                     onClick={() => {
-                      navigateTo(
-                        "/settings"
-                      );
+                      navigateTo("/settings");
 
-                      setShowProfileMenu(
-                        false
-                      );
+                      setShowProfileMenu(false);
                     }}
                     className="
                       flex
@@ -2643,7 +2351,6 @@ export function TopNav() {
                       hover:bg-accent
                     "
                   >
-
                     <span
                       className="
                         flex
@@ -2659,9 +2366,7 @@ export function TopNav() {
                       <Sparkles size={16} />
                     </span>
 
-
                     <span className="flex-1">
-
                       <span
                         className="
                           block
@@ -2681,9 +2386,7 @@ export function TopNav() {
                       >
                         Manage CRM preferences
                       </span>
-
                     </span>
-
 
                     <ChevronRight
                       size={16}
@@ -2691,13 +2394,9 @@ export function TopNav() {
                         text-muted-foreground
                       "
                     />
-
                   </button>
-
                 </section>
-
               </div>
-
 
               {/* =================================================
                   FOOTER
@@ -2712,12 +2411,9 @@ export function TopNav() {
                   p-4
                 "
               >
-
                 <button
                   type="button"
-                  onClick={
-                    handleLogout
-                  }
+                  onClick={handleLogout}
                   className="
                     flex
                     w-full
@@ -2735,7 +2431,6 @@ export function TopNav() {
                     hover:bg-destructive/10
                   "
                 >
-
                   <span
                     className="
                       flex
@@ -2750,9 +2445,7 @@ export function TopNav() {
                     <LogOut size={16} />
                   </span>
 
-
                   <span className="flex-1">
-
                     <span
                       className="
                         block
@@ -2772,20 +2465,13 @@ export function TopNav() {
                     >
                       Sign out of your account
                     </span>
-
                   </span>
-
                 </button>
-
               </div>
-
             </motion.aside>
-
           </>
         )}
-
       </AnimatePresence>
-
 
       {/* =====================================================
           IMAGE CROPPER
@@ -2794,14 +2480,69 @@ export function TopNav() {
       <ProfileImageCropper
         isOpen={showCropper}
         image={cropImage}
-        onClose={() =>
-          setShowCropper(false)
-        }
-        onSave={
-          handleProfileSave
-        }
+        onClose={() => setShowCropper(false)}
+        onSave={handleProfileSave}
       />
-
+      <AnimatePresence>
+        {showTraining && user?.email && (
+          <GpcTrainingFrame
+            email={user.email}
+            onClose={handleTrainingClose}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+const getTrainingUrl = (email) =>
+  `https://training.guestpostcrm.com/?email=${encodeURIComponent(email)}`;
+
+function GpcTrainingFrame({ email, onClose }) {
+  const trainingUrl = getTrainingUrl(email);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[10000] flex bg-slate-950/65 p-3 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="gpc-training-title"
+    >
+      <motion.section
+        initial={{ opacity: 0, scale: 0.98, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: 12 }}
+        transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+      >
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5">
+          <div className="flex min-w-0 items-center gap-2 text-slate-800">
+            <GraduationCap size={20} className="shrink-0 text-indigo-600" />
+            <h2
+              id="gpc-training-title"
+              className="truncate text-base font-bold"
+            >
+              GPC Training
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            aria-label="Close GPC Training"
+          >
+            <X size={20} />
+          </button>
+        </header>
+        <iframe
+          title="GPC Training"
+          src={trainingUrl}
+          className="min-h-0 w-full flex-1 border-0 bg-white"
+        />
+      </motion.section>
+    </motion.div>
   );
 }

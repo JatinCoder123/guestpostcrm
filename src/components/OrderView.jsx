@@ -135,7 +135,7 @@ export const OrderView = ({ data, setSend, email }) => {
       {/* PROCESSING PAYPAL */}
       {processingPayment && <ProcessingLoader />}
       {updating && <PageLoader />}
-      <div className="w-full min-w-0 relative p-4 sm:p-5 overflow-hidden">
+      <div className="w-full min-w-0 relative p-3 sm:p-4 sm:p-5 overflow-hidden">
         <OrderHeader
           data={data}
           updateStatus={(status, isSend) => updateStatus(status, isSend)}
@@ -276,11 +276,10 @@ function InfoRow({
         </a>
       ) : chip ? (
         <span
-          className={`inline-flex min-w-8 justify-center rounded-lg border px-2 py-1 text-sm font-bold ${
-            success
+          className={`inline-flex min-w-8 justify-center rounded-lg border px-2 py-1 text-sm font-bold ${success
               ? "border-emerald-200 bg-emerald-50 text-emerald-700"
               : "border-slate-200 bg-white text-slate-700"
-          }`}
+            }`}
         >
           {content}
         </span>
@@ -308,18 +307,18 @@ function Field({ label, value, link, children, title }) {
     <div className="group perspective-1000">
       <div className="relative transform-gpu transition-all duration-500 hover:scale-105 hover:-translate-y-2">
         {/* Main card with bevel effect */}
-        <div className="relative bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-5 border-2 border-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-500">
-          <div className="relative z-10">
-            <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
+        <div className="relative min-w-0 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3 sm:p-5 border-2 border-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-500">
+          <div className="relative z-10 min-w-0">
+            <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 sm:mb-3 flex flex-wrap items-center gap-2">
+              <div className="w-1.5 h-1.5 shrink-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
               {label}{" "}
               {children && (
-                <span className="ml-2 mb-1 text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                <span className="ml-2 mb-1 text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
                   {value}
                 </span>
               )}
             </div>
-            <div className="text-gray-800 font-semibold text-lg">
+            <div className="min-w-0 break-words text-gray-800 font-semibold text-base sm:text-lg">
               {link ? (
                 <a
                   href={value}

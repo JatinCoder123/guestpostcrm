@@ -74,6 +74,9 @@ import Sidebar from "./components/layouts/sidebar/Sidebar";
 import Views from "./components/layouts/detail-view/Views";
 import CreateView from "./components/layouts/create-view/CreateView";
 import TableView from "./components/layouts/table-view/TableView";
+import { LinkRemovalPage } from "./components/pages/LinkRemovalpage";
+import LinkRemovalDetailPage from "./components/pages/LinkRemovalDetailPage";
+import InternalChats from "./components/pages/internal-chats/InternalChats";
 
 const router = createBrowserRouter([
   {
@@ -361,6 +364,10 @@ const router = createBrowserRouter([
       {
         path: "reminder-management",
         element: <ReminderManagementPage />,
+      },
+      {
+        path: "internal-chats",
+        element: <InternalChats />,
       },
       {
         path: "thread",

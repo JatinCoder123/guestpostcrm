@@ -115,16 +115,22 @@ const MessageModal = ({
       }}
       onClick={(e) => e.stopPropagation()}
       className={`
-        rounded-3xl w-full flex flex-col overflow-hidden bg-white
+        w-full min-w-0 flex flex-col overflow-hidden bg-white
+        rounded-2xl sm:rounded-3xl
         ${isModal
-          ? "max-w-7xl h-[85vh] shadow-2xl"
+          ? "max-w-7xl h-[92vh] sm:h-[85vh] shadow-2xl"
           : "h-full border border-gray-200 shadow-md"
         }
       `}
     >
-      {/* HEADER */}
-      <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-3">
+      {/* HEADER
+          The subject only becomes an absolutely-centred overlay from `xl` up,
+          where the modal is finally wide enough to fit it between the sender
+          block and the close button. Below that it is a normal wrapped row so
+          it can truncate against a real width instead of bleeding out of the
+          card on both sides. */}
+      <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <button
             onClick={() =>
               handleMove({
@@ -133,7 +139,7 @@ const MessageModal = ({
                 viewEmail,
               })
             }
-            className="relative rounded-xl bg-white border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 active:scale-95 transition-all p-1"
+            className="relative shrink-0 rounded-xl bg-white border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 active:scale-95 transition-all p-1"
           >
             <img
               src="https://img.icons8.com/keek/100/new-post.png"
@@ -148,32 +154,33 @@ const MessageModal = ({
             )}
           </button>
 
-          <div className="flex flex-col leading-tight">
-            <h2 className="text-lg font-semibold text-white">
+          <div className="flex min-w-0 flex-col leading-tight">
+            <h2
+              title={messageMeta.from}
+              className="truncate text-base font-semibold text-white sm:text-lg"
+            >
               {messageMeta.from}
             </h2>
 
-            <span className="text-sm text-blue-100">
+            <span
+              title={messageMeta.fromEmail}
+              className="truncate text-xs text-blue-100 sm:text-sm"
+            >
               {messageMeta.fromEmail}
             </span>
 
-            <span className="text-xs text-blue-200">
+            <span className="truncate text-[11px] text-blue-200 sm:text-xs">
               {messageMeta.date} •{" "}
               {messageMeta.time}
             </span>
           </div>
         </div>
 
-        <div className="absolute left-1/2 -translate-x-1/2 text-center max-w-xl">
-          <h1 className="text-lg font-semibold text-white truncate">
-            {messageMeta.subject}
-          </h1>
-        </div>
-
         {isModal && (
           <button
             onClick={closeMessageModal}
-            className="p-2 hover:bg-white/20 rounded-full transition hover:rotate-90"
+            aria-label="Close message"
+            className="shrink-0 self-start rounded-full p-2 transition hover:rotate-90 hover:bg-white/20 sm:self-center"
           >
             <X
               size={24}
@@ -181,10 +188,19 @@ const MessageModal = ({
             />
           </button>
         )}
+
+        <div className="order-last w-full min-w-0 border-t border-white/20 pt-2 xl:absolute xl:left-1/2 xl:order-none xl:w-auto xl:max-w-xl xl:-translate-x-1/2 xl:border-0 xl:pt-0 xl:text-center">
+          <h1
+            title={messageMeta.subject}
+            className="truncate text-sm font-semibold text-white xl:text-lg"
+          >
+            {messageMeta.subject}
+          </h1>
+        </div>
       </div>
 
       {/* BODY */}
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex-1 overflow-y-auto">
+      <div className="min-w-0 flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 p-3 sm:p-6 lg:p-8">
         {isMessageLoading ? (
           <div className="flex flex-col items-center justify-center h-full">
             <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
@@ -194,7 +210,9 @@ const MessageModal = ({
             </p>
           </div>
         ) : messageContent ? (
-          <div className="w-full max-w-4xl min-w-0 mx-auto rounded-xl border border-white/50 bg-gradient-to-br from-[#fdfcfb] to-[#e2d1c3] shadow-inner p-5 overflow-hidden">
+          /* overflow-x-auto rather than hidden: email HTML often contains
+             fixed-width tables, which would otherwise be silently clipped. */
+          <div className="w-full max-w-4xl min-w-0 mx-auto overflow-x-auto rounded-xl border border-white/50 bg-gradient-to-br from-[#fdfcfb] to-[#e2d1c3] shadow-inner p-3 sm:p-5">
             <div
               className="
           prose
@@ -203,8 +221,10 @@ const MessageModal = ({
           whitespace-pre-wrap
           [&_*]:max-w-full
           [&_*]:break-words
-          [&_*]:overflow-wrap-anywhere
+          [&_*]:wrap-anywhere
           [&_a]:break-all
+          [&_img]:h-auto
+          [&_table]:w-auto
         "
               dangerouslySetInnerHTML={{
                 __html: messageContent,
@@ -234,7 +254,7 @@ const MessageModal = ({
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center z-[9999] p-4 backdrop-blur-md"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-2 backdrop-blur-md sm:p-4"
       onClick={closeMessageModal}
     >
       {content}
