@@ -220,7 +220,6 @@ export const SocketContextProvider = ({
     setUnseenChatCounts,
   ] = useState({});
 
-  console.log("unseen hat cuont", unseenChatCounts)
   /* =====================================================
      NOTIFICATION COUNT
   ===================================================== */
@@ -281,10 +280,7 @@ export const SocketContextProvider = ({
       users
     ) => {
 
-      console.log(
-        "USER",
-        users
-      );
+
 
       const list =
         Array.isArray(users)

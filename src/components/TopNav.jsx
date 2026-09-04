@@ -269,8 +269,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                     rounded-full
                     border
                     border-card
-                    ${
-                      u?.status === "online" ? "bg-emerald-500" : "bg-amber-400"
+                    ${u?.status === "online" ? "bg-emerald-500" : "bg-amber-400"
                     }
                   `}
                 />
@@ -580,10 +579,9 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                             py-0.5
                             text-[10px]
                             font-semibold
-                            ${
-                              isOnline
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-amber-50 text-amber-700"
+                            ${isOnline
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-amber-50 text-amber-700"
                             }
                           `}
                         >
@@ -1160,7 +1158,7 @@ export function TopNav() {
           <button
             type="button"
             onClick={() => setShowTraining(true)}
-            className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 text-xs font-semibold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 active:scale-95"
+            className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-primary bg-background px-3 text-xs font-semibold text-foreground transition hover:bg-primary/10 active:scale-95 cursor-pointer"
           >
             <GraduationCap size={16} aria-hidden="true" />
             GPC Training
@@ -2161,11 +2159,10 @@ export function TopNav() {
                               text-left
                               transition-all
 
-                              ${
-                                active
-                                  ? "border-primary ring-2 ring-primary/20"
-                                  : "border-border hover:border-primary/50"
-                              }
+                              ${active
+                              ? "border-primary ring-2 ring-primary/20"
+                              : "border-border hover:border-primary/50"
+                            }
                             `}
                         >
                           {/* Theme preview */}

@@ -161,7 +161,7 @@ export default function Footer() {
           iconColor="green"
         />
         <IconButton
-          onClick={() => navigate("/RecentEntry")}
+          onClick={() => navigate("/entity/recent/list/table")}
           icon={List}
           count={count}
           label="Recent Entry"

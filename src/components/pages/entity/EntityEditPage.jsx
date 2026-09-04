@@ -13,8 +13,8 @@ const EntityEditPage = ({
         data: layout,
         isLoading: layoutLoading,
         error: layoutError,
-    } = useLayout(entity, 'detail');
-
+    } = useLayout(entity, 'edit');
+    console.log("LAYOUT EDIT", layout)
     const {
         data: record,
         isLoading: recordLoading,

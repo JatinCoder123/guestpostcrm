@@ -22,7 +22,7 @@ export function LoadingSpin({ color = "white", size = "14", stroke = "1" }) {
     </>
   );
 }
-export function LoadingProgress({ color = "black", size = "14", stroke = "1" }) {
+export function LoadingProgress({ color = "black", size = "14", stroke = "1", className }) {
   return (
 
 
@@ -33,6 +33,7 @@ export function LoadingProgress({ color = "black", size = "14", stroke = "1" }) 
       bgOpacity="0.1"
       speed="1.4"
       color={color}
+      className={className}
     />
   );
 }

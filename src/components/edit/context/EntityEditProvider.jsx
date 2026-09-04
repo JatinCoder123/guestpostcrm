@@ -134,7 +134,6 @@ const EntityEditProvider = ({
             const module =
                 section?.source?.module ??
                 section?.module;
-
             if (!module) {
                 console.warn(
                     "No module found for section",
