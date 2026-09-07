@@ -1,4 +1,5 @@
 import { apiRequest } from "@/services/api";
+import { store } from "../store/store";
 
 export const getDetailLayout = () => ({
     "schemaVersion": "1.0",
@@ -120,8 +121,10 @@ export const getDetailLayout = () => ({
 });
 
 export const getLayout = async (module = 'orders', view_key = "table") => {
+    const METADATA_ENDPOINT = store.getState().user.crmEndpoint?.startsWith('https://app.guestpostcrm.com/') ? import.meta.env.VITE_FLEXIBLITY_ENDPIONT : store.getState().user.crmEndpoint?.split('?')[0];
+
     const data = await apiRequest({
-        endpoint: "https://gagan.guestpostcrm.com/index.php?entryPoint=flexibility&api_version=v1",
+        endpoint: `${METADATA_ENDPOINT}?entryPoint=flexibility&api_version=v1`,
         /*
          * `_` busts the browser's HTTP cache.
          *

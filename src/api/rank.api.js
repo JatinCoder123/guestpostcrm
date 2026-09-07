@@ -30,13 +30,14 @@
  * workflow.
  */
 
+import { getMetadataEndpoint } from "@/utils/sidebarLayout";
 import { http } from "../services/api";
+import { store } from "../store/store";
 
 /**
  * Same host the layout metadata is read and written through.
  * `http` appends `?entryPoint=smart_gateway`.
  */
-const METADATA_ENDPOINT = "https://gagan.guestpostcrm.com/index.php";
 
 /** Flag that turns an ordinary update into a positional move. */
 export const RANK_MOVE_FLAG = "rank_move_requested";
@@ -138,7 +139,7 @@ export async function requestRankMove({
 
   try {
     response = await http({
-      endpoint: METADATA_ENDPOINT,
+      endpoint: getMetadataEndpoint(),
       method: "POST",
       body: {
         action: "update",
@@ -158,8 +159,7 @@ export async function requestRankMove({
     });
   } catch (error) {
     throw new RankMoveError(
-      `rank move failed for ${module}/${id}: ${
-        error?.message || "network error"
+      `rank move failed for ${module}/${id}: ${error?.message || "network error"
       }`,
       { cause: error, code: error?.response?.data?.code },
     );

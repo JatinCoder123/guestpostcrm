@@ -74,6 +74,7 @@ export function Sidebar() {
     data: layoutData,
     isPending: layoutLoading,
     refetch: refetchLayout,
+
   } = useLayoutPreferences();
 
   const sidebarSections = layoutData ?? [];
@@ -521,72 +522,71 @@ export function Sidebar() {
                   {(collapsed || expandedGroups[group.id]) && (
                     <div className="mt-1 ml-2 space-y-1">
                       {group.data.map((item) => {
-  const itemPath = `/${item.navigation}`.replace(/\/+/g, "/");
+                        const itemPath = `/${item.navigation}`.replace(/\/+/g, "/");
 
-  const isActive =
-    location.pathname === itemPath ||
-    location.pathname.startsWith(`${itemPath}/`);
+                        const isActive =
+                          location.pathname === itemPath ||
+                          location.pathname.startsWith(`${itemPath}/`);
 
-  return (
-    <button
-      key={item.id}
-      onClick={() => {
-        if (isDesktop) {
-          setSidebarCollapsed(true);
-        } else {
-          setMobileSidebarOpen(false);
-        }
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              if (isDesktop) {
+                                setSidebarCollapsed(true);
+                              } else {
+                                setMobileSidebarOpen(false);
+                              }
 
-        setActivePage(item.id);
-        navigateTo(itemPath);
-      }}
-      className={`
+                              setActivePage(item.id);
+                              navigateTo(itemPath);
+                            }}
+                            className={`
         flex w-full items-center gap-3 rounded-lg p-2
         transition-all duration-200
         hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
         ${collapsed ? "justify-center" : ""}
-        ${
-          isActive
-            ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_15%,transparent)] rounded-full shadow-lg"
-            : ""
-        }
+        ${isActive
+                                ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_15%,transparent)] rounded-full shadow-lg"
+                                : ""
+                              }
       `}
-    >
-      <Icon
-        name={item.icon}
-        library={item.library}
-        className={`
+                          >
+                            <Icon
+                              name={item.icon}
+                              library={item.library}
+                              className={`
           h-4 w-4 shrink-0
           ${isActive ? "scale-125 text-white" : ""}
         `}
-      />
+                            />
 
-                          {!collapsed && (
-                            <>
-                              <span className="flex-1 truncate text-left">
-                                {item.name}
-                              </span>
+                            {!collapsed && (
+                              <>
+                                <span className="flex-1 truncate text-left">
+                                  {item.name}
+                                </span>
 
-                              {item.key &&
-                                sidebarCounts?.stats?.[item.key] &&
-                                sidebarCountPending ? (
-                                <Skeleton count={1} />
-                              ) : (
-                                <span
-                                  className="
+                                {item.key &&
+                                  sidebarCounts?.stats?.[item.key] &&
+                                  sidebarCountPending ? (
+                                  <Skeleton count={1} />
+                                ) : (
+                                  <span
+                                    className="
                                         rounded-full
                                         bg-[color-mix(in_srgb,var(--primary)_20%,transparent)]
                                         px-2 py-0.5
                                         text-xs
                                       "
-                                >
-                                  {sidebarCounts?.stats?.[item.key]?.count || 0}
-                                </span>
-                              )}
-                            </>
-                          )}
-                        </button>
-                      );
+                                  >
+                                    {sidebarCounts?.stats?.[item.key]?.count || 0}
+                                  </span>
+                                )}
+                              </>
+                            )}
+                          </button>
+                        );
                       })}
                     </div>
                   )}

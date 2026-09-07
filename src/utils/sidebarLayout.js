@@ -174,3 +174,18 @@ export function selectVisibleGroups(groups) {
     }))
     .filter((group) => group.data.length > 0);
 }
+import { store } from "@/store/store";
+
+export const getMetadataEndpoint = () => {
+  const crmEndpoint = store.getState().user?.crmEndpoint;
+
+  if (!crmEndpoint) {
+    throw new Error("CRM endpoint is not available yet.");
+  }
+
+  return crmEndpoint.startsWith(
+    "https://app.guestpostcrm.com/"
+  )
+    ? import.meta.env.VITE_FLEXIBLITY_ENDPIONT
+    : crmEndpoint.split("?")[0];
+};

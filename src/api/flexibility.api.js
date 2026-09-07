@@ -18,13 +18,14 @@
  * this path.
  */
 
+import { store } from "@/store/store";
 import { apiRequest, http } from "../services/api";
+import { getMetadataEndpoint } from "@/utils/sidebarLayout";
 
 /**
  * Same host the sidebar metadata is read and written through. `http()`
  * appends `?entryPoint=smart_gateway` itself.
  */
-export const METADATA_ENDPOINT = "https://gagan.guestpostcrm.com/index.php";
 
 /** Contract version the reader asks for. */
 export const FLEXIBILITY_API_VERSION = "v1";
@@ -198,7 +199,7 @@ export const fetchViewContract = async ({ moduleKey, viewKey = "table" }) => {
   }
 
   const data = await apiRequest({
-    endpoint: METADATA_ENDPOINT,
+    endpoint: getMetadataEndpoint(),
     params: {
       entryPoint: "flexibility",
       api_version: FLEXIBILITY_API_VERSION,

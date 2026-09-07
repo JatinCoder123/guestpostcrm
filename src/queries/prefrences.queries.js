@@ -5,6 +5,7 @@ import {
     fetchLayout,
     updateLayout,
 } from "../api/prefrences.api";
+import { store } from "@/store/store";
 
 
 export const preferenceKeys = {
