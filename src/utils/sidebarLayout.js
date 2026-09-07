@@ -184,7 +184,7 @@ export const getMetadataEndpoint = () => {
   }
 
   return crmEndpoint.startsWith(
-    "https://app.guestpostcrm.com/"
+    "https://sales.guestpostcrm.com/"
   )
     ? import.meta.env.VITE_FLEXIBLITY_ENDPIONT
     : crmEndpoint.split("?")[0];

@@ -3,7 +3,6 @@ import { apiRequest, http } from "../services/api";
 import { getMetadataEndpoint } from "@/utils/sidebarLayout";
 
 export const fetchLayout = async () => {
-  console.log("CALLING LAYOUT");
 
   const endpoint = getMetadataEndpoint();
 
