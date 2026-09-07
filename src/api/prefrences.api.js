@@ -1,4 +1,3 @@
-import { store } from "@/store/store";
 import { apiRequest, http } from "../services/api";
 import { getMetadataEndpoint } from "@/utils/sidebarLayout";
 
@@ -18,31 +17,6 @@ export const fetchLayout = async () => {
   console.log("DATA", data);
 
   return data ?? {};
-};
-
-/** Include UI modules omitted from the compiled sidebar (hidden or ungrouped). */
-export const fetchUiModuleRecords = async () => {
-  const records = [];
-  const seen = new Set();
-  for (let page = 1; ; page += 1) {
-    const response = await http({
-      endpoint: getMetadataEndpoint(),
-      method: "POST",
-      body: { action: "fetch", module: "outr_ui_modules", order_by: "", page, per_page: 100 },
-    });
-    if (response?.success !== true || !Array.isArray(response.records)) {
-      throw new Error("The complete view list could not be loaded. Try Reload.");
-    }
-    const batch = response.records;
-    if (!batch.length) break;
-    const fresh = batch.filter((record) => !seen.has(record.id));
-    if (!fresh.length) throw new Error("The complete view list could not be loaded. Try Reload.");
-    fresh.forEach((record) => seen.add(record.id));
-    records.push(...fresh);
-    const totalPages = Number(response.pagination?.total_pages ?? response.pagination?.totalPages ?? response.total_pages);
-    if (totalPages > 0 ? page >= totalPages : batch.length < 100) break;
-  }
-  return records;
 };
 
 export const fetchSidebarComponentId = async () => {

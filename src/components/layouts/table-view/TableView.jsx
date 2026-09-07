@@ -20,10 +20,14 @@ export default function TableView() {
   const viewKey = searchParams.get("view") || DEFAULT_VIEW_KEY;
   const registry = useTableViewRegistry();
   const views = registry.data?.views || [];
+  const selectedView = views.find((item) => item.moduleKey === moduleKey && item.viewKey === viewKey);
   const [addOpen, setAddOpen] = useState(false);
   const [section, setSection] = useState("columns");
   const [search, setSearch] = useState("");
-  const editor = useTableLayoutEditor({ moduleKey: moduleKey || null, viewKey: moduleKey ? viewKey : null });
+  const editor = useTableLayoutEditor({
+    moduleKey: selectedView?.moduleKey || null,
+    viewKey: selectedView?.viewKey || null,
+  });
   const { model, view, writing, selection, setSelection, contractError } = editor;
   const drafts = usePresentationDrafts(editor, moduleKey, viewKey);
   const showingStatuses = section === "statuses";
@@ -33,11 +37,12 @@ export default function TableView() {
   const matches = (item) => [item.label, item.accessor, item.key].some((value) => value?.toLowerCase().includes(needle));
 
   useEffect(() => {
-    if (!moduleKey && registry.data?.views?.length) {
-      const first = registry.data.views.find((item) => item.sidebarActive) || registry.data.views[0];
+    if (!selectedView && registry.data?.views?.length) {
+      const first = registry.data.views.find((item) => item.moduleKey === moduleKey)
+        || registry.data.views.find((item) => item.active) || registry.data.views[0];
       setSearchParams({ module: first.moduleKey, view: first.viewKey }, { replace: true });
     }
-  }, [moduleKey, registry.data, setSearchParams]);
+  }, [moduleKey, selectedView, registry.data, setSearchParams]);
 
   useEffect(() => {
     if (!model) return;
@@ -64,7 +69,7 @@ export default function TableView() {
   };
   const reload = () => {
     if (writing) return;
-    editor.reload();
+    if (selectedView) editor.reload();
     registry.refetch();
   };
   const rankError = showingStatuses ? editor.statusRankError : editor.rankError;
@@ -95,18 +100,18 @@ export default function TableView() {
         )}
       </div>
 
-      {(registry.error || registry.data?.warning) && (
+      {registry.error && (
         <div className="px-5 pt-3">
-          <InlineAlert tone="warning" title="Some views could not be loaded">
-            {registry.error?.message || registry.data.warning}
+          <InlineAlert tone="warning" title="Could not load table views">
+            {registry.error.message}
           </InlineAlert>
         </div>
       )}
 
-      {!moduleKey && !registry.isPending && (
-        <EmptyState icon={Table2} title="Choose a table view" description="Select a view above to start editing." />
+      {!selectedView && !registry.isPending && !registry.error && !views.length && (
+        <EmptyState icon={Table2} title="No table views found" description="Table views will appear here when they are added to the view catalog." />
       )}
-      {((!moduleKey && registry.isPending) || (moduleKey && editor.contractPending)) && <LoadingBlock label="Loading table view..." />}
+      {(registry.isPending || (selectedView && editor.contractPending)) && <LoadingBlock label="Loading table view..." />}
       {moduleKey && contractError && (
         <div className="p-5">
           <InlineAlert title={contractError?.response?.status === 404 ? "This table view is not available yet" : "Could not load this view"}
