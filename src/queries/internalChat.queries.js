@@ -33,7 +33,7 @@ export const useGetConversations =
             queryFn: () => getAllConversations(),
 
             staleTime:
-                0,
+                5 * 60 * 1000,
         });
 export const useGetUserChat = ({ to_email } = {}) => {
 
@@ -54,7 +54,7 @@ export const useGetUserChat = ({ to_email } = {}) => {
 
         enabled: !!to_email,
 
-        staleTime: 0,
+        staleTime: 5 * 60 * 1000,
 
     });
 

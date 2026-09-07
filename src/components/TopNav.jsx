@@ -39,14 +39,10 @@ import { useGpcTrainingStatus } from "../queries/training.queries";
 import { fetchGpc } from "../services/api";
 import IconButton from "./ui/Buttons/IconButton";
 import { useIsDesktop } from "../hooks/useMediaQuery";
+import { showNewEmailToast } from "./showNewEmailToast";
+import { preferencesAction } from "../store/Slices/preferencesSlice";
+import { unrepliedAction } from "../store/Slices/unrepliedEmails";
 
-/* ─────────────────────────────────────────────────────────────
-   Reusable icon button — coloured tint + badge + tooltip
-───────────────────────────────────────────────────────────── */
-
-/* ─────────────────────────────────────────────────────────────
-   Avatar colour palette — cycles through 8 distinct combos
-───────────────────────────────────────────────────────────── */
 const AVATAR_COLORS = [
   {
     bg: "bg-violet-100",
@@ -397,11 +393,15 @@ const StatBadge = ({ icon, label, value, colorClass, bgClass }) => {
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
+
+  const { showNewEmailBanner } = useSelector((state) => state.unreplied);
+
   const [stats, setStats] = useState({
     reply_recieved: null,
     reply_sent: null,
     reminder_sent: null,
   });
+
   useEffect(() => {
     const loadStats = async () => {
       try {
@@ -538,7 +538,17 @@ export function TopNav() {
       ? parts[0][0].toUpperCase()
       : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
-
+  useEffect(() => {
+    if (showNewEmailBanner) {
+      showNewEmailToast({
+        dispatch,
+        navigate: navigateTo,
+        handleClear,
+        preferencesAction,
+        unrepliedAction,
+      });
+    }
+  }, [showNewEmailBanner]);
   /* ─────────────────────────────────────────────────────────
      Render
   ───────────────────────────────────────────────────────── */

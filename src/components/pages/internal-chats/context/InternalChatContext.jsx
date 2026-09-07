@@ -4,6 +4,7 @@ import {
     useEffect,
     useMemo,
     useState,
+    useCallback,
 } from "react";
 
 import {
@@ -21,12 +22,14 @@ import {
 } from "../../../../queries/users.queries";
 
 
-const InternalChatContext = createContext(null);
+const InternalChatContext =
+    createContext(null);
 
 
 export const InternalChatProvider = ({
     children,
 }) => {
+
     /* ==========================================
        URL SEARCH PARAMS
     ========================================== */
@@ -62,7 +65,14 @@ export const InternalChatProvider = ({
 
 
     /* ==========================================
-       MESSAGE INPUT
+       MESSAGE DRAFT
+
+       IMPORTANT:
+       This state is ONLY for what the user
+       is currently typing.
+
+       It is NOT derived from messages,
+       conversations, or API responses.
     ========================================== */
 
     const [
@@ -90,6 +100,7 @@ export const InternalChatProvider = ({
         useCrmUsers();
 
     const users = useMemo(() => {
+
         const data =
             usersQuery.data;
 
@@ -98,139 +109,157 @@ export const InternalChatProvider = ({
         }
 
         return [];
-    }, [usersQuery.data]);
+
+    }, [
+        usersQuery.data,
+    ]);
 
 
     /* ==========================================
        FIND USER BY EMAIL
-       
-       We can receive email in URL:
-       
-       /internal-chat?email=user@example.com
-       
-       or:
-       
-       /internal-chat/user@example.com
-       
-       depending on your routing.
     ========================================== */
 
-    const findUserByEmail = (
-        email
-    ) => {
-        if (!email) {
-            return null;
-        }
+    const findUserByEmail =
+        useCallback(
+            (email) => {
 
-        const normalizedEmail =
-            email
-                .trim()
-                .toLowerCase();
+                if (!email) {
+                    return null;
+                }
 
-        /* ------------------------------
-           Search CRM users
-        ------------------------------ */
-
-        const crmUser =
-            users.find(
-                (user) =>
-                    (
-                        user?.description ??
-                        user?.email ??
-                        ""
-                    )
-                        .toLowerCase() ===
-                    normalizedEmail
-            );
-
-        if (crmUser) {
-            return {
-                email:
-                    crmUser?.description ??
-                    crmUser?.email,
-
-                user_id:
-                    crmUser?.id ??
-                    crmUser?.user_id,
-
-                name:
-                    crmUser?.name ??
-                    crmUser?.full_name ??
-                    normalizedEmail,
-            };
-        }
+                const normalizedEmail =
+                    email
+                        .trim()
+                        .toLowerCase();
 
 
-        /* ------------------------------
-           Search existing conversations
-           
-           This is useful when the user
-           already has a conversation but
-           is not returned by useCrmUsers.
-        ------------------------------ */
+                /* ------------------------------
+                   Search CRM users
+                ------------------------------ */
 
-        const conversation =
-            conversations.find(
-                (item) =>
-                    (
-                        item?.email ??
-                        item?.to_email ??
-                        item?.user_email ??
-                        ""
-                    )
-                        .toLowerCase() ===
-                    normalizedEmail
-            );
+                const crmUser =
+                    users.find(
+                        (user) => {
 
-        if (conversation) {
-            return {
-                ...conversation,
+                            const userEmail =
+                                user?.description ??
+                                user?.email ??
+                                "";
 
-                email:
-                    conversation?.email ??
-                    conversation?.to_email ??
-                    conversation?.user_email,
-
-                user_id:
-                    conversation?.user_id ??
-                    conversation?.id,
-
-                name:
-                    conversation?.name ??
-                    conversation?.user_name ??
-                    normalizedEmail,
-            };
-        }
+                            return (
+                                userEmail
+                                    .toLowerCase() ===
+                                normalizedEmail
+                            );
+                        }
+                    );
 
 
-        /* ------------------------------
-           Fallback
-           
-           Even if the user API has not
-           loaded yet, we can still open
-           the conversation using email.
-        ------------------------------ */
+                if (crmUser) {
 
-        return {
-            email: email.trim(),
-            user_id: null,
-            name: email.trim(),
-        };
-    };
+                    return {
+                        email:
+                            crmUser?.description ??
+                            crmUser?.email,
+
+                        user_id:
+                            crmUser?.id ??
+                            crmUser?.user_id,
+
+                        name:
+                            crmUser?.name ??
+                            crmUser?.full_name ??
+                            normalizedEmail,
+                    };
+
+                }
+
+
+                /* ------------------------------
+                   Search existing conversations
+                ------------------------------ */
+
+                const conversation =
+                    conversations.find(
+                        (item) => {
+
+                            const conversationEmail =
+                                item?.email ??
+                                item?.to_email ??
+                                item?.user_email ??
+                                "";
+
+                            return (
+                                conversationEmail
+                                    .toLowerCase() ===
+                                normalizedEmail
+                            );
+                        }
+                    );
+
+
+                if (conversation) {
+
+                    return {
+
+                        ...conversation,
+
+                        email:
+                            conversation?.email ??
+                            conversation?.to_email ??
+                            conversation?.user_email,
+
+                        user_id:
+                            conversation?.user_id ??
+                            conversation?.id,
+
+                        name:
+                            conversation?.name ??
+                            conversation?.user_name ??
+                            normalizedEmail,
+                    };
+
+                }
+
+
+                /* ------------------------------
+                   Fallback
+                ------------------------------ */
+
+                return {
+
+                    email:
+                        email.trim(),
+
+                    user_id:
+                        null,
+
+                    name:
+                        email.trim(),
+                };
+
+            },
+            [
+                users,
+                conversations,
+            ]
+        );
 
 
     /* ==========================================
        SELECT USER FROM URL
-       
+
        IMPORTANT:
-       Do NOT put selectedUser in the
-       dependency array here.
-       
-       Otherwise setSelectedUser() can
-       continuously trigger the effect.
+
+       This effect ONLY clears the draft when
+       the actual selected user changes.
+
+       Refetching users/conversations will NOT
+       clear whatever the user is typing.
     ========================================== */
 
     useEffect(() => {
+
         if (!emailFromUrl) {
             return;
         }
@@ -244,22 +273,55 @@ export const InternalChatProvider = ({
             return;
         }
 
-        setSelectedUser((previous) => {
-            if (
-                previous?.email?.toLowerCase() ===
-                user.email.toLowerCase()
-            ) {
-                return previous;
+        setSelectedUser(
+            (previous) => {
+
+                const previousEmail =
+                    previous?.email
+                        ?.trim()
+                        .toLowerCase();
+
+                const nextEmail =
+                    user.email
+                        ?.trim()
+                        .toLowerCase();
+
+
+                /*
+                 * SAME USER
+                 *
+                 * Very important:
+                 *
+                 * Do NOT call setMessage here.
+                 *
+                 * This prevents API/user refetches
+                 * from destroying the user's draft.
+                 */
+
+                if (
+                    previousEmail ===
+                    nextEmail
+                ) {
+                    return previous;
+                }
+
+
+                /*
+                 * ACTUALLY CHANGED USER
+                 *
+                 * Now it is safe to clear the
+                 * previous user's draft.
+                 */
+
+                setMessage("");
+
+                return user;
             }
+        );
 
-            return user;
-        });
-
-        setMessage("");
     }, [
         emailFromUrl,
-        users,
-        conversations,
+        findUserByEmail,
     ]);
 
 
@@ -275,6 +337,7 @@ export const InternalChatProvider = ({
 
 
     const messages = useMemo(() => {
+
         const data =
             userChatQuery.data?.chats;
 
@@ -283,6 +346,7 @@ export const InternalChatProvider = ({
         }
 
         return [];
+
     }, [
         userChatQuery.data,
     ]);
@@ -300,210 +364,359 @@ export const InternalChatProvider = ({
        SELECT USER
     ========================================== */
 
-    const selectUser = (
-        user
-    ) => {
-        if (!user) {
-            return;
-        }
+    const selectUser =
+        useCallback(
+            (user) => {
 
-        const normalizedUser = {
-            ...user,
-
-            email:
-                user?.email ??
-                user?.description,
-
-            user_id:
-                user?.user_id ??
-                user?.id,
-
-            name:
-                user?.name ??
-                user?.full_name ??
-                user?.email ??
-                user?.description,
-        };
-
-        setSelectedUser(
-            normalizedUser
-        );
-
-        setMessage("");
-
-        /*
-         * Keep URL in sync.
-         *
-         * This means selecting a user will
-         * produce:
-         *
-         * /internal-chat?email=user@email.com
-         */
-
-        if (normalizedUser.email) {
-            setSearchParams(
-                {
-                    email:
-                        normalizedUser.email,
-                },
-                {
-                    replace: true,
+                if (!user) {
+                    return;
                 }
-            );
-        }
-    };
+
+
+                const normalizedUser = {
+
+                    ...user,
+
+                    email:
+                        user?.email ??
+                        user?.description,
+
+                    user_id:
+                        user?.user_id ??
+                        user?.id,
+
+                    name:
+                        user?.name ??
+                        user?.full_name ??
+                        user?.email ??
+                        user?.description,
+                };
+
+
+                /*
+                 * Only clear draft when
+                 * actually switching user.
+                 */
+
+                setSelectedUser(
+                    (previous) => {
+
+                        const previousEmail =
+                            previous?.email
+                                ?.trim()
+                                .toLowerCase();
+
+                        const nextEmail =
+                            normalizedUser?.email
+                                ?.trim()
+                                .toLowerCase();
+
+
+                        if (
+                            previousEmail ===
+                            nextEmail
+                        ) {
+                            return previous;
+                        }
+
+
+                        setMessage("");
+
+                        return normalizedUser;
+                    }
+                );
+
+
+                /*
+                 * Keep URL in sync.
+                 */
+
+                if (
+                    normalizedUser.email
+                ) {
+
+                    setSearchParams(
+                        {
+                            email:
+                                normalizedUser.email,
+                        },
+                        {
+                            replace: true,
+                        }
+                    );
+
+                }
+
+            },
+            [
+                setSearchParams,
+            ]
+        );
 
 
     /* ==========================================
        CLEAR SELECTED USER
     ========================================== */
 
-    const clearSelectedUser = () => {
-        setSelectedUser(null);
-        setMessage("");
+    const clearSelectedUser =
+        useCallback(
+            () => {
 
-        /*
-         * Remove email from URL.
-         */
+                setSelectedUser(null);
 
-        setSearchParams(
-            {},
-            {
-                replace: true,
-            }
+                /*
+                 * Clear draft because there is
+                 * no selected conversation anymore.
+                 */
+
+                setMessage("");
+
+
+                /*
+                 * Remove email from URL.
+                 */
+
+                setSearchParams(
+                    {},
+                    {
+                        replace: true,
+                    }
+                );
+
+            },
+            [
+                setSearchParams,
+            ]
         );
-    };
 
 
     /* ==========================================
        START CHAT MODAL
     ========================================== */
 
-    const openStartChat = () => {
-        setIsStartChatOpen(true);
-    };
+    const openStartChat =
+        useCallback(
+            () => {
+                setIsStartChatOpen(true);
+            },
+            []
+        );
 
 
-    const closeStartChat = () => {
-        setIsStartChatOpen(false);
-    };
+    const closeStartChat =
+        useCallback(
+            () => {
+                setIsStartChatOpen(false);
+            },
+            []
+        );
 
 
     /* ==========================================
        START CHAT WITH USER
     ========================================== */
 
-    const startChatWithUser = (
-        user
-    ) => {
-        if (!user) {
-            return;
-        }
+    const startChatWithUser =
+        useCallback(
+            (user) => {
 
-        const normalizedUser = {
-            email:
-                user?.email ??
-                user?.description,
+                if (!user) {
+                    return;
+                }
 
-            user_id:
-                user?.user_id ??
-                user?.id,
 
-            name:
-                user?.name ??
-                user?.full_name ??
-                user?.email ??
-                user?.description,
-        };
+                const normalizedUser = {
 
-        setSelectedUser(
-            normalizedUser
+                    email:
+                        user?.email ??
+                        user?.description,
+
+                    user_id:
+                        user?.user_id ??
+                        user?.id,
+
+                    name:
+                        user?.name ??
+                        user?.full_name ??
+                        user?.email ??
+                        user?.description,
+                };
+
+
+                setSelectedUser(
+                    (previous) => {
+
+                        const previousEmail =
+                            previous?.email
+                                ?.trim()
+                                .toLowerCase();
+
+                        const nextEmail =
+                            normalizedUser?.email
+                                ?.trim()
+                                .toLowerCase();
+
+
+                        if (
+                            previousEmail ===
+                            nextEmail
+                        ) {
+                            return previous;
+                        }
+
+
+                        /*
+                         * New conversation/user.
+                         *
+                         * Clear old draft.
+                         */
+
+                        setMessage("");
+
+                        return normalizedUser;
+                    }
+                );
+
+
+                setIsStartChatOpen(false);
+
+
+                /*
+                 * Update URL.
+                 */
+
+                if (
+                    normalizedUser.email
+                ) {
+
+                    setSearchParams(
+                        {
+                            email:
+                                normalizedUser.email,
+                        },
+                        {
+                            replace: true,
+                        }
+                    );
+
+                }
+
+            },
+            [
+                setSearchParams,
+            ]
         );
 
-        setMessage("");
 
-        setIsStartChatOpen(false);
+    /* ==========================================
+       SET MESSAGE
 
-        /*
-         * Update URL.
-         */
+       Keep this as a direct state setter.
 
-        if (normalizedUser.email) {
-            setSearchParams(
-                {
-                    email:
-                        normalizedUser.email,
-                },
-                {
-                    replace: true,
-                }
-            );
-        }
-    };
+       Typing never waits for an API.
+    ========================================== */
+
+    const handleMessageChange =
+        useCallback(
+            (value) => {
+                setMessage(value);
+            },
+            []
+        );
 
 
     /* ==========================================
        SEND MESSAGE
-       
-       Receives:
-       
-       {
-           to_email,
-           message
-       }
+
+       The draft is NOT cleared before the
+       request.
+
+       If the request fails, the user's text
+       remains in the input.
     ========================================== */
 
-    const sendMessage = async ({
-        to_email,
-        message: messageText,
-    }) => {
-        const text =
-            messageText?.trim();
+    const sendMessage =
+        useCallback(
+            async ({
+                to_email,
+                message: messageText,
+            }) => {
 
-        if (!text) {
-            return;
-        }
+                const text =
+                    messageText?.trim();
 
-        if (!to_email) {
-            return;
-        }
 
-        try {
-            await sendMessageMutation.mutateAsync(
-                {
-                    to_email,
-                    message: text,
+                if (!text) {
+                    return false;
                 }
-            );
-
-            /*
-             * Clear input only after
-             * successful API call.
-             */
-
-            setMessage("");
 
 
-            /*
-             * Refetch current conversation.
-             */
-
-            await userChatQuery.refetch();
+                if (!to_email) {
+                    return false;
+                }
 
 
-            /*
-             * Refresh conversation list.
-             */
+                try {
 
-            await conversationsQuery.refetch();
+                    await sendMessageMutation
+                        .mutateAsync({
+                            to_email,
+                            message: text,
+                        });
 
-        } catch (error) {
-            console.error(
-                "Failed to send internal message:",
-                error
-            );
-        }
-    };
+
+                    /*
+                     * Clear ONLY after successful
+                     * API request.
+                     */
+
+                    setMessage("");
+
+
+                    /*
+                     * Refresh current conversation
+                     * after sending.
+                     */
+
+                    await userChatQuery.refetch();
+
+
+                    /*
+                     * Refresh conversation list.
+                     */
+
+                    await conversationsQuery.refetch();
+
+
+                    return true;
+
+                } catch (error) {
+
+                    console.error(
+                        "Failed to send internal message:",
+                        error
+                    );
+
+
+                    /*
+                     * IMPORTANT:
+                     *
+                     * Do NOT clear message here.
+                     *
+                     * The user keeps what they typed
+                     * and can retry.
+                     */
+
+                    return false;
+                }
+
+            },
+            [
+                sendMessageMutation,
+                userChatQuery.refetch,
+                conversationsQuery.refetch,
+            ]
+        );
 
 
     /* ==========================================
@@ -511,28 +724,41 @@ export const InternalChatProvider = ({
     ========================================== */
 
     const sendCurrentMessage =
-        async () => {
-            if (
-                !selectedUser?.email
-            ) {
-                return;
-            }
+        useCallback(
+            async () => {
 
-            const text =
-                message?.trim();
+                if (
+                    !selectedUser?.email
+                ) {
+                    return;
+                }
 
-            if (!text) {
-                return;
-            }
 
-            await sendMessage({
-                to_email:
-                    selectedUser.email,
+                const text =
+                    message?.trim();
 
-                message:
-                    text,
-            });
-        };
+
+                if (!text) {
+                    return;
+                }
+
+
+                await sendMessage({
+
+                    to_email:
+                        selectedUser.email,
+
+                    message:
+                        text,
+                });
+
+            },
+            [
+                selectedUser?.email,
+                message,
+                sendMessage,
+            ]
+        );
 
 
     /* ==========================================
@@ -542,6 +768,7 @@ export const InternalChatProvider = ({
     const value =
         useMemo(
             () => ({
+
                 /* ------------------------------
                    URL
                 ------------------------------ */
@@ -623,11 +850,15 @@ export const InternalChatProvider = ({
 
                 /* ------------------------------
                    MESSAGE INPUT
+
+                   This is the local draft.
                 ------------------------------ */
 
                 message,
 
                 setMessage,
+
+                handleMessageChange,
 
 
                 /* ------------------------------
@@ -657,9 +888,12 @@ export const InternalChatProvider = ({
                 openStartChat,
 
                 closeStartChat,
+
             }),
             [
+
                 emailFromUrl,
+
 
                 conversations,
 
@@ -668,6 +902,7 @@ export const InternalChatProvider = ({
                 conversationsQuery.error,
                 conversationsQuery.refetch,
 
+
                 users,
 
                 usersQuery.isLoading,
@@ -675,7 +910,9 @@ export const InternalChatProvider = ({
                 usersQuery.error,
                 usersQuery.refetch,
 
+
                 selectedUser,
+
 
                 messages,
 
@@ -684,13 +921,29 @@ export const InternalChatProvider = ({
                 userChatQuery.error,
                 userChatQuery.refetch,
 
+
                 message,
+
+                handleMessageChange,
+
+                sendMessage,
+
+                sendCurrentMessage,
 
                 sendMessageMutation.isPending,
                 sendMessageMutation.error,
                 sendMessageMutation.isSuccess,
 
+
                 isStartChatOpen,
+
+                openStartChat,
+                closeStartChat,
+
+                selectUser,
+                clearSelectedUser,
+                startChatWithUser,
+
             ]
         );
 
@@ -707,16 +960,21 @@ export const InternalChatProvider = ({
 
 export const useInternalChat =
     () => {
+
         const context =
             useContext(
                 InternalChatContext
             );
 
+
         if (!context) {
+
             throw new Error(
                 "useInternalChat must be used inside InternalChatProvider"
             );
+
         }
+
 
         return context;
     };

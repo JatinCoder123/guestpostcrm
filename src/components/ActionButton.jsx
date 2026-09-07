@@ -373,11 +373,15 @@ Open Contact
       ) : (
         <CircleStop
           size={25}
-          color={contactInfo?.is_stop === "1" ? "red" : "#eab308"}
+          color={contactInfo?.is_stop === "1" ? "white" : "#eab308"}
         />
       ),
       disabled: stopLoading,
-
+      active: contactInfo?.is_stop === "1",
+      activeProps: {
+        color: "white",
+        fill: "#ec390dff",
+      },
       label:
         contactInfo?.is_stop === "1" ? "Resume Emails" : "Stop Future Emails",
       // GET when stopping emails, DELETE when resuming
@@ -438,9 +442,6 @@ Open Contact
       <div className="flex items-center justify-between p-4">
         <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
 
-        <button className="text-sm font-medium text-blue-600 hover:text-blue-700 mr-4">
-          View All
-        </button>
       </div>
 
       {/* z-30 lifts this grid's popovers (assign / move / tag / notes) above
