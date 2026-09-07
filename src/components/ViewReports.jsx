@@ -35,6 +35,7 @@ import { DateRangeFilter } from "./DateRangeFilter.jsx";
 import { useCrmUsers } from "../queries/users.queries.js";
 import CustomDropdown from "./ui/CustomDropdown.jsx";
 import { FETCH_GPC_X_API_KEY } from "../store/constants.js";
+import { preferencesAction } from "../store/Slices/preferencesSlice.js";
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const PHASES = [
@@ -308,10 +309,9 @@ export default function ViewReports() {
   const [searchParams] = useSearchParams();
 
   const email = searchParams.get("email");
-  console.log(email)
   const { data: users } = useCrmUsers();
   const storedReportFilter = useMemo(() => getStoredReportFilter(), []);
-  const [dateFilter, setDateFilter] = useState(() => getInitialDateFilter());
+  const [dateFilter, setDateFilter] = useState(() => getInitialDateFilter(Boolean(email)));
   const stages = useSelector(selectStages);
   const categories = useSelector(selectCategories);
   const details = useSelector(selectDetails);
@@ -463,9 +463,13 @@ export default function ViewReports() {
   const restoredStageRef = useRef(false);
 
   useEffect(() => {
+    // Date range is part of the report query, so changing it must trigger
+    // a fresh report request. Previously this effect only depended on
+    // activeSection/appliedFilters, which meant the UI date changed but
+    // the report data stayed on the previous date range.
     dispatch(resetReport());
     loadStages(1);
-  }, [activeSection, appliedFilters]); // eslint-disable-line
+  }, [activeSection, appliedFilters, dateFilter, loadStages, dispatch]);
 
   useEffect(() => {
     let active = true;
@@ -475,8 +479,8 @@ export default function ViewReports() {
         const response = await fetch(
           "https://anshik.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=label_count",
           {
-          method: "GET",
-          headers: { "X-Api-Key": FETCH_GPC_X_API_KEY },
+            method: "GET",
+            headers: { "X-Api-Key": FETCH_GPC_X_API_KEY },
           },
         );
         if (!response.ok) throw new Error(`Label count request failed: ${response.status}`);
@@ -546,7 +550,7 @@ export default function ViewReports() {
                           : Number(count.messages_total ?? 0).toLocaleString()}
                       </span>
                     </div>
-                    
+
                   </div>
                 );
               })}
