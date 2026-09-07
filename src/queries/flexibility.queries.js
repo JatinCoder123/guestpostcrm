@@ -23,16 +23,14 @@ import {
   sendUiMutation,
 } from "../api/flexibility.api";
 
-import { fetchLayout, fetchUiModuleRecords } from "../api/prefrences.api";
-
-import { collectRegistrySeeds, discoverTableViews } from "../utils/tableViewRegistry";
+import { fetchTableViewRegistry } from "../api/tableViewRegistry.api";
 
 import { entityLayoutKey } from "./layouts.queries";
 
 export const flexibilityKeys = {
   all: ["flexibility"],
 
-  registry: () => ["flexibility", "registry", "table-views"],
+  registry: () => ["flexibility", "registry", "table-view-catalog"],
 
   contract: (moduleKey, viewKey) => [
     "flexibility",
@@ -46,35 +44,14 @@ export const flexibilityKeys = {
    REGISTRY
    ========================================================================= */
 
-/**
- * Combine sidebar labels with the full UI module catalog, then discover
- * published sibling tables. Contract reads share the editor cache.
- */
+/** The picker reads only Table records; the selected view loads separately. */
 export function useTableViewRegistry() {
-  const queryClient = useQueryClient();
   return useQuery({
     queryKey: flexibilityKeys.registry(),
-    queryFn: async () => {
-      const [sidebar, modules] = await Promise.allSettled([fetchLayout(), fetchUiModuleRecords()]);
-      if (sidebar.status === "rejected" && modules.status === "rejected") throw sidebar.reason;
-      const seeds = collectRegistrySeeds(
-        sidebar.status === "fulfilled" ? sidebar.value : [],
-        modules.status === "fulfilled" ? modules.value : [],
-      );
-      const result = await discoverTableViews(seeds, ({ moduleKey, viewKey }) =>
-        queryClient.fetchQuery({
-          queryKey: flexibilityKeys.contract(moduleKey, viewKey),
-          queryFn: () => fetchViewContract({ moduleKey, viewKey }),
-          staleTime: 5 * 60 * 1000,
-          retry: false,
-        }),
-      );
-      return { views: result.views, warning:
-        sidebar.status === "rejected" || modules.status === "rejected" || result.failed
-          ? "Some views are unavailable. Use Reload to try loading the complete list again." : null,
-      };
-    },
+    queryFn: fetchTableViewRegistry,
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 }
 

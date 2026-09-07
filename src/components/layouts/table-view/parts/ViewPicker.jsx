@@ -32,7 +32,7 @@ export default function ViewPicker({ views = [], loading, moduleKey, viewKey, on
                   className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-muted-foreground">
                   {group.views.map((view) => (
                     <Command.Item key={view.id} value={view.id}
-                      keywords={[view.label, view.groupName, ...(view.aliases || [])]}
+                      keywords={[view.label, view.groupName]}
                       onSelect={() => { onSelect(view); setOpen(false); }}
                       className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-3 py-2.5 text-sm data-[selected=true]:bg-accent">
                       <span>{view.label}</span>
