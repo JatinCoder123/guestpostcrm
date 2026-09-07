@@ -26,7 +26,7 @@ export const fetchUiModuleRecords = async () => {
   const seen = new Set();
   for (let page = 1; ; page += 1) {
     const response = await http({
-      endpoint: METADATA_ENDPOINT,
+      endpoint: getMetadataEndpoint(),
       method: "POST",
       body: { action: "fetch", module: "outr_ui_modules", order_by: "", page, per_page: 100 },
     });
@@ -47,7 +47,7 @@ export const fetchUiModuleRecords = async () => {
 
 export const fetchSidebarComponentId = async () => {
   const response = await http({
-    endpoint: METADATA_ENDPOINT,
+    endpoint: getMetadataEndpoint(),
     method: "POST",
     body: {
       action: "fetch",
@@ -76,7 +76,7 @@ export const fetchSidebarComponentId = async () => {
  */
 export const fetchCrmModules = async () => {
   const response = await http({
-    endpoint: METADATA_ENDPOINT,
+    endpoint: getMetadataEndpoint(),
     method: "POST",
     body: {
       action: "list_modules",
@@ -113,7 +113,7 @@ export const updateLayout = async ({
   }
 
   const response = await http({
-    endpoint: METADATA_ENDPOINT,
+    endpoint: getMetadataEndpoint(),
     method: "POST",
     body: {
       order_by: "",

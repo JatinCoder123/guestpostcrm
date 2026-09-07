@@ -253,7 +253,7 @@ export const sendUiMutation = async (mutation) => {
 
   try {
     response = await http({
-      endpoint: METADATA_ENDPOINT,
+      endpoint: getMetadataEndpoint(),
       method: "POST",
       body: {
         order_by: "",
