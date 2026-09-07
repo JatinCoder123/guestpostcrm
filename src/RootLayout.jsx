@@ -17,6 +17,8 @@ import { useTimeline } from "./context/TimelineContext";
 import toast from "react-hot-toast";
 import { queryClient } from "./lib/queryClient"
 import Breadcrumbs from "./components/Breadcrumbs";
+import RefreshReminder from "./components/RefreshReminder";
+import { motion } from "framer-motion";
 
 
 const RootLayout = () => {
@@ -28,6 +30,7 @@ const RootLayout = () => {
     displayIntro,
     setActivePage,
     collapsed,
+    showRefreshReminder
   } = useContext(PageContext);
   const [showRechargeWarn, setShowRechargeWarn] = useState(Number(currentScore) <= 0)
   const { setCrm } = useContext(SocketContext);
@@ -100,26 +103,37 @@ const RootLayout = () => {
 
   return (
     <div className="flex h-screen bg-background ">
+      <RefreshReminder />
+      <motion.div
+        animate={{
+          paddingTop: showRefreshReminder ? 60 : 0,
+        }}
+        transition={{
+          duration: 0.35,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className="flex min-h-0 w-full flex-1"
+      >
 
-      {/* LEFT */}
-      <Sidebar />
+        {/* LEFT */}
+        <Sidebar />
 
 
-      {/* RIGHT */}
-      <div className="flex flex-1 flex-col overflow-hidden p-2">
-        {/* <Breadcrumbs /> */}
-        <main
-          ref={mainRef}
-          className="flex-1 overflow-y-auto hide-scrollbar w-full"
-        >
-          {/* Top Navigation */}
-          <TopNav />
-
-
-
+        {/* RIGHT */}
+        <div className="flex flex-1 flex-col overflow-hidden p-2">
+          {/* <Breadcrumbs /> */}
           <main
             ref={mainRef}
-            className="
+            className="flex-1 overflow-y-auto hide-scrollbar w-full"
+          >
+            {/* Top Navigation */}
+            <TopNav />
+
+
+
+            <main
+              ref={mainRef}
+              className="
         min-h-0
         flex-1
         w-full
@@ -127,31 +141,32 @@ const RootLayout = () => {
         overflow-x-hidden
         hide-scrollbar
     "
-          >
-            <div className="flex min-h-full w-full flex-col">
+            >
+              <div className="flex min-h-full w-full flex-col">
 
-              {/* Low credit warning */}
+                {/* Low credit warning */}
 
-              <LowCreditWarning
-                open={showRechargeWarn}
-                score={currentScore}
-                onClose={() => setShowRechargeWarn(false)}
-              />
+                <LowCreditWarning
+                  open={showRechargeWarn}
+                  score={currentScore}
+                  onClose={() => setShowRechargeWarn(false)}
+                />
 
-              {/* Page content */}
+                {/* Page content */}
 
-              <div className="m-3 flex min-h-0 flex-1 flex-col">
-                <Outlet />
+                <div className="m-3 flex min-h-0 flex-1 flex-col">
+                  <Outlet />
+                </div>
+
               </div>
-
-            </div>
+            </main>
           </main>
-        </main>
 
-        {/* Bottom */}
-        <OnBoarding />
-        <Footer />
-      </div>
+          {/* Bottom */}
+          <OnBoarding />
+          <Footer />
+        </div>
+      </motion.div>
     </div>
   );
 };

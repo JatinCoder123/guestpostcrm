@@ -37,7 +37,9 @@ import { useGpcTrainingStatus } from "../queries/training.queries";
 import { fetchGpc } from "../services/api";
 import { useIsDesktop } from "../hooks/useMediaQuery";
 import { THEMES, setTheme, getTheme } from "../utils/theme";
-
+import { preferencesAction } from "../store/Slices/preferencesSlice";
+import { showNewEmailToast } from "./showNewEmailToast";
+import { unrepliedAction } from "@/store/Slices/unrepliedEmails";
 /* ─────────────────────────────────────────────────────────────
    Avatar colour palette
 ───────────────────────────────────────────────────────────── */
@@ -756,6 +758,7 @@ const StatBadge = ({ icon, label, value, colorClass, bgClass }) => {
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
+  const { showNewEmailBanner } = useSelector((state) => state.unreplied);
 
   const [stats, setStats] = useState({
     reply_recieved: null,
@@ -952,7 +955,17 @@ export function TopNav() {
       ? parts[0][0].toUpperCase()
       : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
-
+  useEffect(() => {
+    if (showNewEmailBanner) {
+      showNewEmailToast({
+        dispatch,
+        navigate: navigateTo,
+        handleClear,
+        preferencesAction,
+        unrepliedAction,
+      });
+    }
+  }, [showNewEmailBanner]);
   return (
     <div
       data-tour="top-nav"
