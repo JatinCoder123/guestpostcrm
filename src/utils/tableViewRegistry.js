@@ -1,25 +1,22 @@
 /**
  * Which module/view pairs the table editor can open.
  *
- * There is no "list every published view" endpoint, so the set is derived
- * from the Sidebar global-component response, which is the same payload the
- * live navigation is built from. Every entity link there carries the two keys
- * the Flexibility read needs:
+ * Start with sidebar labels and the full UI module catalog, then discover
+ * sibling table contracts advertised by each module. Entity navigation
+ * carries the two keys the Flexibility read needs:
  *
  *     /entity/{module_key}/list/{view_key}
  *
- * That keeps the editor in step with the app: a module that is reachable in
- * the sidebar is editable here, and one that is not does not appear.
+ * The catalog includes modules omitted from the compiled sidebar, so hidden
+ * and ungrouped views remain accessible to the editor.
  *
  * Derived, not hardcoded, and deliberately not filtered by `is_active`: a
  * module switched off in the sidebar still has a published table view whose
  * columns someone may need to fix before turning it back on. Inactive entries
  * are flagged instead of dropped.
  *
- * Not every listed module has a published table view. `deals` and `contacts`
- * do; some navigation targets answer 404. Nothing is probed up front - the
- * contract is read when a view is selected and a 404 is reported against that
- * view rather than silently hiding it.
+ * Discovery checks for table columns, excluding detail and other non-table
+ * contracts. A failed navigation target remains available for a later retry.
  */
 
 import { isActive } from "./sidebarLayout";
@@ -181,3 +178,62 @@ export function viewKeysFromContract(model, fallbackViewKey = DEFAULT_VIEW_KEY) 
 
 /** Stable id for a module/view pair, matching `collectTableViews`. */
 export const viewId = (moduleKey, viewKey) => `${moduleKey}:${viewKey}`;
+
+/** Merge navigation labels with all UI module records, retaining hidden entries. */
+export function collectRegistrySeeds(sidebar, records = []) {
+  const additional = records.map((record) => ({
+    group_name: record.group_name || "Other",
+    data: [{
+      ...record,
+      navigation: parseEntityNavigation(record.navigation) ? record.navigation
+        : record.module_key ? `/entity/${record.module_key}/list/table` : "",
+    }],
+  }));
+  const groups = Array.isArray(sidebar) ? sidebar : sidebar?.data || [];
+  return collectTableViews([...groups, ...additional]);
+}
+
+/** Read advertised sibling views and retain only contracts with table columns.
+ * Four workers bound the initial discovery load. Individual failures leave the
+ * rest of the picker usable and are reported to the caller for a retry notice.
+ */
+export async function discoverTableViews(seeds, readContract) {
+  const found = new Map();
+  const visited = new Set();
+  let failed = false;
+  let cursor = 0;
+  const visit = async (candidate, moduleLabel = candidate.label, isSeed = true) => {
+    if (visited.has(candidate.id)) return;
+    visited.add(candidate.id);
+    let contract;
+    try {
+      contract = await readContract(candidate);
+    } catch (error) {
+      if (error?.response?.status !== 404) failed = true;
+      // Keep navigation targets discoverable even while their read is unavailable.
+      if (isSeed) found.set(candidate.id, candidate);
+      return;
+    }
+    if (Array.isArray(contract?.config?.columns)) {
+      found.set(candidate.id, candidate);
+    }
+    const siblings = contract.availableViewKeys ?? contract.config?.view?.available ?? [];
+    for (const key of Array.isArray(siblings) ? siblings : []) {
+      if (typeof key !== "string" || !key.trim()) continue;
+      await visit({ ...candidate, id: viewId(candidate.moduleKey, key), viewKey: key,
+        label: key === DEFAULT_VIEW_KEY ? moduleLabel : `${moduleLabel} · ${key}` }, moduleLabel, false);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(4, seeds.length) }, async () => {
+    while (cursor < seeds.length) {
+      const seed = seeds[cursor++];
+      await visit(seed);
+    }
+  }));
+  const moduleOrder = [...new Set(seeds.map((seed) => seed.moduleKey))];
+  const views = [...found.values()].sort((a, b) =>
+    moduleOrder.indexOf(a.moduleKey) - moduleOrder.indexOf(b.moduleKey) ||
+    (a.viewKey === DEFAULT_VIEW_KEY ? -1 : b.viewKey === DEFAULT_VIEW_KEY ? 1 : a.viewKey.localeCompare(b.viewKey)),
+  );
+  return { views, failed };
+}

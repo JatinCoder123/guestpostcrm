@@ -23,16 +23,16 @@ import {
   sendUiMutation,
 } from "../api/flexibility.api";
 
-import { fetchLayout } from "../api/prefrences.api";
+import { fetchLayout, fetchUiModuleRecords } from "../api/prefrences.api";
 
-import { collectTableViews } from "../utils/tableViewRegistry";
+import { collectRegistrySeeds, discoverTableViews } from "../utils/tableViewRegistry";
 
 import { entityLayoutKey } from "./layouts.queries";
 
 export const flexibilityKeys = {
   all: ["flexibility"],
 
-  registry: () => ["flexibility", "registry"],
+  registry: () => ["flexibility", "registry", "table-views"],
 
   contract: (moduleKey, viewKey) => [
     "flexibility",
@@ -47,17 +47,33 @@ export const flexibilityKeys = {
    ========================================================================= */
 
 /**
- * Every module/view pair the editor can open, derived from the sidebar
- * payload.
- *
- * This reads the same cache entry as the live sidebar would if it used
- * `preferenceKeys.layout()`, but under its own key so a metadata write here
- * cannot invalidate the navigation the user is looking at.
+ * Combine sidebar labels with the full UI module catalog, then discover
+ * published sibling tables. Contract reads share the editor cache.
  */
 export function useTableViewRegistry() {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: flexibilityKeys.registry(),
-    queryFn: async () => collectTableViews(await fetchLayout()),
+    queryFn: async () => {
+      const [sidebar, modules] = await Promise.allSettled([fetchLayout(), fetchUiModuleRecords()]);
+      if (sidebar.status === "rejected" && modules.status === "rejected") throw sidebar.reason;
+      const seeds = collectRegistrySeeds(
+        sidebar.status === "fulfilled" ? sidebar.value : [],
+        modules.status === "fulfilled" ? modules.value : [],
+      );
+      const result = await discoverTableViews(seeds, ({ moduleKey, viewKey }) =>
+        queryClient.fetchQuery({
+          queryKey: flexibilityKeys.contract(moduleKey, viewKey),
+          queryFn: () => fetchViewContract({ moduleKey, viewKey }),
+          staleTime: 5 * 60 * 1000,
+          retry: false,
+        }),
+      );
+      return { views: result.views, warning:
+        sidebar.status === "rejected" || modules.status === "rejected" || result.failed
+          ? "Some views are unavailable. Use Reload to try loading the complete list again." : null,
+      };
+    },
     staleTime: 5 * 60 * 1000,
   });
 }

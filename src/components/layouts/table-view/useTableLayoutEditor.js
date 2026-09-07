@@ -24,6 +24,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import toast from "react-hot-toast";
+import { savePresentationChanges } from "@/utils/tablePresentationUpdate";
 
 import { reorderCopy } from "@/utils/rank";
 
@@ -109,6 +110,8 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
 
   /** Status key currently being written. */
   const [busyStatusKey, setBusyStatusKey] = useState(null);
+  const [savingPresentation, setSavingPresentation] = useState(false);
+  const presentationLock = useRef(false);
 
   /** Missing or duplicated column ranks. Reordering is blocked while set. */
   const [rankError, setRankError] = useState(null);
@@ -1037,6 +1040,34 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
 
   /* ------------------------------------------------------------- reload */
 
+  // An explicit Update can change multiple properties. Each subsequent write
+  // uses the refreshed contract, including new record IDs and expected values.
+  const updatePresentation = useCallback(async (kind, id, changes) => {
+    if (presentationLock.current || pendingWrites.current > 0) return false;
+    presentationLock.current = true;
+    setSavingPresentation(true);
+    pendingWrites.current += 1;
+    try {
+      await savePresentationChanges({ kind, id, changes, moduleKey, viewKey,
+        readContract: async () => (await refetchContractQuery({ throwOnError: true })).data,
+        writeProperty: propertyWrite.mutateAsync,
+      });
+      toast.success(kind === "column" ? "Column updated." : "Status updated.");
+      return true;
+    } catch (error) {
+      toast.error(describeWriteError(error));
+      // A partial save may have succeeded. Keep drafts available for retry,
+      // but refresh the server copy before building any further mutations.
+      await refetchContractQuery();
+      return false;
+    } finally {
+      pendingWrites.current = Math.max(0, pendingWrites.current - 1);
+      setSettledWriteVersion((version) => version + 1);
+      setSavingPresentation(false);
+      presentationLock.current = false;
+    }
+  }, [moduleKey, propertyWrite, refetchContractQuery, viewKey]);
+
   const reload = useCallback(async () => {
     pendingWrites.current = 0;
 
@@ -1046,6 +1077,7 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
   /* ------------------------------------------------------------- result */
 
   const writing =
+    savingPresentation ||
     propertyWrite.isPending ||
     fieldCreate.isPending ||
     savingOrder ||
@@ -1088,6 +1120,7 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     setSearch,
 
     /* Actions */
+    updatePresentation,
     toggleColumnVisible,
     setColumnVisible,
     setColumnWidth,

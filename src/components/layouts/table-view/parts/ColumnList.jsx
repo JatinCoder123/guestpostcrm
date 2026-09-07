@@ -6,9 +6,7 @@
  * neighbours a new rank would be calculated from cannot be trusted: they would
  * be read off an order the server has not accepted.
  *
- * Ranks are shown as the opaque strings they are. They are never rendered as
- * a position number, because that is exactly the mistake that leads to
- * guessing a rank from the visual index.
+ * Ordering metadata stays internal; rows show only editable presentation.
  */
 
 import React from "react";
@@ -33,6 +31,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Loader2, Lock } from "lucide-react";
 
 import { Badge, Toggle } from "./Primitives";
+import FieldTypeIcon from "./FieldTypeIcon";
 
 /* =========================================================================
    ROW
@@ -45,6 +44,7 @@ function SortableColumn({
   onToggleVisible,
   busy,
   reorderDisabled,
+  disabled = false,
 }) {
   const {
     attributes,
@@ -80,7 +80,7 @@ function SortableColumn({
       role="button"
       tabIndex={0}
       onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
+        if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
           event.preventDefault();
           onSelect(column);
         }
@@ -94,7 +94,7 @@ function SortableColumn({
         rounded-lg
         border
         px-2
-        py-2
+        py-3
         transition-colors
 
         ${
@@ -151,54 +151,18 @@ function SortableColumn({
 
       {/* LABEL */}
 
+      <FieldTypeIcon type={column.type} />
+
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="truncate text-xs font-medium text-foreground">
+          <span className="truncate text-sm font-medium text-foreground">
             {column.label}
           </span>
 
-          <Badge tone="neutral">{column.type}</Badge>
-
+          {column.dirty && <Badge tone="primary">Unsaved</Badge>}
           {!column.visible && <Badge tone="warning">hidden</Badge>}
         </div>
-
-        <p className="mt-0.5 truncate font-mono text-[10px] text-muted-foreground">
-          {column.accessor}
-        </p>
       </div>
-
-      {/* WIDTH */}
-
-      <span
-        className="
-          w-12
-          shrink-0
-          text-right
-          font-mono
-          text-[10px]
-          text-muted-foreground
-        "
-        title={`${column.width}px wide`}
-      >
-        {column.width}px
-      </span>
-
-      {/* RANK - opaque string, never a position number */}
-
-      <span
-        className="
-          w-14
-          shrink-0
-          truncate
-          text-right
-          font-mono
-          text-[9px]
-          text-muted-foreground
-        "
-        title={column.rank ? `rank ${column.rank}` : "no rank"}
-      >
-        {column.rank ?? "—"}
-      </span>
 
       {/* BUSY / VISIBILITY */}
 
@@ -207,7 +171,7 @@ function SortableColumn({
       ) : (
         <Toggle
           checked={column.visible}
-          disabled={!visibilityWritable}
+          disabled={!visibilityWritable || disabled}
           onChange={() => onToggleVisible(column)}
           label={`Show ${column.label}`}
         />
@@ -242,6 +206,7 @@ export default function ColumnList({
   onMove,
   busyAccessor,
   reorderDisabled,
+  disabled = false,
   searching,
 }) {
   const [dragging, setDragging] = React.useState(null);
@@ -318,6 +283,7 @@ export default function ColumnList({
               onToggleVisible={onToggleVisible}
               busy={busyAccessor === column.accessor}
               reorderDisabled={dragDisabled}
+              disabled={disabled}
             />
           ))}
         </div>
@@ -332,11 +298,11 @@ export default function ColumnList({
               border-primary/30
               bg-card
               px-3
-              py-2
+              py-3
               shadow-xl
             "
           >
-            <p className="font-mono text-xs font-medium text-foreground">
+            <p className="font-mono text-sm font-medium text-foreground">
               {dragging.accessor}
             </p>
           </div>
