@@ -1116,8 +1116,7 @@ export function Sidebar() {
                                 items-center
                                 gap-1
                                 rounded-xl
-                                px-2
-                                py-2
+                                p-1
                                 transition-all
                                 duration-200
 
