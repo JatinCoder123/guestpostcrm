@@ -159,16 +159,21 @@ const LatestMessage = ({ handleMessageClick }) => {
           <div className="flex min-w-0 flex-1 flex-wrap gap-3 sm:gap-4">
             <QuickBtn
               icon={<BsRobot size={24} />}
-              onClick={() =>
+              onClick={() => {
+                if (!mailersSummary?.ai_response) {
+                  toast.error("No AI response available.");
+                  return;
+                }
+
                 handleMove({
                   email: email1,
                   threadId,
-                  reply: mailersSummary?.ai_response,
+                  reply: mailersSummary.ai_response,
                   addActivity: true,
                 })
-              }
+              }}
               editIcon={<SparkleIcon size={16} />}
-              disabled={sending || !mailersSummary?.ai_response}
+              disabled={sending}
               tooltip="AI Reply"
               onEditClick={() => {
                 setActivePromptId(mailersSummary.prompt_id)
