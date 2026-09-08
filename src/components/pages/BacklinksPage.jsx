@@ -24,11 +24,10 @@ function StatusSelect({ row, updateStatus, savingId }) {
         disabled={isSaving}
         onClick={(event) => event.stopPropagation()}
         onChange={(event) => updateStatus(row, event.target.value)}
-        className={`min-w-[112px] cursor-pointer rounded-full border px-3 py-1.5 pr-8 text-sm font-semibold outline-none transition focus:ring-2 focus:ring-teal-300 disabled:cursor-wait disabled:opacity-60 ${
-          row.status_c === "Removed"
-            ? "border-red-200 bg-red-50 text-red-700"
-            : "border-emerald-200 bg-emerald-50 text-emerald-700"
-        }`}
+        className={`min-w-[112px] cursor-pointer rounded-full border px-3 py-1.5 pr-8 text-sm font-semibold outline-none transition focus:ring-2 focus:ring-teal-300 disabled:cursor-wait disabled:opacity-60 ${row.status_c === "Removed"
+          ? "border-red-200 bg-red-50 text-red-700"
+          : "border-emerald-200 bg-emerald-50 text-emerald-700"
+          }`}
       >
         {STATUS_OPTIONS.map((status) => (
           <option key={status} value={status}>
@@ -98,13 +97,13 @@ export function BacklinksPage({ title = "Backlinks", fixedFilters = null, onReco
   const columns = [
     {
       label: "GP / LI Date",
-      accessor: "gp_li_date_c",
+      accessor: "date_entered_uni_format",
       icon: Calendar,
       render: (row) => (
-        <span className="font-medium text-slate-700">{row.gp_li_date_c || "—"}</span>
+        <span className="font-medium text-slate-700">{row.date_entered_uni_format || "—"}</span>
       ),
     },
-     {
+    {
       label: "Link Expiry Date",
       accessor: "expiry_date_c",
       icon: Calendar,
@@ -159,9 +158,9 @@ export function BacklinksPage({ title = "Backlinks", fixedFilters = null, onReco
           <span className="text-slate-400">—</span>
         ),
     },
-   
+
   ];
- 
+
   return (
     <TableView
       tableData={backlinks}
