@@ -37,17 +37,19 @@ const LatestMessage = ({ handleMessageClick, classes = '' }) => {
   const { currentEmail } = useTimeline()
   const { mutate: updateContact, isPending: contactUpdateLoading, error: contactError } = useUpdateContact()
 
-  const { data: summary, isPending: mail } = useMailerSummary(currentEmail);
   const { data: contactData, isPending: contactLoading } = useContact(currentEmail);
   const contactInfo = contactData?.contact
+  const threadId = contactInfo?.thread_id;
+
   const accountInfo = contactData?.account
+  const { data: summary, isPending: mail } = useMailerSummary({ email: currentEmail, threadId });
+
   const mailersSummary = summary?.mailers_summary
   const { data: buttons, isError: buttonsError, isLoading: buttonsLoading } = useQuickBtn();
   const { sending } = useSelector((state) => state.viewEmail);
   const { data, isPending } = useThread(currentEmail)
   const viewEmail = data?.emails
   const email1 = contactInfo?.email1;
-  const threadId = contactInfo?.thread_id;
   const hanldeConvDone = () => {
     updateContact({ id: contactInfo?.id, payload: { ...contactInfo, conversation_complete: "1" } })
     toast.success(`Conversion Complete with ${email1}`)
@@ -157,13 +159,18 @@ const LatestMessage = ({ handleMessageClick, classes = '' }) => {
         <div className="flex min-w-0 flex-1 flex-wrap gap-3 sm:gap-4">
           <QuickBtn
             icon={<BsRobot size={24} />}
-            onClick={() =>
+            onClick={() => {
+              if (!mailersSummary?.ai_response) {
+                toast.error("No AI Response Found")
+                return
+              }
               handleMove({
                 email: email1,
                 threadId,
                 reply: mailersSummary?.ai_response,
                 addActivity: true,
               })
+            }
             }
             editIcon={<SparkleIcon size={16} />}
             disabled={sending || !mailersSummary?.ai_response}
