@@ -37,17 +37,18 @@ const LatestMessage = ({ handleMessageClick }) => {
   const { currentEmail } = useTimeline()
   const { mutate: updateContact, isPending: contactUpdateLoading, error: contactError } = useUpdateContact()
 
-  const { data: summary, isPending: mail } = useMailerSummary(currentEmail);
   const { data: contactData, isPending: contactLoading } = useContact(currentEmail);
   const contactInfo = contactData?.contact
+  const threadId = contactInfo?.thread_id;
+
   const accountInfo = contactData?.account
+  const { data: summary, isPending: mail } = useMailerSummary({ email: currentEmail, threadId: threadId });
   const mailersSummary = summary?.mailers_summary
   const { data: buttons, isError: buttonsError, isLoading: buttonsLoading } = useQuickBtn();
   const { sending } = useSelector((state) => state.viewEmail);
   const { data, isPending } = useThread(currentEmail)
   const viewEmail = data?.emails
   const email1 = contactInfo?.email1;
-  const threadId = contactInfo?.thread_id;
   const hanldeConvDone = () => {
     updateContact({ id: contactInfo?.id, payload: { ...contactInfo, conversation_complete: "1" } })
     toast.success(`Conversion Complete with ${email1}`)
@@ -281,7 +282,7 @@ function QuickBtn({
             e.stopPropagation();
             onEditClick?.();
           }}
-          className="text-blue-500 hover:text-blue-600 cursor-pointer"
+          className="text-primary-500 hover:text-primary-600 cursor-pointer"
         >
           {editIcon}
         </button>
@@ -291,7 +292,7 @@ function QuickBtn({
       {tooltip && (
         <div
           className="absolute top-full mt-2 left-1/2 -translate-x-1/2
-          bg-sky-600 text-white text-xs px-2 py-1 rounded
+          bg-primary text-white text-xs px-2 py-1 rounded
           opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100
           transition-all whitespace-nowrap shadow-lg z-50"
         >
