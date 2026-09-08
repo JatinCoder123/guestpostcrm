@@ -1,4 +1,4 @@
-import { BellIcon, Flame, List, Mail, MailWarning, MessageCircle, Settings, Sparkles } from "lucide-react";
+import { BellIcon, Flame, List, Mail, MailWarning, MessageCircle, Settings, Sparkles, Unlink } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,61 +8,11 @@ import { useContact } from "../queries/contact.queries";
 import { SocketContext } from "../context/SocketContext";
 import IconButton from "./ui/Buttons/IconButton";
 import { PageContext } from "../context/pageContext";
-const VARIANTS = {
-  indigo: {
-    wrap: "bg-indigo-50 hover:bg-indigo-100 border-indigo-200",
-    icon: "text-indigo-600",
-  },
-  purple: {
-    wrap: "bg-purple-50 hover:bg-purple-100 border-purple-200",
-    icon: "text-purple-600",
-  },
-  orange: {
-    wrap: "bg-orange-50 hover:bg-orange-100 border-orange-200",
-    icon: "text-orange-500",
-  },
-  green: {
-    wrap: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
-    icon: "text-emerald-600",
-  },
-  red: {
-    wrap: "bg-red-50 hover:bg-red-100 border-red-200",
-    icon: "text-red-500",
-  },
-};
+import { useLinkRemovalCount } from "../queries/backlinks.queries";
 
-function NavBtn({ icon: Icon, label, onClick, count, color = "indigo" }) {
-  const v = VARIANTS[color] ?? VARIANTS.indigo;
-  return (
-    <div className="group relative">
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={label}
-        className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-150 active:scale-95 ${v.wrap}`}
-      >
-        <Icon size={16} className={v.icon} strokeWidth={1.9} />
-        {count > 0 && (
-          <span
-            className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-0.5 text-[9px] font-bold leading-none text-white"
-            aria-label={`${count} notifications`}
-          >
-            {count > 99 ? "99+" : count}
-          </span>
-        )}
-      </button>
 
-      {/* Tooltip */}
-      <div
-        role="tooltip"
-        className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-slate-100 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 shadow-xl opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-      >
-        {label}
-        <span className="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 border-l border-t border-slate-100 bg-white" />
-      </div>
-    </div>
-  );
-}
+
+
 export default function Footer() {
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
   const { notificationCount, totalUnseenChatCount } = useContext(SocketContext);
@@ -70,7 +20,13 @@ export default function Footer() {
   const [errorLogCount, setErrorLogCount] = useState(0);
   const dispatch = useDispatch()
   const prevCountRef = useRef(0);
-
+  const { data: linkRemovalData } = useLinkRemovalCount();
+  const linkRemovalCount = Number(
+    linkRemovalData?.stats?.all?.count ??
+    linkRemovalData?.total ??
+    linkRemovalData?.count ??
+    0
+  );
   const {
     data: paymentReminderData,
     isPending: paymentReminderPending,
@@ -169,7 +125,14 @@ export default function Footer() {
 
           iconColor="blue"
         />
-
+        <IconButton
+          icon={Unlink}
+          iconColor="red"
+          iconClassName={linkRemovalCount > 0 ? "animate-spin" : ""}
+          count={linkRemovalCount}
+          label="Link Removal"
+          onClick={() => navigate("/entity/link-removal/list/table")}
+        />
         <IconButton
           iconColor="purple"
           icon={Sparkles}

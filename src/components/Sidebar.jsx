@@ -24,6 +24,7 @@ import { useIsDesktop } from "../hooks/useMediaQuery";
 export function Sidebar() {
   const navigateTo = useNavigate();
   const location = useLocation();
+
   const {
     enteredEmail: email,
     activePage,
@@ -57,6 +58,7 @@ export function Sidebar() {
     };
 
     window.addEventListener("keydown", onKeyDown);
+
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [drawerOpen, setMobileSidebarOpen]);
 
@@ -74,7 +76,6 @@ export function Sidebar() {
     data: layoutData,
     isPending: layoutLoading,
     refetch: refetchLayout,
-
   } = useLayoutPreferences();
 
   const sidebarSections = layoutData ?? [];
@@ -117,7 +118,7 @@ export function Sidebar() {
 
     console.error(
       "[sidebar] invalid rank data, sidebar order cannot be trusted",
-      rankReports,
+      rankReports
     );
 
     if (rankReloadAttempted.current) {
@@ -194,7 +195,9 @@ export function Sidebar() {
       ?.filter((group) => Number(group.is_active) === 1)
       ?.map((group) => ({
         ...group,
-        data: (group.data ?? []).filter((item) => Number(item.is_active) === 1),
+        data: (group.data ?? []).filter(
+          (item) => Number(item.is_active) === 1
+        ),
       }))
       ?.filter((group) => group.data.length > 0) ?? [];
 
@@ -202,7 +205,7 @@ export function Sidebar() {
     if (!visibleGroups.length) return;
 
     setExpandedGroups(
-      Object.fromEntries(visibleGroups.map((group) => [group.id, true])),
+      Object.fromEntries(visibleGroups.map((group) => [group.id, true]))
     );
 
     /**
@@ -214,13 +217,10 @@ export function Sidebar() {
         (group.data ?? []).map((item) => ({
           key: item.key,
           module: item.module_name,
-          ignore_email:
-            item.filter_by_email == "1"
-              ? false
-              : true,
+          ignore_email: item.filter_by_email == "1" ? false : true,
           filters: item.count_filters ?? {},
-        })),
-      ),
+        }))
+      )
     );
   }, [visibleGroups]);
 
@@ -262,6 +262,7 @@ export function Sidebar() {
           ease: [0.22, 1, 0.36, 1],
         }}
         className="
+          group
           fixed
           left-0
           top-0
@@ -281,7 +282,6 @@ export function Sidebar() {
           text-[var(--sidebar-primary-foreground)]
           shadow-2xl
           px-1
-
           lg:static
           lg:z-auto
           lg:max-w-none
@@ -362,7 +362,8 @@ export function Sidebar() {
                 shadow
               "
             >
-              <div className="group relative flex h-full items-center justify-center gap-3">
+              {/* Removed inner group so the sidebar group controls hover */}
+              <div className="relative flex h-full items-center justify-center gap-3">
                 <img
                   src={collapsed ? logo : headingLogo}
                   className={`
@@ -386,7 +387,9 @@ export function Sidebar() {
                     aria-label={
                       collapsed ? "Expand sidebar" : "Collapse sidebar"
                     }
-                    title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    title={
+                      collapsed ? "Expand sidebar" : "Collapse sidebar"
+                    }
                     onClick={() => setSidebarCollapsed(!collapsed)}
                     className={`
                       flex h-7 w-7
@@ -416,7 +419,8 @@ export function Sidebar() {
                       flex h-7 w-7
                       shrink-0
                       cursor-pointer
-                      items-center justify-center
+                      items-center
+                      justify-center
                       rounded-full
                       bg-[var(--card)]
                       shadow
@@ -424,7 +428,10 @@ export function Sidebar() {
                       active:scale-90
                     "
                   >
-                    <X className="h-5 w-5" color="var(--sidebar-primary)" />
+                    <X
+                      className="h-5 w-5"
+                      color="var(--sidebar-primary)"
+                    />
                   </button>
                 )}
               </div>
@@ -451,7 +458,10 @@ export function Sidebar() {
                   shadow-md
                 "
               >
-                <Radio className="h-6 w-6" color="var(--foreground)" />
+                <Radio
+                  className="h-6 w-6"
+                  color="var(--foreground)"
+                />
               </div>
 
               {/* Live Preview */}
@@ -496,17 +506,17 @@ export function Sidebar() {
                     <button
                       onClick={() => toggleGroup(group.id)}
                       className="
-                          flex w-full
-                          items-center justify-between
-                          rounded-lg
-                          px-3 py-2
-                          text-xs
-                          font-semibold
-                          uppercase
-                          tracking-wide
-                          text-[color-mix(in_srgb,var(--sidebar-primary-foreground)_75%,transparent)]
-                          hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
-                        "
+                        flex w-full
+                        items-center justify-between
+                        rounded-lg
+                        px-3 py-2
+                        text-xs
+                        font-semibold
+                        uppercase
+                        tracking-wide
+                        text-[color-mix(in_srgb,var(--sidebar-primary-foreground)_75%,transparent)]
+                        hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
+                      "
                     >
                       <span>{group.group_name}</span>
 
@@ -522,7 +532,10 @@ export function Sidebar() {
                   {(collapsed || expandedGroups[group.id]) && (
                     <div className="mt-1 ml-2 space-y-1">
                       {group.data.map((item) => {
-                        const itemPath = `/${item.navigation}`.replace(/\/+/g, "/");
+                        const itemPath = `/${item.navigation}`.replace(
+                          /\/+/g,
+                          "/"
+                        );
 
                         const isActive =
                           location.pathname === itemPath ||
@@ -542,23 +555,23 @@ export function Sidebar() {
                               navigateTo(itemPath);
                             }}
                             className={`
-        flex w-full items-center gap-3 rounded-lg p-2
-        transition-all duration-200
-        hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
-        ${collapsed ? "justify-center" : ""}
-        ${isActive
+                              flex w-full items-center gap-3 rounded-lg p-2
+                              transition-all duration-200
+                              hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
+                              ${collapsed ? "justify-center" : ""}
+                              ${isActive
                                 ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_15%,transparent)] rounded-full shadow-lg"
                                 : ""
                               }
-      `}
+                            `}
                           >
                             <Icon
                               name={item.icon}
                               library={item.library}
                               className={`
-          h-4 w-4 shrink-0
-          ${isActive ? "scale-125 text-white" : ""}
-        `}
+                                h-4 w-4 shrink-0
+                                ${isActive ? "scale-125 text-white" : ""}
+                              `}
                             />
 
                             {!collapsed && (
@@ -574,13 +587,14 @@ export function Sidebar() {
                                 ) : (
                                   <span
                                     className="
-                                        rounded-full
-                                        bg-[color-mix(in_srgb,var(--primary)_20%,transparent)]
-                                        px-2 py-0.5
-                                        text-xs
-                                      "
+                                      rounded-full
+                                      bg-[color-mix(in_srgb,var(--primary)_20%,transparent)]
+                                      px-2 py-0.5
+                                      text-xs
+                                    "
                                   >
-                                    {sidebarCounts?.stats?.[item.key]?.count || 0}
+                                    {sidebarCounts?.stats?.[item.key]?.count ||
+                                      0}
                                   </span>
                                 )}
                               </>
@@ -595,94 +609,92 @@ export function Sidebar() {
             </div>
 
             {/* SIDEBAR FOOTER */}
-            {sidebarSections?.sidebar_footer && (
+            <div
+              onClick={() => {
+                if (!isDesktop) setMobileSidebarOpen(false);
+                navigateTo("/settings/controller");
+              }}
+              className="
+                my-6
+                flex
+                cursor-pointer
+                items-center
+                justify-center
+                border-t
+                border-sidebar-border
+                p-2
+                rounded-full
+                shadow-lg
+                shadow-[color-mix(in_srgb,var(--foreground)_100%,transparent)]
+              "
+            >
+              {/* Progress Circle */}
               <div
-                onClick={() => {
-                  if (!isDesktop) setMobileSidebarOpen(false);
-                  navigateTo("/settings/controller");
-                }}
                 className="
-                  my-6
-                  flex
-                  cursor-pointer
-                  items-center
-                  justify-center
-                  border-t
-                  border-sidebar-border
-                  p-2
+                  relative z-10
+                  grid size-14
+                  shrink-0
+                  place-items-center
                   rounded-full
-                  shadow-lg
-                  shadow-[color-mix(in_srgb,var(--foreground)_100%,transparent)]
+                  after:absolute
+                  after:inset-1.5
+                  after:rounded-full
+                  after:bg-[var(--sidebar-primary)]
                 "
+                style={{
+                  background: `conic-gradient(
+                    var(--topbtn-primary) ${summary?.total_score ?? 0}%,
+                    color-mix(
+                      in srgb,
+                      var(--sidebar-primary) 33%,
+                      transparent
+                    ) 0%
+                  )`,
+                }}
               >
-                {/* Progress Circle */}
-                <div
+                <span
                   className="
                     relative z-10
-                    grid size-14
-                    shrink-0
-                    place-items-center
-                    rounded-full
-                    after:absolute
-                    after:inset-1.5
-                    after:rounded-full
-                    after:bg-[var(--sidebar-primary)]
+                    text-sm
+                    font-semibold
+                    text-[var(--sidebar-primary-foreground)]
                   "
-                  style={{
-                    background: `conic-gradient(
-                      var(--topbtn-primary) ${summary?.total_score ?? 0}%,
-                      color-mix(
-                        in srgb,
-                        var(--sidebar-primary) 33%,
-                        transparent
-                      ) 0%
-                    )`,
-                  }}
                 >
-                  <span
+                  {summary?.total_score ?? 0}%
+                </span>
+              </div>
+
+              {/* Automation Score Card */}
+              {!collapsed && (
+                <div
+                  className="
+                    -ml-3
+                    flex h-12 w-[170px]
+                    max-h-[850px]:hidden
+                    items-center
+                    rounded-r-xl
+                    border
+                    border-[var(--sidebar-border)]
+                    bg-gradient-to-b
+                    from-[var(--sidebar-primary)]
+                    to-[var(--sidebar-secondary)]
+                    pl-6 pr-4
+                    shadow-md
+                  "
+                >
+                  <p
                     className="
-                      relative z-10
                       text-sm
-                      font-semibold
+                      font-medium
+                      leading-5
                       text-[var(--sidebar-primary-foreground)]
                     "
                   >
-                    {summary?.total_score ?? 0}%
-                  </span>
+                    {"Automation Score"}
+                  </p>
                 </div>
-
-                {/* Automation Score Card */}
-                {!collapsed && (
-                  <div
-                    className="
-                      -ml-3
-                      flex h-12 w-[170px]
-                      max-h-[850px]:hidden
-                      items-center
-                      rounded-r-xl
-                      border
-                      border-[var(--sidebar-border)]
-                      bg-gradient-to-b
-                      from-[var(--sidebar-primary)]
-                      to-[var(--sidebar-secondary)]
-                      pl-6 pr-4
-                      shadow-md
-                    "
-                  >
-                    <p
-                      className="
-                        text-sm
-                        font-medium
-                        leading-5
-                        text-[var(--sidebar-primary-foreground)]
-                      "
-                    >
-                      {sidebarSections?.sidebar_footer?.description}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </>
         )}
       </motion.aside>

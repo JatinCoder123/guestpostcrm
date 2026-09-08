@@ -296,7 +296,10 @@ const router = createBrowserRouter([
         path: "link-exchange",
         element: <LinkExchangePage />,
       },
-
+      {
+        path: "link-removal/:id",
+        element: <LinkRemovalDetailPage />,
+      },
       {
         path: "reminders/:id?",
         element: <ReminderPage />,

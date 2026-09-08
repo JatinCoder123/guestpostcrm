@@ -13,6 +13,7 @@ import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { generatePDF } from "../../../services/utils";
 import { useNext } from "../../../hooks/useNext";
+import useRecordLock from "../../../hooks/useRecordLock";
 
 const Thread = () => {
   const dispatch = useDispatch();
@@ -27,6 +28,7 @@ const Thread = () => {
     },
 
   } = useThreadContext();
+  const { recordUsers, isLocked } = useRecordLock({ email: email, compareTo: 'currentThread', page: ['/thread/view', '/thread/reply'] })
 
   const { state } = useLocation();
 
@@ -180,9 +182,11 @@ const Thread = () => {
     threadId,
     htmlfile,
     setHtmlfile,
-    pdfLoading,
+    pdfLoading, // ✅ added
     handleSendClick,
     checkingThreadId,
+    isLocked,
+    recordUsers,
     setCheckingTheadId,
   };
 
