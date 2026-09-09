@@ -254,7 +254,7 @@ Open Contact
       ),
       label: "IP",
       disabled: false,
-      action: () => navigate("/ip"),
+      action: () => navigate("/ip-manager"),
     },
     {
       icon: applyTagLoading ? (

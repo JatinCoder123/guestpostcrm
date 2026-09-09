@@ -23,6 +23,7 @@ import {
   X,
   LayoutDashboard,
   Palette,
+  Clock,
 } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
@@ -62,6 +63,13 @@ const menuItems = [
     subtitle: "Update ML settings",
     icon: Cpu,
     link: "machine-learning",
+  },
+  {
+    group: "Management",
+    title: "Reminder Management",
+    subtitle: "Manage reminders",
+    icon: Clock,
+    link: "reminder-management",
   },
   {
     group: "Management",

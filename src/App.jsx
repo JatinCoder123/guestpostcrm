@@ -4,13 +4,11 @@ import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
 import { Duplicate } from "./components/pages/DuplicatePage";
-import { TagManagerpage } from "./components/pages/TagManagerpage";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
 import { useDispatch, useSelector } from "react-redux";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
-import { AiCreditsPage } from "./components/pages/AiCreditsPage";
 import { PageContextProvider } from "./context/pageContext";
 import { getUser, userAction } from "./store/Slices/userSlice";
 import Login from "./components/pages/Login";
@@ -21,21 +19,12 @@ import { PaypalCredentials } from "./components/pages/settingpages/PaypalCredent
 import TemplatesPage from "./components/pages/settingpages/TemplatesPage";
 import WebsitesPage from "./components/pages/settingpages/WebsitesPage";
 import { UsersPage } from "./components/pages/settingpages/UsersPage";
-import Contactpage from "./components/pages/Contactpage";
-import { ForwardedPage } from "./components/pages/ForwardedPage";
-import { FavouritePage } from "./components/pages/FavouritePage";
+
 import ErrorBoundary from "./components/ErrorBoundary";
 import ButtonPage from "./components/pages/settingpages/ButtonPage";
-import { DefaulterPage } from "./components/pages/Defaulterpage";
-import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
-import AvatarPage from "./components/pages/AvatarPage";
-import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
 import { BacklinksPage } from "./components/pages/BacklinksPage";
-import { ReminderPage } from "./components/pages/ReminderPage";
-import { LinkExchangePage } from "./components/pages/LinkExchangePage";
-import { HotPage } from "./components/pages/HotPage";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
@@ -49,7 +38,6 @@ import SelfTest from "./components/pages/settingpages/SelfTest";
 import DynamicRouteHandler from "./components/routing/DynamicRouteHandler";
 import GroupReport from "./components/pages/GroupReport";
 import PromptExplorer from "./components/pages/settingpages/PromptExplorer";
-import Ip from "./components/Ip";
 import IpManager from "./components/pages/IpManager";
 import DataModellingPage from "./components/pages/settingpages/DataModellingPage";
 import UserActivity from "./components/pages/settingpages/UserActivity";
@@ -60,7 +48,7 @@ import RedirectHandler from "./components/pages/RedirectHandler";
 import { Toaster } from "react-hot-toast";
 import ReminderManagementPage from "./components/pages/ReminderManagement";
 import { TimelineProvider } from "./context/TimelineContext";
-import MeetingWidget from "./components/MeetingWidget";
+// import MeetingWidget from "./components/MeetingWidget";
 // import TwakChat from "./components/TwakTo";
 import BootApp from "./components/BootApp";
 import Recharge from "./components/pages/Recharge";
@@ -74,7 +62,6 @@ import Sidebar from "./components/layouts/sidebar/Sidebar";
 import Views from "./components/layouts/detail-view/Views";
 import CreateView from "./components/layouts/create-view/CreateView";
 import TableView from "./components/layouts/table-view/TableView";
-import { LinkRemovalPage } from "./components/pages/LinkRemovalpage";
 import LinkRemovalDetailPage from "./components/pages/LinkRemovalDetailPage";
 import InternalChats from "./components/pages/internal-chats/InternalChats";
 
@@ -205,26 +192,12 @@ const router = createBrowserRouter([
         element: <Profile />,
       },
       {
-        path: "ai-credits",
-        element: <AiCreditsPage />,
-      },
-      {
         path: "recharge",
         element: <Recharge />,
       },
       {
         path: "plans",
         element: <PlansPage />,
-      },
-
-      {
-        path: "tag-manager",
-        element: <TagManagerpage />,
-      },
-
-      {
-        path: "contacts/:id?",
-        element: <Contactpage />,
       },
       {
         path: "console",
@@ -293,18 +266,9 @@ const router = createBrowserRouter([
         element: <InvoicesPage />,
       },
       {
-        path: "link-exchange",
-        element: <LinkExchangePage />,
-      },
-      {
         path: "link-removal/:id",
         element: <LinkRemovalDetailPage />,
       },
-      {
-        path: "reminders/:id?",
-        element: <ReminderPage />,
-      },
-
       {
         path: "view-reports",
         element: <ViewReports />,
@@ -323,51 +287,17 @@ const router = createBrowserRouter([
         element: <OutBox />,
       },
       {
-        path: "ip",
-        element: <Ip />,
-      },
-      {
         path: "ip-manager",
         element: <IpManager />,
-      },
-
-      {
-        path: "forwarded-emails",
-        element: <ForwardedPage />,
-      },
-      {
-        path: "favourite-emails",
-        element: <FavouritePage />,
       },
       {
         path: "market-place",
         element: <Marketplace />,
       },
-      {
-        path: "default-report",
-        element: <DefaulterPage />,
-      },
-      {
-        path: "moved-emails",
-        element: <MovedPage />,
-      },
 
-      {
-        path: "other",
-        element: <OtherPage />,
-      },
-      {
-        path: "avatars",
-        element: <AvatarPage />,
-      },
-      {
-        path: "hot-records",
-        element: <HotPage />,
-      },
-      {
-        path: "reminder-management",
-        element: <ReminderManagementPage />,
-      },
+
+
+
       {
         path: "internal-chats",
         element: <InternalChats />,
@@ -457,6 +387,10 @@ const router = createBrowserRouter([
           {
             path: "theme",
             element: <Theme />,
+          },
+          {
+            path: "reminder-management",
+            element: <ReminderManagementPage />,
           },
 
           /* ================================================================

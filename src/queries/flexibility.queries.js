@@ -96,13 +96,7 @@ export function useViewContract(moduleKey, viewKey) {
   });
 }
 
-/**
- * Read the contract straight back from the server and put it in the cache.
- *
- * `fetchQuery` rather than `invalidateQueries` because the caller needs to
- * await the new payload: the next edit builds on the record ids and expected
- * values it carries.
- */
+
 export function useRefetchContract() {
   const queryClient = useQueryClient();
 
