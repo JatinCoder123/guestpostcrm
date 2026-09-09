@@ -129,7 +129,7 @@ function SortableColumn({
           h-7
           w-5
           shrink-0
-          cursor-grab
+          touch-none cursor-grab
           items-center
           justify-center
           rounded-md

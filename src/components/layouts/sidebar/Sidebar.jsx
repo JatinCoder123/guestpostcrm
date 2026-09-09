@@ -199,7 +199,7 @@ function SortableGroup({
           onSelect(group);
           onToggleExpanded(group);
         }}
-        className={`
+        className={`layout-tree-row
                     flex
                     cursor-pointer
                     items-center
@@ -223,7 +223,7 @@ function SortableGroup({
                         h-7
                         w-6
                         shrink-0
-                        cursor-grab
+                        touch-none cursor-grab
                         items-center
                         justify-center
                         rounded-md
@@ -401,7 +401,7 @@ function SortableField({
       ref={setNodeRef}
       style={style}
       onClick={() => onSelect(item)}
-      className={`
+      className={`layout-tree-row
                 group
                 flex
                 cursor-pointer
@@ -429,7 +429,7 @@ function SortableField({
                     h-7
                     w-5
                     shrink-0
-                    cursor-grab
+                    touch-none cursor-grab
                     items-center
                     justify-center
                     rounded-md
@@ -2046,11 +2046,11 @@ const Sidebar = () => {
        ===================================================================== */
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex h-full min-h-0 min-w-0 flex-col">
       {/* HEADER */}
 
       <div
-        className="
+        className="layout-editor-header
                     flex
                     shrink-0
                     items-center
@@ -2205,9 +2205,7 @@ const Sidebar = () => {
                     grid
                     min-h-0
                     flex-1
-                    grid-cols-1
-                    overflow-hidden
-                    lg:grid-cols-[minmax(300px,420px)_minmax(0,1fr)]
+                    layout-editor-grid
                 "
       >
         {/* =========================================================
@@ -2222,8 +2220,6 @@ const Sidebar = () => {
                         border-b
                         border-border
                         bg-card
-                        lg:border-b-0
-                        lg:border-r
                     "
         >
           {/* SEARCH */}

@@ -1116,7 +1116,7 @@ export default function TemplatesPage() {
       )}
 
       {data && data.length > 0 && (
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
+        <div className="mt-8 grid grid-cols-1 @min-[620px]/settings:grid-cols-2 @min-[940px]/settings:grid-cols-3 @min-[1260px]/settings:grid-cols-4 gap-7">
           {data.map?.((item) => (
             <motion.div
               key={item.id}

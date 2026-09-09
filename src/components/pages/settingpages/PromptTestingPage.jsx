@@ -140,7 +140,7 @@ const SearchModeSelection = ({ onSelect }) => (
   <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
     <Header text="Prompt Testing" />
     <div className="mx-auto px-6 py-10">
-      <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl p-10 max-w-2xl mx-auto">
+      <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl p-4 sm:p-10 max-w-2xl mx-auto">
         <h2 className="text-2xl font-bold text-slate-900 mb-2 text-center">
           How would you like to test?
         </h2>
@@ -478,9 +478,9 @@ const PromptTestingPage = () => {
         {/* ====================================================== */}
         {/* FORM */}
         {/* ====================================================== */}
-        <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl p-8">
+        <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl p-4 sm:p-8">
           {/* Back Button + Title */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex flex-wrap items-center gap-3 mb-6">
             <button
               onClick={handleBack}
               className="
@@ -591,7 +591,7 @@ const PromptTestingPage = () => {
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Email Address
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="email"
                       value={emailSearchValue}
@@ -703,7 +703,7 @@ const PromptTestingPage = () => {
             )}
 
             {/* Actions */}
-            <div className="flex justify-center gap-4 pt-6">
+            <div className="flex flex-wrap justify-center gap-4 pt-6">
               <button
                 type="button"
                 onClick={handleReset}
@@ -744,7 +744,7 @@ const PromptTestingPage = () => {
           submittedKey === responseKey && (
             <div
               ref={responseRef}
-              className="bg-white border border-slate-200 rounded-3xl shadow-xl p-8 space-y-8"
+              className="bg-white border border-slate-200 rounded-3xl shadow-xl p-4 sm:p-8 space-y-8"
             >
               <h3 className="text-2xl font-bold text-slate-900">
                 Prompt Test Result
@@ -756,7 +756,7 @@ const PromptTestingPage = () => {
                 </h4>
 
                 {response && !responseError && (
-                  <div className="bg-white border border-slate-200 rounded-3xl shadow-xl p-8 space-y-6">
+                  <div className="bg-white border border-slate-200 rounded-3xl shadow-xl p-4 sm:p-8 space-y-6">
                     <h3 className="text-xl font-bold text-slate-900">
                       Prompt Test Result
                     </h3>

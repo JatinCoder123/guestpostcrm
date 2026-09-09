@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  ArrowLeft,
   Bug,
   Cable,
   ChartBarStackedIcon,
@@ -23,7 +24,9 @@ import {
   LayoutDashboard,
   Palette,
 } from "lucide-react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { useMediaQuery } from "react-responsive";
+import "./settings-responsive.css";
 
 /* ==========================================================================
    SETTINGS MENU
@@ -186,10 +189,16 @@ const groupOrder = [
    ========================================================================== */
 
 export function SettingsPage() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [desktopCollapsed, setCollapsed] = useState(false);
+  const isMobile = useMediaQuery({ maxWidth: 1023 });
+  const collapsed = !isMobile && desktopCollapsed;
   const [search, setSearch] = useState("");
 
   const location = useLocation();
+  const activeSection = menuItems.find((item) =>
+    location.pathname === `/settings/${item.link}` ||
+    location.pathname.startsWith(`/settings/${item.link}/`),
+  )?.link || "";
 
   const isSettingsHome = /\/settings\/?$/.test(
     location.pathname,
@@ -228,7 +237,14 @@ export function SettingsPage() {
   }, [filteredItems]);
 
   return (
-    <div className="flex h-[calc(100vh-2rem)] min-h-[640px] overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+    <div className="settings-shell flex min-w-0 flex-col rounded-2xl border border-border bg-card text-card-foreground shadow-sm lg:h-[calc(100dvh-2rem)] lg:min-h-[640px] lg:flex-row lg:overflow-hidden">
+      {!isSettingsHome && (
+        <div className="border-b border-border px-3 py-2 lg:hidden">
+          <Link to="/settings" className="inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm font-medium text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <ArrowLeft className="h-4 w-4" /> Back to settings
+          </Link>
+        </div>
+      )}
       {/* ================================================================== */}
       {/* SIDEBAR                                                            */}
       {/* ================================================================== */}
@@ -236,14 +252,14 @@ export function SettingsPage() {
       <aside
         className={`
           ${collapsed
-            ? "w-[76px]"
-            : "w-[310px]"
+            ? "w-full lg:w-[76px]"
+            : "w-full lg:w-[310px]"
           }
 
-          flex
+          ${isSettingsHome ? "flex" : "hidden"} lg:flex
           shrink-0
           flex-col
-          border-r
+          lg:border-r
           border-border
           bg-card
           transition-[width]
@@ -333,7 +349,7 @@ export function SettingsPage() {
               setCollapsed((value) => !value)
             }
             className="
-              flex
+              hidden lg:flex
               h-9
               w-9
               shrink-0
@@ -399,6 +415,7 @@ export function SettingsPage() {
 
               <input
                 type="search"
+                aria-label="Search settings"
                 value={search}
                 onChange={(event) =>
                   setSearch(event.target.value)
@@ -659,13 +676,15 @@ export function SettingsPage() {
       {/* ================================================================== */}
 
       <main
-        className="
+        className={`
+          settings-content
+          ${isSettingsHome ? "hidden lg:block" : "block"}
           custom-scrollbar
           min-w-0
           flex-1
-          overflow-y-auto
+          lg:overflow-y-auto
           bg-background/45
-        "
+        `}
       >
         {isSettingsHome ? (
           <div
@@ -717,13 +736,13 @@ export function SettingsPage() {
                   text-muted-foreground
                 "
               >
-                Choose a setting from the sidebar
+                Choose a setting from the navigation
                 to configure your workspace.
               </p>
             </div>
           </div>
         ) : (
-          <div className="min-h-full p-6">
+          <div key={activeSection} className="settings-page min-h-full min-w-0 p-3 sm:p-4 lg:p-6">
             <Outlet />
           </div>
         )}

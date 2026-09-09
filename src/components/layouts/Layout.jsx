@@ -19,7 +19,7 @@ const tabs = [
     },
     {
         id: "views",
-        label: "Deatil & Edit View",
+        label: "Detail & Edit View",
         path: "views",
     },
     {
@@ -54,7 +54,7 @@ const Layout = () => {
     };
 
     return (
-        <div className="w-full">
+        <div className="layout-editor min-w-0 w-full">
             {/* ============================================================= */}
             {/* HEADER                                                        */}
             {/* ============================================================= */}
@@ -81,11 +81,11 @@ const Layout = () => {
             >
                 <TabsList
                     className="
-            h-auto
-            w-fit
+            h-auto group-data-horizontal/tabs:h-auto
+            grid grid-cols-2 @min-[640px]/settings:flex
+            w-full @min-[640px]/settings:w-fit
             max-w-full
-            overflow-x-auto
-            rounded-full
+            rounded-xl @min-[640px]/settings:rounded-full
             border
             border-border
             bg-background
@@ -98,7 +98,8 @@ const Layout = () => {
                             value={tab.id}
                             className="
                 rounded-full
-                px-5
+                min-h-11 min-w-0 whitespace-normal @min-[640px]/settings:whitespace-nowrap
+                px-3 @min-[640px]/settings:px-5
                 py-2
                 text-sm
                 font-medium
