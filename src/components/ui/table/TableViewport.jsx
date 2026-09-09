@@ -29,26 +29,21 @@ export default function TableViewport() {
     /**
      * Infinite loading
      */
+    const virtualItems = rowVirtualizer.getVirtualItems();
+    const lastItemIndex =
+        virtualItems[virtualItems.length - 1]?.index;
+
     useEffect(() => {
-        const items =
-            rowVirtualizer.getVirtualItems();
-
-        if (!items.length) {
-            return;
-        }
-
-        const lastItem =
-            items[items.length - 1];
-
         if (
-            lastItem.index >= data.length - 5 &&
+            lastItemIndex !== undefined &&
+            lastItemIndex >= data.length - 5 &&
             hasNextPage &&
             !isFetchingNextPage
         ) {
             fetchNextPage();
         }
     }, [
-        rowVirtualizer,
+        lastItemIndex,
         data.length,
         hasNextPage,
         isFetchingNextPage,
