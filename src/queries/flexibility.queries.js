@@ -1,15 +1,3 @@
-/**
- * Query layer for the UI metadata editor.
- *
- * The rule the whole file is built around: refetch after every successful
- * write. The client never synthesizes the final canonical contract. A write
- * confirms that something was stored; only the next read tells you what.
- *
- * That is what turns a `create` mutation into an `update` mutation - the
- * server hands back the new record id and the matching update payload. The
- * editor must never rewrite one into the other itself, so the write path here
- * always ends in a real read.
- */
 
 import {
   useMutation,
