@@ -2,36 +2,19 @@ import { motion } from "framer-motion";
 import { useTableContext } from "./Table";
 
 const TableFooter = () => {
-    const {
-        pageIndex,
-        pageCount,
-        count,
-        data,
-    } = useTableContext();
+    const { count } = useTableContext();
 
-    const start = count === 0 ? 0 : data.length;
     return (
         <motion.div
             layout
-            className="flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-1 rounded-lg px-3 py-2 bg-gradient-to-r from-gray-50 to-gray-100 sm:w-auto sm:px-4 sm:py-3"
+            className="flex items-center justify-end px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-t"
         >
-            {/* LEFT - RESULT INFO */}
-            <div className="whitespace-nowrap text-xs text-gray-600 font-medium sm:text-sm">
-                Showing{" "}
-                <span className="text-black font-semibold">
-                    {start}
-                </span>{" "}
-                of{" "}
-                <span className="text-black font-semibold">
-                    {count}
-                </span>{" "}
-                results
-            </div>
-
-            {/* RIGHT - PAGE INFO */}
-            <div className="whitespace-nowrap text-xs font-semibold text-gray-700 sm:text-sm">
-                Page {pageIndex} of {pageCount}
-            </div>
+            <span className="text-sm text-gray-600">
+                Total Records:
+                <span className="ml-2 font-semibold text-black">
+                    {count.toLocaleString()}
+                </span>
+            </span>
         </motion.div>
     );
 };

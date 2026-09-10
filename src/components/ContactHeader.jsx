@@ -28,7 +28,6 @@ import { useCrmUsers } from "../queries/users.queries";
 import ActionButton from "./ActionButton";
 import { useMailerSummary } from "../queries/mailerSummary.queries";
 import { Titletooltip } from "./TitleTooltip";
-import useRecordLock from "../hooks/useRecordLock";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -41,7 +40,23 @@ function HashTag({ text, color }) {
     </span>
   );
 }
+function getInitials(name) {
+  if (!name) return "?";
 
+  const words = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase();
+  }
+
+  return (
+    words[0][0] +
+    words[words.length - 1][0]
+  ).toUpperCase();
+}
 const ContactHeader = () => {
   const sidebarRef = useRef(null);
   const { currentEmail } = useTimeline();
@@ -50,22 +65,19 @@ const ContactHeader = () => {
   const navigate = useNavigate();
   const { data, isPending } = useContact(currentEmail);
 
-
   const contactInfo = data?.contact;
   const hashtags = contactInfo?.hashtag?.data?.hashtags;
   const email = contactInfo?.email1;
   const threadId = contactInfo?.thread_id;
-  const { data: summaryData, isPending: summaryLoading } =
-    useMailerSummary({ email, threadId });
+  const { data: summaryData, isPending: summaryLoading } = useMailerSummary({ email, threadId });
+  const mailersSummary = summaryData?.mailers_summary;
+
   const { showNextPrev, handleDateClick } = useContext(PageContext);
   const { data: dealsData } = useDealsByEmail(currentEmail);
   const emailDeals = dealsData?.data ?? [];
-  const mailersSummary = summaryData?.mailers_summary;
-
   const { showBrandTimeline, contacts = [] } = useSelector(
-    (state) => state.brandTimeline
+    (state) => state.brandTimeline,
   );
-  const { isLocked } = useRecordLock({ email: currentEmail, compareTo: 'currentTimeline', page: ['/'] })
   const [showSidebar, setShowSidebar] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
 
@@ -91,7 +103,6 @@ const ContactHeader = () => {
       const animate = (now) => {
         const progress = Math.min((now - startTime) / duration, 1);
         const current = Math.floor(progress * value);
-
         setCount(current);
 
         if (progress < 1) {
@@ -127,9 +138,9 @@ const ContactHeader = () => {
       ? Math.max(
         ...emailDeals.map((d) =>
           Number(
-            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
-          )
-        )
+            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+          ),
+        ),
       )
       : 0;
 
@@ -137,7 +148,7 @@ const ContactHeader = () => {
     { Icon: Tag, label: "Type", value: contactInfo?.type },
     { Icon: Rocket, label: "Stage", value: data?.stage },
     { Icon: Hourglass, label: "Status", value: data?.status },
-    { Icon: Lock, label: "Category", value: contactInfo?.customer_type },
+    { Icon: Lock, label: "Category", value: data?.customer_type },
     {
       Icon: ArrowBigDown,
       label: "Direction",
@@ -166,7 +177,6 @@ const ContactHeader = () => {
       value: contactInfo?.last_activity_date ?? "-",
     },
   ];
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -180,7 +190,6 @@ const ContactHeader = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
   const isBrand = contactInfo?.type?.toLowerCase() === "brand";
 
   return (
@@ -226,7 +235,6 @@ const ContactHeader = () => {
                     <p className="font-semibold text-sm text-gray-800">
                       {item?.name || "No Name"}
                     </p>
-
                     <p className="text-xs text-gray-500 truncate">
                       {item?.email1}
                     </p>
@@ -249,40 +257,46 @@ const ContactHeader = () => {
           <div className="flex min-w-0 basis-full items-center gap-3 px-3 py-1 sm:basis-auto sm:flex-1 2xl:min-w-[360px] 2xl:flex-none 2xl:px-5">
             {!isPending && (
               <>
-                {/* USER INITIALS */}
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
-                  {(() => {
-                    const name = he.decode(
-                      contactInfo?.full_name?.trim() || email || ""
-                    );
-
-                    const initials = name
-                      .split(/\s+/)
-                      .filter(Boolean)
-                      .slice(0, 2)
-                      .map((word) => word.charAt(0).toUpperCase())
-                      .join("");
-
-                    return initials || "U";
-                  })()}
+                <div
+                  className="
+    flex
+    h-12
+    w-12
+    shrink-0
+    items-center
+    justify-center
+    border
+    border-border
+    rounded-full
+    bg-background
+    text-sm
+    font-semibold
+    text-primary
+    uppercase
+  "
+                >
+                  {getInitials(
+                    contactInfo?.full_name?.trim() ||
+                    email ||
+                    "?"
+                  )}
                 </div>
-
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
-                      to={`/contacts?email=${currentEmail ?? ""}`}
+                      to={`/entity/contacts/${currentEmail}`}
                       className="text-[18px] font-semibold text-gray-900 hover:text-blue-600 mt-3"
                       title={he.decode(
                         contactInfo?.full_name?.trim()
                           ? contactInfo.full_name
-                          : email ?? ""
+                          : (email ?? ""),
                       )}
                     >
                       {(() => {
                         const text = he.decode(
                           contactInfo?.full_name?.trim()
                             ? contactInfo.full_name
-                            : email ?? ""
+                            : (email ?? ""),
                         );
 
                         return text.length > 8
@@ -298,10 +312,7 @@ const ContactHeader = () => {
                   </div>
 
                   <div className="mb-1 mt-1 flex max-w-full flex-wrap items-center gap-2">
-                    {(showAllTags
-                      ? hashtags
-                      : hashtags?.slice(0, 2)
-                    )?.map((tag) => (
+                    {(showAllTags ? hashtags : hashtags?.slice(0, 2))?.map((tag) => (
                       <HashTag
                         key={tag.id}
                         text={tag.name}
@@ -328,8 +339,9 @@ const ContactHeader = () => {
           <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
 
           <div className="flex min-w-0 flex-1 flex-wrap items-start gap-y-3 px-3 2xl:flex-nowrap 2xl:px-0">
+
             <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
-              <p className="text-[12px] xl:text-[16px] font-semibold uppercase tracking-widest text-blue-600">
+              <p className="text-[12px] xl:text-[16px] font-semibold uppercase tracking-widest text-primary">
                 CREATED AT
               </p>
 
@@ -347,7 +359,7 @@ const ContactHeader = () => {
             <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
 
             <div className="min-w-[170px] flex-1 px-3 2xl:min-w-[200px] 2xl:px-6">
-              <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
+              <p className="text-[12px] font-semibold uppercase tracking-widest text-primary">
                 SUBJECT
               </p>
 
@@ -363,13 +375,11 @@ const ContactHeader = () => {
             <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
 
             <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
-              <p className="text-[12px] font-semibold uppercase tracking-widest text-blue-600">
+              <p className="text-[12px] font-semibold uppercase tracking-widest text-primary">
                 MOTIVE
               </p>
 
-              <Titletooltip
-                content={mailersSummary?.correct_motive || "N/A"}
-              >
+              <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
                 <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[200px]">
                   {summaryLoading
                     ? "Loading..."
@@ -382,10 +392,10 @@ const ContactHeader = () => {
           <div className="flex basis-full flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-3 pt-3 2xl:ml-auto 2xl:basis-auto 2xl:flex-nowrap 2xl:justify-end 2xl:border-0 2xl:px-5 2xl:pt-0">
             {emailDeals?.length > 0 && (
               <div
-                onClick={() => navigate("/deals")}
+                onClick={() => navigate(`/deals/view?email=${currentEmail}`)}
                 className="flex min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1.5 transition hover:bg-slate-200"
               >
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                   <Handshake size={16} className="text-white" />
                 </div>
 
@@ -414,9 +424,8 @@ const ContactHeader = () => {
             ))}
           </div>
         )}
-
-        <div className="relative  w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-visible">
-          <ActionButton classes={isLocked ? 'pointer-events-none opacity-50' : ''} />
+        <div className="relative z-40 w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-visible">
+          <ActionButton />
         </div>
       </div>
     </div>
@@ -429,7 +438,7 @@ function StatusCard({ Icon, label, value }) {
   return (
     <div className="flex min-w-0 flex-1 basis-[160px] items-start gap-3 rounded-xl border-gray-200 bg-background p-3 shadow-sm transition-all hover:shadow-md">
       <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100">
-        <Icon className="text-blue-500" size={18} />
+        <Icon className="text-primary" size={18} />
       </div>
 
       <div className="flex min-w-0 flex-col">

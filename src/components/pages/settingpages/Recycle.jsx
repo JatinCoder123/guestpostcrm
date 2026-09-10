@@ -231,7 +231,7 @@ const RecyclePage = () => {
 
           <form
             onSubmit={handleSearchSubmit}
-            className="flex min-w-[260px] max-w-md flex-1 items-center gap-2 sm:flex-initial"
+            className="flex min-w-0 w-full max-w-md flex-1 items-center gap-2 sm:flex-initial"
           >
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />

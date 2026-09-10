@@ -4,13 +4,11 @@ import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
 import { Duplicate } from "./components/pages/DuplicatePage";
-import { TagManagerpage } from "./components/pages/TagManagerpage";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
 import { useDispatch, useSelector } from "react-redux";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
-import { AiCreditsPage } from "./components/pages/AiCreditsPage";
 import { PageContextProvider } from "./context/pageContext";
 import { getUser, userAction } from "./store/Slices/userSlice";
 import Login from "./components/pages/Login";
@@ -21,21 +19,12 @@ import { PaypalCredentials } from "./components/pages/settingpages/PaypalCredent
 import TemplatesPage from "./components/pages/settingpages/TemplatesPage";
 import WebsitesPage from "./components/pages/settingpages/WebsitesPage";
 import { UsersPage } from "./components/pages/settingpages/UsersPage";
-import Contactpage from "./components/pages/Contactpage";
-import { ForwardedPage } from "./components/pages/ForwardedPage";
-import { FavouritePage } from "./components/pages/FavouritePage";
+
 import ErrorBoundary from "./components/ErrorBoundary";
 import ButtonPage from "./components/pages/settingpages/ButtonPage";
-import { DefaulterPage } from "./components/pages/Defaulterpage";
-import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
-import AvatarPage from "./components/pages/AvatarPage";
-import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
 import { BacklinksPage } from "./components/pages/BacklinksPage";
-import { ReminderPage } from "./components/pages/ReminderPage";
-import { LinkExchangePage } from "./components/pages/LinkExchangePage";
-import { HotPage } from "./components/pages/HotPage";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
@@ -49,25 +38,30 @@ import SelfTest from "./components/pages/settingpages/SelfTest";
 import DynamicRouteHandler from "./components/routing/DynamicRouteHandler";
 import GroupReport from "./components/pages/GroupReport";
 import PromptExplorer from "./components/pages/settingpages/PromptExplorer";
-import Ip from "./components/Ip";
 import IpManager from "./components/pages/IpManager";
 import DataModellingPage from "./components/pages/settingpages/DataModellingPage";
 import UserActivity from "./components/pages/settingpages/UserActivity";
 import RecyclePage from "./components/pages/settingpages/Recycle";
-import Profile from "./components/pages/Profile"
+import Profile from "./components/pages/Profile";
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
 import { Toaster } from "react-hot-toast";
 import ReminderManagementPage from "./components/pages/ReminderManagement";
 import { TimelineProvider } from "./context/TimelineContext";
-import MeetingWidget from "./components/MeetingWidget";
-import TwakChat from "./components/TwakTo";
+// import MeetingWidget from "./components/MeetingWidget";
+// import TwakChat from "./components/TwakTo";
 import BootApp from "./components/BootApp";
 import Recharge from "./components/pages/Recharge";
 import PlansPage from "./components/pages/PlansPage";
 import BillingSettings from "./components/pages/BillingSettings";
 import InternetStatus from "./components/InternetStatus";
-import { LinkRemovalPage } from "./components/pages/LinkRemovalpage";
+import DynamicEntityHandler from "./components/routing/DynamicEntityHandler";
+import Theme from "./components/theme/Theme";
+import Layout from "./components/layouts/Layout";
+import Sidebar from "./components/layouts/sidebar/Sidebar";
+import Views from "./components/layouts/detail-view/Views";
+import CreateView from "./components/layouts/create-view/CreateView";
+import TableView from "./components/layouts/table-view/TableView";
 import LinkRemovalDetailPage from "./components/pages/LinkRemovalDetailPage";
 import InternalChats from "./components/pages/internal-chats/InternalChats";
 
@@ -77,30 +71,117 @@ const router = createBrowserRouter([
     element: <NotFoundPage />,
   },
   {
-    path: "",
+    path: "/",
     element: (
       <ErrorBoundary>
-
         <ThreadContextProvider>
           <PageContextProvider>
             <TimelineProvider>
               <SocketContextProvider>
-
                 <BootApp />
                 <RootLayout />
               </SocketContextProvider>
             </TimelineProvider>
           </PageContextProvider>
         </ThreadContextProvider>
-
       </ErrorBoundary>
-
-
     ),
+    handle: {
+      breadcrumb: "Timeline",
+    },
     children: [
       {
         index: true,
         element: <TimelinePage />,
+      },
+
+      {
+        path: "entity/:entity/list/:view",
+        element: <DynamicEntityHandler mode="list" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: params.view,
+              type: "view",
+            },
+          ],
+        },
+      },
+
+      {
+        path: "entity/:entity/view",
+        element: <DynamicEntityHandler mode="list" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: "View",
+              type: "view",
+            },
+          ],
+        },
+      },
+
+      {
+        path: "entity/:entity/:email",
+        element: <DynamicEntityHandler mode="detail" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: params.email,
+              type: "record",
+            },
+          ],
+        },
+      },
+
+      {
+        path: "entity/:entity/create",
+        element: <DynamicEntityHandler mode="create" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: "Create",
+              type: "action",
+            },
+          ],
+        },
+      },
+
+      {
+        path: "entity/:entity/:email/edit",
+        element: <DynamicEntityHandler mode="edit" />,
+        handle: {
+          breadcrumb: ({ params }) => [
+            {
+              label: params.entity,
+              type: "entity",
+            },
+            {
+              label: params.email,
+              type: "record",
+            },
+            {
+              label: "Edit",
+              type: "action",
+            },
+          ],
+        },
       },
       {
         path: "unreplied-emails",
@@ -111,27 +192,12 @@ const router = createBrowserRouter([
         element: <Profile />,
       },
       {
-        path: "ai-credits",
-        element: <AiCreditsPage />,
-      },
-      {
         path: "recharge",
         element: <Recharge />,
       },
       {
         path: "plans",
         element: <PlansPage />,
-      },
-
-
-      {
-        path: "tag-manager",
-        element: <TagManagerpage />,
-      },
-
-      {
-        path: "contacts/:id?",
-        element: <Contactpage />,
       },
       {
         path: "console",
@@ -158,43 +224,51 @@ const router = createBrowserRouter([
 
       {
         path: ":type",
-        element: <DynamicRouteHandler mode="list" />,
-      },
-      {
-        path: ":type/view",
-        element: <DynamicRouteHandler mode="list" />,
-      },
-      {
-        path: ":type/create",
-        element: <DynamicRouteHandler mode="create" />,
-      },
-      {
-        path: ":type/edit",
-        element: <DynamicRouteHandler mode="edit" />,
+        element: <Outlet />,
+
+        handle: {
+          breadcrumb: ({ params }) => params.type,
+        },
+
+        children: [
+          {
+            index: true,
+            element: <DynamicRouteHandler mode="list" />,
+          },
+
+          {
+            path: "view",
+            element: <DynamicRouteHandler mode="list" />,
+            handle: {
+              breadcrumb: "View",
+            },
+          },
+
+          {
+            path: "create",
+            element: <DynamicRouteHandler mode="create" />,
+            handle: {
+              breadcrumb: "Create",
+            },
+          },
+
+          {
+            path: "edit",
+            element: <DynamicRouteHandler mode="edit" />,
+            handle: {
+              breadcrumb: "Edit",
+            },
+          },
+        ],
       },
       {
         path: "invoices",
         element: <InvoicesPage />,
       },
       {
-        path: "link-exchange",
-        element: <LinkExchangePage />,
-      },
-
-      {
-        path: "reminders/:id?",
-        element: <ReminderPage />,
-      },
-
-      {
-        path: "link-removal",
-        element: <LinkRemovalPage />,
-      },
-      {
         path: "link-removal/:id",
         element: <LinkRemovalDetailPage />,
       },
-
       {
         path: "view-reports",
         element: <ViewReports />,
@@ -213,51 +287,17 @@ const router = createBrowserRouter([
         element: <OutBox />,
       },
       {
-        path: "ip",
-        element: <Ip />,
-      },
-      {
         path: "ip-manager",
         element: <IpManager />,
-      },
-
-      {
-        path: "forwarded-emails",
-        element: <ForwardedPage />,
-      },
-      {
-        path: "favourite-emails",
-        element: <FavouritePage />,
       },
       {
         path: "market-place",
         element: <Marketplace />,
       },
-      {
-        path: "default-report",
-        element: <DefaulterPage />,
-      },
-      {
-        path: "moved-emails",
-        element: <MovedPage />,
-      },
 
-      {
-        path: "other",
-        element: <OtherPage />,
-      },
-      {
-        path: "avatars",
-        element: <AvatarPage />,
-      },
-      {
-        path: "hot-records",
-        element: <HotPage />,
-      },
-      {
-        path: "reminder-management",
-        element: <ReminderManagementPage />,
-      },
+
+
+
       {
         path: "internal-chats",
         element: <InternalChats />,
@@ -276,15 +316,10 @@ const router = createBrowserRouter([
           },
         ],
       },
-
       {
         path: "settings",
-        element: <Outlet />,
+        element: <SettingsPage />,
         children: [
-          {
-            index: true,
-            element: <SettingsPage />,
-          },
           {
             path: "machine-learning",
             element: <MachineLearningPage />,
@@ -349,8 +384,45 @@ const router = createBrowserRouter([
             path: "backlinks",
             element: <BacklinksPage />,
           },
+          {
+            path: "theme",
+            element: <Theme />,
+          },
+          {
+            path: "reminder-management",
+            element: <ReminderManagementPage />,
+          },
 
+          /* ================================================================
+             LAYOUT
+             ================================================================ */
 
+          {
+            path: "layout",
+            element: <Layout />,
+            children: [
+              {
+                index: true,
+                element: <Sidebar />,
+              },
+              {
+                path: "sidebar",
+                element: <Sidebar />,
+              },
+              {
+                path: "views",
+                element: <Views />,
+              },
+              {
+                path: "create-view",
+                element: <CreateView />,
+              },
+              {
+                path: "table-view",
+                element: <TableView />,
+              },
+            ],
+          },
         ],
       },
     ],
@@ -373,8 +445,7 @@ export default function App() {
 
     // Only allow email param when URL has no extra path
     const isOnlyDomain =
-      window.location.pathname === "/" ||
-      window.location.pathname === "";
+      window.location.pathname === "/" || window.location.pathname === "";
 
     if (isOnlyDomain && email) {
       dispatch(getUser(email));
@@ -395,16 +466,14 @@ export default function App() {
       <Toaster />
       <InternetStatus />
 
-
       {isAuthenticated && !loading && (
         <>
-          {/* <MeetingWidget />
-          <TwakChat /> */}
+          {/* <MeetingWidget /> */}
+          {/* <TwakChat /> */}
           <RouterProvider router={router} />
         </>
       )}
       {!isAuthenticated && loading && <LoadingPage />}
-
 
       {!isAuthenticated && !loading && <Login />}
 

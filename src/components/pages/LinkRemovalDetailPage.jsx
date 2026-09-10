@@ -192,11 +192,11 @@ export default function LinkRemovalDetailPage() {
       if (checkOrder) {
         const orderResponse = await getOrderById(backlink.order_id);
 
-      console.log("Order response:", orderResponse);
+        console.log("Order response:", orderResponse);
 
         const order = orderResponse?.records?.[0];
 
-      console.log("Order:", order);
+        console.log("Order:", order);
 
         if (!order) throw new Error("Order was not found.");
 
@@ -206,10 +206,10 @@ export default function LinkRemovalDetailPage() {
 
         setOrderStatus(order?.order_status || "");
 
-      /**
-       * Change this if your actual expected value
-       * is different.
-       */
+        /**
+         * Change this if your actual expected value
+         * is different.
+         */
         const isDefaultOrder =
           currentOrderStatus === "default" ||
           currentOrderStatus === "defaulter" ||
@@ -257,7 +257,7 @@ export default function LinkRemovalDetailPage() {
       console.log("Invoice response:", invoiceResponse);
 
       const invoice =
-        invoiceResponse?.records?.[0] 
+        invoiceResponse?.records?.[0]
 
       console.log("Invoice:", invoice);
 
@@ -273,18 +273,18 @@ export default function LinkRemovalDetailPage() {
 
       const currentInvoiceStatus = String(
         invoice?.status ||
-          invoice?.invoice_status ||
-          invoice?.status_c ||
-          ""
+        invoice?.invoice_status ||
+        invoice?.status_c ||
+        ""
       )
         .trim()
         .toLowerCase();
 
       setInvoiceStatus(
         invoice?.status ||
-          invoice?.invoice_status ||
-          invoice?.status_c ||
-          ""
+        invoice?.invoice_status ||
+        invoice?.status_c ||
+        ""
       );
 
       /**
@@ -304,8 +304,8 @@ export default function LinkRemovalDetailPage() {
 
       setProcessError(
         error?.response?.data?.message ||
-          error?.message ||
-          "Could not complete order/invoice verification."
+        error?.message ||
+        "Could not complete order/invoice verification."
       );
 
       setCheckingOrder(false);
@@ -331,9 +331,9 @@ export default function LinkRemovalDetailPage() {
         status_c: "Removed",
         ...(isDefaulter
           ? {
-              cancel_order: Number(orderPreference),
-              cancel_invoice: Number(invoicePreference),
-            }
+            cancel_order: Number(orderPreference),
+            cancel_invoice: Number(invoicePreference),
+          }
           : {}),
       },
       {
@@ -346,7 +346,7 @@ export default function LinkRemovalDetailPage() {
           if (response?.success === false) {
             toast.error(
               response.message ||
-                "Could not remove the link."
+              "Could not remove the link."
             );
 
             return;
@@ -387,8 +387,8 @@ export default function LinkRemovalDetailPage() {
 
           toast.error(
             error?.response?.data?.message ||
-              error?.message ||
-              "Could not remove the link."
+            error?.message ||
+            "Could not remove the link."
           );
         },
       }
@@ -433,7 +433,7 @@ export default function LinkRemovalDetailPage() {
       <div className="space-y-5 p-4 md:p-6">
         <button
           type="button"
-          onClick={() => navigate("/link-removal")}
+          onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 hover:text-teal-900"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -450,10 +450,9 @@ export default function LinkRemovalDetailPage() {
               <p className="mt-1 text-sm text-slate-500">
                 {isExtractionLoading
                   ? "Fetching links…"
-                  : `${
-                      extraction?.total_links ??
-                      links.length
-                    } links found`}
+                  : `${extraction?.total_links ??
+                  links.length
+                  } links found`}
               </p>
             </div>
 
@@ -512,27 +511,26 @@ export default function LinkRemovalDetailPage() {
                     return (
                       <tr
                         key={`${link.anchor_text}-${link.target_url}-${index}`}
-                        className={`border-t ${
-                          isSelectedAnchor
-                            ? "bg-red-50"
-                            : "bg-white"
-                        }`}
+                        className={`border-t ${isSelectedAnchor
+                          ? "bg-red-50"
+                          : "bg-white"
+                          }`}
                       >
                         <td className="px-5 py-4 font-medium text-slate-800">
                           {link.anchor_text || "—"}
                         </td>
 
                         <td className="px-5 py-4">
-  <Link
-    href={link.target_url}
-    title={link.target_url}
-    className="text-blue-400 hover:text-blue-300 hover:underline"
-  >
-    {link.target_url.length > 35
-      ? `${link.target_url.substring(0, 35)}..`
-      : link.target_url}
-  </Link>
-</td>
+                          <Link
+                            href={link.target_url}
+                            title={link.target_url}
+                            className="text-blue-400 hover:text-blue-300 hover:underline"
+                          >
+                            {link.target_url.length > 35
+                              ? `${link.target_url.substring(0, 35)}..`
+                              : link.target_url}
+                          </Link>
+                        </td>
 
                         <td className="px-5 py-4">
                           <Link href={link.source_url}
@@ -547,18 +545,18 @@ export default function LinkRemovalDetailPage() {
                           <div className="flex">
                             {currentBacklinkUrl ===
                               link.target_url && (
-                              <IconButton
-                                type="button"
-                                disabled={isUpdating}
-                                onClick={
-                                  updateSelectedAnchorStatus
-                                }
-                                label="Removed"
-                                iconColor="red"
-                                icon={Trash2}
-                                loading={isUpdating}
-                              />
-                            )}
+                                <IconButton
+                                  type="button"
+                                  disabled={isUpdating}
+                                  onClick={
+                                    updateSelectedAnchorStatus
+                                  }
+                                  label="Removed"
+                                  iconColor="red"
+                                  icon={Trash2}
+                                  loading={isUpdating}
+                                />
+                              )}
                           </div>
                         </td>
                       </tr>
@@ -586,254 +584,254 @@ export default function LinkRemovalDetailPage() {
       {/* =====================================================
           ORDER + INVOICE VERIFICATION POPUP
           ===================================================== */}
-{showOrderPopup && (
-  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-md">
-    <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.35)]">
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 px-7 py-7 text-white">
-        <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-indigo-500/20 blur-2xl" />
-        <div className="absolute -bottom-12 left-16 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
+      {showOrderPopup && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-md">
+          <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.35)]">
+            <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 px-7 py-7 text-white">
+              <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-indigo-500/20 blur-2xl" />
+              <div className="absolute -bottom-12 left-16 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
 
-        <div className="relative flex items-start justify-between gap-5">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-xl shadow-lg">
-              🔍
+              <div className="relative flex items-start justify-between gap-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-xl shadow-lg">
+                    🔍
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-200">
+                      Link Removal Verification
+                    </p>
+                    <h3 className="mt-1 text-xl font-bold tracking-tight">
+                      {preferencesConfirmed
+                        ? "Order & Invoice Validation"
+                        : "Choose status updates"}
+                    </h3>
+                    <p className="mt-2 max-w-md text-sm leading-6 text-slate-300">
+                      {preferencesConfirmed
+                        ? "Verifying only the CRM statuses you selected."
+                        : "Choose which linked CRM statuses should be handled when this backlink is removed."}
+                    </p>
+                  </div>
+                </div>
+
+                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-indigo-100">
+                  {preferencesConfirmed ? "Verification" : "Preferences"}
+                </span>
+              </div>
             </div>
 
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-200">
-                Link Removal Verification
-              </p>
-              <h3 className="mt-1 text-xl font-bold tracking-tight">
-                {preferencesConfirmed
-                  ? "Order & Invoice Validation"
-                  : "Choose status updates"}
-              </h3>
-              <p className="mt-2 max-w-md text-sm leading-6 text-slate-300">
-                {preferencesConfirmed
-                  ? "Verifying only the CRM statuses you selected."
-                  : "Choose which linked CRM statuses should be handled when this backlink is removed."}
-              </p>
-            </div>
-          </div>
-
-          <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-indigo-100">
-            {preferencesConfirmed ? "Verification" : "Preferences"}
-          </span>
-        </div>
-      </div>
-
-      <div className="bg-slate-50 px-7 py-6">
-        {!preferencesConfirmed ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Current total links
-            </p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">
-              {linksBeforeRemoval}
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Links before removal</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">{linksBeforeRemoval}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Latest backlink count</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">
-                {latestLinkCount === null ? "Checking..." : latestLinkCount}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Order ID</p>
-              <p className="mt-2 truncate font-mono text-sm font-semibold text-slate-800">
-                {backlink?.order_id || "Not available"}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Backlink URL</p>
-              <Link href={currentBacklinkUrl}>{currentBacklinkUrl || "Not available"}</Link>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:col-span-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Invoice URL</p>
-              {invoiceUrl ? (
-                <Link href={invoiceUrl}>{invoiceUrl}</Link>
+            <div className="bg-slate-50 px-7 py-6">
+              {!preferencesConfirmed ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Current total links
+                  </p>
+                  <p className="mt-2 text-3xl font-bold text-slate-900">
+                    {linksBeforeRemoval}
+                  </p>
+                </div>
               ) : (
-                <p className="mt-2 text-sm font-semibold text-slate-500">
-                  {checkingInvoice ? "Fetching invoice URL..." : "Not available"}
-                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Links before removal</p>
+                    <p className="mt-2 text-2xl font-bold text-slate-900">{linksBeforeRemoval}</p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Latest backlink count</p>
+                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                      {latestLinkCount === null ? "Checking..." : latestLinkCount}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Order ID</p>
+                    <p className="mt-2 truncate font-mono text-sm font-semibold text-slate-800">
+                      {backlink?.order_id || "Not available"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Backlink URL</p>
+                    <Link href={currentBacklinkUrl}>{currentBacklinkUrl || "Not available"}</Link>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:col-span-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Invoice URL</p>
+                    {invoiceUrl ? (
+                      <Link href={invoiceUrl}>{invoiceUrl}</Link>
+                    ) : (
+                      <p className="mt-2 text-sm font-semibold text-slate-500">
+                        {checkingInvoice ? "Fetching invoice URL..." : "Not available"}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {!preferencesConfirmed && (
+                <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <h4 className="font-semibold text-slate-900">Update preferences</h4>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Checked options are saved as 1; unchecked options are saved as 0.
+                  </p>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-indigo-300">
+                      <input
+                        type="checkbox"
+                        checked={cancelOrder === 1}
+                        onChange={(event) => setCancelOrder(event.target.checked ? 1 : 0)}
+                        className="mt-0.5 h-4 w-4 accent-indigo-600"
+                      />
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-900">Update order status</span>
+                        <span className="mt-1 block text-xs text-slate-500">cancel_order: {cancelOrder}</span>
+                      </span>
+                    </label>
+
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-indigo-300">
+                      <input
+                        type="checkbox"
+                        checked={cancelInvoice === 1}
+                        onChange={(event) => setCancelInvoice(event.target.checked ? 1 : 0)}
+                        className="mt-0.5 h-4 w-4 accent-indigo-600"
+                      />
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-900">Update invoice status</span>
+                        <span className="mt-1 block text-xs text-slate-500">cancel_invoice: {cancelInvoice}</span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {preferencesConfirmed && (
+                <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div>
+                      <h4 className="font-semibold text-slate-900">
+                        Verification progress
+                      </h4>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Status is fetched directly from CRM records.
+                      </p>
+                    </div>
+
+                    {(checkingOrder || checkingInvoice) && (
+                      <span className="flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700">
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-indigo-500" />
+                        Checking
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <TimelineStep
+                      title="Backlink Removed"
+                      status="success"
+                      description="The backlink record was successfully removed."
+                    />
+
+                    {cancelOrder === 1 && <TimelineStep
+                      title="Order Status Verification"
+                      status={
+                        checkingOrder
+                          ? "loading"
+                          : orderChecked
+                            ? orderSuccess
+                              ? "success"
+                              : "error"
+                            : "loading"
+                      }
+                      description={
+                        checkingOrder
+                          ? "Fetching the linked order record..."
+                          : orderChecked
+                            ? orderStatus
+                              ? `Current order status: ${orderStatus}`
+                              : "Order status was not found."
+                            : "Waiting for order verification..."
+                      }
+                    />}
+
+                    {cancelInvoice === 1 && <TimelineStep
+                      title="Invoice Status Verification"
+                      status={
+                        checkingInvoice
+                          ? "loading"
+                          : invoiceChecked
+                            ? invoiceSuccess
+                              ? "success"
+                              : "error"
+                            : "loading"
+                      }
+                      description={
+                        checkingInvoice
+                          ? "Fetching the linked invoice record..."
+                          : invoiceChecked
+                            ? invoiceStatus
+                              ? `Current invoice status: ${invoiceStatus}`
+                              : "Invoice status was not found."
+                            : "Waiting for invoice verification..."
+                      }
+                    />}
+                  </div>
+                </div>
+              )}
+
+              {processError && (
+                <div className="mt-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                  <span className="mt-0.5 text-base">⚠</span>
+                  <div>
+                    <p className="font-semibold">Verification issue</p>
+                    <p className="mt-1 text-xs leading-5">{processError}</p>
+                  </div>
+                </div>
               )}
             </div>
-          </div>
-        )}
 
-        {!preferencesConfirmed && (
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h4 className="font-semibold text-slate-900">Update preferences</h4>
-            <p className="mt-1 text-xs text-slate-500">
-              Checked options are saved as 1; unchecked options are saved as 0.
-            </p>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-indigo-300">
-                <input
-                  type="checkbox"
-                  checked={cancelOrder === 1}
-                  onChange={(event) => setCancelOrder(event.target.checked ? 1 : 0)}
-                  className="mt-0.5 h-4 w-4 accent-indigo-600"
-                />
-                <span>
-                  <span className="block text-sm font-semibold text-slate-900">Update order status</span>
-                  <span className="mt-1 block text-xs text-slate-500">cancel_order: {cancelOrder}</span>
-                </span>
-              </label>
-
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-indigo-300">
-                <input
-                  type="checkbox"
-                  checked={cancelInvoice === 1}
-                  onChange={(event) => setCancelInvoice(event.target.checked ? 1 : 0)}
-                  className="mt-0.5 h-4 w-4 accent-indigo-600"
-                />
-                <span>
-                  <span className="block text-sm font-semibold text-slate-900">Update invoice status</span>
-                  <span className="mt-1 block text-xs text-slate-500">cancel_invoice: {cancelInvoice}</span>
-                </span>
-              </label>
-            </div>
-          </div>
-        )}
-
-        {preferencesConfirmed && (
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-4">
-            <div>
-              <h4 className="font-semibold text-slate-900">
-                Verification progress
-              </h4>
-              <p className="mt-1 text-xs text-slate-500">
-                Status is fetched directly from CRM records.
+            <div className="flex items-center justify-between border-t border-slate-200 bg-white px-7 py-5">
+              <p className="text-xs text-slate-400">
+                {preferencesConfirmed
+                  ? "Only the selected statuses were checked."
+                  : "Both options are enabled by default. You can choose either, both, or neither."}
               </p>
+
+              {!preferencesConfirmed ? (
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={resetPopupState}
+                    disabled={isUpdating}
+                    className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeBacklink({
+                      orderPreference: cancelOrder,
+                      invoicePreference: cancelInvoice,
+                    })}
+                    disabled={isUpdating}
+                    className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isUpdating ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    Delete
+                  </button>
+                </div>
+              ) : (!checkingOrder &&
+                !checkingInvoice &&
+                (orderChecked || invoiceChecked) && (
+                  <button
+                    type="button"
+                    onClick={closePopup}
+                    className="rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 hover:shadow-md"
+                  >
+                    Done
+                  </button>
+                ))}
             </div>
-
-            {(checkingOrder || checkingInvoice) && (
-              <span className="flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-indigo-500" />
-                Checking
-              </span>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <TimelineStep
-              title="Backlink Removed"
-              status="success"
-              description="The backlink record was successfully removed."
-            />
-
-            {cancelOrder === 1 && <TimelineStep
-              title="Order Status Verification"
-              status={
-                checkingOrder
-                  ? "loading"
-                  : orderChecked
-                  ? orderSuccess
-                    ? "success"
-                    : "error"
-                  : "loading"
-              }
-              description={
-                checkingOrder
-                  ? "Fetching the linked order record..."
-                  : orderChecked
-                  ? orderStatus
-                    ? `Current order status: ${orderStatus}`
-                    : "Order status was not found."
-                  : "Waiting for order verification..."
-              }
-            />}
-
-            {cancelInvoice === 1 && <TimelineStep
-              title="Invoice Status Verification"
-              status={
-                checkingInvoice
-                  ? "loading"
-                  : invoiceChecked
-                  ? invoiceSuccess
-                    ? "success"
-                    : "error"
-                  : "loading"
-              }
-              description={
-                checkingInvoice
-                  ? "Fetching the linked invoice record..."
-                  : invoiceChecked
-                  ? invoiceStatus
-                    ? `Current invoice status: ${invoiceStatus}`
-                    : "Invoice status was not found."
-                  : "Waiting for invoice verification..."
-              }
-            />}
           </div>
         </div>
-        )}
-
-        {processError && (
-          <div className="mt-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            <span className="mt-0.5 text-base">⚠</span>
-            <div>
-              <p className="font-semibold">Verification issue</p>
-              <p className="mt-1 text-xs leading-5">{processError}</p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between border-t border-slate-200 bg-white px-7 py-5">
-        <p className="text-xs text-slate-400">
-          {preferencesConfirmed
-            ? "Only the selected statuses were checked."
-            : "Both options are enabled by default. You can choose either, both, or neither."}
-        </p>
-
-        {!preferencesConfirmed ? (
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={resetPopupState}
-              disabled={isUpdating}
-              className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => removeBacklink({
-                orderPreference: cancelOrder,
-                invoicePreference: cancelInvoice,
-              })}
-              disabled={isUpdating}
-              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isUpdating ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-              Delete
-            </button>
-          </div>
-        ) : (!checkingOrder &&
-          !checkingInvoice &&
-          (orderChecked || invoiceChecked) && (
-            <button
-              type="button"
-              onClick={closePopup}
-              className="rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 hover:shadow-md"
-            >
-              Done
-            </button>
-          ))}
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </>
   );
 }

@@ -1068,7 +1068,7 @@ export default function WebsitesPage() {
       )}
 
       {!loading && websites.length > 0 && (
-        <div className="mt-6 grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+        <div className="mt-6 grid grid-cols-1 @min-[620px]/settings:grid-cols-2 @min-[940px]/settings:grid-cols-3 @min-[1260px]/settings:grid-cols-4 gap-4">
           {websites.map((item, i) => (
             <Motion.div
               key={item.id}

@@ -318,7 +318,6 @@ export function UnrepliedEmailsPage() {
         <TableTitleBar
           Icon={Mail}
           title={" Emails"}
-          titleClass={"text-rose-700"}
         />
 
         {/* 🔥 TABLE WRAPPER */}

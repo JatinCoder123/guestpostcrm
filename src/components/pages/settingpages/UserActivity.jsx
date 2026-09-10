@@ -53,15 +53,10 @@ const UserActivity = () => {
 
           <tbody>
             {sortedUsers.map((user) => (
-
               <tr
                 key={user.email}
                 className="border-t hover:bg-gray-50 transition-colors"
               >
-
-                <td className="p-3">
-                  {getTimeAgo(user.lastActiveAt)}
-                </td>
                 <td className="p-3">
                   {getName(user.email, user.name)}
                 </td>
@@ -88,6 +83,10 @@ const UserActivity = () => {
                   {user.page === "/"
                     ? "/timeline"
                     : user.page}
+                </td>
+
+                <td className="p-3">
+                  {getTimeAgo(user.lastActiveAt)}
                 </td>
 
               </tr>

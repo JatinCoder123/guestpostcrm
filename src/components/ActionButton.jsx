@@ -58,7 +58,7 @@ const MEMO = {
 /* Separator */
 const Separator = () => <div className="h-6 w-[1px] bg-gray-600 mx-2" />;
 
-const ActionButton = ({ classes = '' }) => {
+const ActionButton = () => {
   const dispatch = useDispatch();
 
   const [showUsers, setShowUsers] = useState(false);
@@ -254,7 +254,7 @@ Open Contact
       ),
       label: "IP",
       disabled: false,
-      action: () => navigate("/ip"),
+      action: () => navigate("/ip-manager"),
     },
     {
       icon: applyTagLoading ? (
@@ -438,7 +438,7 @@ Open Contact
   };
 
   return (
-    <div className={`${classes} `}>
+    <>
       <div className="flex items-center justify-between p-4">
         <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
 
@@ -686,7 +686,7 @@ ${contactLoading && btn.label.includes("Emails")
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 };
 

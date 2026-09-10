@@ -1,53 +1,29 @@
-import {
-  ChevronDown,
-  ChevronRight,
-  PanelLeft,
-  Radio,
-  Settings,
-  X,
-} from "lucide-react";
-
+import { ChevronDown, ChevronRight, Radio, PanelLeft, X } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-
-import { AnimatePresence, motion } from "framer-motion";
-
+import { useLocation, useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
-
+import { motion, AnimatePresence } from "framer-motion";
+import { useForwardedStats } from "../queries/forwarded.queries";
 import { useQuery } from "@tanstack/react-query";
 import { userKeys } from "../queries/users.queries";
 import { getAllUsers } from "../api/users.api";
-
-import { useLayoutPreferences } from "../queries/prefrences.queries";
-
-import { useEmailStats } from "../queries/email.queries";
-import { useContactStats } from "../queries/contact.queries";
-import { useOrderStats } from "../queries/orders.queries";
-import { useForwardedStats } from "../queries/forwarded.queries";
-import { useDealStats } from "../queries/deals.queries";
-import { useOfferStats } from "../queries/offers.queries";
-import { useExchangeStats } from "../queries/exchange.queries";
-import { useInvoiceStats } from "../queries/invoice.queries";
-import { useFavoriteStats } from "../queries/favourite.queries";
-import { useReminderStats } from "../queries/reminder.queries";
-
-import { useGpcController } from "../queries/controller.queries";
-
 import logo, { headingLogo } from "../assets/assets";
-
+import { useGpcController } from "../queries/controller.queries";
+import { useLayoutPreferences } from "../queries/prefrences.queries";
+import Icon from "./ui/Icon/Icon";
+import { useSidebarStats } from "../queries/sidebar.queries";
+import {
+  normalizeSidebarResponse,
+  selectVisibleGroups,
+} from "../utils/sidebarLayout";
 import { useIsDesktop } from "../hooks/useMediaQuery";
 
-import Icon from "./ui/Icon/Icon";
-
-import { LoadingSpin } from "./Loading";
-
-
 export function Sidebar() {
-
   const navigateTo = useNavigate();
+  const location = useLocation();
 
   const {
     enteredEmail: email,
@@ -59,7 +35,6 @@ export function Sidebar() {
     setMobileSidebarOpen,
   } = useContext(PageContext);
 
-
   /*
   |--------------------------------------------------------------------------
   | RESPONSIVE MODE
@@ -68,17 +43,12 @@ export function Sidebar() {
   | Below `lg` it becomes an off-canvas drawer that is always shown in its
   | full (expanded) form, so `collapsed` is forced off there.
   */
-
   const isDesktop = useIsDesktop();
-
   const collapsed = isDesktop ? desktopCollapsed : false;
-
   const drawerOpen = !isDesktop && mobileSidebarOpen;
-
 
   /* Close the drawer on Escape */
   useEffect(() => {
-
     if (!drawerOpen) return;
 
     const onKeyDown = (e) => {
@@ -90,1213 +60,606 @@ export function Sidebar() {
     window.addEventListener("keydown", onKeyDown);
 
     return () => window.removeEventListener("keydown", onKeyDown);
-
   }, [drawerOpen, setMobileSidebarOpen]);
-
 
   /* Make sure the drawer never stays open once we cross into desktop */
   useEffect(() => {
-
     if (isDesktop && mobileSidebarOpen) {
       setMobileSidebarOpen(false);
     }
-
   }, [isDesktop, mobileSidebarOpen, setMobileSidebarOpen]);
 
-
-  const { user } = useSelector((state) => state.user);
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | USERS
-  |--------------------------------------------------------------------------
-  */
-
-  const {
-    data: usersData,
-    isPending: usersPending,
-  } = useQuery({
-    queryKey: userKeys.lists,
-    queryFn: getAllUsers,
-  });
-
-
-  const currentUser = usersData?.find(
-    (u) => u.description === user.email
-  );
-
-  const currentUserId = currentUser?.id;
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | SIDEBAR LAYOUT
-  |--------------------------------------------------------------------------
-  */
+  const [sidebarStatsQuery, setSidebarStatsQuery] = useState();
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   const {
     data: layoutData,
     isPending: layoutLoading,
+    refetch: refetchLayout,
   } = useLayoutPreferences();
 
+  const sidebarSections = layoutData ?? [];
 
-  const sidebarSections =
-    layoutData ?? [];
+  /**
+   * What actually renders: groups and fields in rank order,
+   * with anything switched off in the layout editor
+   * (is_active = 0) removed. A group whose fields are all
+   * inactive drops out too, rather than leaving an empty
+   * heading behind.
+   *
+   * Ordering comes from `rank`, an opaque string compared
+   * byte for byte. Nothing here reads `weight`.
+   */
+  const { visibleGroups, rankReports } = useMemo(() => {
+    const reports = [];
 
+    const normalized = normalizeSidebarResponse(layoutData, {
+      onInvalid: (report) => reports.push(report),
+    });
 
-  /*
-  |--------------------------------------------------------------------------
-  | EXPANDED GROUPS
-  |--------------------------------------------------------------------------
-  */
+    return {
+      visibleGroups: selectVisibleGroups(normalized),
+      rankReports: reports,
+    };
+  }, [layoutData]);
 
-  const [expandedGroups, setExpandedGroups] = useState({});
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | INITIALIZE GROUPS
-  |--------------------------------------------------------------------------
-  */
+  /**
+   * A missing or duplicated rank is invalid migrated data,
+   * not something to order around. Report it and refetch the
+   * layout once so a transient cache merge can heal itself.
+   */
+  const rankReloadAttempted = useRef(false);
 
   useEffect(() => {
-
-    if (!sidebarSections?.length) {
+    if (!rankReports.length) {
+      rankReloadAttempted.current = false;
       return;
     }
 
-    setExpandedGroups((previous) => {
-
-      const next = {};
-
-      sidebarSections.forEach((group) => {
-
-        /*
-         * Keep existing state if already initialized.
-         * Otherwise open the group.
-         */
-        next[group.group_name] =
-          previous[group.group_name] ?? true;
-
-      });
-
-      return next;
-
-    });
-
-  }, [sidebarSections]);
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | GROUP TOGGLE
-  |--------------------------------------------------------------------------
-  */
-
-  const toggleGroup = (groupName) => {
-
-    setExpandedGroups((previous) => ({
-      ...previous,
-      [groupName]: !previous[groupName],
-    }));
-
-  };
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | STATS
-  |--------------------------------------------------------------------------
-  */
-
-  const {
-    isPending: emailStatsLoading,
-    data: emailsStats,
-  } = useEmailStats();
-
-
-  const {
-    isPending: contactStatLoading,
-    data: contactStats,
-  } = useContactStats();
-
-
-  const {
-    isPending: forwardStatLoading,
-    data: forwardStats,
-  } = useForwardedStats(currentUserId);
-
-
-  const {
-    isPending: favStatLoading,
-    data: favStats,
-  } = useFavoriteStats();
-
-
-  const {
-    isPending: exchangeStatLoading,
-    data: exchangeStats,
-  } = useExchangeStats();
-
-
-  const {
-    isPending: offerStatLoading,
-    data: offerStats,
-  } = useOfferStats({
-    email,
-  });
-
-
-  const {
-    isPending: dealStatLoading,
-    data: dealStats,
-  } = useDealStats({
-    email,
-  });
-
-
-  const {
-    isPending: orderStatsLoading,
-    data: ordersStats,
-  } = useOrderStats({
-    email,
-  });
-
-
-  const {
-    isPending: invoiceStatLoading,
-    data: invoiceStats,
-  } = useInvoiceStats({
-    email,
-  });
-
-
-  const {
-    isPending: reminderStatLoading,
-    data: reminderStats,
-  } = useReminderStats({
-    email,
-  });
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | CONTROLLER / AUTOMATION SCORE
-  |--------------------------------------------------------------------------
-  */
-
-  const {
-    data: controllerData,
-  } = useGpcController();
-
-
-  const summary =
-    controllerData?.summary ?? {};
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | MENU METADATA
-  |
-  | This keeps your old individual API counts.
-  | We are NOT using useSidebarStats.
-  |--------------------------------------------------------------------------
-  */
-
-  const menuMeta = useMemo(() => ({
-
-    "Inbox": {
-      route: "/unreplied-emails",
-      count: emailsStats?.stats?.inbound?.count,
-      loading: emailStatsLoading,
-    },
-
-    "Assigned To Me": {
-      route: "/forwarded-emails",
-      count: forwardStats?.stats?.forwarded?.count,
-      loading: forwardStatLoading || usersPending,
-    },
-
-    "Favourites": {
-      route: "/favourite-emails",
-      count: favStats?.stats?.favorite?.count,
-      loading: favStatLoading,
-    },
-
-
-
-    "Contacts": {
-      route: "/contacts",
-      count: contactStats?.stats?.all?.count,
-      loading: contactStatLoading,
-    },
-
-    "Offers": {
-      route: "/offers",
-      count: offerStats?.stats?.active?.count,
-      loading: offerStatLoading,
-    },
-
-    "Deals": {
-      route: "/deals",
-      count: dealStats?.stats?.active?.count,
-      loading: dealStatLoading,
-    },
-
-    "Orders": {
-      route: "/orders",
-      count: ordersStats?.stats?.new?.count,
-      loading: orderStatsLoading,
-    },
-
-    "Invoices": {
-      route: "/invoices",
-      count: invoiceStats?.stats?.all?.count,
-      loading: invoiceStatLoading,
-    },
-
-    "Link Exchange": {
-      route: "/link-exchange",
-      count: exchangeStats?.stats?.exchange?.count,
-      loading: exchangeStatLoading,
-    },
-
-    "Link Removal": {
-      route: "/link-removal",
-      count: null,
-      loading: false,
-    },
-
-    "Reminders": {
-      route: "/reminders",
-      count: reminderStats?.stats?.all?.count,
-      loading: reminderStatLoading,
-    },
-    "Reports": {
-      route: "/view-reports",
-      count: reminderStats?.stats?.all?.count,
-      loading: reminderStatLoading,
-    },
-
-
-
-  }), [
-    emailsStats,
-    emailStatsLoading,
-
-    forwardStats,
-    forwardStatLoading,
-    usersPending,
-
-    favStats,
-    favStatLoading,
-
-    contactStats,
-    contactStatLoading,
-
-    offerStats,
-    offerStatLoading,
-
-    dealStats,
-    dealStatLoading,
-
-    ordersStats,
-    orderStatsLoading,
-
-    invoiceStats,
-    invoiceStatLoading,
-
-    exchangeStats,
-    exchangeStatLoading,
-
-    reminderStats,
-    reminderStatLoading,
-  ]);
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | GET MENU META
-  |--------------------------------------------------------------------------
-  */
-
-  const getMenuMeta = (item) => {
-
-    return (
-      menuMeta[item.name] ?? {
-        route:
-          item.endpoint ||
-          `/${item.name
-            ?.toLowerCase()
-            ?.trim()
-            ?.replace(/\s+/g, "-")}`,
-
-        count: null,
-
-        loading: false,
-      }
+    console.error(
+      "[sidebar] invalid rank data, sidebar order cannot be trusted",
+      rankReports
     );
 
-  };
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | NAVIGATION
-  |--------------------------------------------------------------------------
-  */
-
-  const handleMenuClick = (item) => {
-
-    const meta = getMenuMeta(item);
-
-    setActivePage(item.name);
-
-    /*
-     * On mobile or when selecting a menu,
-     * collapse sidebar as before.
-     */
-    setSidebarCollapsed(true);
-
-    navigateTo(meta.route);
-
-    /*
-     * Close mobile sidebar.
-     */
-    if (mobileSidebarOpen) {
-      setMobileSidebarOpen(false);
+    if (rankReloadAttempted.current) {
+      return;
     }
 
+    rankReloadAttempted.current = true;
+
+    refetchLayout?.();
+  }, [rankReports, refetchLayout]);
+
+  const { user } = useSelector((s) => s.user);
+
+  const { data: usersData, isPending: usersPending } = useQuery({
+    queryKey: userKeys.lists,
+    queryFn: getAllUsers,
+  });
+
+  const { data } = useGpcController();
+
+  const summary = data?.summary ?? {};
+
+  const currentUser = usersData?.find((u) => u.description === user.email);
+
+  const currentUserId = currentUser?.id;
+
+  const [openSettingsCard, setOpenSettingsCard] = useState(false);
+  const cardRef = useRef(null);
+
+  // Close modal when clicked outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (cardRef.current && !cardRef.current.contains(e.target)) {
+        setOpenSettingsCard(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const { isPending: forwardStatLoading, data: forwardStats } =
+    useForwardedStats(currentUserId);
+
+  const { isPending: sidebarCountPending, data: sidebarCounts } =
+    useSidebarStats({
+      email,
+      queries: sidebarStatsQuery,
+    });
+
+  /**
+   * Keyed on the record id, not the group name. Names are
+   * editable and can repeat; the id is what identifies a
+   * group.
+   */
+  const toggleGroup = (groupId) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
   };
 
+  /**
+   * Only keep:
+   * 1. Groups where is_active === 1
+   * 2. Items/fields where is_active === 1
+   *
+   * Empty groups are also removed because there is nothing
+   * active to display inside them.
+   */
+  const activeSidebarGroups =
+    sidebarSections?.data
+      ?.filter((group) => Number(group.is_active) === 1)
+      ?.map((group) => ({
+        ...group,
+        data: (group.data ?? []).filter(
+          (item) => Number(item.is_active) === 1
+        ),
+      }))
+      ?.filter((group) => group.data.length > 0) ?? [];
 
-  /*
-  |--------------------------------------------------------------------------
-  | SORT GROUPS
-  |--------------------------------------------------------------------------
-  */
+  useEffect(() => {
+    if (!visibleGroups.length) return;
 
-  const sortedGroups = useMemo(() => {
-
-    return [...sidebarSections].sort(
-      (a, b) =>
-        Number(a.group_priority ?? 0) -
-        Number(b.group_priority ?? 0)
+    setExpandedGroups(
+      Object.fromEntries(visibleGroups.map((group) => [group.id, true]))
     );
 
-  }, [sidebarSections]);
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | SIDEBAR
-  |--------------------------------------------------------------------------
-  */
+    /**
+     * Only ask for counts on fields that are actually
+     * on screen.
+     */
+    setSidebarStatsQuery(
+      visibleGroups.flatMap((group) =>
+        (group.data ?? []).map((item) => ({
+          key: item.key,
+          module: item.module_name,
+          ignore_email: item.filter_by_email == "1" ? false : true,
+          filters: item.count_filters ?? {},
+        }))
+      )
+    );
+  }, [visibleGroups]);
 
   return (
     <>
-      {/* ---------------------------------------------------------------- */}
-      {/* MOBILE OVERLAY */}
-      {/* ---------------------------------------------------------------- */}
-
+      {/* Mobile Overlay */}
       <AnimatePresence>
-
         {drawerOpen && (
-
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-
             aria-hidden="true"
-
-            /* z-[1000] clears the sticky TopNav (z-[999]) so the open drawer
-               dims the header too, instead of the header punching through it. */
             className="
-              fixed
-              inset-0
-              z-[1000]
-              bg-black/50
-              backdrop-blur-[1px]
+              fixed inset-0 z-[1000]
+              bg-black/50 backdrop-blur-[1px]
               lg:hidden
             "
-
-            onClick={() =>
-              setMobileSidebarOpen(false)
-            }
+            onClick={() => setMobileSidebarOpen(false)}
           />
-
         )}
-
       </AnimatePresence>
-
-
-      {/* ---------------------------------------------------------------- */}
-      {/* SIDEBAR */}
-      {/* ---------------------------------------------------------------- */}
 
       <motion.aside
         id="app-sidebar"
         data-tour="sidebar"
-
         role={!isDesktop ? "dialog" : undefined}
         aria-modal={!isDesktop ? drawerOpen : undefined}
         aria-label="Main navigation"
         aria-hidden={!isDesktop && !drawerOpen}
-        inert={!isDesktop && !drawerOpen ? "" : undefined}
-
         initial={false}
-
         animate={{
           width: collapsed ? 80 : 260,
-
           x: isDesktop || drawerOpen ? 0 : "-100%",
         }}
-
         transition={{
           duration: 0.25,
           ease: [0.22, 1, 0.36, 1],
         }}
-
-        /* As a drawer it must sit above the sticky TopNav (z-[999]) and its own
-           backdrop (z-[1000]). `lg:z-auto` drops it back out of the stack on
-           desktop, where the aside is in-flow (`lg:static`) and never overlaps. */
         className="
+          group
           fixed
           left-0
           top-0
           z-[1010]
-
           flex
           h-screen
           max-w-[85vw]
           flex-col
-
           overflow-hidden
-
           bg-gradient-to-b
           from-sidebar-primary
+          from-0%
           via-sidebar-primary
+          via-2%
           to-sidebar-secondary
-
-          px-1
-
-          text-white
-
+          to-100%
+          text-[var(--sidebar-primary-foreground)]
           shadow-2xl
-
+          px-1
           lg:static
           lg:z-auto
           lg:max-w-none
           lg:shadow-none
         "
       >
-
-        {/* ============================================================ */}
-        {/* LOADING */}
-        {/* ============================================================ */}
-
         {layoutLoading ? (
-
           <div className="animate-pulse space-y-5 p-3">
-
-            {[1, 2, 3, 4].map((group) => (
-
+            {[1, 2, 3].map((group) => (
               <div key={group}>
-
+                {/* Group Header */}
                 {!collapsed && (
                   <div className="mb-3 flex items-center justify-between px-3">
+                    <div
+                      className="
+                        h-3 w-28 rounded
+                        bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)]
+                      "
+                    />
 
-                    <div className="h-3 w-28 rounded bg-white/10" />
-
-                    <div className="h-4 w-4 rounded bg-white/10" />
-
+                    <div
+                      className="
+                        h-4 w-4 rounded
+                        bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)]
+                      "
+                    />
                   </div>
                 )}
 
-
+                {/* Group Items */}
                 <div className="space-y-2">
-
-                  {[1, 2, 3].map((item) => (
-
+                  {[1, 2, 3, 4].map((item) => (
                     <div
                       key={item}
-                      className={`
-                        flex
-                        items-center
-                        gap-3
-                        rounded-xl
-                        p-2
-
-                        ${collapsed
-                          ? "justify-center"
-                          : ""
-                        }
-                      `}
+                      className={`flex items-center gap-3 p-2 ${collapsed ? "justify-center" : ""
+                        }`}
                     >
-
+                      {/* Icon */}
                       <div
                         className="
-                          h-9
-                          w-9
-                          shrink-0
-                          rounded-lg
-                          bg-white/10
+                          h-5 w-5 shrink-0 rounded-full
+                          bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)]
                         "
                       />
 
                       {!collapsed && (
                         <>
+                          {/* Text */}
                           <div
                             className="
-                              h-4
-                              flex-1
-                              rounded
-                              bg-white/10
+                              h-4 flex-1 rounded
+                              bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)]
                             "
                           />
 
+                          {/* Count */}
                           <div
                             className="
-                              h-5
-                              w-8
-                              rounded-full
-                              bg-white/10
+                              h-5 w-8 rounded-full
+                              bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_10%,transparent)]
                             "
                           />
                         </>
                       )}
-
                     </div>
-
                   ))}
-
                 </div>
-
               </div>
-
             ))}
-
           </div>
-
         ) : (
-
           <>
-            {/* ======================================================== */}
-            {/* LOGO */}
-            {/* ======================================================== */}
-
+            {/* Logo */}
             <div
               className="
-                group
-                mx-3
-                my-4
-                h-11
-                shrink-0
-                rounded-xl
-                bg-white/95
+                mx-3 my-4 h-11 rounded-xl
+                bg-background
                 shadow
               "
             >
-
-              <div
-                className="
-                  flex
-                  h-full
-                  items-center
-                  justify-center
-                  gap-3
-                "
-              >
-
+              {/* Removed inner group so the sidebar group controls hover */}
+              <div className="relative flex h-full items-center justify-center gap-3">
                 <img
-                  src={
-                    collapsed
-                      ? logo
-                      : headingLogo
-                  }
-
+                  src={collapsed ? logo : headingLogo}
                   className={`
-                    h-9
-                    w-auto
-                    max-w-[160px]
-                    cursor-pointer
-                    object-contain
-                    transition-all
-                    duration-200
-
-                    ${collapsed
-                      ? "group-hover:hidden"
-                      : ""
-                    }
+                    h-9 w-auto max-w-[160px]
+                    cursor-pointer object-contain
+                    transition-all duration-200
+                    ${collapsed ? "group-hover:hidden" : ""}
                   `}
-
                   alt="App logo"
-
-                  onClick={() =>
-                    navigateTo("")
-                  }
-
+                  onClick={() => {
+                    if (!isDesktop) setMobileSidebarOpen(false);
+                    navigateTo("");
+                  }}
                   draggable={false}
                 />
 
-
-                {/* COLLAPSE BUTTON — desktop only */}
-
+                {/* Collapse / Expand Button — desktop only */}
                 {isDesktop && (
                   <button
                     type="button"
-
                     aria-label={
-                      collapsed
-                        ? "Expand sidebar"
-                        : "Collapse sidebar"
+                      collapsed ? "Expand sidebar" : "Collapse sidebar"
                     }
-
                     title={
-                      collapsed
-                        ? "Expand sidebar"
-                        : "Collapse sidebar"
+                      collapsed ? "Expand sidebar" : "Collapse sidebar"
                     }
-
-                    onClick={() =>
-                      setSidebarCollapsed(
-                        !collapsed
-                      )
-                    }
-
+                    onClick={() => setSidebarCollapsed(!collapsed)}
                     className={`
-                      h-7
-                      w-7
-                      shrink-0
-                      cursor-pointer
-                      items-center
-                      justify-center
+                      flex h-7 w-7
+                      items-center justify-center
                       rounded-full
-                      bg-white
                       shadow
-                      transition-all
-
-                      ${collapsed
-                        ? "hidden group-hover:flex"
-                        : "flex"
-                      }
+                      cursor-pointer
+                      transition-all duration-200
+                      ${collapsed ? "hidden group-hover:flex" : "flex"}
+                      bg-[var(--card)]
                     `}
                   >
-
                     <PanelLeft
-                      className="
-                        h-5
-                        w-5
-                      "
-                      color="#0a3687"
+                      className="h-5 w-5"
+                      color="var(--sidebar-primary)"
                     />
-
                   </button>
                 )}
 
-
-                {/* CLOSE BUTTON — drawer only */}
-
+                {/* Close Button — drawer only */}
                 {!isDesktop && (
                   <button
                     type="button"
-
                     aria-label="Close navigation"
-
-                    onClick={() =>
-                      setMobileSidebarOpen(false)
-                    }
-
+                    onClick={() => setMobileSidebarOpen(false)}
                     className="
-                      flex
-                      h-7
-                      w-7
+                      flex h-7 w-7
                       shrink-0
                       cursor-pointer
                       items-center
                       justify-center
                       rounded-full
-                      bg-white
+                      bg-[var(--card)]
                       shadow
                       transition-all
                       active:scale-90
                     "
                   >
-
                     <X
-                      className="
-                        h-5
-                        w-5
-                      "
-                      color="#0a3687"
+                      className="h-5 w-5"
+                      color="var(--sidebar-primary)"
                     />
-
                   </button>
                 )}
-
               </div>
-
             </div>
 
-
-            {/* ======================================================== */}
             {/* LIVE BUTTON */}
-            {/* ======================================================== */}
-
             <button
-              data-tour="sidebar-live"
-
               onClick={() => {
-
+                if (!isDesktop) setMobileSidebarOpen(false);
                 setActivePage("");
-
                 navigateTo("");
-
-                if (mobileSidebarOpen) {
-                  setMobileSidebarOpen(false);
-                }
-
               }}
-
-              className="
-                group
-                flex
-                w-full
-                shrink-0
-                items-center
-                justify-center
-                px-2
-              "
+              className="flex items-center justify-center"
             >
-
-              {/* LIVE ICON */}
-
+              {/* Icon */}
               <div
-                className={`
-                  z-10
-                  flex
-                  h-12
-                  w-12
-                  shrink-0
-                  items-center
-                  justify-center
+                className="
+                  z-10 flex h-13 w-13
+                  items-center justify-center
                   rounded-full
-                  border-4
-                  bg-white
+                  border-5
+                  border-[var(--topbtn-primary)]
+                  bg-[var(--card)]
                   shadow-md
-
-                  ${activePage === ""
-                    ? "border-blue-500"
-                    : "border-blue-400"
-                  }
-                `}
+                "
               >
-
                 <Radio
-                  className="
-                    h-5
-                    w-5
-                    text-black
-                  "
+                  className="h-6 w-6"
+                  color="var(--foreground)"
                 />
-
               </div>
 
-
-              {/* LIVE LABEL */}
-
+              {/* Live Preview */}
               {!collapsed && (
-
                 <div
                   className="
-                    -ml-3
-                    flex
-                    h-9
-                    flex-1
-                    items-center
-                    justify-center
+                    -ml-3 flex h-9 w-[170px]
+                    items-center justify-center
                     rounded-r-xl
                     bg-gradient-to-r
-                    from-[#0b6dfd]
-                    to-[#074197]
-                    pl-6
-                    pr-4
-                    text-sm
-                    font-medium
-                    text-white
+                    from-[var(--topbtn-primary)]
+                    to-[var(--topbtn-secondary)]
+                    pl-6 pr-4
+                    text-sm font-medium
+                    text-[var(--sidebar-primary-foreground)]
                     shadow-md
                   "
                 >
-
                   Live Preview
-
                 </div>
-
               )}
-
             </button>
 
-
-            {/* ======================================================== */}
-            {/* MENU */}
-            {/* ======================================================== */}
-
+            {/* MENU ITEMS */}
             <div
               className="
                 mt-4
                 flex-1
                 min-h-0
                 overflow-y-auto
-                rounded-lg
+                pr-1 p-1
+                custom-scrollbar
                 border-t
                 border-sidebar-border
-                p-1
-                pr-1
-                custom-scrollbar
+                rounded-lg
               "
             >
+              {visibleGroups.map((group) => (
+                <div key={group.id} className="mb-3">
+                  {/* Group Header */}
+                  {!collapsed && (
+                    <button
+                      onClick={() => toggleGroup(group.id)}
+                      className="
+                        flex w-full
+                        items-center justify-between
+                        rounded-lg
+                        px-3 py-2
+                        text-xs
+                        font-semibold
+                        uppercase
+                        tracking-wide
+                        text-[color-mix(in_srgb,var(--sidebar-primary-foreground)_75%,transparent)]
+                        hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
+                      "
+                    >
+                      <span>{group.group_name}</span>
 
-              {sortedGroups.map((group) => {
+                      {expandedGroups[group.id] ? (
+                        <ChevronDown size={16} />
+                      ) : (
+                        <ChevronRight size={16} />
+                      )}
+                    </button>
+                  )}
 
-                const isExpanded =
-                  expandedGroups[
-                  group.group_name
-                  ];
+                  {/* Group Items */}
+                  {(collapsed || expandedGroups[group.id]) && (
+                    <div className="mt-1 ml-2 space-y-1">
+                      {group.data.map((item) => {
+                        const itemPath = `/${item.navigation}`.replace(
+                          /\/+/g,
+                          "/"
+                        );
 
+                        const isActive =
+                          location.pathname === itemPath ||
+                          location.pathname.startsWith(`${itemPath}/`);
 
-                const sortedItems =
-                  [...(group.data ?? [])].sort(
-                    (a, b) =>
-                      Number(a.weight ?? 0) -
-                      Number(b.weight ?? 0)
-                  );
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              if (isDesktop) {
+                                setSidebarCollapsed(true);
+                              } else {
+                                setMobileSidebarOpen(false);
+                              }
 
-
-                return (
-
-                  <div
-                    key={group.group_name}
-                    className="mb-3"
-                  >
-
-                    {/* ================================================= */}
-                    {/* GROUP HEADER */}
-                    {/* ================================================= */}
-
-                    {!collapsed && (
-
-                      <button
-                        type="button"
-
-                        onClick={() =>
-                          toggleGroup(
-                            group.group_name
-                          )
-                        }
-
-                        className="
-                          flex
-                          w-full
-                          items-center
-                          justify-between
-                          rounded-lg
-                          px-3
-                          py-2
-
-                          text-[11px]
-                          font-semibold
-                          uppercase
-                          tracking-wider
-
-                          text-slate-300
-
-                          transition
-
-                          hover:bg-white/5
-                          hover:text-white
-                        "
-                      >
-
-                        <span>
-                          {group.group_name}
-                        </span>
-
-
-                        {isExpanded ? (
-
-                          <ChevronDown
-                            className="
-                              h-4
-                              w-4
-                            "
-                          />
-
-                        ) : (
-
-                          <ChevronRight
-                            className="
-                              h-4
-                              w-4
-                            "
-                          />
-
-                        )}
-
-                      </button>
-
-                    )}
-
-
-                    {/* ================================================= */}
-                    {/* COLLAPSED GROUP DIVIDER */}
-                    {/* ================================================= */}
-
-                    {collapsed && (
-                      <div
-                        className="
-                          mx-2
-                          mb-2
-                          border-t
-                          border-white/10
-                        "
-                      />
-                    )}
-
-
-                    {/* ================================================= */}
-                    {/* GROUP ITEMS */}
-                    {/* ================================================= */}
-
-                    {(collapsed ||
-                      isExpanded) && (
-
-                        <div className="space-y-1">
-
-                          {sortedItems.map((item) => {
-
-                            const meta =
-                              getMenuMeta(item);
-
-
-                            const isActive =
-                              activePage === item.name;
-
-
-                            const hasCount =
-                              meta.count !== null &&
-                              meta.count !== undefined;
-
-
-                            return (
-
-                              <button
-                                key={item.id}
-
-                                type="button"
-
-                                onClick={() =>
-                                  handleMenuClick(item)
-                                }
-
-                                title={
-                                  collapsed
-                                    ? item.name
-                                    : undefined
-                                }
-
-                                className={`
-                                group
-                                relative
-                                flex
-                                w-full
-                                cursor-pointer
-                                items-center
-                                gap-1
-                                rounded-xl
-                                p-1
-                                transition-all
-                                duration-200
-
-                                ${collapsed
-                                    ? "justify-center"
-                                    : ""
-                                  }
-
-                                ${isActive
-                                    ? "bg-white/12 text-white shadow-lg"
-                                    : "text-slate-300 hover:bg-white/5 hover:text-white"
-                                  }
+                              setActivePage(item.id);
+                              navigateTo(itemPath);
+                            }}
+                            className={`
+                              flex w-full items-center gap-3 rounded-lg p-2
+                              transition-all duration-200
+                              hover:bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_5%,transparent)]
+                              ${collapsed ? "justify-center" : ""}
+                              ${isActive
+                                ? "bg-[color-mix(in_srgb,var(--sidebar-primary-foreground)_15%,transparent)] rounded-full shadow-lg"
+                                : ""
+                              }
+                            `}
+                          >
+                            <Icon
+                              name={item.icon}
+                              library={item.library}
+                              className={`
+                                h-4 w-4 shrink-0
+                                ${isActive ? "scale-125 text-white" : ""}
                               `}
-                              >
+                            />
 
-                                {/* ACTIVE INDICATOR */}
+                            {!collapsed && (
+                              <>
+                                <span className="flex-1 truncate text-left">
+                                  {item.name}
+                                </span>
 
-                                {isActive && (
-
+                                {item.key &&
+                                  sidebarCounts?.stats?.[item.key] &&
+                                  sidebarCountPending ? (
+                                  <Skeleton count={1} />
+                                ) : (
                                   <span
                                     className="
-                                    absolute
-                                    left-0
-                                    h-7
-                                    w-1
-                                    rounded-r-full
-                                    bg-blue-400
-                                  "
-                                  />
-
+                                      rounded-full
+                                      bg-[color-mix(in_srgb,var(--primary)_20%,transparent)]
+                                      px-2 py-0.5
+                                      text-xs
+                                    "
+                                  >
+                                    {sidebarCounts?.stats?.[item.key]?.count ||
+                                      0}
+                                  </span>
                                 )}
-
-
-                                {/* ICON */}
-
-                                <div
-                                  className={`
-                                  flex
-                                  h-9
-                                  w-9
-                                  shrink-0
-                                  items-center
-                                  justify-center
-                                  rounded-lg
-                                  transition-all
-                                  duration-200
-
-                                  ${isActive
-                                      ? " text-blue-300"
-                                      : ""
-                                    }
-                                `}
-                                >
-
-                                  <Icon
-                                    name={item.icon}
-                                    library={item.library}
-
-                                    className={`
-                                    h-5
-                                    w-5
-                                    transition-transform
-                                    duration-200
-
-                                    ${isActive
-                                        ? "scale-110"
-                                        : "group-hover:scale-105"
-                                      }
-                                  `}
-                                  />
-
-                                </div>
-
-
-                                {/* LABEL + COUNT */}
-
-                                {!collapsed && (
-
-                                  <>
-                                    <span
-                                      className={`
-                                      flex-1
-                                      truncate
-                                      text-left
-                                      text-sm
-
-                                      ${isActive
-                                          ? "font-semibold"
-                                          : "font-medium"
-                                        }
-                                    `}
-                                    >
-                                      {item.name}
-                                    </span>
-
-
-                                    {/* COUNT */}
-
-                                    {hasCount && (
-
-                                      <span
-                                        className={`
-                                        min-w-7
-                                        rounded-full
-                                        px-2
-                                        py-0.5
-                                        text-center
-                                        text-[11px]
-                                        font-semibold
-
-                                        ${isActive
-                                            ? "bg-blue-500 text-white"
-                                            : "bg-white/10 text-slate-300"
-                                          }
-                                      `}
-                                      >
-
-                                        {meta.loading ? (
-
-                                          <Skeleton
-                                            width={14}
-                                            height={12}
-                                            baseColor="rgba(255,255,255,0.12)"
-                                            highlightColor="rgba(255,255,255,0.20)"
-                                          />
-
-                                        ) : (
-
-                                          meta.count ?? 0
-
-                                        )}
-
-                                      </span>
-
-                                    )}
-
-                                  </>
-
-                                )}
-
-                              </button>
-
-                            );
-
-                          })}
-
-                        </div>
-
-                      )}
-
-                  </div>
-
-                );
-
-              })}
-
+                              </>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
 
-
-            {/* ======================================================== */}
-            {/* SETTINGS */}
-            {/* ======================================================== */}
-
-            <div onClick={() => navigateTo("/settings/controller")}
-              className="my-6 flex items-center justify-center cursor-pointer border-t border-sidebar-border p-2 rounded-full shadow-lg shadow-black">
+            {/* SIDEBAR FOOTER */}
+            <div
+              onClick={() => {
+                if (!isDesktop) setMobileSidebarOpen(false);
+                navigateTo("/settings/controller");
+              }}
+              className="
+                my-6
+                flex
+                cursor-pointer
+                items-center
+                justify-center
+                border-t
+                border-sidebar-border
+                p-2
+                rounded-full
+                shadow-lg
+                shadow-[color-mix(in_srgb,var(--foreground)_100%,transparent)]
+              "
+            >
               {/* Progress Circle */}
               <div
                 className="
-    relative z-10 grid size-14 place-items-center rounded-full
-    after:absolute after:inset-1.5 after:rounded-full after:bg-[#042158]
-    shrink-0
-  "
+                  relative z-10
+                  grid size-14
+                  shrink-0
+                  place-items-center
+                  rounded-full
+                  after:absolute
+                  after:inset-1.5
+                  after:rounded-full
+                  after:bg-[var(--sidebar-primary)]
+                "
                 style={{
                   background: `conic-gradient(
-      #1775ef ${summary?.total_score ?? 0}%,
-      rgba(107,141,189,.33) 0%
-    )`,
+                    var(--topbtn-primary) ${summary?.total_score ?? 0}%,
+                    color-mix(
+                      in srgb,
+                      var(--sidebar-primary) 33%,
+                      transparent
+                    ) 0%
+                  )`,
                 }}
               >
-                <span className="relative z-10 text-sm font-semibold text-white ">
+                <span
+                  className="
+                    relative z-10
+                    text-sm
+                    font-semibold
+                    text-[var(--sidebar-primary-foreground)]
+                  "
+                >
                   {summary?.total_score ?? 0}%
                 </span>
               </div>
@@ -1305,25 +668,35 @@ export function Sidebar() {
               {!collapsed && (
                 <div
                   className="
-        -ml-3 flex h-12 w-[170px]
-        items-center rounded-r-xl
-        border border-[#3973c9]
-        bg-gradient-to-b from-[#011334] to-[#032e7e]
-        pl-6 pr-4 shadow-md
-        max-h-[850px]:hidden
-      "
+                    -ml-3
+                    flex h-12 w-[170px]
+                    max-h-[850px]:hidden
+                    items-center
+                    rounded-r-xl
+                    border
+                    border-[var(--sidebar-border)]
+                    bg-gradient-to-b
+                    from-[var(--sidebar-primary)]
+                    to-[var(--sidebar-secondary)]
+                    pl-6 pr-4
+                    shadow-md
+                  "
                 >
-                  <p className="text-sm font-medium leading-5 text-white">
-                    Automation Score
-
+                  <p
+                    className="
+                      text-sm
+                      font-medium
+                      leading-5
+                      text-[var(--sidebar-primary-foreground)]
+                    "
+                  >
+                    {"Automation Score"}
                   </p>
                 </div>
               )}
             </div>
           </>
-
         )}
-
       </motion.aside>
     </>
   );

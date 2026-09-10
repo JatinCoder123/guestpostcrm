@@ -1,0 +1,100 @@
+/* The available settings column can be much narrower than the viewport. */
+.settings-content {
+  container: settings / inline-size;
+}
+
+.settings-page {
+  overflow-wrap: anywhere;
+}
+
+.layout-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.layout-editor-grid > * {
+  min-width: 0;
+}
+
+.layout-editor-grid > :first-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.layout-editor-header,
+.layout-editor-header > :last-child {
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.layout-editor [aria-roledescription="sortable"] {
+  touch-action: none;
+}
+
+@media (max-width: 1023px) {
+  .settings-shell > aside {
+    border-radius: inherit;
+  }
+
+  .settings-shell nav p {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .settings-shell input[type="search"] {
+    min-height: 2.75rem;
+    font-size: 1rem;
+  }
+}
+
+@container settings (min-width: 800px) {
+  .layout-editor-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .layout-editor-grid > :first-child {
+    border-bottom: 0;
+    border-right: 1px solid var(--border);
+  }
+}
+
+@container settings (max-width: 599px) {
+  .settings-page > :first-child {
+    padding-inline: 0;
+  }
+
+  .layout-editor-header {
+    align-items: flex-start;
+    padding-inline: 0.75rem;
+  }
+
+  .layout-editor-header > :last-child {
+    margin-left: 0;
+  }
+
+  .layout-editor [aria-roledescription="sortable"] {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  /* Nested rows need readable names before their drag and visibility controls. */
+  .layout-tree-row {
+    flex-wrap: wrap;
+  }
+
+  .layout-tree-row > .min-w-0 {
+    order: -1;
+    flex-basis: 100%;
+  }
+
+  .layout-tree-row p {
+    white-space: normal;
+  }
+
+  .settings-page input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
+  .settings-page select,
+  .settings-page textarea {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 1rem;
+  }
+}

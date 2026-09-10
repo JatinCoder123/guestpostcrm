@@ -51,13 +51,23 @@ export const contactKeys = {
  */
 export const useContact = (email) => {
     return useQuery({
-        queryKey: contactKeys.byEmail(email),
+        queryKey: ["contact", email],
 
-        queryFn: () =>
-            getContactByEmail(email),
+        queryFn: async () => {
+            console.log("🔥 GET CONTACT API CALLED", email);
+
+            return getContactByEmail(email);
+        },
 
         enabled: Boolean(email),
-        // 5 min
+
+        retry: false,
+
+        staleTime: Infinity,
+
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
     });
 };
 /**

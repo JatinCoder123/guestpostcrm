@@ -12,8 +12,9 @@ import LatestMessage from "../LatestMessage";
 import { useTimeline } from "../../context/TimelineContext";
 import { useTimelineLoading } from "../../hooks/useTimelineLoading";
 import { useInfiniteLedger } from "../../queries/ledger.queries";
-import useRecordLock from "../../hooks/useRecordLock";
 import LockedBar from "../LockedBar";
+import useRecordLock from "../../hooks/useRecordLock";
+
 export function TimelinePage() {
   const [showAvatar, setShowAvatar] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
@@ -24,6 +25,7 @@ export function TimelinePage() {
   const { currentEmail } = useTimeline()
   const { recordUsers, isLocked } = useRecordLock({ email: currentEmail, compareTo: 'currentTimeline', page: ["/"] })
   const { data } = useInfiniteLedger(currentEmail);
+
   const ladger =
     data?.pages?.flatMap(
       (page) => page.data || []
@@ -86,7 +88,7 @@ export function TimelinePage() {
               </div>
 
               <aside ref={summaryColumnRef} className="min-w-0 flex flex-col gap-4">
-                <LatestMessage handleMessageClick={handleMessageClick} classes={isLocked ? 'pointer-events-none opacity-50' : ''} />
+                <LatestMessage handleMessageClick={handleMessageClick} />
                 <MailerSummaryHeader />
               </aside>
             </div>

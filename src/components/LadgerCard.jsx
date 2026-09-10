@@ -27,11 +27,11 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
                     <div key={parent.id} className="relative flex gap-5 pb-3">
                         {/* LEFT SIDE */}
                         <div className="relative flex w-10 shrink-0 flex-col items-center pt-1">
-                            <div className="z-20 flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm ring-4 ring-white">
+                            <div className="z-20 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm ring-4 ring-background">
                                 <ParentIcon className="h-4 w-4" />
                             </div>
 
-                            <div className="absolute bottom-[-13px] top-9 border-l border-dashed border-gray-500"></div>
+                            <div className="absolute bottom-[-13px] top-9 border-l border-dashed border-border"></div>
                         </div>
 
                         {/* RIGHT */}
@@ -50,20 +50,20 @@ function ParentCard({ parent, toggleParent }) {
     return (
         <div
             onClick={() => toggleParent(parent.id)}
-            className="group min-h-[56px] cursor-pointer rounded-lg border border-sky-300 bg-sky-50 px-4 py-3 transition hover:border-blue-400 hover:bg-sky-100/70 hover:shadow-sm"
+            className="group min-h-[56px] cursor-pointer rounded-lg border border-border bg-primary/5 px-4 py-3 transition hover:border-primary hover:bg-primary/10 hover:shadow-sm"
         >
             <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
                 <div className="min-w-0 grow basis-[min(100%,9rem)]">
                     <h2
                         title={parent.description}
-                        className="text-sm font-medium text-gray-900 break-words line-clamp-2"
+                        className="text-sm font-medium text-foreground break-words line-clamp-2"
                     >
                         {parent.description}
                     </h2>
                 </div>
 
                 <div className="ml-auto shrink-0 text-right">
-                    <p className="whitespace-nowrap text-[11px] text-gray-500">
+                    <p className="whitespace-nowrap text-[11px] text-muted-foreground">
                         {parent.date_entered}
                     </p>
                 </div>
@@ -126,19 +126,19 @@ function ChildCard({ parentId, handleMessageClick }) {
                         className="relative animate-pulse"
                     >
                         {/* CONNECTOR */}
-                        <div className="absolute -left-[42px] top-6 w-[42px] border-t-2 border-dashed border-gray-200"></div>
+                        <div className="absolute -left-[42px] top-6 w-[42px] border-t-2 border-dashed border-border"></div>
 
                         {/* DOT */}
-                        <div className="absolute -left-[54px] top-[18px] w-3 h-3 rounded-full bg-gray-200 z-20"></div>
+                        <div className="absolute -left-[54px] top-[18px] w-3 h-3 rounded-full bg-muted z-20"></div>
 
                         {/* CARD */}
-                        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
                             <div className="flex items-center gap-3 px-4 py-4 sm:px-5">
-                                <div className="w-9 h-9 shrink-0 rounded-lg bg-gray-200"></div>
+                                <div className="w-9 h-9 shrink-0 rounded-lg bg-muted"></div>
 
                                 <div className="min-w-0 flex-1 space-y-2">
-                                    <div className="h-3 w-full max-w-[8rem] bg-gray-200 rounded"></div>
-                                    <div className="h-2 w-full max-w-[5rem] bg-gray-100 rounded"></div>
+                                    <div className="h-3 w-full max-w-[8rem] bg-muted rounded"></div>
+                                    <div className="h-2 w-full max-w-[5rem] bg-muted rounded"></div>
                                 </div>
                             </div>
                         </div>
@@ -238,16 +238,16 @@ function ChildItem({
             }
         >
             {/* CONNECTOR — spans from the dot's right edge to the card edge */}
-            <div className="absolute -left-[42px] top-6 w-[42px] border-t-2 border-dashed border-gray-300"></div>
+            <div className="absolute -left-[42px] top-6 w-[42px] border-t-2 border-dashed border-border"></div>
 
             {/* DOT — centred on the parent rail's dashed vertical line */}
             <div
                 className={`
                     absolute -left-[54px] top-[18px]
-                    w-3 h-3 rounded-full border-2 border-green-400
+                    w-3 h-3 rounded-full border-2 border-primary
                     ${isHovered
-                        ? "bg-green-300"
-                        : "bg-white"
+                        ? "bg-primary/20"
+                        : "bg-card"
                     }
                     z-20
                 `}
@@ -265,11 +265,11 @@ function ChildItem({
                     )
                 }
                 className={`
-                    bg-white border rounded-xl overflow-hidden
+                    bg-card border rounded-xl overflow-hidden
                     transition-all duration-300 cursor-pointer
                     ${isHovered
-                        ? "border-green-200 shadow-lg scale-[1.01]"
-                        : "border-gray-200 shadow-sm"
+                        ? "border-primary/30 shadow-lg scale-[1.01]"
+                        : "border-border shadow-sm"
                     }
                 `}
             >
@@ -282,7 +282,7 @@ function ChildItem({
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3.5 sm:px-5">
                     {/* LEFT */}
                     <div className="flex min-w-0 grow basis-[min(100%,11rem)] items-center gap-3">
-                        <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center bg-green-50">
+                        <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center bg-primary/10">
                             {Icon && (
                                 <img
                                     src={Icon}
@@ -295,7 +295,7 @@ function ChildItem({
                         <div className="min-w-0">
                             <h3
                                 title={child?.type_c}
-                                className="text-sm font-medium text-gray-800 break-words line-clamp-2 sm:text-[15px]"
+                                className="text-sm font-medium text-card-foreground break-words line-clamp-2 sm:text-[15px]"
                             >
                                 {
                                     child?.type_c
@@ -306,13 +306,13 @@ function ChildItem({
 
                     {/* RIGHT */}
                     <div className="ml-auto flex shrink-0 items-center gap-x-2 gap-y-0.5 max-sm:w-full max-sm:justify-between max-sm:pl-12 sm:flex-col sm:items-end sm:text-right">
-                        <p className="whitespace-nowrap text-[11px] text-gray-500 sm:text-xs">
+                        <p className="whitespace-nowrap text-[11px] text-muted-foreground sm:text-xs">
                             {
                                 child?.date_entered
                             }
                         </p>
 
-                        <p className="min-w-0 max-w-[11rem] truncate text-xs text-gray-700 sm:text-sm">
+                        <p className="min-w-0 max-w-[11rem] truncate text-xs text-muted-foreground sm:text-sm">
                             <i>
                                 - by
                             </i>{" "}
@@ -339,7 +339,7 @@ function ChildItem({
                     className="
                         fixed inset-0 z-[9999]
                         flex items-center justify-center
-                        bg-black/40 backdrop-blur-sm
+                        bg-foreground/40 backdrop-blur-sm
                         p-4
                     "
                 >
@@ -351,7 +351,7 @@ function ChildItem({
                             e.stopPropagation()
                         }
                         className="
-                            bg-white
+                            bg-card
                             w-full
                             max-w-7xl
                             h-[90vh]
@@ -382,8 +382,8 @@ function ChildItem({
                                                 px-4 py-2 rounded-lg text-sm font-medium transition
                                                 ${activeTab ===
                                                     tab.key
-                                                    ? "bg-blue-600 text-white"
-                                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : "bg-muted text-muted-foreground hover:bg-muted"
                                                 }
                                             `}
                                         >
@@ -405,7 +405,7 @@ function ChildItem({
                                 className="
                                     w-10 h-10
                                     rounded-lg
-                                    hover:bg-gray-100
+                                    hover:bg-muted
                                     text-xl
                                 "
                             >
@@ -482,10 +482,10 @@ function ChildItem({
                                             }
                                             className="
                                             px-6 py-3
-                                            bg-green-600
-                                            text-white
+                                            bg-primary
+                                            text-primary-foreground
                                             rounded-xl
-                                            hover:bg-green-700
+                                            hover:bg-primary/90
                                         "
                                         >
                                             Open

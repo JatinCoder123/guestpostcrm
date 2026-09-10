@@ -237,7 +237,7 @@ function SortDropdown() {
                             absolute
                             top-[115%]
                             left-0
-                            z-50
+                            z-[9999]
                             w-[340px]
                         "
                     >

@@ -290,7 +290,6 @@ export function ReminderPage() {
         columns={columns}
         slice={"reminders"}
         preferences={effectivePreferences}
-        statusKey={"status"}
         statusCount={statusCount}
         statusList={statusList}
         pageIndex={pageIndex}

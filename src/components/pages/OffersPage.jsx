@@ -327,9 +327,6 @@ export function OffersPage() {
       }
       columns={columns}
       slice={"offers"}
-      statusKey={
-        "offer_status"
-      }
       statusList={
         statusList
       }

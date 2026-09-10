@@ -49,8 +49,7 @@ export const useLinkRemovalCount = () =>
     useQuery({
         queryKey: backlinkKeys.linkRemovalCount,
         queryFn: getLinkRemovalCount,
-        refetchInterval: 30 * 1000,
-        staleTime: 15 * 1000,
+        staleTime: 5 * 60 * 1000,
     });
 
 export const useBacklinkStats = () => {
@@ -148,14 +147,14 @@ export const useBacklink =
                 Boolean(id),
         });
 
-export const useExtractedBlogLinks = (sourceUrl) =>{
+export const useExtractedBlogLinks = (sourceUrl) => {
     console.log("useExtractedBlogLinks", sourceUrl);
-    return  useQuery({
+    return useQuery({
         queryKey: backlinkKeys.extractedLinks(sourceUrl),
         queryFn: () => getExtractedBlogLinks(sourceUrl),
         enabled: Boolean(sourceUrl),
     });
-    
+
 }
 
-     
+

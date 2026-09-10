@@ -41,7 +41,7 @@ export const useNext = () => {
         console.log("CURRENT INDEX", currentIndex, currentEmail, inboxEmails);
 
         if (currentIndex === -1) {
-            navigate("/unreplied-emails");
+            navigate("/entity/inbox/list/table");
             return;
         }
 
@@ -66,7 +66,7 @@ export const useNext = () => {
         if (!nextEmailObj) {
             localStorage.removeItem("email");
             setEnteredEmail("");
-            navigate("/unreplied-emails");
+            navigate("/entity/inbox/list/table");
             return;
         }
 

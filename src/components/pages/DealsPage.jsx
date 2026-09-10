@@ -238,7 +238,6 @@ export function DealsPage() {
       tableName={"Deals"}
       columns={columns}
       slice={"deals"}
-      statusKey={"status"}
       statusList={statusList}
       pageIndex={pageIndex}
       statusCount={statusCount}

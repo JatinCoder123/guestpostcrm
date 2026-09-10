@@ -14,7 +14,6 @@ import orderRemReducer from "./Slices/reminder.js";
 import userReducer from "./Slices/userSlice.js";
 import eventReducer from "./Slices/eventSlice.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
-import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
 import hotReducer from "./Slices/hotSlice.js";
 import tagReducer from "./Slices/tag.js";
 import syncReducer from "./Slices/syncSlice.js";
@@ -41,7 +40,6 @@ export const store = configureStore({
     events: eventReducer,
     linkExchange: linkExchangeReducer,
     hot: hotReducer,
-    contactdefaulter: contactdefaulterReducer,
     user: userReducer,
     tag: tagReducer,
     sync: syncReducer,

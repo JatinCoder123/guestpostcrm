@@ -20,7 +20,7 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 /* Compact on small screens so the whole action row still fits, full size once
    there is room. Applied to every button in the bar. */
 const NAV_BTN =
-    "shrink-0 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg lg:px-5";
+    "shrink-0 rounded-xl bg-gradient-to-r from-[var(--topbtn-primary)] to-[var(--topbtn-secondary)] px-3 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg lg:px-5";
 
 function NavigationBar({
     messageLimit,
