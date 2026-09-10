@@ -3,18 +3,21 @@
  * collections and kept free of React so it can be tested
  * directly.
  *
- * A drag is a single ordinary SmartGateway `update`:
+ * A rank change is persisted through the supplied requestMove:
  *
  *   1. Build the desired local order in a copy.
  *   2. Read the IDs immediately before and after the moved
  *      record in that final order.
- *   3. Send one update carrying those two neighbour IDs and
+ *   3. Ask the caller to persist those two neighbour IDs and
  *      the destination scope.
  *   4. On confirmation, refetch the scope and display the
  *      order the server actually stored.
  *
- * React never generates a rank, never sends current_ranks and
- * never writes a rebalance. The backend generates the rank,
+ * The sidebar uses this flow for group reorders and module
+ * reorders inside one group. Cross-group module moves are Sugar
+ * relationship operations and bypass this rank flow. React never
+ * generates a rank, never sends current_ranks and never writes a
+ * rebalance. The backend generates the rank,
  * validates the destination scope, takes the lock, detects
  * stale neighbours, prevents duplicates and rebalances
  * transactionally if it needs to.

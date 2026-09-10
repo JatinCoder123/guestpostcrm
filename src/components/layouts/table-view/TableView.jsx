@@ -1,8 +1,8 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { BarChart3, Columns3, Plus, RotateCcw, Search, Table2 } from "lucide-react";
+import { BarChart3, Columns3, Plus, RotateCcw, Search, Table2, Wrench } from "lucide-react";
 import * as Tabs from "@radix-ui/react-tabs";
-import { EmptyState, GhostButton, InlineAlert, LoadingBlock, Toggle } from "./parts/Primitives";
+import { EmptyState, GhostButton, InlineAlert, LoadingBlock, PrimaryButton, Toggle } from "./parts/Primitives";
 import ViewPicker from "./parts/ViewPicker";
 import ColumnList from "./parts/ColumnList";
 import ColumnInspector from "./parts/ColumnInspector";
@@ -13,6 +13,7 @@ import useTableLayoutEditor from "./useTableLayoutEditor";
 import usePresentationDrafts from "./usePresentationDrafts";
 import { useTableViewRegistry } from "@/queries/flexibility.queries";
 import { DEFAULT_VIEW_KEY } from "@/utils/tableViewRegistry";
+import { useLayoutDraftGuard } from "@/components/layouts/LayoutDraftContext";
 
 export default function TableView() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,6 +31,8 @@ export default function TableView() {
   });
   const { model, view, writing, selection, setSelection, contractError } = editor;
   const drafts = usePresentationDrafts(editor, moduleKey, viewKey);
+  const dirty = editor.dirty || drafts.dirty;
+  useLayoutDraftGuard(`layout-table-${moduleKey}-${viewKey}`, dirty);
   const showingStatuses = section === "statuses";
   const column = drafts.columns.find((item) => item.accessor === selection?.accessor);
   const status = drafts.statuses.find((item) => item.key === selection?.key);
@@ -69,8 +72,13 @@ export default function TableView() {
   };
   const reload = () => {
     if (writing) return;
+    drafts.resetAll();
     if (selectedView) editor.reload();
     registry.refetch();
+  };
+  const repair = async () => {
+    if (!dirty || writing) return;
+    await drafts.repair();
   };
   const rankError = showingStatuses ? editor.statusRankError : editor.rankError;
 
@@ -81,9 +89,15 @@ export default function TableView() {
           <h2 className="text-lg font-semibold text-foreground">Table View</h2>
           <p className="mt-1 text-sm text-muted-foreground">Choose a view to edit its columns and statuses.</p>
         </div>
-        <GhostButton icon={RotateCcw} onClick={reload} disabled={writing || registry.isFetching || editor.contractFetching}>
-          Reload
-        </GhostButton>
+        <div className="flex items-center gap-2">
+          {dirty && <span className="text-xs font-medium text-amber-700">Unapplied changes</span>}
+          <GhostButton icon={RotateCcw} onClick={reload} disabled={writing || !dirty}>
+            Discard
+          </GhostButton>
+          <PrimaryButton icon={Wrench} onClick={repair} disabled={writing || !dirty} busy={writing}>
+            Repair
+          </PrimaryButton>
+        </div>
       </div>
 
       <div className="layout-editor-header flex flex-wrap items-center gap-3 border-b border-border px-5 py-3">
@@ -146,7 +160,7 @@ export default function TableView() {
                       aria-label={showingStatuses ? "Search statuses" : "Search columns"}
                       className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40" />
                   </div>
-                  <p className="text-xs text-muted-foreground">Drag to reorder. Order saves automatically.</p>
+                  <p className="text-xs text-muted-foreground">Drag to reorder. Click Repair when the layout is ready.</p>
                 </div>
                 {rankError && <div className="px-4 pb-3"><InlineAlert tone="warning" title="Reordering is unavailable">
                   Reload this view to try again. You can still edit its settings.

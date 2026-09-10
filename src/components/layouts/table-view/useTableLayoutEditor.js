@@ -24,7 +24,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import toast from "react-hot-toast";
-import { savePresentationChanges } from "@/utils/tablePresentationUpdate";
 
 import { reorderCopy } from "@/utils/rank";
 
@@ -52,7 +51,6 @@ import {
 
 import {
   describeMetadataWriteError as describeWriteError,
-  isStaleReadError,
 } from "@/api/flexibility.api";
 
 import {
@@ -125,6 +123,30 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
    */
   const pendingWrites = useRef(0);
 
+  const pendingMutations = useRef(new Map());
+  const pendingCreates = useRef([]);
+  const [, setDraftVersion] = useState(0);
+
+  const mutationKey = useCallback(
+    (draft) => JSON.stringify([draft?.kind, draft?.id, draft?.property]),
+    [],
+  );
+
+  const stageMutation = useCallback(
+    (draft) => {
+      const key = mutationKey(draft);
+
+      if (isNoOpChange(draft?.entry, draft?.value)) {
+        pendingMutations.current.delete(key);
+      } else {
+        pendingMutations.current.set(key, draft);
+      }
+
+      setDraftVersion((version) => version + 1);
+    },
+    [mutationKey],
+  );
+
   /** Re-run server-to-local sync after the final in-flight write settles. */
   const [settledWriteVersion, setSettledWriteVersion] = useState(0);
 
@@ -184,6 +206,15 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
      */
     if (!sameView) {
       pendingWrites.current = 0;
+
+      const hadDrafts =
+        pendingMutations.current.size > 0 || pendingCreates.current.length > 0;
+      pendingMutations.current.clear();
+      pendingCreates.current = [];
+
+      if (hadDrafts) {
+        setDraftVersion((version) => version + 1);
+      }
     }
 
     /*
@@ -215,7 +246,12 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
      * A write is in flight against this same view, so this payload predates
      * the optimistic state and must not replace it.
      */
-    if (sameView && pendingWrites.current > 0) {
+    if (
+      sameView &&
+      (pendingWrites.current > 0 ||
+        pendingMutations.current.size > 0 ||
+        pendingCreates.current.length > 0)
+    ) {
       return;
     }
 
@@ -339,57 +375,11 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
    * server's answer, so the editor never sits on a value that was not stored.
    */
   const runWrite = useCallback(
-    async ({ mutation, restore, accessor = null, statusKey = null }) => {
-      pendingWrites.current += 1;
-
-      if (accessor) {
-        setBusyAccessor(accessor);
-      }
-
-      if (statusKey) {
-        setBusyStatusKey(statusKey);
-      }
-
-      try {
-        await propertyWrite.mutateAsync({ mutation, moduleKey, viewKey });
-
-        return true;
-      } catch (error) {
-        restore?.();
-
-        toast.error(describeWriteError(error));
-
-        /*
-         * A stale read means the payloads still on screen are no longer
-         * valid. The mutation refetches on success only, so the reload is
-         * forced here.
-         */
-        if (isStaleReadError(error)) {
-          try {
-            await refetchContractQuery();
-          } catch {
-            /* Reported by the query itself. */
-          }
-        }
-
-        return false;
-      } finally {
-        pendingWrites.current = Math.max(0, pendingWrites.current - 1);
-
-        if (pendingWrites.current === 0) {
-          setSettledWriteVersion((version) => version + 1);
-        }
-
-        if (accessor) {
-          setBusyAccessor(null);
-        }
-
-        if (statusKey) {
-          setBusyStatusKey(null);
-        }
-      }
+    async ({ draft }) => {
+      stageMutation(draft);
+      return true;
     },
-    [moduleKey, propertyWrite, refetchContractQuery, viewKey],
+    [stageMutation],
   );
 
   /** Guard shared by every edit path. */
@@ -417,13 +407,6 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
 
       const next = Boolean(nextVisible);
 
-      if (isNoOpChange(entry, next)) {
-        return;
-      }
-
-      const previous = columns;
-
-      /* Optimistic. */
       setColumns((current) =>
         current.map((item) =>
           item.accessor === column.accessor ? { ...item, visible: next } : item,
@@ -431,12 +414,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
       );
 
       await runWrite({
-        mutation: buildColumnVisibilityMutation(column, next),
-        restore: () => setColumns(previous),
-        accessor: column.accessor,
+        draft: {
+          kind: "column",
+          id: column.accessor,
+          property: "visible",
+          value: next,
+          entry,
+        },
       });
     },
-    [assertWritable, columns, runWrite],
+    [assertWritable, runWrite],
   );
 
   const toggleColumnVisible = useCallback(
@@ -456,12 +443,6 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
 
       const width = clampWidth(nextWidth, column);
 
-      if (isNoOpChange(entry, width)) {
-        return;
-      }
-
-      const previous = columns;
-
       setColumns((current) =>
         current.map((item) =>
           item.accessor === column.accessor ? { ...item, width } : item,
@@ -469,12 +450,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
       );
 
       await runWrite({
-        mutation: buildColumnWidthMutation(column, width),
-        restore: () => setColumns(previous),
-        accessor: column.accessor,
+        draft: {
+          kind: "column",
+          id: column.accessor,
+          property: "width",
+          value: width,
+          entry,
+        },
       });
     },
-    [assertWritable, columns, runWrite],
+    [assertWritable, runWrite],
   );
 
   /* ----------------------------------------------------------- reorder */
@@ -500,15 +485,8 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         accessors.length,
       );
 
-      let currentContract = contract;
-
       for (let index = 0; index < accessors.length; index += 1) {
-        const normalized = normalizeTableContract(currentContract, {
-          moduleKey,
-          viewKey,
-        });
-
-        const target = normalized?.columns.find(
+        const target = columns.find(
           (column) => column.accessor === accessors[index],
         );
 
@@ -524,26 +502,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
           );
         }
 
-        if (isNoOpChange(entry, ranks[index])) {
-          continue;
-        }
-
-        pendingWrites.current += 1;
-
-        try {
-          const result = await propertyWrite.mutateAsync({
-            mutation: buildColumnRankMutation(target, ranks[index]),
-            moduleKey,
-            viewKey,
-          });
-
-          currentContract = result.contract;
-        } finally {
-          pendingWrites.current = Math.max(0, pendingWrites.current - 1);
-        }
+        stageMutation({
+          kind: "column",
+          id: target.accessor,
+          property: "rank",
+          value: ranks[index],
+          entry,
+        });
       }
     },
-    [columns, contract, moduleKey, propertyWrite, viewKey],
+    [columns, stageMutation],
   );
 
   /**
@@ -627,7 +595,7 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
 
           await rebalance(reordered);
 
-          toast.success("Column order rebalanced.");
+          toast.success("Column order staged.");
 
           return;
         }
@@ -642,9 +610,13 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         );
 
         await runWrite({
-          mutation: buildColumnRankMutation(moved, nextRank),
-          restore: () => setColumns(previous),
-          accessor: activeAccessor,
+          draft: {
+            kind: "column",
+            id: activeAccessor,
+            property: "rank",
+            value: nextRank,
+            entry,
+          },
         });
       } catch (error) {
         setColumns(previous);
@@ -683,12 +655,6 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
 
       const next = Boolean(nextVisible);
 
-      if (isNoOpChange(entry, next)) {
-        return;
-      }
-
-      const previous = statuses;
-
       setStatuses((current) =>
         current.map((item) =>
           item.key === status.key ? { ...item, visible: next } : item,
@@ -696,12 +662,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
       );
 
       await runWrite({
-        mutation: buildStatusVisibilityMutation(status, next),
-        restore: () => setStatuses(previous),
-        statusKey: status.key,
+        draft: {
+          kind: "status",
+          id: status.key,
+          property: "visible",
+          value: next,
+          entry,
+        },
       });
     },
-    [assertWritable, runWrite, statuses],
+    [assertWritable, runWrite],
   );
 
   const toggleStatusVisible = useCallback(
@@ -723,12 +693,6 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         name: selection?.name ?? "",
       };
 
-      if (isNoOpChange(entry, next)) {
-        return;
-      }
-
-      const previous = statuses;
-
       setStatuses((current) =>
         current.map((item) =>
           item.key === status.key ? { ...item, icon: next } : item,
@@ -736,12 +700,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
       );
 
       await runWrite({
-        mutation: buildStatusIconMutation(status, next),
-        restore: () => setStatuses(previous),
-        statusKey: status.key,
+        draft: {
+          kind: "status",
+          id: status.key,
+          property: "icon",
+          value: next,
+          entry,
+        },
       });
     },
-    [assertWritable, runWrite, statuses],
+    [assertWritable, runWrite],
   );
 
   /** Rewrite every status rank into fresh space when no midpoint remains. */
@@ -754,15 +722,8 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         keys.length,
       );
 
-      let currentContract = contract;
-
       for (let index = 0; index < keys.length; index += 1) {
-        const normalized = normalizeTableContract(currentContract, {
-          moduleKey,
-          viewKey,
-        });
-
-        const target = normalized?.statuses.find(
+        const target = statuses.find(
           (status) => status.key === keys[index],
         );
 
@@ -778,26 +739,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
           );
         }
 
-        if (isNoOpChange(entry, ranks[index])) {
-          continue;
-        }
-
-        pendingWrites.current += 1;
-
-        try {
-          const result = await propertyWrite.mutateAsync({
-            mutation: buildStatusRankMutation(target, ranks[index]),
-            moduleKey,
-            viewKey,
-          });
-
-          currentContract = result.contract;
-        } finally {
-          pendingWrites.current = Math.max(0, pendingWrites.current - 1);
-        }
+        stageMutation({
+          kind: "status",
+          id: target.key,
+          property: "rank",
+          value: ranks[index],
+          entry,
+        });
       }
     },
-    [contract, moduleKey, propertyWrite, statuses, viewKey],
+    [stageMutation, statuses],
   );
 
   const moveStatus = useCallback(
@@ -860,7 +811,7 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
 
           setStatuses(reordered);
           await rebalanceStatuses(reordered);
-          toast.success("Status order rebalanced.");
+          toast.success("Status order staged.");
 
           return;
         }
@@ -872,9 +823,13 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         );
 
         await runWrite({
-          mutation: buildStatusRankMutation(moved, nextRank),
-          restore: () => setStatuses(previous),
-          statusKey: activeKey,
+          draft: {
+            kind: "status",
+            id: activeKey,
+            property: "rank",
+            value: nextRank,
+            entry,
+          },
         });
       } catch (error) {
         setStatuses(previous);
@@ -913,20 +868,19 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
 
       const next = Boolean(nextVisible);
 
-      if (isNoOpChange(entry, next)) {
-        return;
-      }
-
-      const previous = view;
-
       setView((current) => ({ ...current, visible: next }));
 
       await runWrite({
-        mutation: buildViewVisibilityMutation(view, next),
-        restore: () => setView(previous),
+        draft: {
+          kind: "view",
+          id: viewKey,
+          property: "visible",
+          value: next,
+          entry,
+        },
       });
     },
-    [assertWritable, runWrite, view],
+    [assertWritable, runWrite, view, viewKey],
   );
 
   const setViewRank = useCallback(
@@ -937,20 +891,19 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         return;
       }
 
-      if (isNoOpChange(entry, nextRank)) {
-        return;
-      }
-
-      const previous = view;
-
       setView((current) => ({ ...current, rank: nextRank }));
 
       await runWrite({
-        mutation: buildViewRankMutation(view, nextRank),
-        restore: () => setView(previous),
+        draft: {
+          kind: "view",
+          id: viewKey,
+          property: "rank",
+          value: nextRank,
+          entry,
+        },
       });
     },
-    [assertWritable, runWrite, view],
+    [assertWritable, runWrite, view, viewKey],
   );
 
   /* ------------------------------------------------------- add a column */
@@ -980,6 +933,10 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
 
       const taken = existingAccessors(model);
 
+      pendingCreates.current.forEach((draft) => {
+        taken.add(String(draft.accessor || draft.sourceField || "").trim());
+      });
+
       const requested = String(accessor || sourceField || "").trim();
 
       if (taken.has(requested)) {
@@ -990,86 +947,208 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         return false;
       }
 
-      try {
-        const payload = buildFieldCreatePayload({
-          label,
-          sourceModule: model.module,
-          sourceField,
-          vardefType,
-          moduleKey: model.moduleKey ?? moduleKey,
-          viewKey: model.viewKey ?? viewKey,
-          expectedConfigVersion: model.configVersion,
-          blockId,
-          placement: {
-            accessor: requested,
-            type: vardefType,
-            width,
-            visible,
-            rankAfter,
-            rankBefore,
-          },
-        });
+      pendingCreates.current.push({
+        label,
+        sourceField,
+        vardefType,
+        width,
+        visible,
+        rankAfter,
+        rankBefore,
+        blockId,
+        accessor: requested,
+      });
+      setDraftVersion((version) => version + 1);
+      toast.success(`"${label}" staged. Click Repair to publish it.`);
 
-        pendingWrites.current += 1;
-
-        try {
-          await fieldCreate.mutateAsync({ payload, moduleKey, viewKey });
-        } finally {
-          pendingWrites.current = Math.max(0, pendingWrites.current - 1);
-        }
-
-        toast.success(`"${label}" published to this view.`);
-
-        return true;
-      } catch (error) {
-        toast.error(describeWriteError(error));
-
-        if (isStaleReadError(error)) {
-          try {
-            await refetchContractQuery();
-          } catch {
-            /* Reported by the query itself. */
-          }
-        }
-
-        return false;
-      }
+      return true;
     },
-    [fieldCreate, model, moduleKey, refetchContractQuery, viewKey],
+    [model],
   );
 
   /* ------------------------------------------------------------- reload */
 
-  // An explicit Update can change multiple properties. Each subsequent write
-  // uses the refreshed contract, including new record IDs and expected values.
   const updatePresentation = useCallback(async (kind, id, changes) => {
-    if (presentationLock.current || pendingWrites.current > 0) return false;
-    presentationLock.current = true;
-    setSavingPresentation(true);
-    pendingWrites.current += 1;
     try {
-      await savePresentationChanges({ kind, id, changes, moduleKey, viewKey,
-        readContract: async () => (await refetchContractQuery({ throwOnError: true })).data,
-        writeProperty: propertyWrite.mutateAsync,
-      });
-      toast.success(kind === "column" ? "Column updated." : "Status updated.");
+      const target = kind === "column"
+        ? columns.find((item) => item.accessor === id)
+        : statuses.find((item) => item.key === id);
+      const supportedProperties = kind === "column"
+        ? ["visible", "width"]
+        : ["visible", "icon"];
+
+      for (const [property, value] of Object.entries(changes)) {
+        if (!supportedProperties.includes(property)) continue;
+
+        const entry = target?.presentation?.[property];
+        if (!assertWritable(entry, `${property} for this ${kind}`)) {
+          return false;
+        }
+
+        stageMutation({ kind, id, property, value, entry });
+      }
+
+      if (kind === "column") {
+        setColumns((current) =>
+          current.map((item) =>
+            item.accessor === id ? { ...item, ...changes } : item,
+          ),
+        );
+      } else {
+        setStatuses((current) =>
+          current.map((item) =>
+            item.key === id ? { ...item, ...changes } : item,
+          ),
+        );
+      }
+
+      toast.success(
+        `${kind === "column" ? "Column" : "Status"} change staged.`,
+      );
       return true;
     } catch (error) {
       toast.error(describeWriteError(error));
-      // A partial save may have succeeded. Keep drafts available for retry,
-      // but refresh the server copy before building any further mutations.
-      await refetchContractQuery();
+      return false;
+    }
+  }, [assertWritable, columns, stageMutation, statuses]);
+
+  const repair = useCallback(async () => {
+    if (
+      presentationLock.current ||
+      (!pendingMutations.current.size && !pendingCreates.current.length)
+    ) {
+      return true;
+    }
+
+    presentationLock.current = true;
+    setSavingPresentation(true);
+    pendingWrites.current += 1;
+
+    try {
+      let currentContract = contract;
+
+      const builders = {
+        column: {
+          visible: buildColumnVisibilityMutation,
+          width: buildColumnWidthMutation,
+          rank: buildColumnRankMutation,
+        },
+        status: {
+          visible: buildStatusVisibilityMutation,
+          icon: buildStatusIconMutation,
+          rank: buildStatusRankMutation,
+        },
+        view: {
+          visible: buildViewVisibilityMutation,
+          rank: buildViewRankMutation,
+        },
+      };
+
+      for (const [key, draft] of [...pendingMutations.current.entries()]) {
+        const currentModel = normalizeTableContract(currentContract, {
+          moduleKey,
+          viewKey,
+        });
+        const target = draft.kind === "column"
+          ? currentModel?.columns.find((item) => item.accessor === draft.id)
+          : draft.kind === "status"
+            ? currentModel?.statuses.find((item) => item.key === draft.id)
+            : currentModel?.view;
+        const entry = target?.presentation?.[draft.property];
+        const builder = builders[draft.kind]?.[draft.property];
+
+        if (!target) {
+          throw new Error("A changed layout item is no longer available. Discard and try again.");
+        }
+
+        if (!builder || !entry?.writable) {
+          throw new Error(`The ${draft.property} setting can no longer be changed.`);
+        }
+
+        if (isNoOpChange(entry, draft.value)) {
+          pendingMutations.current.delete(key);
+          continue;
+        }
+
+        const result = await propertyWrite.mutateAsync({
+          mutation: builder(target, draft.value),
+          moduleKey,
+          viewKey,
+        });
+        currentContract = result.contract;
+        pendingMutations.current.delete(key);
+      }
+
+      while (pendingCreates.current.length) {
+        const draft = pendingCreates.current[0];
+        const currentModel = normalizeTableContract(currentContract, {
+          moduleKey,
+          viewKey,
+        });
+
+        if (
+          currentModel.columns.some(
+            (column) => column.accessor === draft.accessor,
+          )
+        ) {
+          pendingCreates.current.shift();
+          continue;
+        }
+
+        const payload = buildFieldCreatePayload({
+          label: draft.label,
+          sourceModule: currentModel.module,
+          sourceField: draft.sourceField,
+          vardefType: draft.vardefType,
+          moduleKey: currentModel.moduleKey ?? moduleKey,
+          viewKey: currentModel.viewKey ?? viewKey,
+          expectedConfigVersion: currentModel.configVersion,
+          blockId: draft.blockId,
+          placement: {
+            accessor: draft.accessor,
+            type: draft.vardefType,
+            width: draft.width,
+            visible: draft.visible,
+            rankAfter: draft.rankAfter,
+            rankBefore: draft.rankBefore,
+          },
+        });
+        const result = await fieldCreate.mutateAsync({
+          payload,
+          moduleKey,
+          viewKey,
+        });
+        currentContract = result.contract;
+        pendingCreates.current.shift();
+      }
+
+      setDraftVersion((version) => version + 1);
+      setSettledWriteVersion((version) => version + 1);
+      toast.success("Table layout repaired and published.");
+      return true;
+    } catch (error) {
+      setDraftVersion((version) => version + 1);
+      toast.error(describeWriteError(error));
+
+      try {
+        await refetchContractQuery();
+      } catch {
+        /* The query exposes the refresh error on the next render. */
+      }
+
       return false;
     } finally {
       pendingWrites.current = Math.max(0, pendingWrites.current - 1);
-      setSettledWriteVersion((version) => version + 1);
       setSavingPresentation(false);
       presentationLock.current = false;
     }
-  }, [moduleKey, propertyWrite, refetchContractQuery, viewKey]);
+  }, [contract, fieldCreate, moduleKey, propertyWrite, refetchContractQuery, viewKey]);
 
   const reload = useCallback(async () => {
     pendingWrites.current = 0;
+    pendingMutations.current.clear();
+    pendingCreates.current = [];
+    setDraftVersion((version) => version + 1);
 
     await refetchContractQuery();
   }, [refetchContractQuery]);
@@ -1082,6 +1161,8 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     fieldCreate.isPending ||
     savingOrder ||
     savingStatusOrder;
+  const dirty =
+    pendingMutations.current.size > 0 || pendingCreates.current.length > 0;
 
   return {
     /* Data */
@@ -1104,6 +1185,7 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     busyAccessor,
     busyStatusKey,
     publishing: fieldCreate.isPending,
+    dirty,
 
     /* Problems */
     rankError,
@@ -1132,6 +1214,7 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     setViewVisible,
     setViewRank,
     addField,
+    repair,
     reload,
   };
 }

@@ -1,6 +1,6 @@
 /**
- * Sidebar reordering: one ordinary SmartGateway `update` per
- * drag.
+ * Rank persistence for sidebar reordering: one ordinary
+ * SmartGateway `update` per rank change.
  *
  * React does not generate ranks. It says where the record
  * landed, as a pair of neighbour record IDs, and the backend
@@ -24,15 +24,15 @@
  * optimistic order stands until the next ordinary fetch
  * returns authoritative rank_key values.
  *
- * This positional contract covers outr_ui_groups and
- * outr_ui_modules only. Revision-owned components and fields
- * keep going through the canonical UI-definition publish
- * workflow.
+ * This positional contract covers outr_ui_groups and same-group
+ * outr_ui_modules reorders only. A cross-group module move is a
+ * Sugar relationship operation and does not use this endpoint.
+ * Revision-owned components and fields keep going through the
+ * canonical UI-definition publish workflow.
  */
 
 import { getMetadataEndpoint } from "@/utils/sidebarLayout";
 import { http } from "../services/api";
-import { store } from "../store/store";
 
 /**
  * Same host the layout metadata is read and written through.
@@ -106,10 +106,9 @@ export function isRankConflictError(error) {
 /**
  * Move one record to a position, described by its neighbours.
  *
- * `scopeFields` carries the destination scope columns. For UI
- * modules that is always `group_name`, sent on every move and
- * not just cross-group ones, so the backend can validate the
- * destination scope without inferring it.
+ * `scopeFields` carries the destination scope columns. For a UI
+ * module reorder inside its current group that is `group_name`,
+ * so the backend can validate the scope without inferring it.
  *
  * smart_gateway answers 200 even when nothing was written, so
  * the body is what decides success.

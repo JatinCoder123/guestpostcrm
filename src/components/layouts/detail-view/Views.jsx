@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronDown, ChevronRight, GripVertical, Layers3, Plus, RotateCcw, Search, Settings2, X } from "lucide-react";
+import { ChevronDown, ChevronRight, GripVertical, Layers3, Plus, RotateCcw, Search, Settings2, Wrench, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useUiPropertyWrite, useViewContract } from "@/queries/flexibility.queries";
 import { childrenAt, nodeKey, planMove, rankMutation, replaceChildren, replaceNode, scopePath, visibilityMutation } from "@/utils/detailEditLayout";
 import { between } from "@/utils/uiRank";
+import { useLayoutDraftGuard } from "@/components/layouts/LayoutDraftContext";
 
 const MODULE_KEY = "contacts";
 const VIEW_KEY = "detail";
@@ -28,6 +29,50 @@ function nextScope(scope, item) {
   if (scope.type === "tab") return { type: "section", blockId: scope.blockId, tabId: id };
   if (scope.type === "section") return { type: "field", blockId: scope.blockId, tabId: scope.tabId, sectionId: id };
   return null;
+}
+
+function collectDraftMutations(serverLayout, draftLayout) {
+  const changes = [];
+  let unsupportedCreates = 0;
+
+  const visit = (scope) => {
+    const serverItems = childrenAt(serverLayout, scope);
+    const draftItems = childrenAt(draftLayout, scope);
+    const serverById = new Map(serverItems.map((item) => [nodeKey(item), item]));
+
+    draftItems.forEach((draftItem) => {
+      const serverItem = serverById.get(nodeKey(draftItem));
+
+      if (!serverItem) {
+        unsupportedCreates += 1;
+        return;
+      }
+
+      if (Boolean(serverItem.visible !== false) !== Boolean(draftItem.visible !== false)) {
+        changes.push({
+          scope,
+          itemId: nodeKey(draftItem),
+          property: "visible",
+          value: draftItem.visible !== false,
+        });
+      }
+
+      if (serverItem.rank !== draftItem.rank) {
+        changes.push({
+          scope,
+          itemId: nodeKey(draftItem),
+          property: "rank",
+          value: draftItem.rank,
+        });
+      }
+
+      const childScope = nextScope(scope, draftItem);
+      if (childScope) visit(childScope);
+    });
+  };
+
+  visit({ type: "block" });
+  return { changes, unsupportedCreates };
 }
 
 function SortableNode({ item, scope, layout, selected, disabled, onSelect, onToggle, onAdd }) {
@@ -79,15 +124,66 @@ export default function Views({
   title = "Contact Detail View",
 }) {
   const query = useViewContract(moduleKey, viewKey); const writer = useUiPropertyWrite();
-  const [layout, setLayout] = useState(null); const [selection, setSelection] = useState(null); const [saving, setSaving] = useState(false); const [addRequest, setAddRequest] = useState(null); const [search, setSearch] = useState("");
+  const [layout, setLayout] = useState(null); const [selection, setSelection] = useState(null); const [saving, setSaving] = useState(false); const [dirty, setDirty] = useState(false); const [addRequest, setAddRequest] = useState(null); const [search, setSearch] = useState("");
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
-  useEffect(() => { if (query.data) setLayout(query.data); }, [query.data]);
+  useEffect(() => { if (query.data && !dirty && !saving) setLayout(query.data); }, [dirty, query.data, saving]);
+  useLayoutDraftGuard(`layout-${moduleKey}-${viewKey}`, dirty);
   const selectedItem = useMemo(() => selection ? childrenAt(layout, selection.scope).find((item) => nodeKey(item) === selection.itemId) : null, [layout, selection]);
-  const reset = () => { setLayout(query.data || null); setSelection(null); setAddRequest(null); setSearch(""); };
-  const addNode = (label, accessor) => { const { type, scope } = addRequest; const siblings = childrenAt(layout, scope); const rank = between(siblings.at(-1)?.rank ?? null, null); const id = (accessor || label).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || `${type}_${Date.now()}`; if (siblings.some((x) => nodeKey(x) === id)) return toast.error("That identifier already exists."); const item = type === "tab" ? { id, label, module: moduleKey, rank, sections: [], visible: true, isNew: true } : type === "section" ? { id, title: label, module: moduleKey, type: "section", columns: 2, editable: true, rank, fields: [], visible: true, isNew: true } : { accessor, label, type: "text", editable: true, rank, visible: true, isNew: true }; setLayout(replaceChildren(layout, scope, [...siblings, item])); setSelection({ scope, itemId: nodeKey(item) }); setAddRequest(null); };
-  const toggle = async (scope, item) => { const previous = layout, visible = item.visible === false; setLayout(replaceNode(layout, scope, nodeKey(item), { visible })); if (item.isNew) return; setSaving(true); try { await writer.mutateAsync({ mutation: visibilityMutation(layout, item, scopePath(scope, item), visible), moduleKey, viewKey }); toast.success(visible ? "Item shown." : "Item hidden."); } catch (error) { setLayout(previous); toast.error(error.message || "Visibility could not be saved."); } finally { setSaving(false); } };
-  const onDragEnd = async ({ active, over }) => { if (!over || saving) return; const from = active.data.current, to = over.data.current; if (!from || !to || JSON.stringify(from.scope) !== JSON.stringify(to.scope)) return; const previous = layout; try { const plan = planMove(layout, from.scope, from.itemId, to.itemId); if (!plan) return; setLayout(plan.nextLayout); if (plan.moved.isNew) return; setSaving(true); await writer.mutateAsync({ mutation: rankMutation(layout, plan.moved, scopePath(from.scope, plan.moved), plan.nextRank), moduleKey, viewKey }); toast.success("Sequence Saved."); } catch (error) { setLayout(previous); toast.error(error.message || "Order could not be saved."); } finally { setSaving(false); } };
+  const reset = () => { setLayout(query.data || null); setSelection(null); setAddRequest(null); setSearch(""); setDirty(false); };
+  const addNode = (label, accessor) => { const { type, scope } = addRequest; const siblings = childrenAt(layout, scope); const rank = between(siblings.at(-1)?.rank ?? null, null); const id = (accessor || label).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || `${type}_${Date.now()}`; if (siblings.some((x) => nodeKey(x) === id)) return toast.error("That identifier already exists."); const item = type === "tab" ? { id, label, module: moduleKey, rank, sections: [], visible: true, isNew: true } : type === "section" ? { id, title: label, module: moduleKey, type: "section", columns: 2, editable: true, rank, fields: [], visible: true, isNew: true } : { accessor, label, type: "text", editable: true, rank, visible: true, isNew: true }; setLayout(replaceChildren(layout, scope, [...siblings, item])); setSelection({ scope, itemId: nodeKey(item) }); setAddRequest(null); setDirty(true); };
+  const toggle = (scope, item) => { const visible = item.visible === false; setLayout(replaceNode(layout, scope, nodeKey(item), { visible })); setDirty(true); };
+  const onDragEnd = ({ active, over }) => { if (!over || saving) return; const from = active.data.current, to = over.data.current; if (!from || !to || JSON.stringify(from.scope) !== JSON.stringify(to.scope)) return; try { const plan = planMove(layout, from.scope, from.itemId, to.itemId); if (!plan) return; setLayout(plan.nextLayout); setDirty(true); } catch (error) { toast.error(error.message || "Order could not be changed."); } };
+  const repair = async () => {
+    if (!dirty || !query.data || !layout || saving) return;
+    const { changes, unsupportedCreates } = collectDraftMutations(query.data, layout);
+    if (unsupportedCreates) {
+      toast.error("New layout items cannot be published by the current Flexibility contract.");
+      return;
+    }
+    setSaving(true);
+    try {
+      let currentLayout = query.data;
+
+      for (const change of changes) {
+        const currentItem = childrenAt(currentLayout, change.scope).find(
+          (item) => nodeKey(item) === change.itemId,
+        );
+
+        if (!currentItem) {
+          throw new Error("A changed layout item is no longer available. Discard and try again.");
+        }
+
+        const mutation = change.property === "visible"
+          ? visibilityMutation(
+              currentLayout,
+              currentItem,
+              scopePath(change.scope, currentItem),
+              change.value,
+            )
+          : rankMutation(
+              currentLayout,
+              currentItem,
+              scopePath(change.scope, currentItem),
+              change.value,
+            );
+        const result = await writer.mutateAsync({ mutation, moduleKey, viewKey });
+        currentLayout = result.contract;
+      }
+
+      if (!changes.length) {
+        currentLayout = (await query.refetch()).data;
+      }
+
+      setLayout(currentLayout || null);
+      setDirty(false);
+      toast.success("Layout repaired and published.");
+    } catch (error) {
+      toast.error(error.message || "Layout changes could not be repaired.");
+    } finally {
+      setSaving(false);
+    }
+  };
   const blocks = layout?.blocks || []; const shownBlocks = search.trim() ? blocks.filter((x) => JSON.stringify(x).toLowerCase().includes(search.trim().toLowerCase())) : blocks; const root = { type: "block" };
-  return <div className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-background"><header className="layout-editor-header flex items-center justify-between border-b border-border px-5 py-4"><div><div className="flex flex-wrap items-center gap-2"><Layers3 className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">{title}</h2><span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">Layout</span></div><p className="mt-1 text-sm text-muted-foreground">Configure visibility and ordering for tabs, sections and fields.</p></div><div className="flex items-center gap-2">{saving && <span className="text-xs font-medium text-primary">Saving...</span>}<button type="button" onClick={reset} disabled={!layout || saving} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent disabled:opacity-40"><RotateCcw className="h-4 w-4" />Reset</button></div></header>
+  return <div className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-background"><header className="layout-editor-header flex items-center justify-between border-b border-border px-5 py-4"><div><div className="flex flex-wrap items-center gap-2"><Layers3 className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">{title}</h2><span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">Layout</span>{dirty && <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-700">Unapplied changes</span>}</div><p className="mt-1 text-sm text-muted-foreground">Changes stay in this editor until you repair the layout.</p></div><div className="flex items-center gap-2">{saving && <span className="text-xs font-medium text-primary">Repairing...</span>}<button type="button" onClick={reset} disabled={!layout || saving || !dirty} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent disabled:opacity-40"><RotateCcw className="h-4 w-4" />Discard</button><button type="button" onClick={repair} disabled={!dirty || saving} className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-40"><Wrench className="h-4 w-4" />Repair</button></div></header>
     <div className="layout-editor-grid min-h-0 flex-1"><section className="flex min-h-0 flex-col border-b border-border bg-card "><div className="border-b border-border p-3"><div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tabs, sections or fields..." className="h-11 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-sm outline-none focus:border-primary/50" /></div></div><div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-4">{query.isPending && <p className="py-16 text-center text-sm text-muted-foreground">Loading layout...</p>}{query.error && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{query.error.message}</p>}{layout && <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}><SortableContext items={shownBlocks.map((x) => idFor(root, x))} strategy={verticalListSortingStrategy}><div className="space-y-3">{shownBlocks.map((item) => <SortableNode key={idFor(root, item)} item={item} scope={root} layout={layout} selected={selection} disabled={saving || Boolean(search.trim())} onSelect={(scope, node) => setSelection({ scope, itemId: nodeKey(node) })} onToggle={toggle} onAdd={(type, scope) => setAddRequest({ type, scope })} />)}</div></SortableContext></DndContext>}</div></section><aside className="min-h-0 overflow-y-auto bg-background"><Inspector selection={selection} item={selectedItem} busy={saving} onToggle={toggle} onAdd={(type, scope) => setAddRequest({ type, scope })} /></aside></div><AddDialog request={addRequest} onClose={() => setAddRequest(null)} onSubmit={addNode} /></div>;
 }

@@ -33,6 +33,7 @@ import {
   Search,
   Settings2,
   Trash2,
+  Wrench,
 } from "lucide-react";
 
 import IconInput from "@/components/IconInput";
@@ -46,20 +47,18 @@ import {
 } from "@/queries/prefrences.queries";
 
 import {
-  groupScope,
   isPersistableId,
-  moduleScope,
   normalizeSidebarResponse,
   SIDEBAR_GROUP_MODULE,
   SIDEBAR_MODULE_MODULE,
   toActiveFlag,
 } from "@/utils/sidebarLayout";
 
-import { RANK_FIELD, reorderCopy } from "@/utils/rank";
+import { RANK_FIELD, reorderCopy, resolveMoveNeighborIds } from "@/utils/rank";
 
-import { performRankMove } from "@/utils/rankMove";
+import { requestRankMove } from "@/api/rank.api";
 
-import { isRankConflictError, requestRankMove } from "@/api/rank.api";
+import { moveSidebarModuleRelationship } from "@/api/sidebar.api";
 
 import {
   fetchLayout,
@@ -71,6 +70,7 @@ import { preferenceKeys } from "@/queries/prefrences.queries";
 import { useQueryClient } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
+import { useLayoutDraftGuard } from "@/components/layouts/LayoutDraftContext";
 
 /* =========================================================================
    DYNAMIC ICON
@@ -602,15 +602,60 @@ function GroupEditor({
     return <EmptyEditor />;
   }
 
+  /**
+   * A draft has nothing stored yet, so it is discarded rather
+   * than deleted. A stored group can only be deleted once it
+   * holds no modules, which keeps module records from being
+   * orphaned.
+   */
+  const isDraft = Boolean(group.isNew) || !isPersistableId(group.id);
+
+  const moduleCount = group.data?.length ?? 0;
+
+  const blockedByModules = !isDraft && moduleCount > 0;
+
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-border px-5 py-4">
-        <div>
+      <div className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-5">
+        <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
             Group
           </p>
 
-          <h3 className="mt-1 text-base font-semibold">Group Settings</h3>
+          <h3 className="mt-0.5 truncate text-base font-semibold">
+            Group Settings
+          </h3>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onDelete(group)}
+            disabled={saving || blockedByModules}
+            title={
+              blockedByModules
+                ? `Remove all ${moduleCount} ${moduleCount === 1 ? "module" : "modules"} from this group before deleting it`
+                : undefined
+            }
+            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-destructive/25 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/30 disabled:pointer-events-none disabled:opacity-40"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            {isDraft ? "Discard" : "Delete"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSave(group)}
+            disabled={saving || !group.group_name?.trim()}
+            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50"
+          >
+            {saving ? (
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
+            {isDraft ? "Create" : "Update"}
+          </button>
         </div>
       </div>
 
@@ -700,70 +745,15 @@ function GroupEditor({
                 </div>
               ))}
             </div>
+
+            {blockedByModules && (
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                A group has to be empty before it can be deleted. Drag
+                its modules into another group first.
+              </p>
+            )}
           </div>
         </div>
-      </div>
-
-      <div
-        className={`grid gap-2 border-t border-border p-4 ${
-          group.isNew ? "grid-cols-2" : "grid-cols-1"
-        }`}
-      >
-        {group.isNew && (
-          <button
-            type="button"
-            onClick={() => onDelete(group)}
-            className="
-                        flex
-                        w-full
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-lg
-                        border
-                        border-destructive/20
-                        px-3
-                        py-2
-                        text-xs
-                        font-medium
-                        text-destructive
-                        hover:bg-destructive/10
-                    "
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Discard Group
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={() => onSave(group)}
-          disabled={saving || !group.group_name?.trim()}
-          className="
-                        flex
-                        w-full
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-lg
-                        bg-primary
-                        px-3
-                        py-2
-                        text-xs
-                        font-medium
-                        text-primary-foreground
-                        hover:bg-primary/90
-                        disabled:pointer-events-none
-                        disabled:opacity-50
-                    "
-        >
-          {saving ? (
-            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Save className="h-3.5 w-3.5" />
-          )}
-          {group.isNew ? "Create Group" : "Update Group"}
-        </button>
       </div>
     </div>
   );
@@ -787,45 +777,47 @@ function ItemEditor({
     return <EmptyEditor />;
   }
 
+  const isDraft = Boolean(item.isNew) || !isPersistableId(item.id);
+
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-border px-5 py-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="
-                            flex
-                            h-10
-                            w-10
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-xl
-                            border
-                            border-border
-                            bg-muted/30
-                        "
+      <div className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-5">
+        <div className="min-w-0">
+          <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-primary">
+            Module{item.name ? ` · ${item.name}` : ""}
+          </p>
+
+          <h3 className="mt-0.5 truncate text-base font-semibold">
+            Module Settings
+          </h3>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onDelete(item)}
+            disabled={saving}
+            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-destructive/25 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/30 disabled:pointer-events-none disabled:opacity-40"
           >
-            <DynamicIcon
-              icon={item.icon}
-              library={item.library}
-              className="
-                                h-5
-                                w-5
-                                text-muted-foreground
-                            "
-            />
-          </div>
+            <Trash2 className="h-3.5 w-3.5" />
+            {isDraft ? "Discard" : "Delete"}
+          </button>
 
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-              Sidebar Module
-            </p>
-
-            <h3 className="mt-1 truncate text-base font-semibold">
-              {item.name || "Module"}
-            </h3>
-          </div>
-
+          <button
+            type="button"
+            onClick={() => onSave(item)}
+            disabled={
+              saving || !item.name?.trim() || !item.module_name?.trim()
+            }
+            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50"
+          >
+            {saving ? (
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
+            {isDraft ? "Create" : "Update"}
+          </button>
         </div>
       </div>
 
@@ -896,70 +888,6 @@ function ItemEditor({
           />
 
         </div>
-      </div>
-
-      <div
-        className={`grid gap-2 border-t border-border p-4 ${
-          item.isNew ? "grid-cols-2" : "grid-cols-1"
-        }`}
-      >
-        {item.isNew && (
-          <button
-            type="button"
-            onClick={() => onDelete(item)}
-            className="
-                        flex
-                        w-full
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-lg
-                        border
-                        border-destructive/20
-                        px-3
-                        py-2
-                        text-xs
-                        font-medium
-                        text-destructive
-                        hover:bg-destructive/10
-                    "
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Discard Module
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={() => onSave(item)}
-          disabled={
-            saving || !item.name?.trim() || !item.module_name?.trim()
-          }
-          className="
-                        flex
-                        w-full
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-lg
-                        bg-primary
-                        px-3
-                        py-2
-                        text-xs
-                        font-medium
-                        text-primary-foreground
-                        hover:bg-primary/90
-                        disabled:pointer-events-none
-                        disabled:opacity-50
-                    "
-        >
-          {saving ? (
-            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Save className="h-3.5 w-3.5" />
-          )}
-          {item.isNew ? "Create Module" : "Update Module"}
-        </button>
       </div>
     </div>
   );
@@ -1073,6 +1001,12 @@ const Sidebar = () => {
 
   const [savingRecord, setSavingRecord] = useState(false);
 
+  const [dirty, setDirty] = useState(false);
+
+  const baselineGroups = useRef([]);
+
+  useLayoutDraftGuard("layout-sidebar", dirty);
+
   const savingLayout = savingRecord || updateLayoutPending;
 
   /**
@@ -1092,8 +1026,9 @@ const Sidebar = () => {
 
   /**
    * Writes still in flight, so the sync effect does not
-   * overwrite optimistic state mid-request. A reorder is always
-   * one write; toggles add their own.
+   * overwrite optimistic state mid-request. An intra-group
+   * reorder is one write; a cross-group move also changes the
+   * group/module relationship. Toggles add their own writes.
    */
   const pendingWrites = useRef(0);
 
@@ -1130,7 +1065,9 @@ const Sidebar = () => {
       onInvalid: (report) => rankProblems.push(report),
     });
 
+    baselineGroups.current = normalized;
     setGroups(normalized);
+    setDirty(false);
 
     setRankError(
       rankProblems.length
@@ -1187,12 +1124,12 @@ const Sidebar = () => {
      * A write is in flight, so local state is showing the
      * optimistic order and this payload predates it.
      */
-    if (pendingWrites.current > 0) {
+    if (pendingWrites.current > 0 || dirty) {
       return;
     }
 
     applyServerLayout(layoutData);
-  }, [layoutData, applyServerLayout]);
+  }, [layoutData, applyServerLayout, dirty]);
 
   /* =====================================================================
        FILTER
@@ -1271,89 +1208,14 @@ const Sidebar = () => {
     });
   };
 
-  /* =====================================================================
-       RANK MOVE PLUMBING
-       ===================================================================== */
-
-  /**
-   * One ordinary `update` per drag, carrying the destination
-   * scope and the two neighbour IDs. The backend generates the
-   * rank; nothing here does.
-   *
-   * The response carries no rank, so there is nothing to write
-   * back into local state - the optimistic order already shows
-   * the result, and the next ordinary fetch brings the
-   * authoritative rank_key values.
-   */
-  const sendMove = async (args) => {
-    /*
-     * Only guards the window between the drop and the response,
-     * so a refetch landing mid-write cannot undo the optimistic
-     * order. Once the write is confirmed, the server order is
-     * what we want.
-     */
-    pendingWrites.current += 1;
-
-    try {
-      return await requestRankMove(args);
-    } finally {
-      pendingWrites.current = Math.max(0, pendingWrites.current - 1);
-    }
-  };
-
-  /**
-   * Read the whole payload back from the server and display it.
-   *
-   * Runs after a confirmed reorder, so the editor shows the
-   * order that was actually stored rather than the optimistic
-   * guess. Also runs when a move is rejected or the rank data
-   * is invalid, where local state cannot be trusted at all.
-   *
-   * `fetchQuery` writes into the same cache entry the live
-   * sidebar reads, so the left-hand nav picks up the new order
-   * from this one request too.
-   */
+  /** Read and display the authoritative sidebar after Repair or Discard. */
   const reloadSidebar = async () => {
     pendingWrites.current = 0;
-
-    const fresh = await queryClient.fetchQuery({
-      queryKey: preferenceKeys.layout(),
-      queryFn: fetchLayout,
-      staleTime: 0,
-    });
+    const fresh = await fetchLayout();
+    queryClient.setQueryData(preferenceKeys.layout(), fresh);
 
     return applyServerLayout(fresh);
   };
-
-  /**
-   * Shared tail for both reorder paths.
-   *
-   * `plan` describes the destination scope only. `restoreOrder`
-   * undoes the optimistic order when the move is rejected;
-   * the scope is then reloaded so the editor shows what the
-   * server actually holds.
-   */
-  const runMove = ({ plan, restoreOrder }) =>
-    performRankMove(plan, {
-      requestMove: sendMove,
-      isConflict: isRankConflictError,
-
-      /*
-       * The update response confirms the write but carries no
-       * rank, so the new order is read back here. This is what
-       * puts the server's order on screen instead of leaving
-       * the optimistic one in place.
-       */
-      syncScope: () => reloadSidebar(),
-
-      restoreOrder,
-
-      reloadScope: () => reloadSidebar(),
-
-      onSaving: setSavingOrder,
-
-      onError: (message) => toast.error(message),
-    });
 
   /* =====================================================================
        TOGGLE GROUP
@@ -1379,9 +1241,6 @@ const Sidebar = () => {
       return;
     }
 
-    /**
-     * Optimistic local update.
-     */
     setGroups((current) =>
       current.map((item) =>
         item.id === group.id
@@ -1392,17 +1251,7 @@ const Sidebar = () => {
           : item,
       ),
     );
-
-    if (isPersistableId(group.id)) {
-      void saveLayoutRecord({
-        action: "update",
-        module: SIDEBAR_GROUP_MODULE,
-        id: group.id,
-        payload: { is_active: toActiveFlag(nextActive) },
-      }).catch(() => {
-        // The mutation hook reports the error and restores server state.
-      });
-    }
+    setDirty(true);
   };
 
   const toggleGroup = (group) => setGroupActive(group);
@@ -1422,9 +1271,6 @@ const Sidebar = () => {
       return;
     }
 
-    /**
-     * Optimistic local update.
-     */
     setGroups((current) =>
       current.map((group) => ({
         ...group,
@@ -1439,17 +1285,7 @@ const Sidebar = () => {
         ),
       })),
     );
-
-    if (isPersistableId(item.id)) {
-      void saveLayoutRecord({
-        action: "update",
-        module: SIDEBAR_MODULE_MODULE,
-        id: item.id,
-        payload: { is_active: toActiveFlag(nextActive) },
-      }).catch(() => {
-        // The mutation hook reports the error and restores server state.
-      });
-    }
+    setDirty(true);
   };
 
   const toggleField = (item) => setFieldActive(item);
@@ -1459,6 +1295,7 @@ const Sidebar = () => {
        ===================================================================== */
 
   const updateGroup = (groupId, changes) => {
+    setDirty(true);
     setGroups((current) =>
       current.map((group) =>
         group.id === groupId
@@ -1476,6 +1313,7 @@ const Sidebar = () => {
        ===================================================================== */
 
   const updateField = (itemId, changes) => {
+    setDirty(true);
     setGroups((current) =>
       current.map((group) => ({
         ...group,
@@ -1497,10 +1335,6 @@ const Sidebar = () => {
        ===================================================================== */
 
   const saveGroup = async (group) => {
-    if (savingRecord) {
-      return;
-    }
-
     const name = group?.group_name?.trim();
 
     if (!name) {
@@ -1508,46 +1342,11 @@ const Sidebar = () => {
       return;
     }
 
-    const isNew = !isPersistableId(group.id);
-
-    setSavingRecord(true);
-
-    try {
-      const response = await saveLayoutRecord({
-        action: isNew ? "create" : "update",
-        module: SIDEBAR_GROUP_MODULE,
-        id: isNew ? undefined : group.id,
-        payload: {
-          name,
-          is_active: toActiveFlag(group.is_active),
-        },
-      });
-
-      await reloadSidebar();
-
-      if (response?.id) {
-        setSelectedItem({ type: "group", id: response.id });
-        setExpandedGroups((current) => ({
-          ...current,
-          [response.id]: true,
-        }));
-      }
-
-      toast.success(isNew ? "Group created." : "Group updated.");
-    } catch (error) {
-      if (!error?.message?.startsWith("Layout ")) {
-        toast.error(error?.message || "The group could not be saved.");
-      }
-    } finally {
-      setSavingRecord(false);
-    }
+    setDirty(true);
+    toast.success("Group change staged. Click Repair to publish it.");
   };
 
   const saveField = async (item) => {
-    if (savingRecord) {
-      return;
-    }
-
     const parentGroup = groups.find((group) =>
       group.data.some((field) => field.id === item?.id),
     );
@@ -1562,88 +1361,102 @@ const Sidebar = () => {
       return;
     }
 
-    if (!parentGroup || !isPersistableId(parentGroup.id)) {
-      toast.error("Create the group before creating modules inside it.");
+    if (!parentGroup) {
+      toast.error("The module must belong to a group.");
       return;
     }
 
-    const isNew = !isPersistableId(item.id);
+    setDirty(true);
+    toast.success("Module change staged. Click Repair to publish it.");
+  };
 
-    setSavingRecord(true);
+  /* =====================================================================
+       DELETE OR DISCARD GROUP
+       ===================================================================== */
 
-    try {
-      const sidebarComponentId = isNew
-        ? await fetchSidebarComponentId()
-        : null;
-
-      const response = await saveLayoutRecord({
-        action: isNew ? "create" : "update",
-        module: SIDEBAR_MODULE_MODULE,
-        id: isNew ? undefined : item.id,
-        payload: {
-          name: item.name.trim(),
-          fetch_from: item.module_name ?? "",
-          icon_name: item.icon ?? "",
-          library: item.library ?? "",
-          navigation: item.navigation ?? "",
-          group_name: parentGroup.group_name,
-          is_active: toActiveFlag(item.is_active),
-          outr_ui_groups_outr_ui_modules_1outr_ui_groups_ida: parentGroup.id,
-          ...(sidebarComponentId
-            ? {
-                outr_global_component_outr_ui_modules_1outr_global_component_ida:
-                  sidebarComponentId,
-              }
-            : {}),
-        },
-      });
-
-      await reloadSidebar();
-
-      if (response?.id) {
-        setSelectedItem({ type: "field", id: response.id });
-      }
-
-      toast.success(isNew ? "Module created." : "Module updated.");
-    } catch (error) {
-      if (!error?.message?.startsWith("Layout ")) {
-        toast.error(error?.message || "The module could not be saved.");
-      }
-    } finally {
-      setSavingRecord(false);
+  /**
+   * Two different operations behind one button.
+   *
+   * An unsaved draft has no server row, so it is simply
+   * dropped from local state.
+   *
+   * A persisted group is deleted on the server, and only when
+   * it holds no modules. Deleting a group that still owns
+   * modules would leave those rows pointing at a group that no
+   * longer exists, so the modules have to be moved out or
+   * deleted first. `group.data` counts every module record,
+   * including the ones toggled off.
+   */
+  const deleteGroup = async (group) => {
+    if (!group?.id) {
+      return;
     }
-  };
 
-  /* =====================================================================
-       DELETE GROUP - LOCAL ONLY
-       ===================================================================== */
+    if (savingRecord || savingOrder) {
+      return;
+    }
 
-  const deleteGroup = (group) => {
+    const moduleCount = group.data?.length ?? 0;
+
+    if (moduleCount > 0) {
+      toast.error(
+        `Remove the ${moduleCount} ${moduleCount === 1 ? "module" : "modules"} inside "${group.group_name}" before deleting the group.`,
+      );
+
+      return;
+    }
+
+    const confirmed =
+      !isPersistableId(group.id) ||
+      window.confirm(
+        `Stage "${group.group_name}" for deletion? It will be removed when you click Repair.`,
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
     setGroups((current) => current.filter((item) => item.id !== group.id));
-
     setSelectedItem(null);
+    setExpandedGroups((current) => {
+      const next = { ...current };
+      delete next[group.id];
+      return next;
+    });
+    setDirty(true);
   };
 
   /* =====================================================================
-       DELETE FIELD - LOCAL ONLY
+       DELETE / DISCARD FIELD
        ===================================================================== */
 
-  const deleteField = (item) => {
+  const deleteField = async (item) => {
+    if (!item?.id) {
+      return;
+    }
+
+    if (savingRecord || savingOrder) {
+      return;
+    }
+
+    const confirmed =
+      !isPersistableId(item.id) ||
+      window.confirm(
+        `Stage "${item.name || "Module"}" for deletion? It will be removed when you click Repair.`,
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
     setGroups((current) =>
-      current.map((group) => {
-        if (!group.data.some((field) => field.id === item.id)) {
-          return group;
-        }
-
-        return {
-          ...group,
-
-          data: group.data.filter((field) => field.id !== item.id),
-        };
-      }),
+      current.map((group) => ({
+        ...group,
+        data: group.data.filter((field) => field.id !== item.id),
+      })),
     );
-
     setSelectedItem(null);
+    setDirty(true);
   };
 
   /* =====================================================================
@@ -1686,6 +1499,7 @@ const Sidebar = () => {
       ...current,
       [id]: true,
     }));
+    setDirty(true);
   };
 
   /* =====================================================================
@@ -1758,6 +1572,7 @@ const Sidebar = () => {
       ...current,
       [groupId]: true,
     }));
+    setDirty(true);
   };
 
   /* =====================================================================
@@ -1781,19 +1596,10 @@ const Sidebar = () => {
   const moveGroup = (movedId, destinationIndex, sourceGroups) => {
     const reordered = reorderCopy(sourceGroups, movedId, destinationIndex);
 
-    /* Optimistic: show the new order while the write runs. */
     setGroups(reordered);
+    setDirty(true);
 
-    return runMove({
-      plan: {
-        items: reordered,
-        movedId,
-        scope: groupScope(),
-        module: SIDEBAR_GROUP_MODULE,
-      },
-
-      restoreOrder: () => setGroups(sourceGroups),
-    });
+    return reordered;
   };
 
   /* =====================================================================
@@ -1801,16 +1607,11 @@ const Sidebar = () => {
        ===================================================================== */
 
   /**
-   * Scope: the modules of one group_name.
+   * Inside one group this is a rank move. Between groups this is only a Sugar
+   * relationship move; the existing module rank is left untouched and the CRM
+   * response determines its displayed position after reload.
    *
-   * Neighbours are read from the DESTINATION group only. The
-   * source group just loses a record; the records left behind
-   * keep their ranks, because removing an item never
-   * invalidates the ranks around it.
-   *
-   * `group_name` is sent on every module move, not only
-   * cross-group ones, so the backend always knows which scope
-   * to validate the neighbours against.
+   * Rank neighbours are therefore only calculated for same-group reorders.
    */
   const moveField = ({
     movedId,
@@ -1879,19 +1680,9 @@ const Sidebar = () => {
       }),
     );
 
-    return runMove({
-      plan: {
-        items: targetFields,
-        movedId,
-        scope: moduleScope(targetGroup.group_name),
-        module: SIDEBAR_MODULE_MODULE,
+    setDirty(true);
 
-        /* Destination scope, always sent. */
-        scopeFields: { group_name: targetGroup.group_name },
-      },
-
-      restoreOrder: () => setGroups(sourceGroups),
-    });
+    return targetFields;
   };
 
   /* =====================================================================
@@ -1939,11 +1730,6 @@ const Sidebar = () => {
       if (oldIndex === -1 || newIndex === -1) return;
       if (oldIndex === newIndex) return;
 
-      if (!isPersistableId(activeGroupId)) {
-        toast.error("Save this group in the CRM before reordering it.");
-        return;
-      }
-
       moveGroup(activeGroupId, newIndex, groups);
       return;
     }
@@ -1980,11 +1766,6 @@ const Sidebar = () => {
 
       if (!sourceGroup || !targetGroup) return;
 
-      if (!isPersistableId(targetGroup.id)) {
-        toast.error("Create the target group before moving modules into it.");
-        return;
-      }
-
       const oldIndex = sourceGroup.data.findIndex(
         (item) => String(item.id) === String(activeItemId),
       );
@@ -2002,11 +1783,6 @@ const Sidebar = () => {
 
       if (oldIndex === -1 || newIndex === -1) return;
 
-      if (!isPersistableId(activeItemId)) {
-        toast.error("Create this module in the CRM before reordering it.");
-        return;
-      }
-
       moveField({
         movedId: activeItemId,
         sourceGroupId: sourceGroup.id,
@@ -2014,6 +1790,280 @@ const Sidebar = () => {
         destinationIndex: newIndex,
         sourceGroups: groups,
       });
+    }
+  };
+
+  /* =====================================================================
+       REPAIR DRAFT
+       ===================================================================== */
+
+  const repairChanges = async () => {
+    if (!dirty || savingLayout || savingOrder) {
+      return;
+    }
+
+    const original = baselineGroups.current;
+    let desired = groups.map((group) => ({
+      ...group,
+      data: (group.data ?? []).map((item) => ({ ...item })),
+    }));
+    const resolvedIds = new Map();
+
+    const resolveId = (id) => resolvedIds.get(String(id)) || id;
+    const originalGroups = new Map(
+      original.map((group) => [String(group.id), group]),
+    );
+    const originalModules = new Map();
+    const originalModuleParents = new Map();
+
+    original.forEach((group) => {
+      (group.data ?? []).forEach((item) => {
+        originalModules.set(String(item.id), item);
+        originalModuleParents.set(String(item.id), group.id);
+      });
+    });
+
+    const desiredModuleIds = new Set(
+      desired.flatMap((group) =>
+        (group.data ?? []).map((item) => String(item.id)),
+      ),
+    );
+    const desiredGroupIds = new Set(desired.map((group) => String(group.id)));
+
+    const groupPayload = (group) => ({
+      name: group.group_name?.trim() || "",
+      is_active: toActiveFlag(group.is_active),
+    });
+    const modulePayload = (item, parentGroup, sidebarComponentId = null) => ({
+      name: item.name?.trim() || "",
+      fetch_from: item.module_name ?? "",
+      icon_name: item.icon ?? "",
+      library: item.library ?? "",
+      navigation: item.navigation ?? "",
+      group_name: parentGroup.group_name,
+      is_active: toActiveFlag(item.is_active),
+      outr_ui_groups_outr_ui_modules_1outr_ui_groups_ida: resolveId(
+        parentGroup.id,
+      ),
+      ...(sidebarComponentId
+        ? {
+            outr_global_component_outr_ui_modules_1outr_global_component_ida:
+              sidebarComponentId,
+          }
+        : {}),
+    });
+    const changed = (left, right, keys) =>
+      keys.some(
+        (key) => JSON.stringify(left?.[key]) !== JSON.stringify(right?.[key]),
+      );
+
+    const persistOrder = async ({
+      currentItems,
+      desiredIds,
+      module,
+      scopeFields = {},
+    }) => {
+      let working = [...currentItems];
+
+      for (let index = 0; index < desiredIds.length; index += 1) {
+        const movedId = String(desiredIds[index]);
+        const currentIndex = working.findIndex(
+          (item) => String(item.id) === movedId,
+        );
+
+        if (currentIndex < 0 || currentIndex === index) {
+          continue;
+        }
+
+        const reordered = reorderCopy(working, movedId, index);
+        const { previousId, nextId } = resolveMoveNeighborIds(
+          reordered,
+          movedId,
+        );
+
+        await requestRankMove({
+          module,
+          id: movedId,
+          previousId,
+          nextId,
+          scopeFields,
+        });
+
+        working = reordered;
+      }
+    };
+
+    setSavingRecord(true);
+    setSavingOrder(true);
+    pendingWrites.current += 1;
+
+    try {
+      for (const group of desired.filter((item) => !isPersistableId(item.id))) {
+        const response = await saveLayoutRecord({
+          action: "create",
+          module: SIDEBAR_GROUP_MODULE,
+          payload: groupPayload(group),
+        });
+
+        resolvedIds.set(String(group.id), response.id);
+      }
+
+      desired = desired.map((group) => ({
+        ...group,
+        id: resolveId(group.id),
+      }));
+
+      for (const group of desired) {
+        const serverGroup = originalGroups.get(String(group.id));
+
+        if (
+          serverGroup &&
+          changed(serverGroup, group, ["group_name", "is_active"])
+        ) {
+          await saveLayoutRecord({
+            action: "update",
+            module: SIDEBAR_GROUP_MODULE,
+            id: group.id,
+            payload: groupPayload(group),
+          });
+        }
+      }
+
+      const hasNewModules = desired.some((group) =>
+        (group.data ?? []).some((item) => !isPersistableId(item.id)),
+      );
+      const sidebarComponentId = hasNewModules
+        ? await fetchSidebarComponentId()
+        : null;
+
+      for (const group of desired) {
+        for (const item of group.data ?? []) {
+          if (isPersistableId(item.id)) {
+            continue;
+          }
+
+          const response = await saveLayoutRecord({
+            action: "create",
+            module: SIDEBAR_MODULE_MODULE,
+            payload: modulePayload(item, group, sidebarComponentId),
+          });
+
+          resolvedIds.set(String(item.id), response.id);
+        }
+      }
+
+      desired = desired.map((group) => ({
+        ...group,
+        data: (group.data ?? []).map((item) => ({
+          ...item,
+          id: resolveId(item.id),
+        })),
+      }));
+
+      setGroups(desired);
+      setSelectedItem((current) =>
+        current ? { ...current, id: resolveId(current.id) } : current,
+      );
+
+      for (const group of desired) {
+        for (const item of group.data ?? []) {
+          const serverItem = originalModules.get(String(item.id));
+          const oldParentId = originalModuleParents.get(String(item.id));
+          const oldParent = originalGroups.get(String(oldParentId));
+          const parentNameChanged =
+            oldParent && oldParent.group_name !== group.group_name;
+
+          if (
+            serverItem &&
+            (parentNameChanged ||
+              changed(serverItem, item, [
+                "name",
+                "module_name",
+                "icon",
+                "library",
+                "navigation",
+                "is_active",
+              ]))
+          ) {
+            await saveLayoutRecord({
+              action: "update",
+              module: SIDEBAR_MODULE_MODULE,
+              id: item.id,
+              payload: modulePayload(item, group),
+            });
+          }
+
+          if (
+            oldParentId &&
+            String(oldParentId) !== String(group.id)
+          ) {
+            await moveSidebarModuleRelationship({
+              moduleId: item.id,
+              sourceGroupId: oldParentId,
+              targetGroupId: group.id,
+            });
+          }
+        }
+      }
+
+      for (const [id] of originalModules) {
+        if (!desiredModuleIds.has(id)) {
+          await saveLayoutRecord({
+            action: "delete",
+            module: SIDEBAR_MODULE_MODULE,
+            id,
+            payload: {},
+          });
+        }
+      }
+
+      for (const [id] of originalGroups) {
+        if (!desiredGroupIds.has(id)) {
+          await saveLayoutRecord({
+            action: "delete",
+            module: SIDEBAR_GROUP_MODULE,
+            id,
+            payload: {},
+          });
+        }
+      }
+
+      const freshPayload = await fetchLayout();
+      queryClient.setQueryData(preferenceKeys.layout(), freshPayload);
+      const freshGroups = normalizeSidebarResponse(freshPayload);
+
+      await persistOrder({
+        currentItems: freshGroups,
+        desiredIds: desired.map((group) => group.id),
+        module: SIDEBAR_GROUP_MODULE,
+      });
+
+      for (const desiredGroup of desired) {
+        const freshGroup = freshGroups.find(
+          (group) => String(group.id) === String(desiredGroup.id),
+        );
+
+        if (!freshGroup) {
+          continue;
+        }
+
+        await persistOrder({
+          currentItems: freshGroup.data ?? [],
+          desiredIds: (desiredGroup.data ?? []).map((item) => item.id),
+          module: SIDEBAR_MODULE_MODULE,
+          scopeFields: { group_name: desiredGroup.group_name },
+        });
+      }
+
+      await reloadSidebar();
+      toast.success("Sidebar repaired and published.");
+    } catch (error) {
+      console.error("[sidebar] repair failed", error);
+      toast.error(error?.message || "Sidebar changes could not be repaired.");
+    } finally {
+      pendingWrites.current = Math.max(0, pendingWrites.current - 1);
+      setSavingOrder(false);
+      setSavingRecord(false);
     }
   };
 
@@ -2068,10 +2118,16 @@ const Sidebar = () => {
             <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
               Layout
             </span>
+
+            {dirty && (
+              <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-700">
+                Unapplied changes
+              </span>
+            )}
           </div>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Configure sidebar groups, modules, visibility and ordering.
+            Changes stay in this editor until you repair the layout.
           </p>
         </div>
 
@@ -2081,14 +2137,14 @@ const Sidebar = () => {
               role="status"
               className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary"
             >
-              Saving order...
+              Repairing...
             </span>
           )}
 
           <button
             type="button"
             onClick={resetChanges}
-            disabled={savingLayout || savingOrder}
+            disabled={savingLayout || savingOrder || !dirty}
             className="
                             inline-flex
                             items-center
@@ -2106,7 +2162,7 @@ const Sidebar = () => {
                         "
           >
             <RotateCcw className="h-4 w-4" />
-            Reset
+            Discard
           </button>
 
           <button
@@ -2118,18 +2174,33 @@ const Sidebar = () => {
                             items-center
                             gap-2
                             rounded-lg
-                            bg-primary
+                            border
+                            border-border
                             px-3
                             py-2
                             text-sm
                             font-medium
-                            text-primary-foreground
+                            hover:bg-accent
                             disabled:pointer-events-none
                             disabled:opacity-50
                         "
           >
             <Plus className="h-4 w-4" />
             Add Group
+          </button>
+
+          <button
+            type="button"
+            onClick={repairChanges}
+            disabled={!dirty || savingLayout || savingOrder}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+          >
+            {savingLayout || savingOrder ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              <Wrench className="h-4 w-4" />
+            )}
+            Repair
           </button>
         </div>
       </div>
@@ -2224,8 +2295,8 @@ const Sidebar = () => {
         >
           {/* SEARCH */}
 
-          <div className="shrink-0 border-b border-border p-3">
-            <div className="relative">
+          <div className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center border-b border-border bg-card px-3">
+            <div className="relative w-full">
               <Search
                 className="
                                     pointer-events-none
