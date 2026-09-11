@@ -80,7 +80,7 @@ export const useInfiniteEntity = ({
 
     // Entity requires email filtering
     const filterByEmail =
-        layout?.filter_by_email === 1;
+        layout?.filter_by_email || false;
 
     // Add assigned user ID only for assigned entities
     const finalDataFilters = {
