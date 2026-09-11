@@ -57,7 +57,7 @@ function NextPrevButton({ onClick, disabled, label, Icon, ...props }) {
     return <button
         onClick={onClick}
         disabled={disabled}
-        className={`flex shrink-0 items-center gap-1 rounded-lg border bg-gradient-to-r from-search-primary to-search-secondary p-2 shadow-sm transition active:scale-95 2xl:gap-2
+        className={`flex min-w-0 shrink-0 items-center gap-1 rounded-lg border bg-gradient-to-r from-search-primary to-search-secondary px-2.5 py-2 shadow-sm transition active:scale-95 2xl:gap-2
                         ${disabled
                 ? "opacity-60 cursor-not-allowed"
                 : "hover:bg-gray-100 cursor-pointer"
@@ -65,11 +65,13 @@ function NextPrevButton({ onClick, disabled, label, Icon, ...props }) {
                     `}
 
     >
-        {props.first && <Icon className="w-5 h-5 text-white" />}
-        <p className='relative hidden max-w-[150px] truncate text-sm font-semibold text-white 2xl:block
-      '>           {label ? he.decode(label) : ""}
-        </p>
-        {!props.first && <Icon className="w-5 h-5 text-white" />}
+        {props.first && <Icon className="w-5 h-5 shrink-0 text-white" />}
+        {label ? (
+            <p className='relative block max-w-[80px] truncate text-xs font-semibold text-white sm:max-w-[90px] sm:text-sm md:max-w-[130px] 2xl:max-w-[110px]'>
+                {he.decode(label)}
+            </p>
+        ) : null}
+        {!props.first && <Icon className="w-5 h-5 shrink-0 text-white" />}
 
     </button>
 }

@@ -34,7 +34,7 @@ function HashTag({ text, color }) {
   return (
     <span
       title={`#${text}`}
-      className={`max-w-[140px] truncate rounded-full px-3 py-1 text-xs font-medium ${color} text-white`}
+      className={`max-w-[110px] shrink-0 truncate rounded-full px-2.5 py-1 text-xs font-medium sm:max-w-[140px] sm:px-3 ${color} text-white`}
     >
       #{text}
     </span>
@@ -252,9 +252,11 @@ const ContactHeader = () => {
 
       {/* HEADER */}
       <div className="w-full bg-white border border-sky-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex min-h-[86px] flex-wrap items-center gap-y-3 py-3 2xl:flex-nowrap 2xl:py-0">
-          {/* LEFT */}
-          <div className="flex min-w-0 basis-full items-center gap-3 px-3 py-1 sm:basis-auto sm:flex-1 2xl:min-w-[360px] 2xl:flex-none 2xl:px-5">
+        <div className="flex min-h-[86px] flex-col divide-y divide-gray-100 2xl:flex-row 2xl:flex-nowrap 2xl:items-center 2xl:divide-y-0">
+          {/* ROW 1 (small screens): IDENTITY + NAV — becomes part of the single row at 2xl */}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-3 2xl:contents">
+            {/* LEFT */}
+            <div className="flex min-w-0 basis-full items-center gap-3 sm:basis-auto sm:flex-1 2xl:order-1 2xl:w-[420px] 2xl:flex-none 2xl:basis-auto 2xl:px-5 2xl:py-3">
             {!isPending && (
               <>
                 <div
@@ -282,27 +284,21 @@ const ContactHeader = () => {
                   )}
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex min-w-0 flex-nowrap items-center gap-2 overflow-hidden">
                     <Link
                       to={`/entity/contacts/${currentEmail}`}
-                      className="text-[18px] font-semibold text-gray-900 hover:text-blue-600 mt-3"
+                      className="min-w-0 shrink truncate text-[15px] font-semibold text-gray-900 hover:text-blue-600 sm:text-[18px]"
                       title={he.decode(
                         contactInfo?.full_name?.trim()
                           ? contactInfo.full_name
                           : (email ?? ""),
                       )}
                     >
-                      {(() => {
-                        const text = he.decode(
-                          contactInfo?.full_name?.trim()
-                            ? contactInfo.full_name
-                            : (email ?? ""),
-                        );
-
-                        return text.length > 8
-                          ? `${text.slice(0, 9)}...`
-                          : text;
-                      })()}
+                      {he.decode(
+                        contactInfo?.full_name?.trim()
+                          ? contactInfo.full_name
+                          : (email ?? ""),
+                      )}
                     </Link>
 
                     <SocialButtons
@@ -311,7 +307,7 @@ const ContactHeader = () => {
                     />
                   </div>
 
-                  <div className="mb-1 mt-1 flex max-w-full flex-wrap items-center gap-2">
+                  <div className="mt-1 flex max-w-full min-w-0 flex-wrap items-center gap-2">
                     {(showAllTags ? hashtags : hashtags?.slice(0, 2))?.map((tag) => (
                       <HashTag
                         key={tag.id}
@@ -334,37 +330,61 @@ const ContactHeader = () => {
                 </div>
               </>
             )}
+            </div>
+
+            {/* NAV / DEAL — sits next to the avatar on small screens, far right at 2xl */}
+            {(emailDeals?.length > 0 || showNextPrev) && (
+              <div className="flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto 2xl:order-4 2xl:ml-auto 2xl:w-auto 2xl:gap-3 2xl:px-5 2xl:py-3">
+                {emailDeals?.length > 0 && (
+                  <div
+                    onClick={() => navigate(`/deals/view?email=${currentEmail}`)}
+                    className="flex min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1.5 transition hover:bg-slate-200"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                      <Handshake size={16} className="text-white" />
+                    </div>
+
+                    <span className="truncate text-sm font-semibold text-gray-900">
+                      $<CountUpWithBlast value={maxDeal} email={email} />
+                    </span>
+                  </div>
+                )}
+
+                {showNextPrev && <NextPrev />}
+              </div>
+            )}
           </div>
 
-          <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
+          <div className="hidden h-12 w-px bg-gray-200 2xl:order-2 2xl:block" />
 
-          <div className="flex min-w-0 flex-1 flex-wrap items-start gap-y-3 px-3 2xl:flex-nowrap 2xl:px-0">
+          {/* SUMMARY ROW */}
+          <div className="grid min-w-0 grid-cols-2 items-start gap-x-4 gap-y-3 px-3 py-3 md:flex md:flex-nowrap md:items-center md:gap-0 2xl:order-3 2xl:flex-1 2xl:px-0">
 
-            <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
-              <p className="text-[12px] xl:text-[16px] font-semibold uppercase tracking-widest text-primary">
+            <div className="min-w-0 max-sm:col-span-2 md:flex-1 md:px-4 2xl:min-w-[150px] 2xl:px-4">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-primary sm:text-[12px]">
                 CREATED AT
               </p>
 
-              <p className="text-[12px] font-semibold text-gray-900 mt-1">
+              <p className="mt-1 truncate text-[12px] font-semibold text-gray-900">
                 {summaryLoading
                   ? "Loading..."
                   : mailersSummary?.date_entered_formatted || "N/A"}
               </p>
 
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="mt-1 truncate text-xs text-gray-500">
                 {mailersSummary?.date_entered || ""}
               </p>
             </div>
 
-            <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
+            <div className="hidden h-12 w-px shrink-0 bg-gray-200 md:block" />
 
-            <div className="min-w-[170px] flex-1 px-3 2xl:min-w-[200px] 2xl:px-6">
-              <p className="text-[12px] font-semibold uppercase tracking-widest text-primary">
+            <div className="min-w-0 md:flex-[1.3] md:px-4 2xl:min-w-[170px] 2xl:px-4">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-primary sm:text-[12px]">
                 SUBJECT
               </p>
 
               <Titletooltip content={mailersSummary?.subject || "No Subject"}>
-                <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[230px]">
+                <p className="mt-1 truncate text-[12px] font-semibold text-gray-900">
                   {summaryLoading
                     ? "Loading..."
                     : mailersSummary?.subject || "No Subject"}
@@ -372,40 +392,21 @@ const ContactHeader = () => {
               </Titletooltip>
             </div>
 
-            <div className="hidden h-12 w-px bg-gray-200 2xl:block" />
+            <div className="hidden h-12 w-px shrink-0 bg-gray-200 md:block" />
 
-            <div className="min-w-[150px] flex-1 px-3 2xl:min-w-[180px] 2xl:px-6">
-              <p className="text-[12px] font-semibold uppercase tracking-widest text-primary">
+            <div className="min-w-0 md:flex-1 md:px-4 2xl:min-w-[150px] 2xl:px-4">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-primary sm:text-[12px]">
                 MOTIVE
               </p>
 
               <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
-                <p className="text-[12px] font-semibold text-gray-900 mt-1 truncate max-w-[200px]">
+                <p className="mt-1 truncate text-[12px] font-semibold text-gray-900">
                   {summaryLoading
                     ? "Loading..."
                     : mailersSummary?.correct_motive || "N/A"}
                 </p>
               </Titletooltip>
             </div>
-          </div>
-
-          <div className="flex basis-full flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-3 pt-3 2xl:ml-auto 2xl:basis-auto 2xl:flex-nowrap 2xl:justify-end 2xl:border-0 2xl:px-5 2xl:pt-0">
-            {emailDeals?.length > 0 && (
-              <div
-                onClick={() => navigate(`/deals/view?email=${currentEmail}`)}
-                className="flex min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1.5 transition hover:bg-slate-200"
-              >
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <Handshake size={16} className="text-white" />
-                </div>
-
-                <span className="truncate text-sm font-semibold text-gray-900">
-                  $<CountUpWithBlast value={maxDeal} email={email} />
-                </span>
-              </div>
-            )}
-
-            {showNextPrev && <NextPrev />}
           </div>
         </div>
       </div>
