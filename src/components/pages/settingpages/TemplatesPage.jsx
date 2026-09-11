@@ -773,7 +773,7 @@ export default function TemplatesPage() {
       <>
         <AiGenerateModal {...aiModalProps} />
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-[999] p-4"
           onClick={handleCloseNewTemplateModal}
         >
           <motion.div
@@ -957,7 +957,7 @@ export default function TemplatesPage() {
       <>
         <AiGenerateModal {...aiModalProps} />
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-4"
           onClick={handleClose}
         >
           <motion.div

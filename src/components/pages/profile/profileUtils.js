@@ -1,5 +1,6 @@
 export const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 export const ALLOWED_SITES_MODULE = "outr_allowed_sites";
+import "../../../lib/tinymce.js"
 
 export const TINY_INIT = {
   license_key: 'gpl',

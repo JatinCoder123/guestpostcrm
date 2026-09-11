@@ -14,7 +14,6 @@ export default function ChatMessages() {
         messages,
         isMessagesLoading,
     } = useInternalChat();
-    console.log("message", messages)
 
     /*
      * ==========================================

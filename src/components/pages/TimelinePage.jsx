@@ -23,8 +23,8 @@ export function TimelinePage() {
   const summaryColumnRef = useRef(null);
   const [summaryColumnHeight, setSummaryColumnHeight] = useState(null);
   const { currentEmail } = useTimeline()
-  const { data } = useInfiniteLedger(currentEmail);
   const { recordUsers, isLocked } = useRecordLock({ email: currentEmail, compareTo: 'currentTimeline', page: ["/"] })
+  const { data } = useInfiniteLedger(currentEmail);
 
   const ladger =
     data?.pages?.flatMap(

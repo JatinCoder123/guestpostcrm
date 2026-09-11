@@ -177,6 +177,7 @@ const Inbox = ({
     }
     if (fetchingOrderError) {
       setSelectedMessageId(null)
+      console.log('fetchingOrderError', fetchingOrderError)
       toast.error("Failed To Fetch Order")
       dispatch(orderAction.clearAllErrors())
     }

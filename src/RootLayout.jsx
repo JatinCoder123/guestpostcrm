@@ -3,23 +3,25 @@ import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { AnimatePresence, motion } from "framer-motion";
+
 import { viewEmailAction } from "./store/Slices/viewEmail";
 import { PageContext } from "./context/pageContext";
+import { SocketContext } from "./context/SocketContext";
+import { useTimeline } from "./context/TimelineContext";
+
 import DisplayIntro from "./components/DisplayIntro";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
-import { SocketContext } from "./context/SocketContext";
-import { getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
-import useRefresh from "./hooks/useRefresh";
+import RefreshReminder from "./components/RefreshReminder";
 import OnBoarding from "./components/OnBoarding";
-import { useTimeline } from "./context/TimelineContext";
+
+import { getDomain } from "./assets/assets";
+import useRefresh from "./hooks/useRefresh";
 import toast from "react-hot-toast";
 import { queryClient } from "./lib/queryClient"
 import Breadcrumbs from "./components/Breadcrumbs";
-import RefreshReminder from "./components/RefreshReminder";
-import { motion } from "framer-motion";
-
 
 const RootLayout = () => {
   const { message, error } = useSelector((state) => state.viewEmail);
@@ -49,7 +51,6 @@ const RootLayout = () => {
     if (mainRef.current) {
       mainRef.current.scrollTo({
         top: 0,
-        left: 0,
         behavior: "smooth",
       });
 
@@ -98,7 +99,7 @@ const RootLayout = () => {
   }, [location, setActivePage]);
 
   if (displayIntro) {
-    return <DisplayIntro key="intro" />;
+    return <DisplayIntro />;
   }
 
   return (
