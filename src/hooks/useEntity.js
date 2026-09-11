@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tansta
 import * as api from "../api/entity.api";
 import { useCrmUsers } from "@/queries/users.queries";
 import { store } from "@/store/store";
+import { getAllUnreadEmails } from "../api/contact.api";
 export const entityKeys = {
     allByEntity: (entity) => ["entity", entity],
 
@@ -82,6 +83,11 @@ export const useInfiniteEntity = ({
     const filterByEmail =
         layout?.filter_by_email || false;
 
+    // Inbox + unread status
+    const isInboxUnread =
+        layout?.moduleKey === "inbox" &&
+        preferences?.filters?.status === "unread";
+
     // Add assigned user ID only for assigned entities
     const finalDataFilters = {
         ...dataFilters,
@@ -103,25 +109,30 @@ export const useInfiniteEntity = ({
             preferences,
             filterByEmail ? email : "",
             entity,
-            finalDataFilters
+            finalDataFilters,
+            isInboxUnread
         ),
 
         queryFn: ({
             pageParam = 1,
         }) =>
-            api.fetchInfiniteList({
-                module,
-                preferences,
-                page: pageParam,
+            isInboxUnread
+                ? getAllUnreadEmails({
+                    page: pageParam,
+                })
+                : api.fetchInfiniteList({
+                    module,
+                    preferences,
+                    page: pageParam,
 
-                // Only pass email when filter_by_email = 1
-                email: filterByEmail
-                    ? email
-                    : "",
+                    // Only pass email when filter_by_email = 1
+                    email: filterByEmail
+                        ? email
+                        : "",
 
-                dataFilters:
-                    finalDataFilters,
-            }),
+                    dataFilters:
+                        finalDataFilters,
+                }),
 
         initialPageParam: 1,
 

@@ -42,12 +42,11 @@ const UserActivity = () => {
         <table className="w-full min-w-[720px] text-sm lg:min-w-0">
           <thead className="bg-gray-50 text-left">
             <tr>
-              <th className="p-3">Last Active</th>
-
               <th className="p-3">User</th>
               <th className="p-3">Email</th>
               <th className="p-3">Status</th>
               <th className="p-3">Current Page</th>
+              <th className="p-3">Last Active</th>
             </tr>
           </thead>
 
@@ -88,7 +87,6 @@ const UserActivity = () => {
                 <td className="p-3">
                   {getTimeAgo(user.lastActiveAt)}
                 </td>
-
               </tr>
             ))}
 

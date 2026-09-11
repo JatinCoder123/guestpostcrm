@@ -4,6 +4,7 @@ import Icon from "../Icon/Icon";
 import { useEntityStats } from "@/hooks/useEntity";
 import { useContext } from "react";
 import { PageContext } from "@/context/pageContext";
+import { useUnreadCount } from "@/queries/email.queries";
 
 function StatusRow() {
     const {
@@ -15,7 +16,7 @@ function StatusRow() {
         showStatus,
         preferences
     } = useTableContext();
-
+    const { data, isPending, error } = useUnreadCount();
     const { enteredEmail: email } = useContext(PageContext);
 
     const {
@@ -30,17 +31,21 @@ function StatusRow() {
     });
 
     const statusList = STATUS_CONFIG.map((config) => {
+        const count =
+            config.key === "unread"
+                ? Number(data || 0)
+                : Number(
+                    summary?.stats?.[config.key]?.count || 0
+                );
+
         return {
             ...config,
-            count: Number(
-                summary?.stats?.[`${config.key}`]?.count || 0
-            ),
+            count,
             amount: Number(
-                summary?.stats?.[`${config.key}`]?.sum_of?.total_amount_c || 0
-            )
+                summary?.stats?.[config.key]?.sum_of?.total_amount_c || 0
+            ),
         };
     });
-
     const toggleStatus = (status) => {
         const updated = { ...filters };
 
