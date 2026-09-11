@@ -79,6 +79,7 @@ const Layout = () => {
             <ShadcnTabs
                 value={activeTab}
                 onValueChange={handleTabChange}
+                activationMode="manual"
                 className="w-full"
             >
                 <TabsList
