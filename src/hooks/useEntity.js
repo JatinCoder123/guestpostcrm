@@ -3,6 +3,7 @@ import * as api from "../api/entity.api";
 import { useCrmUsers } from "@/queries/users.queries";
 import { store } from "@/store/store";
 import { getAllUnreadEmails } from "../api/contact.api";
+import { getReports } from "@/api/report.api";
 export const entityKeys = {
     allByEntity: (entity) => ["entity", entity],
 
@@ -88,6 +89,10 @@ export const useInfiniteEntity = ({
         layout?.moduleKey === "inbox" &&
         preferences?.filters?.status === "unread";
 
+    // Report module
+    const isReport =
+        layout?.module === "report";
+
     // Add assigned user ID only for assigned entities
     const finalDataFilters = {
         ...dataFilters,
@@ -115,30 +120,58 @@ export const useInfiniteEntity = ({
 
         queryFn: ({
             pageParam = 1,
-        }) =>
-            isInboxUnread
-                ? getAllUnreadEmails({
+        }) => {
+            // REPORT
+            if (isReport) {
+                return getReports({
+                    preference: preferences,
                     page: pageParam,
-                })
-                : api.fetchInfiniteList({
-                    module,
-                    preferences,
+                });
+            }
+
+            // INBOX + UNREAD
+            if (isInboxUnread) {
+                return getAllUnreadEmails({
                     page: pageParam,
+                });
+            }
 
-                    // Only pass email when filter_by_email = 1
-                    email: filterByEmail
-                        ? email
-                        : "",
+            // NORMAL ENTITY
+            return api.fetchInfiniteList({
+                module,
+                preferences,
+                page: pageParam,
 
-                    dataFilters:
-                        finalDataFilters,
-                }),
+                // Only pass email when filter_by_email = 1
+                email: filterByEmail
+                    ? email
+                    : "",
+
+                dataFilters:
+                    finalDataFilters,
+            });
+        },
 
         initialPageParam: 1,
 
         getNextPageParam: (
             lastPage
         ) => {
+            // REPORT pagination
+            if (isReport) {
+                if (
+                    lastPage.pagination.page <
+                    lastPage.pagination.totalPages
+                ) {
+                    return (
+                        lastPage.pagination.page + 1
+                    );
+                }
+
+                return undefined;
+            }
+
+            // Normal / unread pagination
             if (
                 lastPage.page <
                 lastPage.total_pages
