@@ -71,7 +71,7 @@ function NavigationBar({
                                         setMessageLimit((p) => p + 3)
                                     }
                                     className={NAV_BTN}
-                                    label={'Show All'}
+                                    label={'Load More'}
                                 />
 
 
@@ -83,7 +83,7 @@ function NavigationBar({
                                         setMessageLimit(emails.length)
                                     }}
                                     className={NAV_BTN}
-                                    label={"Load More"}
+                                    label={"Show All"}
                                 />
 
                             </>
@@ -135,7 +135,7 @@ function NavigationBar({
                         />
                     </div>
 
-                    {/* Below `lg` the two panes are tabs, so this toggle would be
+                    {/* Below `lg` the two panes are tabs, so this toggle wouldbe
                         a duplicate of the tab bar — ThreadView hides it there. */}
                     {showReplyToggle && (
                         <IconButton

@@ -45,7 +45,7 @@ const PHASES = [
     badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
   {
-    key: "conversations",
+    key: "conversation",
     label: "Conversations",
     sublabel: "Workflow · Stages · Outcomes",
     icon: MessageSquare,
@@ -468,7 +468,7 @@ export default function ViewReports() {
       }));
     }
   }, [email, users]);
-  const [activeSection, setActiveSection] = useState(storedReportFilter.phase || "conversations");
+  const [activeSection, setActiveSection] = useState(storedReportFilter.phase || "conversation");
 
   const phaseConfig = useMemo(
     () => PHASES.find((p) => p.key === activeSection) || PHASES[0],
