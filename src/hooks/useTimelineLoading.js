@@ -10,7 +10,7 @@ import { useTablePreference } from "./useTablePreference";
 
 export const useTimelineLoading = () => {
     const { currentEmail } = useTimeline();
-    const preferences = useTablePreference("emails");
+    const preferences = useTablePreference("inbox");
     const emailQuery = useInfiniteEmails(preferences)
     const contactQuery = useContact(currentEmail);
     const threadQuery = useThread(currentEmail);

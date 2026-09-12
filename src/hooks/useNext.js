@@ -7,7 +7,7 @@ import { useInfiniteEmails } from '../queries/email.queries';
 import { useTablePreference } from './useTablePreference';
 
 export const useNext = () => {
-    const preferences = useTablePreference("emails");
+    const preferences = useTablePreference("inbox");
     const {
         data,
         fetchNextPage,
