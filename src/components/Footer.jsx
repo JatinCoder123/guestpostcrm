@@ -16,7 +16,7 @@ import { useLinkRemovalCount } from "../queries/backlinks.queries";
 export default function Footer() {
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
   const { notificationCount, totalUnseenChatCount } = useContext(SocketContext);
-  const { collapsed } = useContext(PageContext);
+  const { collapsed, isSidebarHovered } = useContext(PageContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
   const dispatch = useDispatch()
   const prevCountRef = useRef(0);
@@ -75,7 +75,7 @@ export default function Footer() {
   }, [error, dispatch]);
   return (
     <footer
-      className={`fixed bottom-0 right-0 z-40 flex h-12 items-center justify-between gap-2 overflow-x-auto overflow-y-hidden hide-scrollbar bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-lg:left-0 ${collapsed ? "lg:left-[80px]" : "lg:left-[260px]"
+      className={`fixed bottom-0 right-0 z-40 flex h-12 items-center justify-between gap-2 overflow-x-auto overflow-y-hidden hide-scrollbar bg-white px-3.5 shadow-[0_-1px_4px_rgba(0,0,0,.08)] transition-[left] duration-300 max-lg:left-0 ${collapsed && !isSidebarHovered ? "lg:left-[80px]" : "lg:left-[260px]"
         }`}
     >
       <IconButton icon={Settings} label="Settings" onClick={() => navigate("/settings")} />
