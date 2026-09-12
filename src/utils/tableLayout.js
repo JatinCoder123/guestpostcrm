@@ -114,13 +114,17 @@ export const COLUMN_PROPERTIES = [
   "editable",
 ];
 
-export const STATUS_PROPERTIES = [
-  "label",
-  "visible",
-  "icon",
-  "color",
-  "showAmount",
-];
+/*
+ * `showAmount` is deliberately not here.
+ *
+ * It stays in PRESENTATION_KINDS because `toStatus` resolves it for the LIVE
+ * table, which needs to know whether to total a currency field beside the
+ * count. It is just not something this editor offers: the flag is only
+ * meaningful when the layout also names an `amountKey`, and that is not
+ * editable here, so a switch for it would let someone turn on a total with
+ * nothing to total.
+ */
+export const STATUS_PROPERTIES = ["label", "visible", "icon", "color"];
 
 /**
  * Everything a staged mutation may target, per owner.

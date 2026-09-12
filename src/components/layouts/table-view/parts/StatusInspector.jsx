@@ -13,7 +13,7 @@ import { Save } from "lucide-react";
 import IconInput from "@/components/IconInput";
 
 import { GhostButton, PrimaryButton, ReadOnlyValue } from "./Primitives";
-import { BoolRow, CapabilitySummary, TextRow } from "./PropertyRows";
+import { BoolRow, CapabilitySummary, ColorRow, TextRow } from "./PropertyRows";
 
 import { STATUS_PROPERTIES } from "@/utils/tableLayout";
 
@@ -102,29 +102,15 @@ export default function StatusInspector({
           )}
         </div>
 
-        <TextRow
+        <ColorRow
           property="color"
           value={status.color}
           entry={entry("color")}
           busy={busy}
           onChange={set("color")}
-          placeholder="emerald"
-          hint="The accent the stat is drawn in, as the table's own color token."
+          hint="The accent the stat is drawn in. Pick one, or type a hex value."
         />
 
-        <BoolRow
-          property="showAmount"
-          value={status.showAmount}
-          entry={entry("showAmount")}
-          busy={busy}
-          onChange={set("showAmount")}
-          title="Show amount"
-          description={
-            status.amountKey
-              ? `Totals ${status.amountKey} beside the count.`
-              : "Totals a currency field beside the count, when the layout names one."
-          }
-        />
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border p-4">
