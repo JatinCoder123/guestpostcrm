@@ -7,6 +7,7 @@ import {
 
 import {
   createTableField,
+  fetchModuleFields,
   fetchViewContract,
   sendUiMutation,
 } from "../api/flexibility.api";
@@ -26,6 +27,8 @@ export const flexibilityKeys = {
     moduleKey ?? null,
     viewKey ?? null,
   ],
+
+  moduleFields: (module) => ["flexibility", "module-fields", module ?? null],
 };
 
 /* =========================================================================
@@ -84,6 +87,33 @@ export function useViewContract(moduleKey, viewKey) {
   });
 }
 
+
+/* =========================================================================
+   MODULE FIELD CATALOG
+   ========================================================================= */
+
+/**
+ * The vardefs of the module a view reads from, for the field library.
+ *
+ * Cached hard, unlike the contract: vardefs only change when someone adds a
+ * field in Studio, and this list never carries a mutation or a config version,
+ * so a slightly old copy cannot cause a stale write. The worst case is a
+ * brand new Studio field missing from the library until the cache expires,
+ * and the panel has a refresh for that.
+ *
+ * `module` is the bean name from `contract.module` - not `moduleKey`, which is
+ * the view catalog key and is not what SuiteCRM's bean registry is keyed by.
+ */
+export function useModuleFields(module) {
+  return useQuery({
+    queryKey: flexibilityKeys.moduleFields(module),
+    queryFn: () => fetchModuleFields(module),
+    enabled: Boolean(module),
+    staleTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+}
 
 export function useRefetchContract() {
   const queryClient = useQueryClient();

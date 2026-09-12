@@ -34,19 +34,16 @@ import {
 } from "@/utils/uiRank";
 
 import {
-  buildColumnRankMutation,
-  buildColumnVisibilityMutation,
-  buildColumnWidthMutation,
   buildFieldCreatePayload,
-  buildStatusIconMutation,
-  buildStatusRankMutation,
-  buildStatusVisibilityMutation,
-  buildViewRankMutation,
-  buildViewVisibilityMutation,
+  buildPresentationMutation,
   clampWidth,
   existingAccessors,
   isNoOpChange,
   normalizeTableContract,
+  COLUMN_PROPERTIES,
+  PROPERTY_LABELS,
+  STATUS_PROPERTIES,
+  WRITABLE_PROPERTIES,
 } from "@/utils/tableLayout";
 
 import {
@@ -966,6 +963,31 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     [model],
   );
 
+  /**
+   * Drop a staged create before it is published.
+   *
+   * Only ever removes from `pendingCreates`. A column that has already been
+   * published is a different thing entirely - it lives in a revision and is
+   * removed by editing the layout, not by discarding a draft - so nothing here
+   * touches `columns`.
+   */
+  const removeStagedField = useCallback((accessor) => {
+    const target = String(accessor ?? "").trim();
+
+    const remaining = pendingCreates.current.filter(
+      (draft) => draft.accessor !== target,
+    );
+
+    if (remaining.length === pendingCreates.current.length) {
+      return false;
+    }
+
+    pendingCreates.current = remaining;
+    setDraftVersion((version) => version + 1);
+
+    return true;
+  }, []);
+
   /* ------------------------------------------------------------- reload */
 
   const updatePresentation = useCallback(async (kind, id, changes) => {
@@ -973,15 +995,19 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
       const target = kind === "column"
         ? columns.find((item) => item.accessor === id)
         : statuses.find((item) => item.key === id);
+      // Every property the inspector can offer for this kind. `rank` is not in
+      // here: it is staged by dragging, not by a control.
       const supportedProperties = kind === "column"
-        ? ["visible", "width"]
-        : ["visible", "icon"];
+        ? COLUMN_PROPERTIES
+        : STATUS_PROPERTIES;
 
       for (const [property, value] of Object.entries(changes)) {
         if (!supportedProperties.includes(property)) continue;
 
         const entry = target?.presentation?.[property];
-        if (!assertWritable(entry, `${property} for this ${kind}`)) {
+        const what = PROPERTY_LABELS[property] ?? property;
+
+        if (!assertWritable(entry, `${what} for "${target?.label ?? id}"`)) {
           return false;
         }
 
@@ -1027,22 +1053,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     try {
       let currentContract = contract;
 
-      const builders = {
-        column: {
-          visible: buildColumnVisibilityMutation,
-          width: buildColumnWidthMutation,
-          rank: buildColumnRankMutation,
-        },
-        status: {
-          visible: buildStatusVisibilityMutation,
-          icon: buildStatusIconMutation,
-          rank: buildStatusRankMutation,
-        },
-        view: {
-          visible: buildViewVisibilityMutation,
-          rank: buildViewRankMutation,
-        },
-      };
+      /*
+       * One builder for every property, gated by what the owner allows.
+       *
+       * This used to be a table of per-property builder functions, which meant
+       * a property the compiler DID return a mutation for still could not be
+       * published unless someone had also added a builder for it here. The
+       * gate is now the mutation itself: `buildPresentationMutation` throws if
+       * the entry carries none.
+       */
+      const allowed = WRITABLE_PROPERTIES;
 
       for (const [key, draft] of [...pendingMutations.current.entries()]) {
         const currentModel = normalizeTableContract(currentContract, {
@@ -1055,14 +1075,16 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
             ? currentModel?.statuses.find((item) => item.key === draft.id)
             : currentModel?.view;
         const entry = target?.presentation?.[draft.property];
-        const builder = builders[draft.kind]?.[draft.property];
+        const permitted = allowed[draft.kind]?.includes(draft.property);
 
         if (!target) {
           throw new Error("A changed layout item is no longer available. Discard and try again.");
         }
 
-        if (!builder || !entry?.writable) {
-          throw new Error(`The ${draft.property} setting can no longer be changed.`);
+        if (!permitted || !entry?.writable) {
+          throw new Error(
+            `${PROPERTY_LABELS[draft.property] ?? draft.property} can no longer be changed for this ${draft.kind}.`,
+          );
         }
 
         if (isNoOpChange(entry, draft.value)) {
@@ -1071,7 +1093,11 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
         }
 
         const result = await propertyWrite.mutateAsync({
-          mutation: builder(target, draft.value),
+          mutation: buildPresentationMutation(
+            target,
+            draft.property,
+            draft.value,
+          ),
           moduleKey,
           viewKey,
         });
@@ -1173,6 +1199,18 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     statuses,
     filteredStatuses,
 
+    /*
+     * Creates staged but not yet published. Read straight off the ref: every
+     * mutation of it bumps `draftVersion`, so this is recomputed on the same
+     * render the change lands on, exactly like `dirty` below.
+     *
+     * Copied, for two reasons. A caller cannot reach in and drop a staged
+     * create without going through `removeStagedField`, and `addField` pushes
+     * onto the ref in place - handing out the same array identity every render
+     * would let a memoized consumer miss the new entry entirely.
+     */
+    stagedFields: [...pendingCreates.current],
+
     /* Read state */
     contractPending,
     contractFetching,
@@ -1214,6 +1252,7 @@ export function useTableLayoutEditor({ moduleKey, viewKey }) {
     setViewVisible,
     setViewRank,
     addField,
+    removeStagedField,
     repair,
     reload,
   };

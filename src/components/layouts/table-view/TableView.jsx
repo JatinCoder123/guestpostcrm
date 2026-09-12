@@ -1,18 +1,18 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { BarChart3, Columns3, Plus, RotateCcw, Search, Table2, Wrench } from "lucide-react";
+import { BarChart3, Columns3, PanelRightClose, PanelRightOpen, RotateCcw, Search, Table2, Wrench } from "lucide-react";
 import * as Tabs from "@radix-ui/react-tabs";
 import { EmptyState, GhostButton, InlineAlert, LoadingBlock, PrimaryButton, Toggle } from "./parts/Primitives";
 import ViewPicker from "./parts/ViewPicker";
-import ColumnList from "./parts/ColumnList";
+import ColumnsPane from "./parts/ColumnsPane";
 import ColumnInspector from "./parts/ColumnInspector";
-import AddFieldDialog from "./parts/AddFieldDialog";
 import StatusInspector from "./parts/StatusInspector";
 import StatusList from "./parts/StatusList";
 import useTableLayoutEditor from "./useTableLayoutEditor";
 import usePresentationDrafts from "./usePresentationDrafts";
-import { useTableViewRegistry } from "@/queries/flexibility.queries";
+import { useModuleFields, useTableViewRegistry } from "@/queries/flexibility.queries";
 import { DEFAULT_VIEW_KEY } from "@/utils/tableViewRegistry";
+import { defaultsForModuleField } from "@/utils/tableLayout";
 import { useLayoutDraftGuard } from "@/components/layouts/LayoutDraftContext";
 
 export default function TableView() {
@@ -22,7 +22,7 @@ export default function TableView() {
   const registry = useTableViewRegistry();
   const views = registry.data?.views || [];
   const selectedView = views.find((item) => item.moduleKey === moduleKey && item.viewKey === viewKey);
-  const [addOpen, setAddOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(true);
   const [section, setSection] = useState("columns");
   const [search, setSearch] = useState("");
   const editor = useTableLayoutEditor({
@@ -38,6 +38,21 @@ export default function TableView() {
   const status = drafts.statuses.find((item) => item.key === selection?.key);
   const needle = search.trim().toLowerCase();
   const matches = (item) => [item.label, item.accessor, item.key].some((value) => value?.toLowerCase().includes(needle));
+
+  // `model.module` is the bean the view reads from. `moduleKey` is the view
+  // catalog key and is not what SuiteCRM's vardefs are keyed by, so the field
+  // library would come back empty if it were used here.
+  const library = useModuleFields(model?.module || null);
+  const inViewAccessors = new Set(editor.columns.map((item) => item.accessor));
+  const stagedAccessors = new Set(editor.stagedFields.map((draft) => draft.accessor));
+
+  // The library supplies the source field, and the defaults supply everything
+  // the add-field dialog used to ask for. `rankAfter` names the column to sit
+  // behind, and null appends - the backend generates the rank either way.
+  const addFromLibrary = (field, rankAfter) => {
+    if (writing) return;
+    editor.addField(defaultsForModuleField(field, { rankAfter }));
+  };
 
   useEffect(() => {
     if (!selectedView && registry.data?.views?.length) {
@@ -59,7 +74,6 @@ export default function TableView() {
   const selectView = (next) => {
     if (writing) return;
     setSearch("");
-    setAddOpen(false);
     setSearchParams({ module: next.moduleKey, view: next.viewKey }, { replace: true });
   };
   const toggleColumn = (item) => {
@@ -81,6 +95,16 @@ export default function TableView() {
     await drafts.repair();
   };
   const rankError = showingStatuses ? editor.statusRankError : editor.rankError;
+
+  const columnInspector = column ? (
+    <ColumnInspector column={column} busy={writing}
+      onPatch={(changes) => drafts.patch("column", column.accessor, changes)}
+      dirty={column.dirty} onReset={() => drafts.reset("column", column.accessor)}
+      onUpdate={() => drafts.update("column", column)} />
+  ) : (
+    <EmptyState icon={Columns3} title="No columns to edit"
+      description="Add a field from the list on the right to get started." />
+  );
 
   return (
     <div className="flex min-h-0 flex-col">
@@ -147,66 +171,82 @@ export default function TableView() {
                 <BarChart3 className="h-4 w-4" /> Statuses
               </Tabs.Trigger>
             </Tabs.List>
-            {!showingStatuses && <GhostButton icon={Plus} onClick={() => setAddOpen(true)} disabled={writing}>Add field</GhostButton>}
+            {!showingStatuses && (
+              <GhostButton icon={libraryOpen ? PanelRightClose : PanelRightOpen}
+                onClick={() => setLibraryOpen((open) => !open)}
+                title={libraryOpen ? "Hide the field library" : "Show every field on this module"}>
+                {libraryOpen ? "Hide fields" : "Add fields"}
+              </GhostButton>
+            )}
           </div>
           <Tabs.Content value={section} className="mt-0 outline-none">
-            <div className="layout-editor-grid min-h-[360px]">
-              <div className="min-w-0 border-b border-border bg-card ">
-                <div className="space-y-2 p-4">
-                  <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input value={search} onChange={(event) => setSearch(event.target.value)}
-                      placeholder={showingStatuses ? "Search statuses..." : "Search columns..."}
-                      aria-label={showingStatuses ? "Search statuses" : "Search columns"}
-                      className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40" />
+            {showingStatuses ? (
+              <div className="layout-editor-grid min-h-[360px]">
+                <div className="min-w-0 border-b border-border bg-card ">
+                  <div className="space-y-2 p-4">
+                    <div className="relative">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <input value={search} onChange={(event) => setSearch(event.target.value)}
+                        placeholder="Search statuses..." aria-label="Search statuses"
+                        className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Drag to reorder. Click Repair when the layout is ready.</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">Drag to reorder. Click Repair when the layout is ready.</p>
-                </div>
-                {rankError && <div className="px-4 pb-3"><InlineAlert tone="warning" title="Reordering is unavailable">
-                  Reload this view to try again. You can still edit its settings.
-                </InlineAlert></div>}
-                <div className="max-h-[min(52vh,560px)] overflow-y-auto px-3 pb-4">
-                  {showingStatuses ? (
+                  {rankError && <div className="px-4 pb-3"><InlineAlert tone="warning" title="Reordering is unavailable">
+                    Reload this view to try again. You can still edit its settings.
+                  </InlineAlert></div>}
+                  <div className="max-h-[min(52vh,560px)] overflow-y-auto px-3 pb-4">
                     <StatusList statuses={drafts.statuses.filter(matches)} allStatuses={drafts.statuses}
                       selection={selection} onSelect={(item) => setSelection({ type: "status", key: item.key })}
                       onToggleVisible={toggleStatus} onMove={editor.moveStatus}
                       busyStatusKey={editor.busyStatusKey} disabled={writing}
                       reorderDisabled={Boolean(rankError) || writing} searching={Boolean(needle)} />
+                  </div>
+                </div>
+                <div className="min-w-0 bg-background">
+                  {status ? (
+                    <StatusInspector status={status} busy={writing}
+                      onPatch={(changes) => drafts.patch("status", status.key, changes)}
+                      dirty={status.dirty} onReset={() => drafts.reset("status", status.key)}
+                      onUpdate={() => drafts.update("status", status)}
+                      onSetIcon={(item, icon) => drafts.patch("status", item.key, {
+                        icon: { color: item.icon?.color || "", library: icon?.library || "", name: icon?.name || "" },
+                      })} />
                   ) : (
-                    <ColumnList columns={drafts.columns.filter(matches)} allColumns={drafts.columns}
-                      selection={selection} onSelect={(item) => setSelection({ type: "column", accessor: item.accessor })}
-                      onToggleVisible={toggleColumn} onMove={editor.moveColumn}
-                      busyAccessor={editor.busyAccessor} disabled={writing}
-                      reorderDisabled={Boolean(rankError) || writing} searching={Boolean(needle)} />
+                    <EmptyState icon={BarChart3} title="No statuses to edit"
+                      description="This view has no statuses configured." />
                   )}
                 </div>
               </div>
-              <div className="min-w-0 bg-background">
-                {!showingStatuses && column && (
-                  <ColumnInspector column={column} onToggleVisible={toggleColumn} busy={writing}
-                    dirty={column.dirty} onReset={() => drafts.reset("column", column.accessor)}
-                    onUpdate={() => drafts.update("column", column)} />
-                )}
-                {showingStatuses && status && (
-                  <StatusInspector status={status} onToggleVisible={toggleStatus} busy={writing}
-                    dirty={status.dirty} onReset={() => drafts.reset("status", status.key)}
-                    onUpdate={() => drafts.update("status", status)}
-                    onSetIcon={(item, icon) => drafts.patch("status", item.key, {
-                      icon: { color: item.icon?.color || "", library: icon?.library || "", name: icon?.name || "" },
-                    })} />
-                )}
-                {((showingStatuses && !status) || (!showingStatuses && !column)) && (
-                  <EmptyState icon={showingStatuses ? BarChart3 : Columns3}
-                    title={showingStatuses ? "No statuses to edit" : "No columns to edit"}
-                    description={showingStatuses ? "This view has no statuses configured." : "Add a field to get started."} />
-                )}
-              </div>
-            </div>
+            ) : (
+              <ColumnsPane
+                columns={drafts.columns.filter(matches)}
+                allColumns={drafts.columns}
+                selection={selection}
+                onSelect={(item) => setSelection({ type: "column", accessor: item.accessor })}
+                onToggleVisible={toggleColumn}
+                onMove={editor.moveColumn}
+                busyAccessor={editor.busyAccessor}
+                reorderDisabled={Boolean(rankError) || writing || Boolean(needle)}
+                disabled={writing}
+                search={search}
+                onSearchChange={setSearch}
+                searching={Boolean(needle)}
+                rankError={rankError}
+                inspector={columnInspector}
+                libraryOpen={libraryOpen}
+                module={model.module}
+                library={library}
+                inViewAccessors={inViewAccessors}
+                stagedAccessors={stagedAccessors}
+                stagedFields={editor.stagedFields}
+                onAddField={addFromLibrary}
+                onRemoveStaged={editor.removeStagedField}
+              />
+            )}
           </Tabs.Content>
         </Tabs.Root>
       )}
-      {model && <AddFieldDialog model={model} open={addOpen} busy={editor.publishing}
-        onClose={() => { if (!editor.publishing) setAddOpen(false); }} onSubmit={editor.addField} />}
     </div>
   );
 }

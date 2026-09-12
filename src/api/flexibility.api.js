@@ -219,6 +219,106 @@ export const fetchViewContract = async ({ moduleKey, viewKey = "table" }) => {
   return data;
 };
 
+/**
+ * The vardef field catalog of one CRM module.
+ *
+ * SmartGateway reads SuiteCRM's `field_defs` for this, so the field library
+ * only ever offers source fields that really exist in the connected CRM. That
+ * matters because `outr_ui_fields` validates `source_field` against the same
+ * vardefs at publish time: anything not in this list is a create the backend
+ * is going to reject.
+ *
+ * This is metadata about the bean, not about any view, so it is deliberately
+ * NOT read through `flexibility`. It carries no mutations and no config
+ * version, and nothing here is used to build a write - the editor still gets
+ * `source_module` and `expected_config_version` from the contract on screen.
+ *
+ * `label` comes back already translated. It can still be an untranslated
+ * `LBL_*` key when the module ships no label for the field, which is why the
+ * consumer falls back to a humanized field name rather than showing the key.
+ */
+export const fetchModuleFields = async (module) => {
+  const sourceModule = String(module ?? "").trim();
+
+  if (!sourceModule) {
+    throw new UiMetadataError("a field catalog read needs a module");
+  }
+
+  let response;
+
+  try {
+    response = await http({
+      endpoint: getMetadataEndpoint(),
+      method: "POST",
+      body: {
+        action: "get_module_fields",
+        module: sourceModule,
+        order_by: "",
+      },
+    });
+  } catch (error) {
+    const payload = error?.response?.data;
+
+    const reason =
+      payload?.error || payload?.message || error?.message || "network error";
+
+    throw new UiMetadataError(
+      `the field list for ${sourceModule} could not be loaded: ${reason}`,
+      {
+        cause: error,
+        response: error?.response,
+        code: payload?.code,
+        kind: classifyMetadataError(error),
+      },
+    );
+  }
+
+  /*
+   * Same rule as every other smart_gateway call: 200 means the request was
+   * routed, not that it answered. An unknown module comes back
+   * `{ success: false, message: "Invalid module." }` with a 200.
+   */
+  if (!response || response.success !== true || !Array.isArray(response.fields)) {
+    const reason =
+      response?.error ||
+      response?.message ||
+      (response
+        ? "unexpected response from smart_gateway"
+        : "no response body, the get_module_fields handler did not complete");
+
+    throw new UiMetadataError(
+      `the field list for ${sourceModule} could not be loaded: ${reason}`,
+      { response, code: response?.code },
+    );
+  }
+
+  const seen = new Set();
+
+  return response.fields
+    .map((entry) => {
+      const name = String(entry?.name ?? "").trim();
+
+      return {
+        name,
+        label: String(entry?.label ?? "").trim(),
+        type: String(entry?.type ?? "").trim().toLowerCase(),
+
+        /* Only present for enum-like fields, and only used to preview values. */
+        options: Array.isArray(entry?.options) ? entry.options : null,
+      };
+    })
+    .filter((field) => {
+      /* A duplicate name would collide as a React key and as an accessor. */
+      if (!field.name || seen.has(field.name)) {
+        return false;
+      }
+
+      seen.add(field.name);
+
+      return true;
+    });
+};
+
 /* =========================================================================
    WRITE
    ========================================================================= */
