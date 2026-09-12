@@ -150,78 +150,45 @@ function SearchBar() {
         setSelectedColumns([]);
     };
 
-    // ---------------------------------------------------------
-    // UPDATE TABLE SEARCH
-    //
-    // IMPORTANT:
-    // There is NO dependency on the `search` object here.
-    //
-    // The old implementation had:
-    //
-    //     [searchValue, selectedColumns]
-    //
-    // and blindly called setSearch().
-    //
-    // Since setSearch can cause the context to create a new
-    // search object, this could trigger the other effect
-    // again and create an infinite update loop.
-    //
-    // We only update context when the actual values changed.
-    // ---------------------------------------------------------
 
     useEffect(() => {
         const timer = setTimeout(() => {
             const value = searchValue.trim();
 
-            const nextFields = Array.isArray(
-                selectedColumns
-            )
+            const nextFields = Array.isArray(selectedColumns)
                 ? selectedColumns
                 : [];
 
-            const last =
-                lastPushedSearchRef.current;
+            const last = lastPushedSearchRef.current;
 
-            const sameSearch =
-                last.search === value;
+            const sameSearch = last.search === value;
 
             const sameFields =
-                last.search_fields.length ===
-                nextFields.length &&
+                last.search_fields.length === nextFields.length &&
                 last.search_fields.every(
-                    (item, index) =>
-                        item === nextFields[index]
+                    (item, index) => item === nextFields[index]
                 );
 
-            // Nothing changed since our last update.
-            if (
-                sameSearch &&
-                sameFields
-            ) {
+            if (sameSearch && sameFields) {
                 return;
             }
 
-            // Remember what we are pushing.
             lastPushedSearchRef.current = {
                 search: value,
                 search_fields: [...nextFields],
             };
 
-            setSearch((prev) => ({
-                ...prev,
+            setSearch({
+                ...search,
                 search: value,
                 search_fields: [...nextFields],
-            }));
+            });
         }, 500);
 
         return () => {
             clearTimeout(timer);
         };
-    }, [
-        searchValue,
-        selectedColumns,
-    ]);
-
+    }, [searchValue, selectedColumns, search, setSearch]);
     // ---------------------------------------------------------
     // RENDER
     // ---------------------------------------------------------
