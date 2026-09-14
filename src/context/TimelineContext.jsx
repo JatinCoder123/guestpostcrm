@@ -14,7 +14,7 @@ const TimelineContext = createContext(null);
 
 export const TimelineProvider = ({ children }) => {
     const { enteredEmail } = useContext(PageContext);
-    const preferences = useTablePreference("emails");
+    const preferences = useTablePreference("inbox");
     const { data } = useInfiniteEmails(preferences);
     const emails =
         data?.pages?.flatMap(

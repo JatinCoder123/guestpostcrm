@@ -16,6 +16,8 @@ export const PageContextProvider = (props) => {
   const [displayIntro, setDisplayIntro] = useState(
     localStorage.getItem("displayIntro") === "true",
   );
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+
   const [showRefreshReminder, setShowRefreshReminder] = useState(false);
 
   const [collapsed, setSidebarCollapsed] = useState(true);
@@ -149,7 +151,8 @@ export const PageContextProvider = (props) => {
     showNextPrev,
     setShowNextPrev,
     setCurrentIndex,
-    showRefreshReminder, setShowRefreshReminder
+    showRefreshReminder, setShowRefreshReminder,
+    isSidebarHovered, setIsSidebarHovered
   };
 
   return (

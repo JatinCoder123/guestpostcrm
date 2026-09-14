@@ -27,7 +27,6 @@ import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail } from "../queries/deals.queries";
 import { useOrdersByEmail } from "../queries/orders.queries";
 import { useOffersByEmail } from "../queries/offers.queries";
-import { useInfiniteEmails } from "../queries/email.queries";
 import { useEmailInvoices } from "../queries/invoice.queries";
 
 const MailerSummaryHeader = () => {

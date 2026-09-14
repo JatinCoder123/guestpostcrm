@@ -3,15 +3,13 @@ import { useContext, useEffect } from 'react'
 import { PageContext } from "../context/pageContext"
 import { useDispatch, useSelector } from 'react-redux'
 import { ladgerAction } from '../store/Slices/ladger'
-import { ThreadContext } from '../context/ThreadContext'
 import { useInfiniteEmails } from '../queries/email.queries'
 import { useTablePreference } from '../hooks/useTablePreference'
 import he from "he";
 
 const NextPrev = ({ nextHandler, prevHandler }) => {
     const { currentIndex, setCurrentIndex, setEnteredEmail } = useContext(PageContext)
-    const preferences = useTablePreference("emails");
-    const { handleSetCurrent } = useContext(ThreadContext)
+    const preferences = useTablePreference("inbox");
     const { data } = useInfiniteEmails(preferences);
     const emails =
         data?.pages?.flatMap(

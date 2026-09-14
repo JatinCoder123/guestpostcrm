@@ -12,6 +12,7 @@ import {
     getUnreadCount,
 } from "../api/contact.api";
 import { useTablePreference } from "../hooks/useTablePreference";
+import { entityKeys } from "@/hooks/useEntity";
 
 
 /**
@@ -62,7 +63,7 @@ export const useInfiniteEmails = (
     const effectivePreferences = unread ? {} : preferences;
     return useInfiniteQuery({
         queryKey:
-            emailKeys.lists(effectivePreferences, unread),
+            entityKeys.lists(effectivePreferences, "", 'inbox'),
 
         queryFn: ({ pageParam = 1 }) =>
             unread ? getAllUnreadEmails({

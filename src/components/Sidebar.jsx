@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Radio, PanelLeft, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Radio, PanelLeft, X, PanelRight, PanelLeftOpen, PanelRightOpen } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -32,6 +32,8 @@ export function Sidebar() {
     collapsed: desktopCollapsed,
     setSidebarCollapsed,
     mobileSidebarOpen,
+    isSidebarHovered,
+    setIsSidebarHovered,
     setMobileSidebarOpen,
   } = useContext(PageContext);
 
@@ -44,7 +46,9 @@ export function Sidebar() {
   | full (expanded) form, so `collapsed` is forced off there.
   */
   const isDesktop = useIsDesktop();
-  const collapsed = isDesktop ? desktopCollapsed : false;
+  const collapsed = isDesktop
+    ? desktopCollapsed && !isSidebarHovered
+    : false;
   const drawerOpen = !isDesktop && mobileSidebarOpen;
 
   /* Close the drawer on Escape */
@@ -252,6 +256,10 @@ export function Sidebar() {
         aria-modal={!isDesktop ? drawerOpen : undefined}
         aria-label="Main navigation"
         aria-hidden={!isDesktop && !drawerOpen}
+        onMouseEnter={() => {
+          if (isDesktop && desktopCollapsed) setIsSidebarHovered(true);
+        }}
+        onMouseLeave={() => setIsSidebarHovered(false)}
         initial={false}
         animate={{
           width: collapsed ? 80 : 260,
@@ -385,12 +393,12 @@ export function Sidebar() {
                   <button
                     type="button"
                     aria-label={
-                      collapsed ? "Expand sidebar" : "Collapse sidebar"
+                      desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"
                     }
                     title={
-                      collapsed ? "Expand sidebar" : "Collapse sidebar"
+                      desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"
                     }
-                    onClick={() => setSidebarCollapsed(!collapsed)}
+                    onClick={() => setSidebarCollapsed(!desktopCollapsed)}
                     className={`
                       flex h-7 w-7
                       items-center justify-center
@@ -402,10 +410,17 @@ export function Sidebar() {
                       bg-[var(--card)]
                     `}
                   >
-                    <PanelLeft
-                      className="h-5 w-5"
-                      color="var(--sidebar-primary)"
-                    />
+                    {desktopCollapsed ? (
+                      <PanelLeftOpen
+                        className="h-5 w-5"
+                        color="var(--sidebar-primary)"
+                      />
+                    ) : (
+                      <PanelRightOpen
+                        className="h-5 w-5"
+                        color="var(--sidebar-primary)"
+                      />
+                    )}
                   </button>
                 )}
 
