@@ -23,7 +23,7 @@ import { CircleDotDashed, GripVertical, Loader2, Lock } from "lucide-react";
 
 import Icon from "@/components/ui/Icon/Icon";
 
-import { Badge, Toggle } from "./Primitives";
+import { Badge, Toggle } from "@/components/layouts/shared/Primitives";
 
 function StatusIcon({ status, className = "h-4 w-4" }) {
   if (!status.icon?.name || !status.icon?.library) {

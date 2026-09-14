@@ -33,8 +33,9 @@ import {
   X,
 } from "lucide-react";
 
-import { Badge, GhostButton, InlineAlert } from "./Primitives";
+import { Badge, GhostButton, InlineAlert } from "@/components/layouts/shared/Primitives";
 import FieldTypeIcon from "./FieldTypeIcon";
+
 
 import {
   isRenderableModuleField,
@@ -46,7 +47,15 @@ import {
    ROW
    ========================================================================= */
 
-function LibraryField({ field, state, onAdd, onRemoveStaged, disabled }) {
+function LibraryField({
+  field,
+  state,
+  onAdd,
+  onRemoveStaged,
+  disabled,
+  itemNoun,
+  dropTargetLabel,
+}) {
   const inView = state === "in-view";
   const staged = state === "staged";
 
@@ -95,12 +104,12 @@ function LibraryField({ field, state, onAdd, onRemoveStaged, disabled }) {
         disabled={!draggable}
         title={
           inView
-            ? "Already a column in this view"
+            ? `Already a ${itemNoun} in this view`
             : staged
               ? "Already staged for this view"
-              : `Drag ${field.label} into the column list`
+              : `Drag ${field.label} into the ${dropTargetLabel}`
         }
-        aria-label={`Drag ${field.label} into the column list`}
+        aria-label={`Drag ${field.label} into the ${dropTargetLabel}`}
         className="
           flex
           h-7
@@ -180,7 +189,7 @@ function LibraryField({ field, state, onAdd, onRemoveStaged, disabled }) {
           disabled={inView || disabled}
           title={
             inView
-              ? `${field.label} is already a column`
+              ? `${field.label} is already a ${itemNoun}`
               : `Add ${field.label} to the end of this view`
           }
           aria-label={`Add ${field.label} to this view`}
@@ -227,12 +236,22 @@ export default function FieldLibrary({
   onAdd,
   onRemoveStaged,
   disabled = false,
+
+  /*
+   * Wording, so the same panel can serve a table (fields become columns,
+   * dropped onto a column list) and a detail layout (fields become fields,
+   * dropped onto a section). Defaults keep the table call site unchanged.
+   */
+  itemNoun = "column",
+  dropTargetLabel = "column list",
+  hint = "Click + to append, or drag a field onto the column list to place it. Width and type are set from the field; adjust them after publishing.",
 }) {
   const [query, setQuery] = useState("");
 
   /*
-   * Non-column types are dropped once, here, rather than at every use: the
-   * counts in the header have to describe the list that is actually on screen.
+   * Types that cannot be rendered at all are dropped once, here, rather than
+   * at every use: the counts in the header have to describe the list that is
+   * actually on screen.
    */
   const renderable = useMemo(
     () => (fields ?? []).filter(isRenderableModuleField),
@@ -315,11 +334,7 @@ export default function FieldLibrary({
           />
         </div>
 
-        <p className="text-xs text-muted-foreground">
-          Click <span className="font-medium text-foreground">+</span> to append,
-          or drag a field onto the column list to place it. Width and type are
-          set from the field; adjust them after publishing.
-        </p>
+        <p className="text-xs text-muted-foreground">{hint}</p>
       </div>
 
       {/*
@@ -359,6 +374,8 @@ export default function FieldLibrary({
           </p>
         )}
 
+        {/* The row needs the wording too, for its tooltips. */}
+
         {!loading && !error && visible.length > 0 && (
           <div className="space-y-0.5">
             {visible.map((field) => (
@@ -375,6 +392,8 @@ export default function FieldLibrary({
                 onAdd={onAdd}
                 onRemoveStaged={onRemoveStaged}
                 disabled={disabled}
+                itemNoun={itemNoun}
+                dropTargetLabel={dropTargetLabel}
               />
             ))}
           </div>

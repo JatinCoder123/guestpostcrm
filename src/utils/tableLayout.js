@@ -94,6 +94,29 @@ export const PRESENTATION_KINDS = {
   maxWidth: { valueField: "value_integer", valueType: "integer" },
   color: { valueField: "value_text", valueType: "string" },
   showAmount: { valueField: "value_boolean", valueType: "boolean" },
+
+  /*
+   * Carried by detail and create layout nodes rather than table columns.
+   *
+   * `title` is the display name of a section, where a tab or field uses
+   * `label`. Both are listed because which one a node uses is a property of the
+   * node, and the detail inspector resolves that per node rather than assuming.
+   *
+   * `columns` is a section's column count, not a list of columns.
+   */
+  title: { valueField: "value_text", valueType: "string" },
+  columns: { valueField: "value_integer", valueType: "integer" },
+
+  /*
+   * Also carried by detail and create fields, all three with mutations.
+   *
+   * `readonly` is not the inverse of `editable`: the compiled contract sends
+   * both, and a field can be editable in principle while readonly in this
+   * view, so neither is derived from the other here.
+   */
+  readonly: { valueField: "value_boolean", valueType: "boolean" },
+  required: { valueField: "value_boolean", valueType: "boolean" },
+  placeholder: { valueField: "value_text", valueType: "string" },
 };
 
 /**
@@ -141,6 +164,11 @@ export const WRITABLE_PROPERTIES = {
 /** Human wording for one property, for labels and error messages. */
 export const PROPERTY_LABELS = {
   label: "Name",
+  title: "Name",
+  columns: "Columns per row",
+  readonly: "Read only",
+  required: "Required",
+  placeholder: "Placeholder",
   visible: "Visible",
   width: "Width",
   minWidth: "Minimum width",
@@ -566,8 +594,13 @@ export function withTypedValue(entry, nextValue) {
   }
 
   if (!entry.writable) {
+    /*
+     * Named the way the UI names it. `entry.kind` is the contract's key, and
+     * leaking it here put words like "rank" in front of users in editors that
+     * deliberately never show the ordering key.
+     */
     throw new TableLayoutError(
-      `${entry.kind} is not directly writable on this view; Flexibility returned no mutation for it`,
+      `${PROPERTY_LABELS[entry.kind] ?? entry.kind} is not directly writable on this view; Flexibility returned no mutation for it`,
       { kind: entry.kind },
     );
   }
@@ -705,7 +738,7 @@ function coercePresentationValue(kind, value, target) {
     return clampWidth(value, { minWidth: WIDTH_MIN, maxWidth: WIDTH_MAX });
   }
 
-  if (kind === "label") {
+  if (kind === "label" || kind === "title") {
     const trimmed = String(value ?? "").trim();
 
     /*
@@ -718,6 +751,17 @@ function coercePresentationValue(kind, value, target) {
     }
 
     return trimmed;
+  }
+
+  if (kind === "columns") {
+    /*
+     * A section lays its fields out in this many columns. Zero would render an
+     * empty section and a large number would render unreadable slivers, so the
+     * range is capped at what a detail pane can actually show.
+     */
+    const count = toWholeNumber(value, 1);
+
+    return Math.max(1, Math.min(count, 4));
   }
 
   if (spec.valueType === "boolean") {
@@ -744,8 +788,20 @@ function coercePresentationValue(kind, value, target) {
  * posted as a guess.
  */
 export function buildPresentationMutation(target, kind, nextValue) {
+  /*
+   * Normalized, not read raw.
+   *
+   * `withTypedValue` needs `kind` and `writable`, and both are derived - the
+   * contract only sends `{ recordId, currentValue, mutation }`. Passing
+   * `target.presentation[kind]` straight through worked for the table editor,
+   * whose model is normalized up front, and failed for every detail and create
+   * node, which are held raw. It failed in the most confusing way possible
+   * too: `writable` came back `undefined`, so a perfectly writable property
+   * was rejected as unwritable, and `kind` came back `undefined`, so the
+   * message named the property "undefined".
+   */
   return withTypedValue(
-    target?.presentation?.[kind],
+    readPresentationEntry(target, kind),
     coercePresentationValue(kind, nextValue, target),
   );
 }

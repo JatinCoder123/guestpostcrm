@@ -26,8 +26,8 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { GripVertical, Loader2, Lock } from "lucide-react";
 
-import { Badge, Toggle } from "./Primitives";
-import FieldTypeIcon from "./FieldTypeIcon";
+import { Badge, Toggle } from "@/components/layouts/shared/Primitives";
+import FieldTypeIcon from "@/components/layouts/shared/FieldTypeIcon";
 
 /* =========================================================================
    ROW

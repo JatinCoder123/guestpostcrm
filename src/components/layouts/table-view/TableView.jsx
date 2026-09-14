@@ -2,7 +2,7 @@
 import { useSearchParams } from "react-router-dom";
 import { BarChart3, Columns3, PanelRightClose, PanelRightOpen, RotateCcw, Search, Table2, Wrench } from "lucide-react";
 import * as Tabs from "@radix-ui/react-tabs";
-import { EmptyState, GhostButton, InlineAlert, LoadingBlock, PrimaryButton, Toggle } from "./parts/Primitives";
+import { EmptyState, GhostButton, InlineAlert, LoadingBlock, PrimaryButton, Toggle } from "@/components/layouts/shared/Primitives";
 import ViewPicker from "./parts/ViewPicker";
 import ColumnsPane from "./parts/ColumnsPane";
 import ColumnInspector from "./parts/ColumnInspector";

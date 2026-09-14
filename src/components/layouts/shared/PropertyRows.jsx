@@ -15,8 +15,13 @@ import React, { useEffect, useState } from "react";
 
 import { Lock, X } from "lucide-react";
 
-import { FieldInput, SwitchRow, Toggle } from "./Primitives";
-import { PROPERTY_LABELS, WIDTH_MAX, WIDTH_MIN } from "@/utils/tableLayout";
+import { FieldInput, SwitchRow, Toggle } from "@/components/layouts/shared/Primitives";
+import {
+  PROPERTY_LABELS,
+  WIDTH_MAX,
+  WIDTH_MIN,
+  readPresentationEntry,
+} from "@/utils/tableLayout";
 
 /* =========================================================================
    LOCK BADGE
@@ -492,8 +497,21 @@ export function BoolRow({
  * is the actual next step and the note says so.
  */
 export function CapabilitySummary({ item, properties }) {
+  /*
+   * Normalized, not read raw.
+   *
+   * `writable` is derived - the contract only ever sends
+   * `{ recordId, currentValue, mutation }` - so reading `item.presentation[x]
+   * .writable` directly gets `undefined` for every property and reports the
+   * whole node as locked. The table editor got away with it because its model
+   * is normalized up front; the detail editor holds the raw contract, so it
+   * counted every writable property as fixed while the controls beside it
+   * worked fine.
+   *
+   * `readPresentationEntry` is idempotent, so this is correct for both.
+   */
   const locked = properties.filter(
-    (property) => !item?.presentation?.[property]?.writable,
+    (property) => !readPresentationEntry(item, property).writable,
   );
 
   if (!locked.length) {

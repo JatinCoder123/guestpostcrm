@@ -16,9 +16,9 @@ import React from "react";
 
 import { Save } from "lucide-react";
 
-import { GhostButton, PrimaryButton, ReadOnlyValue } from "./Primitives";
-import { BoolRow, CapabilitySummary, NumberRow, TextRow } from "./PropertyRows";
-import FieldTypeIcon from "./FieldTypeIcon";
+import { GhostButton, PrimaryButton, ReadOnlyValue } from "@/components/layouts/shared/Primitives";
+import { BoolRow, CapabilitySummary, NumberRow, TextRow } from "@/components/layouts/shared/PropertyRows";
+import FieldTypeIcon from "@/components/layouts/shared/FieldTypeIcon";
 
 import { COLUMN_PROPERTIES, WIDTH_MAX, WIDTH_MIN } from "@/utils/tableLayout";
 

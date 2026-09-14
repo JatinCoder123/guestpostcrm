@@ -12,8 +12,8 @@ import { Save } from "lucide-react";
 
 import IconInput from "@/components/IconInput";
 
-import { GhostButton, PrimaryButton, ReadOnlyValue } from "./Primitives";
-import { BoolRow, CapabilitySummary, ColorRow, TextRow } from "./PropertyRows";
+import { GhostButton, PrimaryButton, ReadOnlyValue } from "@/components/layouts/shared/Primitives";
+import { BoolRow, CapabilitySummary, ColorRow, TextRow } from "@/components/layouts/shared/PropertyRows";
 
 import { STATUS_PROPERTIES } from "@/utils/tableLayout";
 

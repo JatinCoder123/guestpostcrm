@@ -30,9 +30,9 @@ import {
 import { ArrowDownToLine, Columns3, Search, X } from "lucide-react";
 
 import ColumnList from "./ColumnList";
-import FieldLibrary from "./FieldLibrary";
-import FieldTypeIcon from "./FieldTypeIcon";
-import { InlineAlert } from "./Primitives";
+import FieldLibrary from "@/components/layouts/shared/FieldLibrary";
+import FieldTypeIcon from "@/components/layouts/shared/FieldTypeIcon";
+import { InlineAlert } from "@/components/layouts/shared/Primitives";
 
 /** Not an accessor, so it can never collide with a real column id. */
 const APPEND_ID = "__column_append__";
