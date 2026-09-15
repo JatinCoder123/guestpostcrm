@@ -24,7 +24,7 @@ function StatusRow() {
         isPending: summaryLoading
     } = useEntityStats({
         filters: preferences,
-        email,
+        email: layout?.filter_by_email ? email : "",
         entity,
         stats: STATUS_CONFIG,
         module: layout?.module

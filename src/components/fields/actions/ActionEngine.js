@@ -67,7 +67,32 @@ export async function executeAction({
 /* -------------------------------------------------------------------------- */
 /*                              NAVIGATION                                    */
 /* -------------------------------------------------------------------------- */
+function getEmailFromTarget(target, record) {
+    if (!target || !record) {
+        return null;
+    }
 
+    // Find all template variables like {email1}, {email}, etc.
+    const matches = target.match(/\{([^}]+)\}/g);
+
+    if (!matches) {
+        return null;
+    }
+
+    for (const match of matches) {
+        const fieldName = match.slice(1, -1);
+        const value = record?.[fieldName];
+
+        if (
+            typeof value === "string" &&
+            value.includes("@")
+        ) {
+            return value;
+        }
+    }
+
+    return null;
+}
 function executeNavigation({
     action,
     record,
@@ -85,6 +110,22 @@ function executeNavigation({
         throw new Error(
             "Navigation function is not available"
         );
+    }
+
+    if (action.is_next_prev_depend === true) {
+        const email = getEmailFromTarget(
+            action.target,
+            record
+        );
+
+
+
+        return context.handleDateClick({
+            email,
+            navigate: "/",
+            index: context.index,
+            nextPrev: true,
+        });
     }
 
     const target = resolveTemplate(

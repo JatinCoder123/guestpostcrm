@@ -5,6 +5,7 @@ import TableCell from "./TableCell";
 
 export default function TableRow({
     row,
+    index,
 }) {
     const {
         stickyColumns,
@@ -95,6 +96,7 @@ export default function TableRow({
                         key={
                             column.accessor
                         }
+                        index={index}
                         row={row}
                         column={column}
                     />

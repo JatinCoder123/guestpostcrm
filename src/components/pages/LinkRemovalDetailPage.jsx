@@ -163,7 +163,7 @@ export default function LinkRemovalDetailPage() {
    */
   const closePopup = () => {
     resetPopupState();
-    navigate("/link-removal");
+    navigate(-1);
   };
 
   /**
@@ -375,7 +375,7 @@ export default function LinkRemovalDetailPage() {
               refreshedExtraction?.data?.total_links ?? refreshedLinks.length
             );
           } else {
-            navigate("/link-removal");
+            navigate(-1);
           }
         },
 

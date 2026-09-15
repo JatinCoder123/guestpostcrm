@@ -7,6 +7,7 @@ import { useUpdateEntity } from "@/queries/entity.queries";
 function TableCell({
     row,
     column,
+    index,
 }) {
     const sticky = column.sticky;
 
@@ -216,9 +217,7 @@ function TableCell({
                 }
                 record={row}
                 onSave={handleSave}
-                actionContext={
-                    actionContext
-                }
+                actionContext={{ ...actionContext, index }}
                 disabled={
                     updateMutation.isPending
                 }
