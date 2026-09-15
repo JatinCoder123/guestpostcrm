@@ -8,11 +8,8 @@
 
 import React from "react";
 
-import { Save } from "lucide-react";
-
 import IconInput from "@/components/IconInput";
 
-import { GhostButton, PrimaryButton, ReadOnlyValue } from "@/components/layouts/shared/Primitives";
 import { BoolRow, CapabilitySummary, ColorRow, TextRow } from "@/components/layouts/shared/PropertyRows";
 
 import { STATUS_PROPERTIES } from "@/utils/tableLayout";
@@ -21,9 +18,6 @@ export default function StatusInspector({
   status,
   onPatch,
   onSetIcon,
-  onUpdate,
-  onReset,
-  dirty,
   busy,
 }) {
   const entry = (property) => status.presentation?.[property];
@@ -44,8 +38,6 @@ export default function StatusInspector({
         <h3 className="truncate text-base font-semibold text-foreground">
           {status.label}
         </h3>
-
-        <p className="mt-1 text-sm text-muted-foreground">Status settings</p>
       </div>
 
       <div className="custom-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
@@ -58,15 +50,7 @@ export default function StatusInspector({
           busy={busy}
           onChange={set("label")}
           placeholder="Status name"
-          hint="Shown above the count in the table's status row."
           error={labelInvalid ? "A name is required." : null}
-        />
-
-        <ReadOnlyValue
-          label="Status key"
-          value={status.key}
-          mono
-          hint="What the stat filters on. Renaming the status does not change it."
         />
 
         <BoolRow
@@ -76,7 +60,6 @@ export default function StatusInspector({
           busy={busy}
           onChange={set("visible")}
           title="Show status"
-          description="Hidden stats stay in the layout and can be shown again without republishing."
         />
 
         <div role="group" aria-labelledby="status-icon-label">
@@ -108,30 +91,7 @@ export default function StatusInspector({
           entry={entry("color")}
           busy={busy}
           onChange={set("color")}
-          hint="The accent the stat is drawn in. Pick one, or type a hex value."
         />
-
-      </div>
-
-      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border p-4">
-        {dirty && (
-          <span role="status" className="mr-auto text-xs text-muted-foreground">
-            Unsaved changes
-          </span>
-        )}
-
-        <GhostButton onClick={onReset} disabled={!dirty || busy}>
-          Reset
-        </GhostButton>
-
-        <PrimaryButton
-          icon={Save}
-          onClick={onUpdate}
-          disabled={!dirty || labelInvalid}
-          busy={busy}
-        >
-          Update Status
-        </PrimaryButton>
       </div>
     </div>
   );

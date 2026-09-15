@@ -235,13 +235,14 @@ export default function ColumnsPane({
       <div
         className={`
           min-h-[360px]
+          layout-view-grid
           ${libraryOpen ? "layout-editor-grid--library" : "layout-editor-grid"}
         `}
       >
         {/* ---------------------------------------------------- COLUMN LIST */}
 
-        <div className="min-w-0 bg-card">
-          <div className="space-y-2 p-4">
+        <div className="flex min-h-0 min-w-0 flex-col bg-card">
+          <div className="p-4">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
@@ -267,9 +268,6 @@ export default function ColumnsPane({
               />
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              Drag to reorder. Click Repair when the layout is ready.
-            </p>
           </div>
 
           {rankError && (
@@ -348,7 +346,7 @@ export default function ColumnsPane({
             </div>
           )}
 
-          <div className="max-h-[min(52vh,560px)] overflow-y-auto px-3 pb-4">
+          <div className="layout-view-scroll min-h-0 flex-1 max-h-[min(52vh,560px)] overflow-y-auto px-3 pb-4">
             <ColumnList
               columns={columns}
               selection={selection}
@@ -367,12 +365,12 @@ export default function ColumnsPane({
 
         {/* ------------------------------------------------------ INSPECTOR */}
 
-        <div className="min-w-0 bg-background">{inspector}</div>
+        <div className="min-h-0 min-w-0 bg-background">{inspector}</div>
 
         {/* -------------------------------------------------- FIELD LIBRARY */}
 
         {libraryOpen && (
-          <div className="min-w-0 bg-card">
+          <div className="min-h-0 min-w-0 bg-card">
             <FieldLibrary
               module={module}
               fields={library.data}
@@ -385,6 +383,7 @@ export default function ColumnsPane({
               onAdd={(field) => onAddField(field, null)}
               onRemoveStaged={onRemoveStaged}
               disabled={disabled}
+              showDescription={false}
             />
           </div>
         )}

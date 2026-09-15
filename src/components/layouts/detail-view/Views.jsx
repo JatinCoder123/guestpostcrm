@@ -3,7 +3,7 @@
  * changes `viewKey` - the Create view editor too. One component, two routes.
  *
  * The draft IS the layout: edits are applied to a local copy of the contract and
- * nothing is written until Repair, or until one node's Update. Which properties
+ * nothing is written until Repair. Which properties
  * can be written is decided by the contract, not by this file: every control is
  * live only if Flexibility returned a mutation for that property on that node.
  *
@@ -64,7 +64,6 @@ import FieldTypeIcon from "@/components/layouts/shared/FieldTypeIcon";
 import { GhostButton, InlineAlert } from "@/components/layouts/shared/Primitives";
 import { useLayoutDraftGuard } from "@/components/layouts/LayoutDraftContext";
 
-import AddNodeDialog from "./parts/AddNodeDialog";
 import NodeInspector from "./parts/NodeInspector";
 import { ScopeList } from "./parts/NodeTree";
 import {
@@ -112,10 +111,9 @@ export default function Views({
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [search, setSearch] = useState("");
-  const [libraryOpen, setLibraryOpen] = useState(true);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [dragging, setDragging] = useState(null);
   const [dropTargetId, setDropTargetId] = useState(null);
-  const [addRequest, setAddRequest] = useState(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -161,14 +159,6 @@ export default function Views({
     selection && newKeys.has(rowIdFor(selection.scope, selection.itemId)),
   );
 
-  const selectedChanges = selection
-    ? changes.filter(
-        (change) =>
-          change.itemId === selection.itemId &&
-          JSON.stringify(change.scope) === JSON.stringify(selection.scope),
-      )
-    : [];
-
   /* The field scope a new field would go into, derived from what is selected. */
   const activeFieldScope = useMemo(() => {
     if (!selection || !selectedItem) return null;
@@ -209,53 +199,8 @@ export default function Views({
   const reset = () => {
     setLayout(query.data || null);
     setSelection(null);
-    setAddRequest(null);
     setSearch("");
     setDirty(false);
-  };
-
-  /** Stage a new tab or section. Fields come from the library instead. */
-  const addNode = (label) => {
-    const { type, scope } = addRequest;
-    const siblings = childrenAt(layout, scope);
-
-    const id =
-      label
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_|_$/g, "") || `${type}_${Date.now()}`;
-
-    if (siblings.some((item) => nodeKey(item) === id)) {
-      toast.error("That identifier already exists.");
-
-      return;
-    }
-
-    try {
-      const rank = between(siblings.at(-1)?.rank ?? null, null);
-
-      const node =
-        type === "tab"
-          ? { id, label, module: moduleKey, rank, sections: [], visible: true }
-          : {
-              id,
-              title: label,
-              module: moduleKey,
-              type: "section",
-              columns: 2,
-              editable: true,
-              rank,
-              fields: [],
-              visible: true,
-            };
-
-      setLayout(replaceChildren(layout, scope, [...siblings, node]));
-      setSelection({ scope, itemId: id });
-      setAddRequest(null);
-      setDirty(true);
-    } catch (error) {
-      toast.error(error.message || `That ${type} could not be placed.`);
-    }
   };
 
   const patch = (scope, itemId, nextValues) => {
@@ -266,26 +211,6 @@ export default function Views({
   const toggle = (scope, item) => {
     setSelection({ scope, itemId: nodeKey(item) });
     patch(scope, nodeKey(item), { visible: item.visible === false });
-  };
-
-  /** Put one node back to the values the server published. */
-  const resetNode = () => {
-    if (!selection || !query.data) return;
-
-    const serverItem = childrenAt(query.data, selection.scope).find(
-      (item) => nodeKey(item) === selection.itemId,
-    );
-
-    if (!serverItem) return;
-
-    const restored = Object.fromEntries(
-      selectedChanges.map((change) => [
-        change.property,
-        serverItem[change.property],
-      ]),
-    );
-
-    patch(selection.scope, selection.itemId, restored);
   };
 
   /** Drop a staged addition. Only ever a node the server has never seen. */
@@ -486,28 +411,22 @@ export default function Views({
     return next;
   };
 
-  const publish = async (subset) => {
+  const publish = async () => {
     if (saving || !query.data || !layout) return;
 
-    const target = subset ? changes.filter(subset) : changes;
+    const target = changes;
 
     if (!target.length && !creates.length) return;
 
     setSaving(true);
 
     /*
-     * Creates are only attempted on a full Repair, never on a single node's
-     * Update: publishing a field is a structural write against the whole view,
-     * not a property of the node being edited.
+     * Field creates are structural writes against the whole view.
      */
-    const attemptedCreates = subset
-      ? []
-      : creates.filter((item) => item.type === "field");
+    const attemptedCreates = creates.filter((item) => item.type === "field");
 
     /* Tabs and sections have no vardef behind them, so there is nothing to create. */
-    const skippedCreates = subset
-      ? creates
-      : creates.filter((item) => item.type !== "field");
+    const skippedCreates = creates.filter((item) => item.type !== "field");
 
     const failedCreates = [];
 
@@ -593,11 +512,10 @@ export default function Views({
         }
       }
 
-      const remaining = changes.filter((change) => !target.includes(change));
       const unpublished = [...skippedCreates, ...failedCreates];
 
-      setLayout(reapply(contract, remaining, unpublished, layout));
-      setDirty(remaining.length > 0 || unpublished.length > 0);
+      setLayout(reapply(contract, [], unpublished, layout));
+      setDirty(unpublished.length > 0);
 
       const published =
         target.length + (attemptedCreates.length - failedCreates.length);
@@ -619,7 +537,7 @@ export default function Views({
         );
       }
 
-      if (!subset && skippedCreates.length) {
+      if (skippedCreates.length) {
         toast.error(
           `${skippedCreates.map((item) => item.label).join(", ")} stayed in the draft. This view's contract only supports adding fields, not ${skippedCreates.length === 1 ? "a " : ""}${[...new Set(skippedCreates.map((item) => item.type))].join(" or ")}${skippedCreates.length === 1 ? "" : "s"}.`,
           { duration: 8000 },
@@ -632,14 +550,7 @@ export default function Views({
     }
   };
 
-  const repair = () => publish(null);
-
-  const updateNode = () =>
-    publish(
-      (change) =>
-        change.itemId === selection?.itemId &&
-        JSON.stringify(change.scope) === JSON.stringify(selection?.scope),
-    );
+  const repair = () => publish();
 
   /* -------------------------------------------------------------- render */
 
@@ -725,7 +636,7 @@ export default function Views({
         onDragEnd={onDragEnd}
       >
         <div
-          className={`min-h-0 flex-1 ${libraryOpen ? "layout-editor-grid--library" : "layout-editor-grid"}`}
+          className={`layout-view-grid min-h-0 flex-1 ${libraryOpen ? "layout-editor-grid--library" : "layout-editor-grid"}`}
         >
           {/* ------------------------------------------------------- TREE */}
 
@@ -783,7 +694,7 @@ export default function Views({
               </div>
             )}
 
-            <div className="custom-scrollbar min-h-0 flex-1 max-h-[min(60vh,640px)] overflow-y-auto p-4">
+            <div className="layout-view-scroll custom-scrollbar min-h-0 flex-1 max-h-[min(60vh,640px)] overflow-y-auto p-4">
               {query.isPending && (
                 <p className="py-16 text-center text-sm text-muted-foreground">
                   Loading layout...
@@ -814,13 +725,6 @@ export default function Views({
                         setSelection({ scope, itemId: nodeKey(node) })
                       }
                       onToggle={toggle}
-                      onAdd={(type, scope) =>
-                        type === "field"
-                          ? toast.error(
-                              "Add fields from the library on the right, so the accessor comes from the module.",
-                            )
-                          : setAddRequest({ type, scope })
-                      }
                     />
                   </div>
                 </SortableContext>
@@ -830,17 +734,14 @@ export default function Views({
 
           {/* -------------------------------------------------- INSPECTOR */}
 
-          <aside className="min-h-0 overflow-y-auto bg-background">
+          <aside className="min-h-0 bg-background">
             <NodeInspector
               selection={selection}
               item={selectedItem}
               isNew={selectedIsNew}
               busy={saving}
-              dirty={selectedChanges.length > 0}
               viewKey={viewKey}
               onPatch={(next) => patch(selection.scope, selection.itemId, next)}
-              onReset={resetNode}
-              onUpdate={updateNode}
               onRemove={
                 selectedIsNew
                   ? () => removeStaged(selection.scope, selection.itemId)
@@ -852,7 +753,7 @@ export default function Views({
           {/* ---------------------------------------------- FIELD LIBRARY */}
 
           {libraryOpen && (
-            <div className="min-w-0 bg-card">
+            <div className="min-h-0 min-w-0 bg-card">
               <FieldLibrary
                 module={beanModule}
                 fields={library.data}
@@ -879,7 +780,7 @@ export default function Views({
                 disabled={saving}
                 itemNoun="field"
                 dropTargetLabel="section"
-                hint="Select a section then click +, or drag a field onto one. It is added at the end of that section; drag it afterwards to reposition."
+                showDescription={false}
               />
             </div>
           )}
@@ -909,21 +810,6 @@ export default function Views({
           ) : null}
         </DragOverlay>
       </DndContext>
-
-      <AddNodeDialog
-        request={addRequest}
-        existingNames={
-          addRequest
-            ? new Set(
-                childrenAt(layout, addRequest.scope).map((item) =>
-                  nodeKey(item),
-                ),
-              )
-            : new Set()
-        }
-        onClose={() => setAddRequest(null)}
-        onSubmit={addNode}
-      />
     </div>
   );
 }

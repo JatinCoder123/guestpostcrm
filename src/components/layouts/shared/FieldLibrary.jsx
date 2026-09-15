@@ -244,6 +244,7 @@ export default function FieldLibrary({
    */
   itemNoun = "column",
   dropTargetLabel = "column list",
+  showDescription = true,
   hint = "Click + to append, or drag a field onto the column list to place it. Width and type are set from the field; adjust them after publishing.",
 }) {
   const [query, setQuery] = useState("");
@@ -285,7 +286,7 @@ export default function FieldLibrary({
   ).length;
 
   return (
-    <div className="flex min-h-0 flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <div className="space-y-2 border-b border-border p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -293,11 +294,13 @@ export default function FieldLibrary({
               Available fields
             </p>
 
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              {module
-                ? `${available} of ${renderable.length} not yet in this view`
-                : "Waiting for the view"}
-            </p>
+            {showDescription && (
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                {module
+                  ? `${available} of ${renderable.length} not yet in this view`
+                  : "Waiting for the view"}
+              </p>
+            )}
           </div>
 
           <GhostButton
@@ -334,17 +337,16 @@ export default function FieldLibrary({
           />
         </div>
 
-        <p className="text-xs text-muted-foreground">{hint}</p>
+        {showDescription && (
+          <p className="text-xs text-muted-foreground">{hint}</p>
+        )}
       </div>
 
       {/*
-        Capped rather than only `flex-1`. The rail sits in an auto-height grid
-        row, so there is no parent height for `flex-1` to divide up: a module
-        with 80 fields would grow the row and scroll the whole settings page
-        instead of the list, taking the column list it is dragged onto off
-        screen.
+        Narrow layouts keep a list cap while panes stack. Side-by-side layout
+        editors remove that cap and use the shared grid height.
       */}
-      <div className="custom-scrollbar min-h-0 flex-1 max-h-[min(60vh,640px)] overflow-y-auto px-3 py-3">
+      <div className="layout-view-scroll custom-scrollbar min-h-0 flex-1 max-h-[min(60vh,640px)] overflow-y-auto px-3 py-3">
         {loading && (
           <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
