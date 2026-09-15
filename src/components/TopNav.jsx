@@ -271,7 +271,8 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                     rounded-full
                     border
                     border-card
-                    ${u?.status === "online" ? "bg-emerald-500" : "bg-amber-400"
+                    ${
+                      u?.status === "online" ? "bg-emerald-500" : "bg-amber-400"
                     }
                   `}
                 />
@@ -581,9 +582,10 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                             py-0.5
                             text-[10px]
                             font-semibold
-                            ${isOnline
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-amber-50 text-amber-700"
+                            ${
+                              isOnline
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-amber-50 text-amber-700"
                             }
                           `}
                         >
@@ -2172,10 +2174,11 @@ export function TopNav() {
                               text-left
                               transition-all
 
-                              ${active
-                              ? "border-primary ring-2 ring-primary/20"
-                              : "border-border hover:border-primary/50"
-                            }
+                              ${
+                                active
+                                  ? "border-primary ring-2 ring-primary/20"
+                                  : "border-border hover:border-primary/50"
+                              }
                             `}
                         >
                           {/* Theme preview */}
@@ -2495,10 +2498,7 @@ export function TopNav() {
       />
       <AnimatePresence>
         {showTraining && user?.email && (
-          <GpcTrainingFrame
-            email={user.email}
-            onClose={handleTrainingClose}
-          />
+          <GpcTrainingFrame email={user.email} onClose={handleTrainingClose} />
         )}
       </AnimatePresence>
     </div>
