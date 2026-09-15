@@ -21,45 +21,13 @@ import React, { useState } from "react";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { ChevronDown, ChevronRight, GripVertical, Lock, Plus, Settings2 } from "lucide-react";
+import { ChevronDown, ChevronRight, GripVertical, Lock, Settings2 } from "lucide-react";
 
 import { Badge, Toggle } from "@/components/layouts/shared/Primitives";
 import FieldTypeIcon from "@/components/layouts/shared/FieldTypeIcon";
 import { childrenAt, nodeKey, nodeWritable } from "@/utils/detailEditLayout";
 
 import { idFor, nextScope, titleOf } from "./draftChanges";
-
-
-
-function AddButton({ type, onClick, disabled }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="
-        mt-1
-        flex
-        w-full
-        items-center
-        gap-2
-        rounded-lg
-        px-3
-        py-2
-        text-xs
-        font-medium
-        text-muted-foreground
-        hover:bg-accent
-        hover:text-foreground
-        disabled:pointer-events-none
-        disabled:opacity-40
-      "
-    >
-      <Plus className="h-3.5 w-3.5" />
-      Add {type}
-    </button>
-  );
-}
 
 /* =========================================================================
    ROW
@@ -75,7 +43,6 @@ function SortableNode({
   dropTargetId,
   onSelect,
   onToggle,
-  onAdd,
 }) {
   const rowId = idFor(scope, item);
   const isNew = Boolean(newKeys?.has(rowId));
@@ -246,13 +213,6 @@ function SortableNode({
             dropTargetId={dropTargetId}
             onSelect={onSelect}
             onToggle={onToggle}
-            onAdd={onAdd}
-          />
-
-          <AddButton
-            type={childScope.type}
-            onClick={() => onAdd(childScope.type, childScope)}
-            disabled={disabled}
           />
         </div>
       )}
@@ -273,7 +233,6 @@ export function ScopeList({
   dropTargetId,
   onSelect,
   onToggle,
-  onAdd,
 }) {
   const items = childrenAt(layout, scope);
 
@@ -296,7 +255,6 @@ export function ScopeList({
             dropTargetId={dropTargetId}
             onSelect={onSelect}
             onToggle={onToggle}
-            onAdd={onAdd}
           />
         ))}
       </div>

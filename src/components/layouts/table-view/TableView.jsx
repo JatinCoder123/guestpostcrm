@@ -22,7 +22,7 @@ export default function TableView() {
   const registry = useTableViewRegistry();
   const views = registry.data?.views || [];
   const selectedView = views.find((item) => item.moduleKey === moduleKey && item.viewKey === viewKey);
-  const [libraryOpen, setLibraryOpen] = useState(true);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [section, setSection] = useState("columns");
   const [search, setSearch] = useState("");
   const editor = useTableLayoutEditor({
@@ -98,9 +98,7 @@ export default function TableView() {
 
   const columnInspector = column ? (
     <ColumnInspector column={column} busy={writing}
-      onPatch={(changes) => drafts.patch("column", column.accessor, changes)}
-      dirty={column.dirty} onReset={() => drafts.reset("column", column.accessor)}
-      onUpdate={() => drafts.update("column", column)} />
+      onPatch={(changes) => drafts.patch("column", column.accessor, changes)} />
   ) : (
     <EmptyState icon={Columns3} title="No columns to edit"
       description="Add a field from the list on the right to get started." />
@@ -111,7 +109,6 @@ export default function TableView() {
       <div className="layout-editor-header flex flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-4">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Table View</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Choose a view to edit its columns and statuses.</p>
         </div>
         <div className="flex items-center gap-2">
           {dirty && <span className="text-xs font-medium text-amber-700">Unapplied changes</span>}
@@ -181,21 +178,20 @@ export default function TableView() {
           </div>
           <Tabs.Content value={section} className="mt-0 outline-none">
             {showingStatuses ? (
-              <div className="layout-editor-grid min-h-[360px]">
-                <div className="min-w-0 border-b border-border bg-card ">
-                  <div className="space-y-2 p-4">
+              <div className="layout-view-grid layout-editor-grid min-h-[360px]">
+                <div className="flex min-h-0 min-w-0 flex-col border-b border-border bg-card">
+                  <div className="p-4">
                     <div className="relative">
                       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <input value={search} onChange={(event) => setSearch(event.target.value)}
                         placeholder="Search statuses..." aria-label="Search statuses"
                         className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40" />
                     </div>
-                    <p className="text-xs text-muted-foreground">Drag to reorder. Click Repair when the layout is ready.</p>
                   </div>
                   {rankError && <div className="px-4 pb-3"><InlineAlert tone="warning" title="Reordering is unavailable">
                     Reload this view to try again. You can still edit its settings.
                   </InlineAlert></div>}
-                  <div className="max-h-[min(52vh,560px)] overflow-y-auto px-3 pb-4">
+                  <div className="layout-view-scroll min-h-0 flex-1 max-h-[min(52vh,560px)] overflow-y-auto px-3 pb-4">
                     <StatusList statuses={drafts.statuses.filter(matches)} allStatuses={drafts.statuses}
                       selection={selection} onSelect={(item) => setSelection({ type: "status", key: item.key })}
                       onToggleVisible={toggleStatus} onMove={editor.moveStatus}
@@ -203,12 +199,10 @@ export default function TableView() {
                       reorderDisabled={Boolean(rankError) || writing} searching={Boolean(needle)} />
                   </div>
                 </div>
-                <div className="min-w-0 bg-background">
+                <div className="min-h-0 min-w-0 bg-background">
                   {status ? (
                     <StatusInspector status={status} busy={writing}
                       onPatch={(changes) => drafts.patch("status", status.key, changes)}
-                      dirty={status.dirty} onReset={() => drafts.reset("status", status.key)}
-                      onUpdate={() => drafts.update("status", status)}
                       onSetIcon={(item, icon) => drafts.patch("status", item.key, {
                         icon: { color: item.icon?.color || "", library: icon?.library || "", name: icon?.name || "" },
                       })} />

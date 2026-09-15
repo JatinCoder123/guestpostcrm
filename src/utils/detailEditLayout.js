@@ -75,11 +75,8 @@ export function nodeProperties(node, scopeType, viewKey) {
   const name = namePropertyFor(node, scopeType);
 
   /*
-   * `editable` and `readonly` describe inline editing on a record page: can
-   * this value be changed in place, or only looked at. A create form has no
-   * such distinction - every field is an input, that is the whole point of the
-   * view - so both settings are omitted there rather than shown as controls
-   * that describe nothing.
+   * `editable` describes inline editing on a record page. A create form has no
+   * such distinction - every field is an input - so it is omitted there.
    *
    * `required` and `placeholder` stay. Those are form concepts, and a create
    * form is exactly where they matter most.
@@ -95,7 +92,7 @@ export function nodeProperties(node, scopeType, viewKey) {
   if (scopeType === "field") {
     return creating
       ? [name, "visible", "required", "placeholder"]
-      : [name, "visible", "editable", "readonly", "required", "placeholder"];
+      : [name, "visible", "editable", "required", "placeholder"];
   }
 
   return [name, "visible"];

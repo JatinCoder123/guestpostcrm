@@ -46,6 +46,11 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* Side-by-side layout editors share one pane height; their lists scroll inside it. */
+.layout-view-grid > * {
+  min-height: 0;
+}
+
 .layout-editor-header,
 .layout-editor-header > :last-child {
   flex-wrap: wrap;
@@ -73,6 +78,14 @@
 }
 
 @container settings (min-width: 800px) {
+  .layout-view-grid.layout-editor-grid {
+    height: clamp(360px, 70dvh, 760px);
+  }
+
+  .layout-view-grid.layout-editor-grid .layout-view-scroll {
+    max-height: none;
+  }
+
   .layout-editor-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
@@ -125,6 +138,14 @@
  * narrowest: it is a list of names to scan, while the other two hold controls.
  */
 @container settings (min-width: 1200px) {
+  .layout-view-grid.layout-editor-grid--library {
+    height: clamp(360px, 70dvh, 760px);
+  }
+
+  .layout-view-grid.layout-editor-grid--library .layout-view-scroll {
+    max-height: none;
+  }
+
   .layout-editor-grid--library {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(15rem, 0.8fr);
   }

@@ -15,13 +15,9 @@
 
 import React from "react";
 
-import { Save, Settings2 } from "lucide-react";
+import { Settings2 } from "lucide-react";
 
-import {
-  GhostButton,
-  PrimaryButton,
-  ReadOnlyValue,
-} from "@/components/layouts/shared/Primitives";
+import { GhostButton } from "@/components/layouts/shared/Primitives";
 
 import {
   BoolRow,
@@ -52,11 +48,8 @@ export default function NodeInspector({
   item,
   isNew,
   busy,
-  dirty,
   viewKey,
   onPatch,
-  onReset,
-  onUpdate,
   onRemove,
 }) {
   if (!item) {
@@ -144,18 +137,8 @@ export default function NodeInspector({
           busy={busy}
           onChange={set(nameProperty)}
           placeholder={`${TYPES[scopeType]} name`}
-          hint={`Shown as this ${scopeType}'s heading.`}
           error={nameInvalid ? "A name is required." : null}
         />
-
-        {scopeType === "field" && (
-          <ReadOnlyValue
-            label="Source field"
-            value={item.accessor}
-            mono
-            hint={`Read as ${item.type || "text"}. The field a row reads from is set when it is added.`}
-          />
-        )}
 
         <BoolRow
           property="visible"
@@ -164,7 +147,6 @@ export default function NodeInspector({
           busy={busy}
           onChange={set("visible")}
           title={`Show ${scopeType}`}
-          description={`Hidden ${scopeType}s stay in the layout and can be shown again without republishing.`}
         />
 
         {scopeType === "section" && (
@@ -176,7 +158,6 @@ export default function NodeInspector({
             onCommit={set("columns")}
             min={1}
             max={4}
-            hint="How many fields sit side by side in this section. 1 to 4."
           />
         )}
 
@@ -188,27 +169,6 @@ export default function NodeInspector({
             busy={busy}
             onChange={set("editable")}
             title="Editable inline"
-            description={
-              scopeType === "section"
-                ? "Allows this section's fields to be edited from the record page."
-                : "Allows this field to be edited from the record page."
-            }
-          />
-        )}
-
-        {scopeType === "field" && !creating && (
-          /*
-            Not the inverse of Editable. The contract sends both, so a field can
-            be editable in principle and read only in this view.
-          */
-          <BoolRow
-            property="readonly"
-            value={Boolean(item.readonly)}
-            entry={entry("readonly")}
-            busy={busy}
-            onChange={set("readonly")}
-            title="Read only"
-            description="Shows the value but refuses edits, even where the section allows them."
           />
         )}
 
@@ -221,7 +181,6 @@ export default function NodeInspector({
               busy={busy}
               onChange={set("required")}
               title="Required"
-              description="The record cannot be saved with this field empty."
             />
 
             <TextRow
@@ -231,31 +190,9 @@ export default function NodeInspector({
               busy={busy}
               onChange={set("placeholder")}
               placeholder={`Enter ${String(item.label ?? "value").toLowerCase()}`}
-              hint="Greyed-out hint shown while the field is empty."
             />
           </>
         )}
-      </div>
-
-      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border p-4">
-        {dirty && (
-          <span role="status" className="mr-auto text-xs text-muted-foreground">
-            Unsaved changes
-          </span>
-        )}
-
-        <GhostButton onClick={onReset} disabled={!dirty || busy}>
-          Reset
-        </GhostButton>
-
-        <PrimaryButton
-          icon={Save}
-          onClick={onUpdate}
-          disabled={!dirty || nameInvalid || isNew}
-          busy={busy}
-        >
-          Update {TYPES[scopeType]}
-        </PrimaryButton>
       </div>
     </div>
   );

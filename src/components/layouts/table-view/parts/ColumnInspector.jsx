@@ -7,16 +7,11 @@
  * describes a view where only visibility is overridable and one where the name,
  * the flags and the width bounds all are.
  *
- * Edits go into the draft layer and are published by Update Column, which is
- * what lets several properties of one column go out together instead of firing
- * a write per keystroke.
+ * Edits go into the draft layer and are published by Repair.
  */
 
 import React from "react";
 
-import { Save } from "lucide-react";
-
-import { GhostButton, PrimaryButton, ReadOnlyValue } from "@/components/layouts/shared/Primitives";
 import { BoolRow, CapabilitySummary, NumberRow, TextRow } from "@/components/layouts/shared/PropertyRows";
 import FieldTypeIcon from "@/components/layouts/shared/FieldTypeIcon";
 
@@ -25,19 +20,12 @@ import { COLUMN_PROPERTIES, WIDTH_MAX, WIDTH_MIN } from "@/utils/tableLayout";
 export default function ColumnInspector({
   column,
   onPatch,
-  onUpdate,
-  onReset,
-  dirty,
   busy,
 }) {
   const entry = (property) => column.presentation?.[property];
   const set = (property) => (value) => onPatch({ [property]: value });
 
-  /*
-   * A blank header is refused before it is staged rather than after. The
-   * mutation builder throws on an empty label, and a toast at publish time is a
-   * worse place to learn it than the field itself.
-   */
+  /* Show the name error in the field before Repair attempts to publish it. */
   const labelInvalid = !String(column.label ?? "").trim();
 
   return (
@@ -50,8 +38,6 @@ export default function ColumnInspector({
             <h3 className="truncate text-base font-semibold text-foreground">
               {column.label}
             </h3>
-
-            <p className="mt-1 text-sm text-muted-foreground">Column settings</p>
           </div>
         </div>
       </div>
@@ -66,15 +52,7 @@ export default function ColumnInspector({
           busy={busy}
           onChange={set("label")}
           placeholder="Column header"
-          hint="Shown in the table's column header."
           error={labelInvalid ? "A name is required." : null}
-        />
-
-        <ReadOnlyValue
-          label="Source field"
-          value={column.accessor}
-          mono
-          hint={`Read as ${column.type}. The field a column reads from is set when it is added.`}
         />
 
         <BoolRow
@@ -84,7 +62,6 @@ export default function ColumnInspector({
           busy={busy}
           onChange={set("visible")}
           title="Show column"
-          description="Hidden columns stay in the layout and can be shown again without republishing."
         />
 
         <BoolRow
@@ -93,7 +70,6 @@ export default function ColumnInspector({
           entry={entry("sortable")}
           busy={busy}
           onChange={set("sortable")}
-          description="Lets the header be clicked to sort, and lists the column in the sort menu."
         />
 
         <BoolRow
@@ -102,7 +78,6 @@ export default function ColumnInspector({
           entry={entry("searchable")}
           busy={busy}
           onChange={set("searchable")}
-          description="Includes the column in the table's search box."
         />
 
         <BoolRow
@@ -112,7 +87,6 @@ export default function ColumnInspector({
           busy={busy}
           onChange={set("editable")}
           title="Editable inline"
-          description="Allows the cell to be edited from the table by double-clicking it."
         />
 
         <BoolRow
@@ -121,7 +95,6 @@ export default function ColumnInspector({
           entry={entry("resizable")}
           busy={busy}
           onChange={set("resizable")}
-          description="Allows the column's edge to be dragged in the table."
         />
 
         <NumberRow
@@ -132,7 +105,6 @@ export default function ColumnInspector({
           onCommit={set("width")}
           min={column.minWidth ?? WIDTH_MIN}
           max={column.maxWidth ?? WIDTH_MAX}
-          hint={`Allowed ${column.minWidth ?? WIDTH_MIN}-${column.maxWidth ?? WIDTH_MAX}px for this column.`}
         />
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -142,7 +114,6 @@ export default function ColumnInspector({
             entry={entry("minWidth")}
             busy={busy}
             onCommit={set("minWidth")}
-            hint={`${WIDTH_MIN}px or more.`}
           />
 
           <NumberRow
@@ -151,30 +122,8 @@ export default function ColumnInspector({
             entry={entry("maxWidth")}
             busy={busy}
             onCommit={set("maxWidth")}
-            hint={`${WIDTH_MAX}px or less.`}
           />
         </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border p-4">
-        {dirty && (
-          <span role="status" className="mr-auto text-xs text-muted-foreground">
-            Unsaved changes
-          </span>
-        )}
-
-        <GhostButton onClick={onReset} disabled={!dirty || busy}>
-          Reset
-        </GhostButton>
-
-        <PrimaryButton
-          icon={Save}
-          onClick={onUpdate}
-          disabled={!dirty || labelInvalid}
-          busy={busy}
-        >
-          Update Column
-        </PrimaryButton>
       </div>
     </div>
   );
