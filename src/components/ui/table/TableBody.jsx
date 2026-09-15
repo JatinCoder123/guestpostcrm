@@ -42,6 +42,7 @@ export default function TableBody({
             <TableRow
               key={row.id}
               row={row}
+              index={v.index}
             />
           );
         })}

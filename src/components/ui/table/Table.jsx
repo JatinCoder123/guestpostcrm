@@ -33,6 +33,8 @@ import TableTitleBar from "./TableTitleBar";
 import { entityKeys } from "@/hooks/useEntity";
 import useColumnWidthPersistence from "./hooks/useColumnWidthPersistence";
 import { normalizeStatusConfig } from "@/utils/tableLayout";
+import { PageContext } from "@/context/pageContext";
+
 const EMPTY_ARRAY = [];
 const EMPTY_OBJECT = {};
 
@@ -234,6 +236,7 @@ const TableView = ({
       searchFieldsKey,
     ]
   );
+  const { handleDateClick } = useContext(PageContext);
 
   const [showStatus, setShowStatus] =
     useState(true);
@@ -472,7 +475,7 @@ const TableView = ({
   const actionContext = useMemo(
     () => ({
       navigate: navigateTo,
-
+      handleDateClick,
       // user: currentUser,
 
       mutateAsync:
