@@ -51,23 +51,15 @@ export const contactKeys = {
  */
 export const useContact = (email) => {
     return useQuery({
-        queryKey: ["contact", email],
+        queryKey: contactKeys.byEmail(email),
 
         queryFn: async () => {
-            console.log("🔥 GET CONTACT API CALLED", email);
-
             return getContactByEmail(email);
         },
 
         enabled: Boolean(email),
 
-        retry: false,
-
-        staleTime: Infinity,
-
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
+        staleTime: 5 * 60 * 1000
     });
 };
 /**
