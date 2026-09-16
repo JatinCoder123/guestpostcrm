@@ -78,12 +78,64 @@
 }
 
 @container settings (min-width: 800px) {
+  .detail-layout-editor,
+  .sidebar-layout-editor {
+    --layout-editor-pane-height: clamp(440px, calc(100dvh - 15rem), 800px);
+    min-height: calc(var(--layout-editor-pane-height) + 7rem);
+  }
+
   .layout-view-grid.layout-editor-grid {
     height: clamp(360px, 70dvh, 760px);
   }
 
-  .layout-view-grid.layout-editor-grid .layout-view-scroll {
+  /*
+   * This editor sits below the app navigation, layout heading, and tabs.
+   * Size it from the remaining viewport instead of taking 70% of the entire
+   * viewport, otherwise the parent settings page becomes the scroll target.
+   */
+  .layout-view-grid.detail-layout-workspace.layout-editor-grid {
+    height: var(--layout-editor-pane-height);
+    flex-shrink: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-layout-workspace.layout-editor-grid {
+    height: var(--layout-editor-pane-height);
+    flex-shrink: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-layout-workspace.layout-editor-grid > .sidebar-layout-tree-pane {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .sidebar-layout-tree-pane > .sidebar-layout-scroll {
+    height: 0;
+    flex: 1 1 0%;
+    overflow-y: scroll;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+  }
+
+  /*
+   * The layout tree is a fixed-height work pane. Only its list scrolls, so the
+   * inspector stays in place while users move through consecutive fields.
+   */
+  .layout-view-grid.layout-editor-grid > .layout-tree-pane {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .layout-view-grid.layout-editor-grid .layout-tree-pane > .layout-view-scroll {
+    height: 0;
+    flex: 1 1 0%;
     max-height: none;
+    overflow-y: scroll;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
   }
 
   .layout-editor-grid {
@@ -140,6 +192,11 @@
 @container settings (min-width: 1200px) {
   .layout-view-grid.layout-editor-grid--library {
     height: clamp(360px, 70dvh, 760px);
+  }
+
+  .layout-view-grid.detail-layout-workspace.layout-editor-grid--library {
+    height: var(--layout-editor-pane-height);
+    flex-shrink: 0;
   }
 
   .layout-view-grid.layout-editor-grid--library .layout-view-scroll {

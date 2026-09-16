@@ -643,19 +643,21 @@ function GroupEditor({
             {isDraft ? "Discard" : "Delete"}
           </button>
 
-          <button
-            type="button"
-            onClick={() => onSave(group)}
-            disabled={saving || !group.group_name?.trim()}
-            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50"
-          >
-            {saving ? (
-              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Save className="h-3.5 w-3.5" />
-            )}
-            {isDraft ? "Create" : "Update"}
-          </button>
+          {isDraft && (
+            <button
+              type="button"
+              onClick={() => onSave(group)}
+              disabled={saving || !group.group_name?.trim()}
+              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50"
+            >
+              {saving ? (
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5" />
+              )}
+              Create
+            </button>
+          )}
         </div>
       </div>
 
@@ -803,21 +805,23 @@ function ItemEditor({
             {isDraft ? "Discard" : "Delete"}
           </button>
 
-          <button
-            type="button"
-            onClick={() => onSave(item)}
-            disabled={
-              saving || !item.name?.trim() || !item.module_name?.trim()
-            }
-            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50"
-          >
-            {saving ? (
-              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Save className="h-3.5 w-3.5" />
-            )}
-            {isDraft ? "Create" : "Update"}
-          </button>
+          {isDraft && (
+            <button
+              type="button"
+              onClick={() => onSave(item)}
+              disabled={
+                saving || !item.name?.trim() || !item.module_name?.trim()
+              }
+              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50"
+            >
+              {saving ? (
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5" />
+              )}
+              Create
+            </button>
+          )}
         </div>
       </div>
 
@@ -872,7 +876,7 @@ function ItemEditor({
             />
 
             <p className="mt-1.5 text-[10px] text-muted-foreground">
-              The icon_name and library are saved when you update the module.
+              The icon and library are published when you repair the sidebar.
             </p>
           </div>
 
@@ -2096,7 +2100,7 @@ const Sidebar = () => {
        ===================================================================== */
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col">
+    <div className="sidebar-layout-editor flex min-h-0 min-w-0 flex-col overflow-hidden">
       {/* HEADER */}
 
       <div
@@ -2273,9 +2277,10 @@ const Sidebar = () => {
 
       <div
         className="
+                    sidebar-layout-workspace
                     grid
                     min-h-0
-                    flex-1
+                    overflow-hidden
                     layout-editor-grid
                 "
       >
@@ -2285,9 +2290,12 @@ const Sidebar = () => {
 
         <div
           className="
+                        sidebar-layout-tree-pane
                         flex
+                        h-full
                         min-h-0
                         flex-col
+                        overflow-hidden
                         border-b
                         border-border
                         bg-card
@@ -2333,7 +2341,12 @@ const Sidebar = () => {
 
           {/* BUILDER */}
 
-          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-3">
+          <div
+            role="region"
+            aria-label="Sidebar layout structure"
+            tabIndex={0}
+            className="sidebar-layout-scroll custom-scrollbar min-h-0 flex-1 overflow-y-auto p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40"
+          >
             <DndContext
               sensors={sensors}
               collisionDetection={collisionDetectionStrategy}
