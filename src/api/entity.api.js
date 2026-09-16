@@ -105,9 +105,9 @@ export async function fetchOne({ request, entity, recordInfo }) {
     );
 }
 
-export async function createOne(entity, payload) {
-    const { endpoint } = getEntityConfig(entity);
-    const { data } = await client.post(endpoint, payload);
+export async function createOne({ entity, payload }) {
+    // const { endpoint } = getEntityConfig(entity);
+    const { data } = await smartGateway({ method: "POST", body: { action: "create", module: entity, data: payload } });
     return data;
 }
 

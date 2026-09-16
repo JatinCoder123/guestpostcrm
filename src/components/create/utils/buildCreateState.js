@@ -7,7 +7,6 @@ export const buildCreateState = ({
 
     const processSection = (section) => {
         const module =
-            section?.source?.module ??
             section?.module;
 
         if (!module) {

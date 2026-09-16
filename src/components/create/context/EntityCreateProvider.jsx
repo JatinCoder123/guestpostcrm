@@ -90,7 +90,7 @@ const EntityCreateProvider = ({
      */
 
     const createMutation =
-        useCreateEntity();
+        useCreateEntity(entity);
 
     /*
      * ============================================================
@@ -117,7 +117,7 @@ const EntityCreateProvider = ({
             value,
         }) => {
             const module =
-                section?.source?.module ??
+
                 section?.module;
 
             if (!module) {
@@ -228,7 +228,7 @@ const EntityCreateProvider = ({
             field,
         }) => {
             const module =
-                section?.source?.module ??
+
                 section?.module;
 
             if (!module) {

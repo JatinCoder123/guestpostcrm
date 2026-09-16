@@ -202,8 +202,8 @@ export function useEntityRecord({ request, entity, recordInfo }) {
 export function useCreateEntity(entity) {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: (payload) => api.createOne(entity, payload),
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["entity", entity, "list"] }),
+        mutationFn: ({ entity, payload }) => api.createOne({ entity, payload }),
+        onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["entity", entity, "list"] }),
     });
 }
 

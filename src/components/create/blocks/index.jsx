@@ -5,7 +5,7 @@ import {
     TabsContent,
 } from "@/components/ui/tabs";
 
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 
 import useEntityCreate
     from "../context/useEntityCreate";
@@ -54,13 +54,7 @@ const Header = ({
                 `${config?.title ?? entity} created successfully`
             );
 
-            /*
-             * Navigation can be added here later.
-             *
-             * Example:
-             *
-             * navigate(`/contacts/${result.id}`);
-             */
+            navigate(`/entity/${entity}/list/table`);
         } catch (error) {
             console.error(
                 "Create failed:",
@@ -504,7 +498,7 @@ const Tabs = ({
                     >
 
                         {/* Scope: the sections of this tab. */}
-                        {orderLayoutSections(tab).map(
+                        {orderLayoutSections(tab).filter((section) => section.visible).map(
                             (section) => {
 
                                 const Component =
