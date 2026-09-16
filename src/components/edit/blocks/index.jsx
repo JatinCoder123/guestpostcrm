@@ -19,6 +19,7 @@ import {
     orderLayoutSections,
     orderLayoutTabs,
 } from "@/utils/layoutRank";
+import { useNavigate } from "react-router-dom";
 
 const Tabs = ({ config, record, entity, mode }) => {
     /* Scope: the tabs of this tabs block. */
@@ -106,6 +107,8 @@ const Header = ({
         saveChanges,
     } = useEntityEdit();
 
+    const navigate = useNavigate();
+
 
 
     const title =
@@ -150,8 +153,11 @@ const Header = ({
         if (saving) {
             return;
         }
-
-        resetAll();
+        if (isDirty) {
+            resetAll();
+            return
+        }
+        navigate(-1);
     };
 
     return (
@@ -188,8 +194,7 @@ const Header = ({
                         type="button"
                         onClick={handleCancel}
                         disabled={
-                            saving ||
-                            !isDirty
+                            saving
                         }
                         className="
                             rounded-lg
@@ -273,9 +278,7 @@ const Section = ({
         errors,
     } = useEntityEdit();
 
-    const module =
-        config?.source?.module ??
-        config?.module;
+    const module = config?.module;
 
     return (
         <div className="rounded-xl border bg-white p-6">

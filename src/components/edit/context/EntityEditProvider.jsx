@@ -132,7 +132,6 @@ const EntityEditProvider = ({
             value,
         }) => {
             const module =
-                section?.source?.module ??
                 section?.module;
             if (!module) {
                 console.warn(
@@ -242,7 +241,6 @@ const EntityEditProvider = ({
             field,
         }) => {
             const module =
-                section?.source?.module ??
                 section?.module;
 
             if (!module) {

@@ -250,18 +250,6 @@ const TableView = ({
   const [selectedRows, setSelectedRows] =
     useState([]);
 
-  /*
-   * visibleColumns is derived from columns, so it does NOT need
-   * useState + useEffect synchronization.
-   *
-   * The previous implementation did:
-   *
-   *   useEffect(() => {
-   *     setVisibleColumns(columns.filter(...));
-   *   }, [columns]);
-   *
-   * which could continuously update when `columns` changed identity.
-   */
   const visibleColumns = useMemo(
     () => columns.filter(isColumnVisible),
     [columns]

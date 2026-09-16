@@ -35,7 +35,7 @@ export function LayoutDraftProvider({ children }) {
     ({ currentLocation, nextLocation }) =>
       hasUnsavedChanges &&
       `${currentLocation.pathname}${currentLocation.search}` !==
-        `${nextLocation.pathname}${nextLocation.search}`,
+      `${nextLocation.pathname}${nextLocation.search}`,
   );
 
   useEffect(() => {

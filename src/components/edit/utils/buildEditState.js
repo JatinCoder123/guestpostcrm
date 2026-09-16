@@ -7,9 +7,7 @@ export const buildEditState = ({
     const state = {};
 
     const processSection = (section) => {
-        const module =
-            section?.source?.module ??
-            section?.module;
+        const module = section?.module
 
         if (!module) {
             return;

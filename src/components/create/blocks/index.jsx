@@ -18,6 +18,7 @@ import {
     orderLayoutSections,
     orderLayoutTabs,
 } from "@/utils/layoutRank";
+import { useNavigate } from "react-router-dom";
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,8 @@ const Header = ({
         resetAll,
         create,
     } = useEntityCreate();
+
+    const navigate = useNavigate();
 
     const handleCreate = async () => {
         if (
@@ -74,8 +77,11 @@ const Header = ({
         if (saving) {
             return;
         }
-
-        resetAll();
+        if (isDirty) {
+            resetAll();
+            return
+        }
+        navigate(-1);
     };
 
     return (
@@ -458,7 +464,7 @@ const Tabs = ({
                     p-1
                 "
             >
-                {tabs.map(
+                {tabs.filter((tab) => tab.visible).map(
                     (tab) => (
                         <TabsTrigger
                             key={tab.id}
