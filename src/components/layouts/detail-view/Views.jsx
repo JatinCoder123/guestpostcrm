@@ -566,7 +566,7 @@ export default function Views({
   const treeDisabled = saving || Boolean(needle);
 
   return (
-    <div className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
+    <div className="detail-layout-editor flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
       <header className="layout-editor-header flex items-center justify-between border-b border-border px-5 py-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -636,11 +636,11 @@ export default function Views({
         onDragEnd={onDragEnd}
       >
         <div
-          className={`layout-view-grid min-h-0 flex-1 ${libraryOpen ? "layout-editor-grid--library" : "layout-editor-grid"}`}
+          className={`detail-layout-workspace layout-view-grid min-h-0 overflow-hidden ${libraryOpen ? "layout-editor-grid--library" : "layout-editor-grid"}`}
         >
           {/* ------------------------------------------------------- TREE */}
 
-          <section className="flex min-h-0 flex-col bg-card">
+          <section className="layout-tree-pane flex h-full min-h-0 flex-col overflow-hidden bg-card">
             <div className="border-b border-border p-3">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -694,7 +694,12 @@ export default function Views({
               </div>
             )}
 
-            <div className="layout-view-scroll custom-scrollbar min-h-0 flex-1 max-h-[min(60vh,640px)] overflow-y-auto p-4">
+            <div
+              role="region"
+              aria-label="Layout structure"
+              tabIndex={0}
+              className="layout-view-scroll custom-scrollbar min-h-0 flex-1 max-h-[min(60vh,640px)] overflow-y-auto p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40"
+            >
               {query.isPending && (
                 <p className="py-16 text-center text-sm text-muted-foreground">
                   Loading layout...
