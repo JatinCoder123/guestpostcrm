@@ -10,6 +10,7 @@ const DateField = ({
     disabled,
     readOnly,
 }) => {
+    console.log("value", value)
     if (presentation === "display") {
         if (!value) {
             return <span>-</span>;

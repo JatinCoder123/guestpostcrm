@@ -16,6 +16,8 @@ import {
 } from "../utils/buildMutationPayload";
 
 import { useUpdateEntity } from "@/hooks/useEntity";
+import { queryClient } from "@/lib/queryClient"
+import { entityKeys } from "@/hooks/useEntity"
 
 const EntityEditProvider = ({
     children,
@@ -301,7 +303,6 @@ const EntityEditProvider = ({
             field,
         }) => {
             const module =
-                section?.source?.module ??
                 section?.module;
 
             if (!module) {
@@ -481,16 +482,9 @@ const EntityEditProvider = ({
 
                 setErrors({});
 
-                /*
-                 * Make current state the new initial state
-                 * for future resetField operations.
-                 *
-                 * We cannot mutate initialState directly because
-                 * it is memoized.
-                 *
-                 * The server/query should normally refetch and
-                 * provide the updated record.
-                 */
+                queryClient.invalidateQueries({
+                    queryKey: ['entity', entity],
+                });
 
                 return changes;
             } catch (error) {

@@ -18,7 +18,6 @@ function StatusRow() {
     } = useTableContext();
     const { data, isPending, error } = useUnreadCount();
     const { enteredEmail: email } = useContext(PageContext);
-
     const {
         data: summary,
         isPending: summaryLoading

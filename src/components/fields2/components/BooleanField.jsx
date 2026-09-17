@@ -12,7 +12,7 @@ const BooleanField = ({
     if (presentation === "display") {
         return (
             <span>
-                {value ? "Yes" : "No"}
+                {Number(value) ? "Yes" : "No"}
             </span>
         );
     }
@@ -21,7 +21,7 @@ const BooleanField = ({
         <label className="inline-flex items-center gap-2">
             <input
                 type="checkbox"
-                checked={Boolean(value)}
+                checked={Boolean(Number(value))}
                 disabled={disabled}
                 readOnly={readOnly}
                 onChange={(e) => {

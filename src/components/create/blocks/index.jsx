@@ -14,6 +14,7 @@ import FieldRenderer
     from "@/components/fields2/FieldRenderer";
 
 import {
+    orderLayoutBlocks,
     orderLayoutFields,
     orderLayoutSections,
     orderLayoutTabs,
@@ -31,19 +32,99 @@ const Header = ({
     entity,
 }) => {
     const {
+        layout,
+        formState,
         isDirty,
         saving,
         resetAll,
         create,
+        setErrors,
     } = useEntityCreate();
 
     const navigate = useNavigate();
 
     const handleCreate = async () => {
-        if (
-            saving ||
-            !isDirty
-        ) {
+        if (saving) {
+            return;
+        }
+
+        const requiredErrors = {};
+
+        const isEmpty = (value) =>
+            value === null ||
+            value === undefined ||
+            (typeof value === "string" &&
+                value.trim() === "") ||
+            (Array.isArray(value) &&
+                value.length === 0);
+
+        const validateSection = (section) => {
+            if (!section || section.visible === false) {
+                return;
+            }
+
+            const module =
+                section?.source?.module ??
+                section?.module;
+
+            if (!module) {
+                return;
+            }
+
+            orderLayoutFields(section).forEach((field) => {
+                if (
+                    field?.required !== true ||
+                    field?.visible === false ||
+                    !field?.accessor
+                ) {
+                    return;
+                }
+
+                const value =
+                    formState?.[module]?.data?.[
+                    field.accessor
+                    ];
+
+                if (isEmpty(value)) {
+                    requiredErrors[module] = {
+                        ...requiredErrors[module],
+                        [field.accessor]:
+                            `${field.label ?? field.accessor} is required`,
+                    };
+                }
+            });
+        };
+
+        orderLayoutBlocks(layout).forEach((block) => {
+            if (!block || block.visible === false) {
+                return;
+            }
+
+            if (
+                block.type === "section" ||
+                block.type === "summary"
+            ) {
+                validateSection(block);
+                return;
+            }
+
+            if (block.type === "tabs") {
+                orderLayoutTabs(block)
+                    .filter((tab) => tab.visible !== false)
+                    .forEach((tab) => {
+                        orderLayoutSections(tab)
+                            .forEach(validateSection);
+                    });
+            }
+        });
+
+        if (Object.keys(requiredErrors).length > 0) {
+            setErrors(requiredErrors);
+            toast.error("Please fill all required fields");
+            return;
+        }
+
+        if (!isDirty) {
             return;
         }
 
@@ -134,8 +215,7 @@ const Header = ({
                             handleCreate
                         }
                         disabled={
-                            saving ||
-                            !isDirty
+                            saving
                         }
                         className="
                             rounded-lg
@@ -178,7 +258,6 @@ const Section = ({
     } = useEntityCreate();
 
     const module =
-        config?.source?.module ??
         config?.module;
 
     return (

@@ -15,6 +15,7 @@ import FieldRenderer from "@/components/fields2/FieldRenderer";
 import toast from "react-hot-toast";
 
 import {
+    orderLayoutBlocks,
     orderLayoutFields,
     orderLayoutSections,
     orderLayoutTabs,
@@ -101,10 +102,13 @@ const Header = ({
     record,
 }) => {
     const {
+        layout,
+        formState,
         isDirty,
         saving,
         resetAll,
         saveChanges,
+        setErrors,
     } = useEntityEdit();
 
     const navigate = useNavigate();
@@ -136,12 +140,84 @@ const Header = ({
             return;
         }
 
+        const requiredErrors = {};
+
+        const isEmpty = (value) =>
+            value === null ||
+            value === undefined ||
+            (typeof value === "string" &&
+                value.trim() === "") ||
+            (Array.isArray(value) &&
+                value.length === 0);
+
+        const validateSection = (section) => {
+            if (!section || section.visible === false) {
+                return;
+            }
+
+            const module = section?.module;
+
+            if (!module) {
+                return;
+            }
+
+            orderLayoutFields(section).forEach((field) => {
+                if (
+                    field?.required !== true ||
+                    field?.visible === false ||
+                    !field?.accessor
+                ) {
+                    return;
+                }
+
+                const value =
+                    formState?.[module]?.data?.[
+                    field.accessor
+                    ];
+
+                if (isEmpty(value)) {
+                    requiredErrors[module] = {
+                        ...requiredErrors[module],
+                        [field.accessor]:
+                            `${field.label ?? field.accessor} is required`,
+                    };
+                }
+            });
+        };
+
+        orderLayoutBlocks(layout).forEach((block) => {
+            if (!block || block.visible === false) {
+                return;
+            }
+
+            if (block.type === "section") {
+                validateSection(block);
+                return;
+            }
+
+            if (block.type === "tabs") {
+                orderLayoutTabs(block)
+                    .filter((tab) => tab.visible !== false)
+                    .forEach((tab) => {
+                        orderLayoutSections(tab)
+                            .forEach(validateSection);
+                    });
+            }
+        });
+
+        if (Object.keys(requiredErrors).length > 0) {
+            setErrors(requiredErrors);
+            toast.error("Please fill all required fields");
+            return;
+        }
+
         try {
             await saveChanges();
 
             toast.success(
                 "Changes saved successfully"
             );
+            navigate(-1)
         } catch (error) {
             toast.error(
                 "Failed to save changes"

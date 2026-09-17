@@ -21,7 +21,6 @@ export const prefetchTimelineData = async (
     queryClient,
     email
 ) => {
-    console.log("FETCHING DATA OF ", email)
     if (!email) return;
 
     const threadPromise = queryClient.prefetchQuery({

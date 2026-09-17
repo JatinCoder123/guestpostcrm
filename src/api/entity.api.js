@@ -40,7 +40,6 @@ export const getEntityStats = ({
     module
 }) => {
     const params = email ? { email } : {};
-
     const queries = stats.map((stat) => {
         const query = {
             key: stat.key,

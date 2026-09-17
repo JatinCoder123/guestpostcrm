@@ -50,7 +50,7 @@ const FIELD_REGISTRY = {
     url: UrlField,
     password: PasswordField,
 
-    date: DateField,
+    date: DateTimeField,
     datetime: DateTimeField,
     time: TimeField,
 

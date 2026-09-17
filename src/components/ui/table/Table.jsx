@@ -120,6 +120,7 @@ const TableView = ({
   handleAddClick,
   loading,
 }) => {
+
   const slice = entity;
 
   const rawStatusConfig =
@@ -512,7 +513,7 @@ const TableView = ({
 
       showStatus,
       setShowStatus,
-
+      preferences,
       search,
       setSearch: updateSearch,
 

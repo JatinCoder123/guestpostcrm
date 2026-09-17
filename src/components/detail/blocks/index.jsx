@@ -214,8 +214,7 @@ const Section = ({
     mode,
     entity,
 }) => {
-    console.log("CONFIG", config);
-    console.log("RECORD", record);
+
 
     const gridCols = {
         1: "grid-cols-1",
@@ -271,6 +270,27 @@ const Section = ({
              * -----------------------------------------------------
              */
             const newValue = value;
+
+            const isEmpty =
+                newValue === null ||
+                newValue === undefined ||
+                (typeof newValue === "string" &&
+                    newValue.trim() === "") ||
+                (Array.isArray(newValue) &&
+                    newValue.length === 0);
+
+            if (
+                field?.required === true &&
+                isEmpty
+            ) {
+                toast.error(
+                    "It is a required field."
+                );
+
+                throw new Error(
+                    `It is a required field.`
+                );
+            }
 
             /*
              * Nothing actually changed.

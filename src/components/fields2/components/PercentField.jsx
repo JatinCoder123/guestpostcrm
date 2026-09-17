@@ -16,7 +16,7 @@ const PercentField = ({
                 {value === null ||
                     value === undefined
                     ? "-"
-                    : `${value}%`}
+                    : `${value}`}
             </span>
         );
     }
