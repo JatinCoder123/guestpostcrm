@@ -64,7 +64,6 @@ const Header = ({
             }
 
             const module =
-                section?.source?.module ??
                 section?.module;
 
             if (!module) {
@@ -94,7 +93,7 @@ const Header = ({
                 }
             });
         };
-
+        console.log('requiredErrors', requiredErrors)
         orderLayoutBlocks(layout).forEach((block) => {
             if (!block || block.visible === false) {
                 return;

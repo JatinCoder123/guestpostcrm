@@ -289,7 +289,6 @@ const EntityCreateProvider = ({
             field,
         }) => {
             const module =
-                section?.source?.module ??
                 section?.module;
 
             if (!module) {
