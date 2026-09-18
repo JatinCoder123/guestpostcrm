@@ -188,7 +188,7 @@ const TableView = ({
     firstPage.total_pages ?? 0;
 
   const count =
-    firstPage.total ?? 0;
+    firstPage.total ?? firstPage.total_records ?? 0;
 
   const sort =
     preferences?.sorting ?? EMPTY_OBJECT;
