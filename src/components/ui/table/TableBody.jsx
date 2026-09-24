@@ -40,7 +40,7 @@ export default function TableBody({
 
           return (
             <TableRow
-              key={row.id}
+              key={row.id + Math.random()}
               row={row}
               index={v.index}
             />
