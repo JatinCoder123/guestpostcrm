@@ -14,19 +14,21 @@ function StatusRow() {
         filters,
         setFilters,
         showStatus,
-        preferences
+        preferences,
     } = useTableContext();
+
     const { data, isPending, error } = useUnreadCount();
     const { enteredEmail: email } = useContext(PageContext);
+
     const {
         data: summary,
-        isPending: summaryLoading
+        isPending: summaryLoading,
     } = useEntityStats({
         filters: preferences,
         email: layout?.filter_by_email ? email : "",
         entity,
         stats: STATUS_CONFIG,
-        module: layout?.module
+        module: layout?.module,
     });
 
     const statusList = STATUS_CONFIG.map((config) => {
@@ -41,10 +43,12 @@ function StatusRow() {
             ...config,
             count,
             amount: Number(
-                summary?.stats?.[config.key]?.sum_of?.total_amount_c || 0
+                summary?.stats?.[config.key]?.sum_of?.total_amount_c ||
+                0
             ),
         };
     });
+
     const toggleStatus = (status) => {
         const updated = { ...filters };
 
@@ -99,19 +103,14 @@ function StatusRow() {
          * Build the filters for the selected status.
          */
         const statusFilters = {
-            ...(status.filters || {})
+            ...(status.filters || {}),
         };
 
         /*
          * Backward compatibility with old configuration.
          */
-        if (
-            !status.filters &&
-            (status.filter || status.field)
-        ) {
-            const key =
-                status.filter ||
-                status.field;
+        if (!status.filters && (status.filter || status.field)) {
+            const key = status.filter || status.field;
 
             statusFilters[key] = status.value;
         }
@@ -120,10 +119,7 @@ function StatusRow() {
          * Additional filters
          */
         if (status.otherFilters) {
-            Object.assign(
-                statusFilters,
-                status.otherFilters
-            );
+            Object.assign(statusFilters, status.otherFilters);
         }
 
         /*
@@ -133,7 +129,7 @@ function StatusRow() {
             Object.entries(status.neqFilter).forEach(
                 ([field, value]) => {
                     statusFilters[field] = {
-                        neq: value
+                        neq: value,
                     };
                 }
             );
@@ -143,23 +139,19 @@ function StatusRow() {
          * Check whether the currently selected status
          * is already active.
          */
-        const isAlreadyApplied =
-            Object.entries(statusFilters).every(
-                ([key, value]) => {
-                    if (
-                        value &&
-                        typeof value === "object" &&
-                        value.neq !== undefined
-                    ) {
-                        return (
-                            filters?.[key]?.neq ===
-                            value.neq
-                        );
-                    }
+        const isAlreadyApplied = Object.entries(
+            statusFilters
+        ).every(([key, value]) => {
+            if (
+                value &&
+                typeof value === "object" &&
+                value.neq !== undefined
+            ) {
+                return filters?.[key]?.neq === value.neq;
+            }
 
-                    return filters?.[key] === value;
-                }
-            );
+            return filters?.[key] === value;
+        });
 
         /*
          * If already active:
@@ -173,10 +165,7 @@ function StatusRow() {
         /*
          * Apply selected status filters.
          */
-        Object.assign(
-            updated,
-            statusFilters
-        );
+        Object.assign(updated, statusFilters);
 
         setFilters(updated);
     };
@@ -184,13 +173,11 @@ function StatusRow() {
     const isStatusActive = (status) => {
         if (status.filters) {
             return Object.entries(status.filters).every(
-                ([key, value]) =>
-                    filters?.[key] === value
+                ([key, value]) => filters?.[key] === value
             );
         }
 
-        const field =
-            status.field;
+        const field = status.field;
 
         return filters?.[field] === status.value;
     };
@@ -202,49 +189,32 @@ function StatusRow() {
                     key="status-row"
                     initial={{
                         opacity: 0,
-                        height: 0
+                        height: 0,
                     }}
                     animate={{
                         opacity: 1,
-                        height: "auto"
+                        height: "auto",
                     }}
                     exit={{
                         opacity: 0,
-                        height: 0
+                        height: 0,
                     }}
                     transition={{
                         duration: 0.2,
-                        ease: "easeOut"
+                        ease: "easeOut",
                     }}
-                    className="
-                        grid
-                        grid-cols-2
-                        sm:grid-cols-3
-                        md:grid-cols-4
-                        lg:grid-cols-5
-                        xl:grid-cols-6
-                        2xl:grid-cols-8
-                        gap-2
-                        overflow-hidden
-                    "
+                    className="flex flex-wrap gap-2 overflow-hidden"
                 >
-                    {statusList.map((status, i) => {
-                        const count =
-                            status.count ?? 0;
-
-                        const amount =
-                            status.amount ?? 0;
-
-                        const active =
-                            isStatusActive(status);
+                    {statusList.map((status) => {
+                        const count = status.count ?? 0;
+                        const amount = status.amount ?? 0;
+                        const active = isStatusActive(status);
 
                         const color =
-                            status.color ||
-                            "#64748b";
+                            status.color || "#64748b";
 
                         const countLabel =
-                            status.countLabel ||
-                            "items";
+                            status.countLabel || "items";
 
                         return (
                             <motion.button
@@ -259,22 +229,21 @@ function StatusRow() {
                                     ) {
                                         status.handleStatusClick();
                                     } else {
-                                        toggleStatus(
-                                            status
-                                        );
+                                        toggleStatus(status);
                                     }
                                 }}
                                 whileTap={{
-                                    scale: 0.98
+                                    scale: 0.98,
                                 }}
                                 transition={{
-                                    duration: 0.12
+                                    duration: 0.12,
                                 }}
                                 className={`
                                     group
                                     relative
                                     flex
-                                    min-w-0
+                                    w-fit
+                                    shrink-0
                                     items-center
                                     gap-3
                                     rounded-xl
@@ -284,7 +253,6 @@ function StatusRow() {
                                     text-left
                                     transition-colors
                                     duration-150
-
                                     ${active
                                         ? "border-primary/40 bg-white"
                                         : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
@@ -304,23 +272,23 @@ function StatusRow() {
                                     "
                                     style={{
                                         backgroundColor: `${color}12`,
-                                        color: color
+                                        color,
                                     }}
                                 >
                                     <span className="text-[18px]">
                                         {Icon({
-                                            ...status.icon
+                                            ...status.icon,
                                         })}
                                     </span>
                                 </div>
 
                                 {/* CONTENT */}
-                                <div className="min-w-0 flex-1">
-                                    <div className="flex items-center justify-between gap-2">
+                                <div className="w-fit">
+                                    <div className="flex w-fit items-center gap-3">
                                         {/* STATUS LABEL */}
                                         <span
                                             className={`
-                                                truncate
+                                                whitespace-nowrap
                                                 text-sm
                                                 font-semibold
                                                 leading-5
@@ -338,6 +306,7 @@ function StatusRow() {
                                             <span
                                                 className="
                                                     shrink-0
+                                                    whitespace-nowrap
                                                     text-base
                                                     font-bold
                                                     leading-5
@@ -353,6 +322,7 @@ function StatusRow() {
                                             <span
                                                 className="
                                                     shrink-0
+                                                    whitespace-nowrap
                                                     text-base
                                                     font-bold
                                                     leading-5
@@ -365,7 +335,7 @@ function StatusRow() {
                                     </div>
 
                                     {/* SECONDARY VALUE */}
-                                    <div className="mt-1 text-sm font-medium text-gray-500">
+                                    <div className="mt-1 whitespace-nowrap text-sm font-medium text-gray-500">
                                         {status.showAmount
                                             ? `${count.toLocaleString()} ${countLabel}`
                                             : countLabel}
@@ -385,7 +355,7 @@ function StatusRow() {
                                         "
                                         style={{
                                             backgroundColor:
-                                                color
+                                                color,
                                         }}
                                     />
                                 )}
