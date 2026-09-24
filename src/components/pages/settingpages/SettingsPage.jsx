@@ -45,13 +45,7 @@ const menuItems = [
     icon: LayoutDashboard,
     link: "layout",
   },
-  {
-    group: "Preferences",
-    title: "Theme",
-    subtitle: "Customize appearance and colors",
-    icon: Palette,
-    link: "theme",
-  },
+
 
   /* ------------------------------------------------------------------------
      MANAGEMENT

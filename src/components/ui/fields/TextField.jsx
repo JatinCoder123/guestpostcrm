@@ -1,4 +1,5 @@
 import useEditableField from "./hooks/useEditableField";
+import he from "he";
 
 export default function TextField(props) {
     const {
@@ -87,7 +88,7 @@ export default function TextField(props) {
 
         >
 
-            {value || "-"}
+            {he.decode(value) || "-"}
 
         </span>
 
