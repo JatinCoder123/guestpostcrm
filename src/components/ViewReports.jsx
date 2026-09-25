@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef, useContext } from "react";
 import {
   BarChart3,
   Calendar,
@@ -33,6 +33,7 @@ import { DateRangeFilter } from "./DateRangeFilter.jsx";
 import { useCrmUsers } from "../queries/users.queries.js";
 import CustomDropdown from "./ui/CustomDropdown.jsx";
 import { preferencesAction } from "../store/Slices/preferencesSlice.js";
+import { PageContext } from "@/context/pageContext.jsx"
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const PHASES = [
@@ -431,6 +432,7 @@ const ReportOverview = memo(({
 export default function ViewReports() {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
+  const { handleClear } = useContext(PageContext)
 
   const email = searchParams.get("email");
   console.log(email)
@@ -468,6 +470,9 @@ export default function ViewReports() {
       }));
     }
   }, [email, users]);
+  useEffect(() => {
+    handleClear()
+  }, [email])
   const [activeSection, setActiveSection] = useState(storedReportFilter.phase || "conversation");
 
   const phaseConfig = useMemo(

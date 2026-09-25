@@ -112,7 +112,7 @@ function executeNavigation({
         );
     }
 
-    if (action.is_next_prev_depend === true) {
+    if (action.target.startsWith("/redirect")) {
         const email = getEmailFromTarget(
             action.target,
             record
@@ -123,7 +123,7 @@ function executeNavigation({
         return context.handleDateClick({
             email,
             navigate: "/",
-            index: context.index,
+            index: action.is_next_prev_depend ? context.index : null,
             nextPrev: true,
         });
     }

@@ -14,6 +14,7 @@ const RedirectHandler = () => {
 
         // set email in context
         if (email) {
+            console.log("EMAIL", email)
             setEnteredEmail(email);
         }
 
