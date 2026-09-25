@@ -81,7 +81,6 @@ export function Sidebar() {
     isPending: layoutLoading,
     refetch: refetchLayout,
   } = useLayoutPreferences();
-
   const sidebarSections = layoutData ?? [];
 
   /**

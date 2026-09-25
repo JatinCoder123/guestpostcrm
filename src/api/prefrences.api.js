@@ -4,7 +4,6 @@ import { getMetadataEndpoint } from "@/utils/sidebarLayout";
 export const fetchLayout = async () => {
 
   const endpoint = getMetadataEndpoint();
-
   const data = await apiRequest({
     endpoint,
     params: {
