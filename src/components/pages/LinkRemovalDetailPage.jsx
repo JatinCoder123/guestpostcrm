@@ -732,12 +732,31 @@ export default function LinkRemovalDetailPage() {
           )}
 
 
-          {/* Extraction error */}
-          {extractionError && (
-            <div className="p-5 text-sm text-red-700">
-              {extractionError.message ||
-                "Could not fetch links from this source URL."}
+          {extractionError?.response?.data?.message?.includes(
+            "Target URL returned HTTP 410."
+          ) ? (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
+              <div className="min-w-0">
+                <p className="font-semibold">
+                  This source page is no longer available
+                </p>
+                <p className="mt-1 text-sm text-amber-800">
+                  The page can't be found so its extracted links can’t be checked.
+                </p>
+                <a
+                  href={sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 block break-all text-sm font-medium text-teal-700 underline decoration-teal-300 underline-offset-2 hover:text-teal-900"
+                >
+                  {sourceUrl}
+                </a>
+              </div>
             </div>
+          ) : (
+            !isExtractionLoading && (extractionError?.response?.data?.message ||
+              extractionError?.message ||
+              "Could not fetch links from this source URL.")
           )}
 
 
