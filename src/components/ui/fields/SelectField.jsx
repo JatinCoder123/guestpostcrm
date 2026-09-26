@@ -1,9 +1,15 @@
 import { useMemo } from "react";
+import { ChevronDown } from "lucide-react";
 import {
-    Check,
-    ChevronDown,
-} from "lucide-react";
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import useEditableField from "./hooks/useEditableField";
+
+const normalizeValue = (value) => String(value ?? "").toLowerCase();
 
 export default function SelectField(props) {
     const { field } = props;
@@ -18,12 +24,12 @@ export default function SelectField(props) {
         save,
     } = useEditableField(props);
 
-    const options = field?.options || [];
+    const options = useMemo(() => field?.options || [], [field?.options]);
 
     const selected = useMemo(() => {
         return (
             options.find(
-                (option) => option.value === value
+                (option) => normalizeValue(option.value) === normalizeValue(value)
             ) || null
         );
     }, [options, value]);
@@ -52,43 +58,45 @@ export default function SelectField(props) {
     };
 
     if (editing) {
-        return (
-            <select
-                autoFocus
-                value={value ?? ""}
-                onBlur={save}
-                onChange={(e) =>
-                    setValue(e.target.value)
-                }
-                onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                        save();
-                    }
+        const selectedValue = selected ? String(selected.value) : undefined;
 
-                    if (e.key === "Escape") {
-                        cancelEditing();
-                    }
+        return (
+            <Select
+                value={selectedValue}
+                defaultOpen
+                onOpenChange={(open) => {
+                    if (!open) save();
                 }}
-                className="
-                    w-full
-                    rounded-md
-                    border
-                    border-blue-500
-                    bg-white
-                    px-2
-                    py-1
-                    outline-none
-                "
+                onValueChange={(nextValue) => {
+                    const option = options.find(
+                        (item) => normalizeValue(item.value) === normalizeValue(nextValue)
+                    );
+                    const canonicalValue = option?.value ?? nextValue;
+
+                    setValue(canonicalValue);
+                    save(canonicalValue);
+                }}
             >
-                {options.map((option) => (
-                    <option
-                        key={option.value}
-                        value={option.value}
-                    >
-                        {option.label}
-                    </option>
-                ))}
-            </select>
+                <SelectTrigger
+                    autoFocus
+                    className="h-8 border-blue-500 bg-white px-2 py-1"
+                    onKeyDown={(event) => {
+                        if (event.key === "Escape") cancelEditing();
+                    }}
+                >
+                    <SelectValue placeholder="Select an option" />
+                </SelectTrigger>
+                <SelectContent onEscapeKeyDown={cancelEditing}>
+                    {options.map((option) => (
+                        <SelectItem
+                            key={String(option.value)}
+                            value={String(option.value)}
+                        >
+                            {option.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
         );
     }
 
