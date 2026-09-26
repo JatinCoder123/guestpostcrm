@@ -1,5 +1,6 @@
 import React, {
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 
 import {
   useBacklink,
@@ -31,6 +33,11 @@ import {
 import {
   getInvoiceById,
 } from "../../api/invoice.api";
+
+import {
+  updateLinkRemoval,
+} from "../../api/linkRemoval.api";
+import { queryClient } from "@/lib/queryClient";
 
 
 const Link = ({ href, children, title, className = "" }) => (
@@ -118,6 +125,33 @@ export default function LinkRemovalDetailPage() {
   const [latestLinkCount, setLatestLinkCount] = useState(null);
 
   const [processError, setProcessError] = useState("");
+  const linkRemovalStatusUpdatedRef = useRef(false);
+
+  const {
+    mutate: updateLinkRemovalStatus,
+  } = useMutation({
+    mutationFn: ({ recordId, data }) =>
+      updateLinkRemoval(recordId, data),
+
+    onSuccess: () => {
+      toast.success("Link removed successfully.");
+      queryClient.invalidateQueries({ queryKey: ['entity', 'link-removal'] })
+    },
+    onError: (error) => {
+      linkRemovalStatusUpdatedRef.current = false;
+
+      console.error(
+        "Failed to update link-removal status:",
+        error
+      );
+
+      toast.error(
+        error?.response?.data?.message ||
+        error?.message ||
+        "Could not update the link-removal status."
+      );
+    },
+  });
 
   /**
    * --------------------------------------------------
@@ -262,6 +296,42 @@ export default function LinkRemovalDetailPage() {
     Boolean(selectedAnchor) &&
     Boolean(selectedTargetUrl) &&
     !backlinkStillExists;
+
+
+  /**
+   * Keep the link-removal queue record in sync when the
+   * backlink has already disappeared from the source page.
+   */
+  useEffect(() => {
+    const currentStatus = String(
+      linkRemovalRecord?.status_c || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    if (
+      !id ||
+      !isAlreadyRemoved ||
+      currentStatus === "removed" ||
+      linkRemovalStatusUpdatedRef.current
+    ) {
+      return;
+    }
+
+    linkRemovalStatusUpdatedRef.current = true;
+
+    updateLinkRemovalStatus({
+      recordId: id,
+      data: {
+        status_c: "Removed",
+      },
+    });
+  }, [
+    id,
+    isAlreadyRemoved,
+    linkRemovalRecord?.status_c,
+    updateLinkRemovalStatus,
+  ]);
 
 
   /**
@@ -519,16 +589,6 @@ export default function LinkRemovalDetailPage() {
         id,
 
         status_c: "Removed",
-
-        ...(isDefaulter
-          ? {
-            cancel_order:
-              Number(orderPreference),
-
-            cancel_invoice:
-              Number(invoicePreference),
-          }
-          : {}),
       },
       {
         onSuccess: async (response) => {
@@ -536,6 +596,7 @@ export default function LinkRemovalDetailPage() {
             "Backlink update response:",
             response
           );
+
 
           if (response?.success === false) {
             toast.error(
@@ -554,6 +615,7 @@ export default function LinkRemovalDetailPage() {
           toast.success(
             "Link removed successfully."
           );
+          queryClient.invalidateQueries({ queryKey: ['entity', 'link-removal'] })
 
           if (isDefaulter) {
             setPreferencesConfirmed(true);
