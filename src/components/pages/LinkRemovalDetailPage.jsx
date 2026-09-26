@@ -138,8 +138,6 @@ export default function LinkRemovalDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['entity', 'link-removal'] })
     },
     onError: (error) => {
-      linkRemovalStatusUpdatedRef.current = false;
-
       console.error(
         "Failed to update link-removal status:",
         error
@@ -248,6 +246,26 @@ export default function LinkRemovalDetailPage() {
   const currentLinkCount =
     extraction?.total_links ?? links.length;
 
+  const extractionErrorMessage = String(
+    extractionError?.response?.data?.message ||
+    extractionError?.message ||
+    ""
+  );
+
+  /**
+   * The extractor can report a missing source page either through the HTTP
+   * response status or in its own error message.
+   */
+  const extractionStatus = Number(
+    extractionError?.response?.status
+  );
+
+  const isSourcePageUnavailable =
+    extractionStatus === 404 ||
+    extractionStatus === 410 ||
+    /(?:http\s*)?(?:404|410)\b/i.test(extractionErrorMessage) ||
+    /page\s+(?:was\s+)?not\s+found/i.test(extractionErrorMessage);
+
 
   /**
    * --------------------------------------------------
@@ -287,15 +305,20 @@ export default function LinkRemovalDetailPage() {
    * ALREADY REMOVED
    * --------------------------------------------------
    *
-   * Only consider it already removed after the
-   * extraction request has completed successfully.
+   * A backlink is also considered removed when its source page no longer
+   * exists. In that case there is nowhere for the backlink to remain live.
    */
   const isAlreadyRemoved =
     !isExtractionLoading &&
-    !extractionError &&
-    Boolean(selectedAnchor) &&
-    Boolean(selectedTargetUrl) &&
-    !backlinkStillExists;
+    (
+      isSourcePageUnavailable ||
+      (
+        !extractionError &&
+        Boolean(selectedAnchor) &&
+        Boolean(selectedTargetUrl) &&
+        !backlinkStillExists
+      )
+    );
 
 
   /**
@@ -330,7 +353,29 @@ export default function LinkRemovalDetailPage() {
     id,
     isAlreadyRemoved,
     linkRemovalRecord?.status_c,
-    updateLinkRemovalStatus,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ,
   ]);
 
 
@@ -794,16 +839,14 @@ export default function LinkRemovalDetailPage() {
           )}
 
 
-          {extractionError?.response?.data?.message?.includes(
-            "Target URL returned HTTP 410."
-          ) ? (
+          {isSourcePageUnavailable ? (
             <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
               <div className="min-w-0">
                 <p className="font-semibold">
                   This source page is no longer available
                 </p>
                 <p className="mt-1 text-sm text-amber-800">
-                  The page can't be found so its extracted links can’t be checked.
+                  The page can't be found, so this backlink has been marked as removed.
                 </p>
                 <a
                   href={sourceUrl}
