@@ -162,8 +162,26 @@ const TableView = ({
     return items.filter((status) => status.visible);
   }, [entity, layout?.moduleKey, layout?.viewKey, statusConfigKey]);
 
-  const timefilterField =
-    filterColumns?.[0]?.name || "date_entered";
+  const dateFields = useMemo(() => {
+    const fields = new Map();
+
+    columns.forEach((column) => {
+      if (String(column?.type).toLowerCase() !== "date" || !column?.accessor) {
+        return;
+      }
+
+      const accessor = column.accessor.replace(/_time_ago/g, "");
+
+      if (!fields.has(accessor)) {
+        fields.set(accessor, {
+          value: accessor,
+          label: column.label || accessor,
+        });
+      }
+    });
+
+    return Array.from(fields.values());
+  }, [columns]);
 
   const tableName = layout?.label;
 
@@ -195,6 +213,14 @@ const TableView = ({
 
   const dateFilter =
     preferences?.date_filter ?? EMPTY_OBJECT;
+
+  const savedDateField = dateFilter?.date_field;
+  const selectedDateField =
+    dateFields.some((field) => field.value === savedDateField)
+      ? savedDateField
+      : dateFields.some((field) => field.value === "date_entered")
+        ? "date_entered"
+        : dateFields[0]?.value || "date_entered";
 
   const fromDate =
     dateFilter?.date_from?.split(" ")[0] ||
@@ -423,7 +449,8 @@ const TableView = ({
   };
   const updateDateFilter = (
     date_from,
-    date_to
+    date_to,
+    date_field
   ) => {
     dispatch(
       preferencesAction.updateTablePreference({
@@ -433,7 +460,7 @@ const TableView = ({
           date_range: "custom",
           date_from,
           date_to,
-          date_field: timefilterField
+          date_field: date_field || selectedDateField
         },
       })
     );
@@ -647,15 +674,19 @@ const TableView = ({
               toDate={toDate}
               toTime={toTime}
               filterActive={filterActive}
+              dateFields={dateFields}
+              selectedDateField={selectedDateField}
               onApply={({
                 fromDate,
                 fromTime,
                 toDate,
                 toTime,
+                dateField,
               }) =>
                 updateDateFilter(
                   `${fromDate} ${fromTime}`,
-                  `${toDate} ${toTime}`
+                  `${toDate} ${toTime}`,
+                  dateField
                 )
               }
               onReset={handleResetFilter}
