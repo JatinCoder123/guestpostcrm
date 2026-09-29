@@ -18,6 +18,8 @@ import {
   ChevronRight,
   Menu,
   MoreVertical,
+  House,
+  ChevronsUpDown,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -40,6 +42,19 @@ import { THEMES, setTheme, getTheme } from "../utils/theme";
 import { preferencesAction } from "../store/Slices/preferencesSlice";
 import { showNewEmailToast } from "./showNewEmailToast";
 import { unrepliedAction } from "@/store/Slices/unrepliedEmails";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import {
+  getHomePagePreference,
+  HOME_PAGE_OPTIONS,
+  setHomePagePreference,
+} from "../utils/homePagePreference";
 /* ─────────────────────────────────────────────────────────────
    Avatar colour palette
 ───────────────────────────────────────────────────────────── */
@@ -271,8 +286,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                     rounded-full
                     border
                     border-card
-                    ${
-                      u?.status === "online" ? "bg-emerald-500" : "bg-amber-400"
+                    ${u?.status === "online" ? "bg-emerald-500" : "bg-amber-400"
                     }
                   `}
                 />
@@ -582,10 +596,9 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                             py-0.5
                             text-[10px]
                             font-semibold
-                            ${
-                              isOnline
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-amber-50 text-amber-700"
+                            ${isOnline
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-amber-50 text-amber-700"
                             }
                           `}
                         >
@@ -816,6 +829,9 @@ export function TopNav() {
   const [copied, setCopied] = useState(false);
 
   const [selectedTheme, setSelectedTheme] = useState(getTheme);
+  const [preferredHomePage, setPreferredHomePageState] = useState(
+    () => getHomePagePreference() || "/timeline",
+  );
 
   const [profilePreview, setProfilePreview] = useState(
     () =>
@@ -885,6 +901,16 @@ export function TopNav() {
     const appliedTheme = setTheme(theme);
 
     setSelectedTheme(appliedTheme);
+  };
+
+  const handleHomePageChange = (path) => {
+    if (!setHomePagePreference(path)) {
+      toast.error("Could not save your preferred home page");
+      return;
+    }
+
+    setPreferredHomePageState(path);
+    toast.success("Preferred home page saved");
   };
 
   /* ── Logout ── */
@@ -2174,11 +2200,10 @@ export function TopNav() {
                               text-left
                               transition-all
 
-                              ${
-                                active
-                                  ? "border-primary ring-2 ring-primary/20"
-                                  : "border-border hover:border-primary/50"
-                              }
+                              ${active
+                              ? "border-primary ring-2 ring-primary/20"
+                              : "border-border hover:border-primary/50"
+                            }
                             `}
                         >
                           {/* Theme preview */}
@@ -2342,6 +2367,63 @@ export function TopNav() {
                     >
                       Customize your workspace
                     </p>
+                  </div>
+
+                  <div className="mb-2 rounded-xl px-3 py-3 transition hover:bg-accent">
+                    <div className="mb-2 flex items-center gap-3">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+                        <House size={16} />
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium">
+                          Default home page
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                          Choose the first page shown when you visit the CRM
+                        </span>
+                      </span>
+                    </div>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex h-10 w-full items-center justify-between rounded-lg border border-border bg-background px-3 text-sm outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary/30"
+                        >
+                          <span>
+                            {HOME_PAGE_OPTIONS.find(
+                              ({ path }) => path === preferredHomePage,
+                            )?.label || "Home screen"}
+                          </span>
+                          <ChevronsUpDown
+                            size={15}
+                            className="text-muted-foreground"
+                          />
+                        </button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent
+                        align="end"
+                        className="z-[10000] w-[min(340px,calc(100vw-3rem))]"
+                      >
+                        <DropdownMenuLabel>Open first on Log in</DropdownMenuLabel>
+                        <DropdownMenuRadioGroup
+                          value={preferredHomePage}
+                          onValueChange={handleHomePageChange}
+                        >
+                          {HOME_PAGE_OPTIONS.map((option) => (
+                            <DropdownMenuRadioItem
+                              key={option.path}
+                              value={option.path}
+                              className="py-2"
+                            >
+                              {option.label}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
                   <button

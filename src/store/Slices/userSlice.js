@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { AUTH_URL } from "../constants";
 import { showConsole } from "../../assets/assets";
 import { apiRequest, setConfig } from "../../services/api";
+import { HOME_PAGE_PREFERENCE_KEY } from "../../utils/homePagePreference";
 
 const userSlice = createSlice({
   name: "user",
@@ -165,8 +166,14 @@ export const logout = () => {
         withCredentials: true,
       });
 
-      // Clear all localStorage
+      const preferredHomePage = localStorage.getItem(HOME_PAGE_PREFERENCE_KEY);
+
+      // Clear user data while preserving the preferred page for the next login.
       localStorage.clear();
+
+      if (preferredHomePage) {
+        localStorage.setItem(HOME_PAGE_PREFERENCE_KEY, preferredHomePage);
+      }
 
       // Optional: set intro again after clear
       localStorage.setItem("displayIntro", "true");

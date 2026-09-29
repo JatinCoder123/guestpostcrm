@@ -7,7 +7,11 @@ import { Duplicate } from "./components/pages/DuplicatePage";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
 import { useDispatch, useSelector } from "react-redux";
-import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Outlet,
+  RouterProvider,
+} from "react-router-dom";
 import RootLayout from "./RootLayout";
 import { PageContextProvider } from "./context/pageContext";
 import { getUser, userAction } from "./store/Slices/userSlice";
@@ -64,6 +68,7 @@ import CreateView from "./components/layouts/create-view/CreateView";
 import TableView from "./components/layouts/table-view/TableView";
 import LinkRemovalDetailPage from "./components/pages/LinkRemovalDetailPage";
 import InternalChats from "./components/pages/internal-chats/InternalChats";
+import { consumePreferredHomePageAfterLogin } from "./utils/homePagePreference";
 
 const router = createBrowserRouter([
   {
@@ -436,6 +441,11 @@ export default function App() {
   useEffect(() => {
     if (isAuthenticated) {
       import("./lib/tinymce");
+
+      const preferredHomePage = consumePreferredHomePageAfterLogin();
+      if (preferredHomePage) {
+        router.navigate(preferredHomePage, { replace: true });
+      }
     }
   }, [isAuthenticated]);
   useEffect(() => {
