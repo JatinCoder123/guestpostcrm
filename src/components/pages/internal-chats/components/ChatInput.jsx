@@ -1,6 +1,7 @@
-import {
-    Send,
-} from "lucide-react";
+import { Send, Smile } from "lucide-react";
+import EmojiPicker from "emoji-picker-react";
+
+import { useEffect, useRef, useState } from "react";
 
 import {
     useInternalChat,
@@ -8,6 +9,9 @@ import {
 
 
 export default function MessageInput() {
+    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+    const composerRef = useRef(null);
+    const textareaRef = useRef(null);
 
     const {
         message,
@@ -16,6 +20,39 @@ export default function MessageInput() {
         selectedUser,
         isSendingMessage,
     } = useInternalChat();
+
+    useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (composerRef.current && !composerRef.current.contains(event.target)) {
+                setIsEmojiPickerOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => document.removeEventListener("mousedown", handleOutsideClick);
+    }, []);
+
+    useEffect(() => {
+        if (!selectedUser) setIsEmojiPickerOpen(false);
+    }, [selectedUser]);
+
+    const handleEmojiClick = (emojiData) => {
+        const emoji = emojiData?.emoji ?? "";
+        if (!emoji) return;
+
+        const textarea = textareaRef.current;
+        const start = textarea?.selectionStart ?? message.length;
+        const end = textarea?.selectionEnd ?? message.length;
+        const nextMessage = `${message.slice(0, start)}${emoji}${message.slice(end)}`;
+
+        setMessage(nextMessage);
+
+        requestAnimationFrame(() => {
+            const cursorPosition = start + emoji.length;
+            textarea?.focus();
+            textarea?.setSelectionRange(cursorPosition, cursorPosition);
+        });
+    };
 
 
     const handleKeyDown =
@@ -40,9 +77,33 @@ export default function MessageInput() {
 
 
     return (
-        <div className="flex items-end gap-3">
+        <div ref={composerRef} className="relative mx-auto flex w-full max-w-4xl items-end gap-1 rounded-2xl border border-border bg-background p-2 shadow-sm transition focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20">
+
+            {isEmojiPickerOpen && (
+                <div className="absolute bottom-[calc(100%+0.75rem)] left-0 z-50 overflow-hidden rounded-2xl border border-border bg-popover shadow-2xl">
+                    <EmojiPicker
+                        onEmojiClick={handleEmojiClick}
+                        width="min(320px, calc(100vw - 2rem))"
+                        height={390}
+                        lazyLoadEmojis
+                        previewConfig={{ showPreview: false }}
+                    />
+                </div>
+            )}
+
+            <button
+                type="button"
+                onClick={() => setIsEmojiPickerOpen((open) => !open)}
+                disabled={!selectedUser || isSendingMessage}
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Choose an emoji"
+                aria-expanded={isEmojiPickerOpen}
+            >
+                <Smile size={20} />
+            </button>
 
             <textarea
+                ref={textareaRef}
                 value={message}
                 onChange={(event) => {
                     setMessage(
@@ -60,23 +121,21 @@ export default function MessageInput() {
                     isSendingMessage
                 }
                 rows={1}
+                aria-label="Message"
                 className="
+                    max-h-32
+                    min-h-10
                     flex-1
                     resize-none
-                    rounded-xl
-                    border
-                    border-slate-300
-                    bg-white
-                    px-4
-                    py-3
+                    border-0
+                    bg-transparent
+                    px-2
+                    py-2.5
                     text-sm
                     outline-none
-                    transition
-                    focus:border-blue-500
-                    focus:ring-2
-                    focus:ring-blue-100
-                    disabled:bg-slate-100
                     disabled:cursor-not-allowed
+                    disabled:opacity-60
+                    placeholder:text-muted-foreground
                 "
             />
 
@@ -93,16 +152,21 @@ export default function MessageInput() {
                 }
                 className="
                     flex
-                    h-11
-                    w-11
+                    h-10
+                    w-10
                     shrink-0
                     items-center
                     justify-center
                     rounded-xl
-                    bg-blue-600
+                    bg-search-primary
                     text-white
+                    shadow-sm
                     transition
-                    hover:bg-blue-700
+                    hover:opacity-90
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-ring
+                    focus-visible:ring-offset-2
                     disabled:cursor-not-allowed
                     disabled:opacity-50
                 "
@@ -129,7 +193,6 @@ export default function MessageInput() {
 
                 )}
             </button>
-
         </div>
     );
 }
