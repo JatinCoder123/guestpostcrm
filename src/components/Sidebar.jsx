@@ -20,6 +20,7 @@ import {
   selectVisibleGroups,
 } from "../utils/sidebarLayout";
 import { useIsDesktop } from "../hooks/useMediaQuery";
+import { getHomePagePreference } from "../utils/homePagePreference";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -383,7 +384,7 @@ export function Sidebar() {
                   alt="App logo"
                   onClick={() => {
                     if (!isDesktop) setMobileSidebarOpen(false);
-                    navigateTo("");
+                    navigateTo(getHomePagePreference() ?? "/timeline");
                   }}
                   draggable={false}
                 />
