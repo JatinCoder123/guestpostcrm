@@ -116,8 +116,6 @@ const TableView = ({
   hasNextPage,
   isFetchingNextPage,
   children,
-  canAdd = false,
-  handleAddClick,
   loading,
 }) => {
 
@@ -696,8 +694,8 @@ const TableView = ({
             <SearchBar />
           </div>}
           <div className="order-2 ml-auto flex gap-2 lg:order-none">
-            {canAdd && <IconButton
-              onClick={handleAddClick}
+            {entity === "contacts" && <IconButton
+              onClick={() => navigateTo("/entity/contacts/create")}
               className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"
               icon={Plus}
               label="Create"
