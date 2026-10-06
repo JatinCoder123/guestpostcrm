@@ -353,29 +353,7 @@ export default function LinkRemovalDetailPage() {
     id,
     isAlreadyRemoved,
     linkRemovalRecord?.status_c,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ,
+    updateLinkRemovalStatus,
   ]);
 
 
@@ -634,6 +612,11 @@ export default function LinkRemovalDetailPage() {
         id,
 
         status_c: "Removed",
+
+        ...(isDefaulter && {
+          cancel_order: String(orderPreference),
+          cancel_invoice: String(invoicePreference),
+        }),
       },
       {
         onSuccess: async (response) => {
