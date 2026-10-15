@@ -1,14 +1,16 @@
-import { BellIcon, Flame, List, Mail, MailWarning, MessageCircle, Settings, Sparkles, Unlink } from "lucide-react";
+import { BellIcon, CircleAlert, Flame, Link2, List, Mail, MailWarning, MessageCircle, Settings, Sparkles, Unlink } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
-import { useContact } from "../queries/contact.queries";
 import { SocketContext } from "../context/SocketContext";
 import IconButton from "./ui/Buttons/IconButton";
 import { PageContext } from "../context/pageContext";
 import { useLinkRemovalCount } from "../queries/backlinks.queries";
+import GpcLearningButton from "./GpcLearningButton";
+import { toast } from "react-toastify";
+import { userAction } from "../store/Slices/userSlice";
 
 
 
@@ -106,6 +108,8 @@ export default function Footer() {
               </span>
             </div>
           )}
+
+          <GpcLearningButton />
 
 
         </div>

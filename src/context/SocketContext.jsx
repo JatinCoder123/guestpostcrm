@@ -23,6 +23,7 @@ import { showConsole } from "../assets/assets.js";
 
 import { eventActions } from "../store/Slices/eventSlice.js";
 import { unrepliedAction } from "../store/Slices/unrepliedEmails.js";
+import { forceLogout } from "../store/Slices/userSlice.js";
 
 import { apiRequest } from "../services/api.js";
 
@@ -256,6 +257,9 @@ export const SocketContextProvider = ({
   const userRef =
     useRef(userIdle);
 
+  const forceLogoutHandledRef =
+    useRef(false);
+
 
   /* =====================================================
      UPDATE REFS
@@ -268,6 +272,12 @@ export const SocketContextProvider = ({
     crm,
     userIdle,
   ]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      forceLogoutHandledRef.current = false;
+    }
+  }, [isAuthenticated, user?.email]);
 
 
   /* =====================================================
@@ -574,6 +584,48 @@ export const SocketContextProvider = ({
           true,
       });
 
+    };
+
+
+    /* ===================================================
+       FORCE LOGOUT
+    =================================================== */
+
+    const forceLogoutHandler = (data) => {
+      const targetEmail =
+        typeof data?.email === "string"
+          ? data.email.trim().toLowerCase()
+          : "";
+
+      const currentUserEmail =
+        typeof user?.email === "string"
+          ? user.email.trim().toLowerCase()
+          : "";
+
+      if (
+        !targetEmail ||
+        !currentUserEmail ||
+        targetEmail !== currentUserEmail ||
+        forceLogoutHandledRef.current
+      ) {
+        return;
+      }
+
+      forceLogoutHandledRef.current = true;
+
+      const message =
+        data?.message ||
+        data?.reason ||
+        "You have been logged out by an administrator.";
+
+      toast.error(message, {
+        duration: 6000,
+        id: "force-logout",
+      });
+
+      socket.emit("presence:leave");
+      queryClient.clear();
+      dispatch(forceLogout(message));
     };
 
 
@@ -1103,6 +1155,11 @@ export const SocketContextProvider = ({
       newMailHandler
     );
 
+    socket.on(
+      "force-logout",
+      forceLogoutHandler
+    );
+
 
     /* ===================================================
        CLEANUP
@@ -1123,6 +1180,11 @@ export const SocketContextProvider = ({
       socket.off(
         "new-mail",
         newMailHandler
+      );
+
+      socket.off(
+        "force-logout",
+        forceLogoutHandler
       );
 
     };
