@@ -18,16 +18,16 @@ const InternalChatContent = () => {
         <div
             className="
                 flex
-                h-full
-                min-h-0
+                h-[calc(100dvh-9.5rem)]
+                min-h-[560px]
                 w-full
-                flex-1
+                shrink-0
                 overflow-hidden
-                rounded-xl
+                rounded-2xl
                 border
                 border-border
-                mb-10
                 bg-card
+                shadow-sm
             "
         >
             {/* =========================================
@@ -43,7 +43,7 @@ const InternalChatContent = () => {
 
                     ${selectedUser
                         ? "hidden md:flex"
-                        : "flex w-full md:w-[340px]"
+                        : "flex w-full md:w-[360px] lg:w-[380px]"
                     }
                 `}
             >
@@ -68,12 +68,10 @@ const InternalChatContent = () => {
                     }
                 `}
             >
-                {/* Header - fixed height */}
                 <div className="shrink-0">
                     <ChatHeader />
                 </div>
 
-                {/* Messages - TAKES ALL REMAINING SPACE */}
                 <div
                     className="
                         min-h-0
@@ -84,8 +82,7 @@ const InternalChatContent = () => {
                     <ChatMessages />
                 </div>
 
-                {/* Input - fixed at bottom */}
-                <div className="shrink-0">
+                <div className="shrink-0 border-t border-border bg-card px-3 py-3 sm:px-5 sm:py-4">
                     <ChatInput />
                 </div>
             </div>

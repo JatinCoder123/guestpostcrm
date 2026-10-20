@@ -20,6 +20,7 @@ import {
   selectVisibleGroups,
 } from "../utils/sidebarLayout";
 import { useIsDesktop } from "../hooks/useMediaQuery";
+import { getHomePagePreference } from "../utils/homePagePreference";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -179,10 +180,9 @@ export function Sidebar() {
    * group.
    */
   const toggleGroup = (groupId) => {
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [groupId]: !prev[groupId],
-    }));
+    setExpandedGroups((prev) =>
+      prev[groupId] ? {} : { [groupId]: true }
+    );
   };
 
   /**
@@ -207,9 +207,15 @@ export function Sidebar() {
   useEffect(() => {
     if (!visibleGroups.length) return;
 
-    setExpandedGroups(
-      Object.fromEntries(visibleGroups.map((group) => [group.id, true]))
-    );
+    setExpandedGroups((previousGroups) => {
+      const expandedGroup = visibleGroups.find(
+        (group) => previousGroups[group.id]
+      );
+
+      return {
+        [expandedGroup?.id ?? visibleGroups[0].id]: true,
+      };
+    });
 
     /**
      * Only ask for counts on fields that are actually
@@ -382,7 +388,7 @@ export function Sidebar() {
                   alt="App logo"
                   onClick={() => {
                     if (!isDesktop) setMobileSidebarOpen(false);
-                    navigateTo("");
+                    navigateTo(getHomePagePreference() ?? "/timeline");
                   }}
                   draggable={false}
                 />

@@ -11,3 +11,13 @@ export const getLinkRemovalById = async (id) =>
             },
         },
     });
+export const updateLinkRemoval = async (id, data) =>
+    http({
+        method: "POST",
+        body: {
+            action: "update",
+            module: "outr_link_queue",
+            id,
+            data,
+        },
+    });

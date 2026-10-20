@@ -6,7 +6,10 @@ import {
 import {
     useMemo,
     useState,
+    useEffect,
+    useRef,
 } from "react";
+import { createPortal } from "react-dom";
 
 import {
     useInternalChat,
@@ -24,6 +27,7 @@ export default function StartChatModal() {
 
 
     const [searchTerm, setSearchTerm] = useState("");
+    const searchInputRef = useRef(null);
 
 
     /*
@@ -73,23 +77,52 @@ export default function StartChatModal() {
         closeStartChat();
     };
 
+    useEffect(() => {
+        if (!isStartChatOpen) return undefined;
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        searchInputRef.current?.focus();
+
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") handleClose();
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isStartChatOpen]);
+
 
     if (!isStartChatOpen) {
         return null;
     }
 
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-
-            <div className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+    return createPortal(
+        <div
+            className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px] sm:p-6"
+            onMouseDown={(event) => {
+                if (event.target === event.currentTarget) handleClose();
+            }}
+            role="presentation"
+        >
+            <div
+                className="flex max-h-[min(760px,88dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="start-chat-title"
+            >
 
                 {/* Header */}
 
-                <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+                <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
 
                     <div>
-                        <h2 className="text-sm font-semibold text-foreground">
+                        <h2 id="start-chat-title" className="text-base font-semibold tracking-tight text-foreground">
                             Start New Chat
                         </h2>
 
@@ -102,7 +135,7 @@ export default function StartChatModal() {
                     <button
                         type="button"
                         onClick={handleClose}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label="Close"
                     >
                         <X size={17} />
@@ -113,9 +146,9 @@ export default function StartChatModal() {
 
                 {/* Search */}
 
-                <div className="shrink-0 border-b border-border p-3">
+                <div className="shrink-0 border-b border-border p-4">
 
-                    <div className="flex items-center gap-2 rounded-lg bg-input-background px-3 py-2">
+                    <div className="flex h-11 items-center gap-2 rounded-xl border border-transparent bg-muted/60 px-3 transition focus-within:border-ring focus-within:bg-background focus-within:ring-2 focus-within:ring-ring/20">
 
                         <Search
                             size={16}
@@ -124,6 +157,7 @@ export default function StartChatModal() {
 
 
                         <input
+                            ref={searchInputRef}
                             type="text"
                             value={searchTerm}
                             onChange={(event) =>
@@ -131,7 +165,7 @@ export default function StartChatModal() {
                                     event.target.value
                                 )
                             }
-                            placeholder="Search users..."
+                            placeholder="Search by name or email"
                             className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                         />
 
@@ -156,7 +190,7 @@ export default function StartChatModal() {
 
                 {/* Users */}
 
-                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-2">
+                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-3">
 
                     {isUsersLoading ? (
 
@@ -197,12 +231,12 @@ export default function StartChatModal() {
                                 onClick={() =>
                                     startChatWithUser(user)
                                 }
-                                className="flex w-full items-center gap-3 rounded-lg p-3 text-left transition hover:bg-muted"
+                                className="flex w-full items-center gap-3 rounded-xl p-3 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
 
                                 {/* Avatar */}
 
-                                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-search-primary text-sm font-semibold text-white">
+                                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-search-primary text-sm font-semibold text-white shadow-sm">
 
                                     {(
                                         user.name ??
@@ -243,7 +277,7 @@ export default function StartChatModal() {
                 </div>
 
             </div>
-
-        </div>
+        </div>,
+        document.body,
     );
 }

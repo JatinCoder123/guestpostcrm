@@ -18,6 +18,8 @@ export function DateRangeFilter({
   toDate,
   toTime,
   filterActive,
+  dateFields = [],
+  selectedDateField = "date_entered",
   onApply,
   onReset,
 }) {
@@ -29,6 +31,7 @@ export function DateRangeFilter({
   const [localFromTime, setLocalFromTime] = useState(fromTime);
   const [localToDate, setLocalToDate] = useState(toDate);
   const [localToTime, setLocalToTime] = useState(toTime);
+  const [localDateField, setLocalDateField] = useState(selectedDateField);
   const dropRef = useRef(null);
 
   useEffect(() => {
@@ -52,6 +55,9 @@ export function DateRangeFilter({
     toDate,
     toTime,
   ]);
+  useEffect(() => {
+    setLocalDateField(selectedDateField || "date_entered");
+  }, [selectedDateField]);
   function applyPreset(id) {
     const { from, ft, to, tt } = resolvePreset(id);
     setLocalFromDate(from);
@@ -117,41 +123,50 @@ export function DateRangeFilter({
   return (
     <div className="relative" ref={dropRef}>
       {/* Trigger */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-3 py-1.5 flex items-center gap-2 sm:px-5 sm:py-1 sm:gap-3">
-        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-          <CalendarDays size={15} className="text-blue-700" />
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen((value) => !value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setOpen((value) => !value);
+          }
+        }}
+        className="bg-card border border-border rounded-xl shadow-sm px-3 py-1.5 flex items-center gap-2 cursor-pointer sm:px-5 sm:py-1 sm:gap-3"
+      >
+        <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+          <CalendarDays size={15} className="text-secondary-foreground" />
         </div>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-2 flex-1 min-w-0 text-left"
-        >
+        <div className="flex items-center gap-2 flex-1 min-w-0 text-left">
           <div className="flex flex-col min-w-0">
             {activePresetLabel && (
-              <span className="text-[9px] font-black text-blue-600 leading-none mb-0.5">
+              <span className="text-[9px] font-black text-primary leading-none mb-0.5">
                 {activePresetLabel}
               </span>
             )}
             <span
-              className={`text-sm font-semibold truncate ${filterActive ? "text-gray-800" : "text-gray-400"}`}
+              className={`text-sm font-semibold truncate ${filterActive ? "text-foreground" : "text-muted-foreground"}`}
             >
               {rangeLabel}
             </span>
           </div>
           <ChevronDown
             size={14}
-            className={`text-gray-400 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            className={`text-muted-foreground flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           />
-        </button>
+        </div>
         <div className="flex flex-shrink-0 items-center gap-2">
           {filterActive && (
             <button
-              onClick={() => {
+              onClick={(event) => {
+                event.stopPropagation();
                 setActivePreset(null);
                 setLastNMinutes(null);
                 setOpen(false);
                 onReset();
               }}
-              className="flex items-center gap-1.5 px-2 py-1.5 bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl hover:bg-gray-200 transition-all cursor-pointer sm:px-3 sm:py-2"
+              className="flex items-center gap-1.5 px-2 py-1.5 bg-muted text-muted-foreground text-xs font-semibold rounded-xl hover:bg-accent hover:text-accent-foreground transition-all cursor-pointer sm:px-3 sm:py-2"
             >
               <RefreshCcw size={11} /> Reset
             </button>
@@ -162,15 +177,15 @@ export function DateRangeFilter({
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute left-0 top-full mt-2 z-[9999] w-[min(520px,calc(100vw_-_1.5rem))] max-h-[70vh] overflow-y-auto bg-white border border-gray-200 rounded-2xl shadow-2xl sm:max-h-none sm:overflow-visible"
+          className="absolute left-0 top-full mt-2 z-[9999] w-[min(520px,calc(100vw_-_1.5rem))] max-h-[70vh] overflow-y-auto bg-popover text-popover-foreground border border-border rounded-2xl shadow-2xl sm:max-h-none sm:overflow-visible"
         >
           <div
             className="flex flex-col rounded-t-2xl sm:flex-row"
             style={{ borderRadius: "16px 16px 0 0", overflow: "hidden" }}
           >
             {/* Preset sidebar */}
-            <div className="w-full bg-gray-50 border-b border-gray-100 py-2 flex-shrink-0 sm:w-44 sm:border-b-0 sm:border-r">
-              <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 px-4 pt-2 pb-2">
+            <div className="w-full bg-muted border-b border-border py-2 flex-shrink-0 sm:w-44 sm:border-b-0 sm:border-r">
+              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-4 pt-2 pb-2">
                 Quick Select
               </p>
               <div className="grid grid-cols-2 gap-1 px-2 pb-1 sm:grid-cols-1 sm:gap-0 sm:px-0 sm:pb-0">
@@ -179,8 +194,8 @@ export function DateRangeFilter({
                     key={p.id}
                     onClick={() => applyPreset(p.id)}
                     className={`w-full text-left px-3 py-2.5 text-xs font-semibold transition-all rounded-lg sm:rounded-none sm:px-4 ${activePreset === p.id
-                      ? "bg-blue-700 text-white"
-                      : "text-gray-600 hover:bg-white hover:text-gray-900"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-card hover:text-foreground"
                       }`}
                   >
                     {p.label}
@@ -191,19 +206,42 @@ export function DateRangeFilter({
 
             {/* Right panel */}
             <div className="flex-1 p-4 flex flex-col gap-4 min-w-0 sm:p-5">
+              {dateFields.length > 0 && (
+                <div>
+                  <label
+                    htmlFor="date-filter-field"
+                    className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2 block"
+                  >
+                    Date Field
+                  </label>
+                  <select
+                    id="date-filter-field"
+                    value={localDateField}
+                    onChange={(event) => setLocalDateField(event.target.value)}
+                    className="w-full rounded-xl border border-border bg-card px-3 py-2.5 text-xs font-semibold text-foreground outline-none transition-all hover:border-primary focus:border-primary focus:ring-2 focus:ring-ring"
+                  >
+                    {dateFields.map((field) => (
+                      <option key={field.value} value={field.value}>
+                        {field.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               {/* Selected Period */}
               <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">
                   Selected Period
                 </p>
                 <div
-                  className={`rounded-xl px-4 py-3 border ${activePresetLabel ? "bg-blue-50 border-blue-100" : "bg-gray-50 border-gray-100"}`}
+                  className={`rounded-xl px-4 py-3 border ${activePresetLabel ? "bg-secondary border-border" : "bg-muted border-border"}`}
                 >
-                  <p className="text-sm font-bold text-blue-700">
+                  <p className="text-sm font-bold text-secondary-foreground">
                     {activePresetLabel || "Custom Range"}
                   </p>
                   {filterActive && (
-                    <p className="text-xs text-blue-600 mt-0.5 font-medium">
+                    <p className="text-xs text-primary mt-0.5 font-medium">
                       {fmtDisplay(localFromDate, localFromTime)} →{" "}
                       {fmtDisplay(localToDate, localToTime)}
                     </p>
@@ -214,10 +252,10 @@ export function DateRangeFilter({
               {/* N-Minutes filter — only for Today */}
               {activePreset === "equals" && (
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
-                    <Clock size={9} className="text-gray-400" />
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <Clock size={9} className="text-muted-foreground" />
                     Filter by Last N Minutes
-                    <span className="normal-case font-medium text-gray-300 tracking-normal">
+                    <span className="normal-case font-medium text-muted-foreground tracking-normal">
                       (optional)
                     </span>
                   </p>
@@ -229,15 +267,15 @@ export function DateRangeFilter({
                           key={String(f.value)}
                           onClick={() => applyNMinutes(f.value)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${isActive
-                            ? "bg-blue-700 text-white border-blue-700 shadow-sm"
-                            : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50"
+                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                            : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary hover:bg-secondary"
                             }`}
                         >
                           {f.value !== null && (
                             <Clock
                               size={10}
                               className={
-                                isActive ? "text-blue-200" : "text-gray-400"
+                                isActive ? "text-primary-foreground" : "text-muted-foreground"
                               }
                             />
                           )}
@@ -247,7 +285,7 @@ export function DateRangeFilter({
                     })}
                   </div>
                   {nMinSummary && (
-                    <p className="text-[11px] text-gray-400 mt-2.5 font-medium">
+                    <p className="text-[11px] text-muted-foreground mt-2.5 font-medium">
                       {nMinSummary}
                     </p>
                   )}
@@ -270,7 +308,7 @@ export function DateRangeFilter({
                         dm,
                       }) => (
                         <div key={key}>
-                          <label className="text-[9px] font-black uppercase text-gray-400 mb-1.5 block">
+                          <label className="text-[9px] font-black uppercase text-muted-foreground mb-1.5 block">
                             {label}
                           </label>
                           <button
@@ -279,8 +317,8 @@ export function DateRangeFilter({
                               setOpenPicker(openPicker === key ? null : key);
                             }}
                             className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${openPicker === key
-                              ? "border-blue-500 bg-blue-50 text-blue-700"
-                              : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
+                              ? "border-primary bg-secondary text-secondary-foreground"
+                              : "border-border text-foreground hover:border-primary hover:bg-secondary"
                               }`}
                           >
                             {fmtDtDisplay(dtFromStrings(date, time))}
@@ -305,7 +343,7 @@ export function DateRangeFilter({
                       ),
                     )}
                   </div>
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 text-xs text-blue-700 font-semibold">
+                  <div className="bg-secondary border border-border rounded-xl px-4 py-2.5 text-xs text-secondary-foreground font-semibold">
                     {fmtDisplay(localFromDate, localFromTime)} →{" "}
                     {fmtDisplay(localToDate, localToTime)}
                   </div>
@@ -315,13 +353,13 @@ export function DateRangeFilter({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-100 px-5 py-3 flex justify-end gap-2 bg-gray-50 rounded-b-2xl">
+          <div className="border-t border-border px-5 py-3 flex justify-end gap-2 bg-muted rounded-b-2xl">
             <button
               onClick={() => {
                 setOpen(false);
                 setOpenPicker(null);
               }}
-              className="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-foreground bg-card border border-border rounded-xl hover:bg-accent hover:text-accent-foreground transition-all cursor-pointer"
             >
               Cancel
             </button>
@@ -334,9 +372,10 @@ export function DateRangeFilter({
                   fromTime: localFromTime,
                   toDate: localToDate,
                   toTime: localToTime,
+                  dateField: localDateField,
                 });
               }}
-              className="px-6 py-2 text-xs font-bold bg-blue-700 text-white rounded-xl hover:bg-blue-800 transition-all cursor-pointer"
+              className="px-6 py-2 text-xs font-bold bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-all cursor-pointer"
             >
               Apply Filter
             </button>

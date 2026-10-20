@@ -1,5 +1,6 @@
 import React, {
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 
 import {
   useBacklink,
@@ -31,6 +33,11 @@ import {
 import {
   getInvoiceById,
 } from "../../api/invoice.api";
+
+import {
+  updateLinkRemoval,
+} from "../../api/linkRemoval.api";
+import { queryClient } from "@/lib/queryClient";
 
 
 const Link = ({ href, children, title, className = "" }) => (
@@ -118,6 +125,31 @@ export default function LinkRemovalDetailPage() {
   const [latestLinkCount, setLatestLinkCount] = useState(null);
 
   const [processError, setProcessError] = useState("");
+  const linkRemovalStatusUpdatedRef = useRef(false);
+
+  const {
+    mutate: updateLinkRemovalStatus,
+  } = useMutation({
+    mutationFn: ({ recordId, data }) =>
+      updateLinkRemoval(recordId, data),
+
+    onSuccess: () => {
+      toast.success("Link removed successfully.");
+      queryClient.invalidateQueries({ queryKey: ['entity', 'link-removal'] })
+    },
+    onError: (error) => {
+      console.error(
+        "Failed to update link-removal status:",
+        error
+      );
+
+      toast.error(
+        error?.response?.data?.message ||
+        error?.message ||
+        "Could not update the link-removal status."
+      );
+    },
+  });
 
   /**
    * --------------------------------------------------
@@ -214,6 +246,26 @@ export default function LinkRemovalDetailPage() {
   const currentLinkCount =
     extraction?.total_links ?? links.length;
 
+  const extractionErrorMessage = String(
+    extractionError?.response?.data?.message ||
+    extractionError?.message ||
+    ""
+  );
+
+  /**
+   * The extractor can report a missing source page either through the HTTP
+   * response status or in its own error message.
+   */
+  const extractionStatus = Number(
+    extractionError?.response?.status
+  );
+
+  const isSourcePageUnavailable =
+    extractionStatus === 404 ||
+    extractionStatus === 410 ||
+    /(?:http\s*)?(?:404|410)\b/i.test(extractionErrorMessage) ||
+    /page\s+(?:was\s+)?not\s+found/i.test(extractionErrorMessage);
+
 
   /**
    * --------------------------------------------------
@@ -253,15 +305,56 @@ export default function LinkRemovalDetailPage() {
    * ALREADY REMOVED
    * --------------------------------------------------
    *
-   * Only consider it already removed after the
-   * extraction request has completed successfully.
+   * A backlink is also considered removed when its source page no longer
+   * exists. In that case there is nowhere for the backlink to remain live.
    */
   const isAlreadyRemoved =
     !isExtractionLoading &&
-    !extractionError &&
-    Boolean(selectedAnchor) &&
-    Boolean(selectedTargetUrl) &&
-    !backlinkStillExists;
+    (
+      isSourcePageUnavailable ||
+      (
+        !extractionError &&
+        Boolean(selectedAnchor) &&
+        Boolean(selectedTargetUrl) &&
+        !backlinkStillExists
+      )
+    );
+
+
+  /**
+   * Keep the link-removal queue record in sync when the
+   * backlink has already disappeared from the source page.
+   */
+  useEffect(() => {
+    const currentStatus = String(
+      linkRemovalRecord?.status_c || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    if (
+      !id ||
+      !isAlreadyRemoved ||
+      currentStatus === "removed" ||
+      linkRemovalStatusUpdatedRef.current
+    ) {
+      return;
+    }
+
+    linkRemovalStatusUpdatedRef.current = true;
+
+    updateLinkRemovalStatus({
+      recordId: id,
+      data: {
+        status_c: "Removed",
+      },
+    });
+  }, [
+    id,
+    isAlreadyRemoved,
+    linkRemovalRecord?.status_c,
+    updateLinkRemovalStatus,
+  ]);
 
 
   /**
@@ -520,15 +613,10 @@ export default function LinkRemovalDetailPage() {
 
         status_c: "Removed",
 
-        ...(isDefaulter
-          ? {
-            cancel_order:
-              Number(orderPreference),
-
-            cancel_invoice:
-              Number(invoicePreference),
-          }
-          : {}),
+        ...(isDefaulter && {
+          cancel_order: String(orderPreference),
+          cancel_invoice: String(invoicePreference),
+        }),
       },
       {
         onSuccess: async (response) => {
@@ -536,6 +624,7 @@ export default function LinkRemovalDetailPage() {
             "Backlink update response:",
             response
           );
+
 
           if (response?.success === false) {
             toast.error(
@@ -554,6 +643,7 @@ export default function LinkRemovalDetailPage() {
           toast.success(
             "Link removed successfully."
           );
+          queryClient.invalidateQueries({ queryKey: ['entity', 'link-removal'] })
 
           if (isDefaulter) {
             setPreferencesConfirmed(true);
@@ -732,32 +822,30 @@ export default function LinkRemovalDetailPage() {
           )}
 
 
-      {extractionError?.response?.data?.message?.includes(
-  "Target URL returned HTTP 410."
-) ? (
-<div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
-  <div className="min-w-0">
-    <p className="font-semibold">
-      This source page is no longer available
-    </p>
-    <p className="mt-1 text-sm text-amber-800">
-      The page can't be found so its extracted links can’t be checked.
-    </p>
-    <a
-      href={sourceUrl}
-      target="_blank"
-      rel="noreferrer"
-      className="mt-3 block break-all text-sm font-medium text-teal-700 underline decoration-teal-300 underline-offset-2 hover:text-teal-900"
-    >
-      {sourceUrl}
-    </a>
-  </div>
-</div>
-) : (
-  !isExtractionLoading &&( extractionError?.response?.data?.message ||
-  extractionError?.message ||
-  "Could not fetch links from this source URL.")
-)}
+          {isSourcePageUnavailable ? (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
+              <div className="min-w-0">
+                <p className="font-semibold">
+                  This source page is no longer available
+                </p>
+                <p className="mt-1 text-sm text-amber-800">
+                  The page can't be found, so this backlink has been marked as removed.
+                </p>
+                <a
+                  href={sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 block break-all text-sm font-medium text-teal-700 underline decoration-teal-300 underline-offset-2 hover:text-teal-900"
+                >
+                  {sourceUrl}
+                </a>
+              </div>
+            </div>
+          ) : (
+            !isExtractionLoading && (extractionError?.response?.data?.message ||
+              extractionError?.message ||
+              "Could not fetch links from this source URL.")
+          )}
 
 
           {/* Already removed */}

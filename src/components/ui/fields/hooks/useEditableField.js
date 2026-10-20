@@ -46,16 +46,16 @@ export default function useEditableField({
         setEditing(false);
     };
 
-    const save = () => {
+    const save = (nextValue = currentValue) => {
 
         setEditing(false);
 
-        if (currentValue === value) return;
+        if (nextValue === value) return;
         onSave?.({
             field,
             record,
             oldValue: value,
-            value: currentValue,
+            value: nextValue,
         });
     };
 

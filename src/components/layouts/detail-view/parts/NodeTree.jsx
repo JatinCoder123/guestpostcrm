@@ -48,7 +48,7 @@ function SortableNode({
   const isNew = Boolean(newKeys?.has(rowId));
   const dropTarget = dropTargetId === rowId;
 
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const sortable = useSortable({
     id: rowId,

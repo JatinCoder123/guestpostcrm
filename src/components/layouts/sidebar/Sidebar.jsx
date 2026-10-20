@@ -1053,8 +1053,8 @@ const Sidebar = () => {
    *
    * This runs after every reorder, so it must not disturb
    * anything the user was doing. The selected record and the
-   * expanded groups are preserved; only groups the editor has
-   * not seen before get expanded by default, and the selection
+   * expanded groups are preserved; groups the editor has not
+   * seen before start collapsed, and the selection
    * is only replaced when the record it pointed at is gone.
    *
    * Any scope with a missing or duplicate rank is reported
@@ -1086,13 +1086,13 @@ const Sidebar = () => {
       return normalized;
     }
 
-    /* Default new groups to expanded, leave the rest alone. */
+    /* Default groups loaded from the server to collapsed. */
     setExpandedGroups((current) => {
       const next = { ...current };
 
       normalized.forEach((group) => {
         if (next[group.id] === undefined) {
-          next[group.id] = true;
+          next[group.id] = false;
         }
       });
 
@@ -2370,13 +2370,13 @@ const Sidebar = () => {
                         selectedItem?.type === "group" &&
                         selectedItem?.id === group.id
                       }
-                      expanded={search ? true : (expandedGroups[group.id] ?? true)}
+                      expanded={search ? true : (expandedGroups[group.id] ?? false)}
                       disabled={savingLayout}
                       onSelect={selectGroup}
                       onToggleExpanded={() =>
                         setExpandedGroups((current) => ({
                           ...current,
-                          [group.id]: !(current[group.id] ?? true),
+                          [group.id]: !(current[group.id] ?? false),
                         }))
                       }
                       onToggle={toggleGroup}

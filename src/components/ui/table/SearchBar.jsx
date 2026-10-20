@@ -14,7 +14,7 @@ import {
 
 import {
     AnimatePresence,
-    motion,
+    motion as Motion,
 } from "framer-motion";
 
 import { useTableContext } from "./Table";
@@ -199,8 +199,17 @@ function SearchBar() {
             className="relative w-full min-w-0 lg:w-auto"
         >
             {/* SEARCH WRAPPER */}
-            <motion.div
+            <Motion.div
                 layout
+                role="button"
+                tabIndex={0}
+                onClick={() => setOpen(true)}
+                onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setOpen(true);
+                    }
+                }}
                 transition={{
                     type: "spring",
                     stiffness: 260,
@@ -215,15 +224,15 @@ function SearchBar() {
                     py-1
                     rounded-xl
                     border
-                    bg-white/90
+                    bg-card/90
                     backdrop-blur-xl
                     shadow-sm
                     transition-all
                     duration-300
 
                     ${expanded
-                        ? "w-full lg:w-[520px] border-blue-100 shadow-[0_10px_30px_rgba(59,130,246,0.08)]"
-                        : "w-full lg:w-[160px] border-gray-200 hover:border-gray-300"
+                        ? "w-full lg:w-[520px] border-primary shadow-lg"
+                        : "w-full lg:w-[160px] border-border hover:border-primary"
                     }
                 `}
             >
@@ -240,8 +249,8 @@ function SearchBar() {
                         shrink-0
 
                         ${expanded
-                            ? "bg-blue-50 text-blue-600"
-                            : "bg-gray-100 text-gray-500"
+                            ? "bg-secondary text-secondary-foreground"
+                            : "bg-muted text-muted-foreground"
                         }
                     `}
                 >
@@ -261,7 +270,7 @@ function SearchBar() {
                         overflow-y-auto
                         overflow-x-hidden
                         scrollbar-thin
-                        scrollbar-thumb-gray-200
+                        scrollbar-thumb-border
                         scrollbar-track-transparent
                     "
                 >
@@ -284,7 +293,7 @@ function SearchBar() {
                                     column.icon;
 
                                 return (
-                                    <motion.div
+                                    <Motion.div
                                         key={accessor}
                                         layout
                                         initial={{
@@ -311,10 +320,10 @@ function SearchBar() {
                                             h-8
                                             px-2.5
                                             rounded-xl
-                                            bg-blue-50
+                                            bg-secondary
                                             border
-                                            border-blue-100
-                                            text-blue-700
+                                            border-border
+                                            text-secondary-foreground
                                             text-xs
                                             font-medium
                                             shrink-0
@@ -344,13 +353,13 @@ function SearchBar() {
                                                 w-4
                                                 h-4
                                                 rounded-full
-                                                hover:bg-blue-100
+                                                hover:bg-accent
                                                 transition
                                             "
                                         >
                                             <X className="w-3 h-3" />
                                         </button>
-                                    </motion.div>
+                                    </Motion.div>
                                 );
                             }
                         )}
@@ -359,7 +368,7 @@ function SearchBar() {
                     {/* INPUT */}
                     <AnimatePresence>
                         {expanded && (
-                            <motion.input
+                            <Motion.input
                                 initial={{
                                     opacity: 0,
                                     width: 0,
@@ -389,8 +398,8 @@ function SearchBar() {
                                     bg-transparent
                                     z-[999]
                                     text-sm
-                                    text-gray-700
-                                    placeholder:text-gray-400
+                                    text-foreground
+                                    placeholder:text-muted-foreground
                                     focus:outline-none
                                 "
                             />
@@ -399,7 +408,7 @@ function SearchBar() {
 
                     {/* EMPTY PLACEHOLDER */}
                     {!expanded && (
-                        <motion.span
+                        <Motion.span
                             initial={{
                                 opacity: 0,
                             }}
@@ -411,23 +420,22 @@ function SearchBar() {
                             }}
                             className="
                                 text-sm
-                                text-gray-400
+                                text-muted-foreground
                                 whitespace-nowrap
                             "
                         >
                             Search
-                        </motion.span>
+                        </Motion.span>
                     )}
                 </div>
 
                 {/* COLUMN BUTTON */}
                 <button
                     type="button"
-                    onClick={() =>
-                        setOpen(
-                            (prev) => !prev
-                        )
-                    }
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        setOpen((prev) => !prev);
+                    }}
                     className={`
                         flex
                         items-center
@@ -439,19 +447,19 @@ function SearchBar() {
                         shrink-0
 
                         ${open
-                            ? "bg-blue-600 text-white shadow-sm"
-                            : "text-gray-500 hover:bg-gray-100"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:bg-muted"
                         }
                     `}
                 >
                     <Columns3 className="w-4 h-4" />
                 </button>
-            </motion.div>
+            </Motion.div>
 
             {/* DROPDOWN */}
             <AnimatePresence>
                 {open && (
-                    <motion.div
+                    <Motion.div
                         initial={{
                             opacity: 0,
                             y: -6,
@@ -484,9 +492,10 @@ function SearchBar() {
                                 overflow-hidden
                                 rounded-2xl
                                 border
-                                border-gray-200
-                                bg-white
-                                shadow-[0_20px_40px_rgba(0,0,0,0.12)]
+                                border-border
+                                bg-popover
+                                text-popover-foreground
+                                shadow-2xl
                             "
                         >
                             {/* HEADER */}
@@ -498,7 +507,7 @@ function SearchBar() {
                                     px-4
                                     py-3
                                     border-b
-                                    border-gray-100
+                                    border-border
                                 "
                             >
                                 <div>
@@ -506,7 +515,7 @@ function SearchBar() {
                                         className="
                                             text-sm
                                             font-semibold
-                                            text-gray-800
+                                            text-foreground
                                         "
                                     >
                                         Search Columns
@@ -515,7 +524,7 @@ function SearchBar() {
                                     <p
                                         className="
                                             text-xs
-                                            text-gray-400
+                                            text-muted-foreground
                                             mt-0.5
                                         "
                                     >
@@ -533,8 +542,8 @@ function SearchBar() {
                                             className="
                                             text-xs
                                             font-medium
-                                            text-blue-600
-                                            hover:text-blue-700
+                                            text-primary
+                                            hover:opacity-80
                                         "
                                         >
                                             Clear
@@ -583,8 +592,8 @@ function SearchBar() {
                                                     transition-all
 
                                                     ${active
-                                                        ? "bg-blue-50 text-blue-700"
-                                                        : "hover:bg-gray-50 text-gray-700"
+                                                        ? "bg-secondary text-secondary-foreground"
+                                                        : "hover:bg-muted text-foreground"
                                                     }
                                                 `}
                                             >
@@ -605,8 +614,8 @@ function SearchBar() {
                                                             rounded-lg
 
                                                             ${active
-                                                                ? "bg-blue-100"
-                                                                : "bg-gray-100"
+                                                                ? "bg-accent"
+                                                                : "bg-muted"
                                                             }
                                                         `}
                                                     >
@@ -633,7 +642,7 @@ function SearchBar() {
                                 )}
                             </div>
                         </div>
-                    </motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
         </div>
