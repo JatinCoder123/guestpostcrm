@@ -1161,7 +1161,7 @@ export function TopNav() {
                 </div>
               </motion.div>
             ) : (
-              <GlobalSearch />
+              <GlobalSearch key="search" />
             )}
           </AnimatePresence>
         </div>

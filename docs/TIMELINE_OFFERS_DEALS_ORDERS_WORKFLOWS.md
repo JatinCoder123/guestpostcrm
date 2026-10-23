@@ -82,6 +82,118 @@ The circular Quick Actions grid is `src/components/ActionButton.jsx`, mounted by
 | Guest Post order template | `useTemplateByName("OrderORG")` | Save & Send / Update & Send for guest-post orders |
 | Link Insertion order template | `useTemplateByName("LI_ORDER_TEMPLATE")` | Save & Send / Update & Send for link-insertion orders |
 
+How these templates are fetched and filled is described in the next section.
+
+## Email templates for sending offers, deals, and orders
+
+Every "Send" in the offer, deal, and order flows works the same way: fetch a fixed CRM email template by name, replace its `{{...}}` placeholders in the browser, and open the reply screen with the result. The backend never fills the template; it only receives the final HTML when the user presses Send on the reply screen.
+
+### Step 1 — Fetch the template by name
+
+| Flow | Template name | Fetched on |
+|---|---|---|
+| Offer | `OfferORG` | Create Offer, Thread Offers |
+| Deal | `DealORG` | Create Deal, Thread Deals, Deal Detection modal (Inbox) |
+| Order, Guest Post | `OrderORG` | Create Order, Edit Order, Thread Orders |
+| Order, Link Insertion | `LI_ORDER_TEMPLATE` | Create Order, Edit Order, Thread Orders |
+
+The template is requested when the screen loads, not when Send is clicked, so it is usually ready by then. Order screens fetch both order templates and pick one at send time.
+
+| | |
+|---|---|
+| Hook / API | `useTemplateByName(name)` → `getTemplateByName(name)` in `src/api/template.api.js` |
+| Request | `POST <CRM base>?entryPoint=get_post_all&action_type=get_data` (via `apiRequest`) |
+| Headers | `x-api-key: CREATE_DEAL_API_KEY` |
+| Body | `{ "module": "EmailTemplates", "where": { "name": "<template name>" } }` |
+| Response used | `data[0].body_html` — the template's HTML with placeholders |
+| Cache | React Query key `templateKeys.name(name)`, `staleTime` 10 minutes |
+
+If the response is empty or not loaded yet, `body_html` falls back to `""` and the reply opens with an empty body.
+
+### Step 2 — Insert values into the template
+
+#### Offers and deals: `{{USER_EMAIL}}` and `{{TABLE}}`
+
+Offers and deals share one approach. A website/amount table is built with `buildTable(rows, type, websiteKey, amountKey)` in `src/components/Preview.jsx`, then two placeholders are replaced:
+
+| Placeholder | Replaced with |
+|---|---|
+| `{{USER_EMAIL}}` | The contact's email |
+| `{{TABLE}}` | The HTML table from `buildTable` |
+
+| Flow | Rows used for the table | Website field | Amount field |
+|---|---|---|---|
+| Offer | The offers being sent | `website` | `our_offer_c` |
+| Deal | The deals being sent | `website_c` | `dealamount` |
+
+`buildTable` output:
+
+- An inline-styled HTML `<table>` with two columns, **Website** and **Amount**.
+- One row per record; the amount is prefixed with `$`.
+- No rows → `<p>No data available</p>` instead of a table.
+
+Which rows go into the table depends on where Send was clicked:
+
+| Where | Rows sent | Email used |
+|---|---|---|
+| Create Offer / Create Deal → Save & Send | The new rows just entered in the form | The email from the page |
+| Thread view → Save & Send (after inline edit) | The edited records | Extracted from the first record's `real_name` (fallback `email_c` for offers, `email` for deals) |
+| Thread view → Send (selected) | The selected records | Same as above |
+| Thread view → summary Send button | All currently shown records (active offers / current deals) | Same as above |
+| Deal Detection modal → Send | The detected deals | The email from the page |
+
+In Brand timeline mode, the thread ID is looked up from the contact list by that email instead of using the current thread.
+
+#### Orders: field placeholders
+
+Orders use `createPreviewOrder({ templateData, order, userEmail })` in `src/components/PreviewOrder.jsx`. The template is chosen by order type: `order_type == "GUEST POST"` → `OrderORG`, anything else → `LI_ORDER_TEMPLATE`.
+
+Link placeholders read from the order's **first `dofollow` backlink** (`seo_backlinks` entry with `link_type == "dofollow"`).
+
+| Placeholder | Value | If missing |
+|---|---|---|
+| `{{ORDER_ID}}` | `order.order_id` | `_` |
+| `{{NAME}}` | Contact email (`userEmail`) | — |
+| `{{DATE}}` | `order.date_modified_formatted` | `_` |
+| `{{STATUS}}` | `order.order_status` | `_` |
+| `{{ORDER_TYPE}}` | `order.order_type` | no fallback (prints `undefined`) |
+| `{{AMOUNT}}` | `order.total_amount_c` | `_` |
+| `{{LINK_backlink_url}}` | dofollow link `backlink_url` | empty |
+| `{{LINK_NAME}}` | dofollow link `name` | empty |
+| `{{LINK_gp_doc_url_c}}` | dofollow link `gp_doc_url_c` | empty |
+| `{{LINK_target_url_c}}` | dofollow link `target_url_c` | empty |
+| `{{Live Link}}` | dofollow link `target_url_c` | empty |
+| `{{LINK_anchor_text_c}}` | dofollow link `anchor_text_c` | empty |
+| `{{Invoice_link}}` | `order.invoice_link_c` | empty |
+
+Order data passed in per screen:
+
+| Where | Order data | Notes |
+|---|---|---|
+| Create Order → Save & Send | The form state with `order_status` forced to `"New"` | Form has no order ID, amount, modified date, or `link_type`, so those placeholders render as `_` or empty. |
+| Edit Order → Update & Send | The edited order record | Full record from `get_orders`. |
+| Thread Orders → Send icon / Update & Send | The order record | Also passes `order.invoice_pdf` as `htmlFile` (see Step 3). |
+
+All replacements use `String.replace` with a string pattern, so **only the first occurrence** of each placeholder is replaced. A placeholder used twice in a template stays raw the second time.
+
+### Step 3 — Open the reply screen and send
+
+The filled HTML is passed to `handleMove({ email, threadId, reply: html, htmlFile? })` from `useThreadContext`. It sets the current email/thread and navigates to `/thread/reply` with `state.initialContent = html`.
+
+On the reply screen (`src/components/pages/threads/Thread.jsx`):
+
+1. `initialContent` is loaded into the editor. The user can review and edit it before sending.
+2. If `htmlFile` was passed (Thread Orders invoice), it is converted to a PDF via `POST fetchGpc type=get_pdf` with `{ html, id }` and added as an attachment.
+3. On Send, the thread is verified with `GET fetchGpc type=re_check_thread&thread_id=<id>`; the email must be in the returned list.
+4. The reply is sent through `POST fetchGpc type=thread_reply` as `multipart/form-data` with `threadId`, `replyBody` (editor HTML), `email`, `current_email`, `force_send=1`, and `attachments[]`.
+
+### When Send runs relative to save
+
+| Button | Order of events |
+|---|---|
+| Save & Send / Update & Send | Record is created/updated first. The template is filled only after the Redux success message (`...Created` / `...Updated`) arrives. On error, nothing is sent. |
+| Send (thread views, Deal Detection) | No save. The template is filled from the current records immediately. |
+
 ## Offers
 
 CRM module names used are `outr_offer` for records and `Contacts` for the related contact.
@@ -289,6 +401,10 @@ Mark Tag is dynamic and uses the selected tag record's `memo_c` instead of a con
 8. `createLink` calls `applyHashtag` with an `email` variable that is not declared in that thunk, so that side effect would fail if the path runs.
 9. The source comments contain outdated memo descriptions in a few order methods. The table above reflects the memo numbers actually passed in executable code.
 10. No order-record deletion API is wired into the inspected UI; only order SEO backlink deletion exists.
+11. Template placeholders are replaced with `String.replace` and a string pattern, so only the first occurrence of each placeholder is filled.
+12. On Create Order → Save & Send, the form has no `order_id`, `total_amount_c`, `date_modified_formatted` (the form sets `date_entered_formatted` instead), or backlink `link_type`. `{{ORDER_ID}}`, `{{AMOUNT}}`, and `{{DATE}}` render as `_`, and all `{{LINK_...}}` placeholders render empty.
+13. `{{ORDER_TYPE}}` has no fallback and prints `undefined` when the order has no type.
+14. `generatePDF` checks `response.ok` and calls `response.blob()`, but `fetchGpc` returns the parsed axios `data`, not a fetch `Response`. The invoice PDF attachment from Thread Orders is therefore likely to fail with "Failed to load attachments".
 
 ## Source map
 
@@ -301,4 +417,5 @@ Mark Tag is dynamic and uses the selected tag record's `memo_c` instead of a con
 | Offers | `src/components/pages/offers/*`, `src/store/Slices/offers.js`, `src/api/offers.api.js`, `src/queries/offers.queries.js` |
 | Deals | `src/components/pages/deals/*`, `src/store/Slices/deals.js`, `src/api/deals.api.js`, `src/queries/deals.queries.js` |
 | Orders | `src/components/pages/orders/*`, `src/store/Slices/orders.js`, `src/api/orders.api.js`, `src/queries/orders.queries.js` |
+| Send templates | `src/api/template.api.js`, `src/queries/template.queries.js`, `src/components/Preview.jsx`, `src/components/PreviewOrder.jsx`, `src/components/DealDetectionModal.jsx`, `src/hooks/useThreadContext.js`, `src/components/pages/threads/Thread.jsx` |
 | Dropdown data | `src/api/marktag.api.js`, `src/api/users.api.js`, `src/api/web.api.js` and their query hooks |

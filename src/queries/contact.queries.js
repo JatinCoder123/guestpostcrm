@@ -14,6 +14,7 @@ import {
     updateContact,
     getContactStats,
     updateAccount,
+    searchContacts,
 } from "../api/contact.api";
 import toast from "react-hot-toast";
 import { useContext } from "react";
@@ -44,6 +45,24 @@ export const contactKeys = {
         "email",
         email,
     ],
+
+    search: (term) => [
+        "contacts",
+        "search",
+        term,
+    ],
+};
+
+/**
+ * Search Contacts (global search suggestions)
+ */
+export const useContactSearch = (term) => {
+    return useQuery({
+        queryKey: contactKeys.search(term),
+        queryFn: () => searchContacts(term),
+        enabled: term.length >= 2,
+        staleTime: 60 * 1000,
+    });
 };
 
 /**

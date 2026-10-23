@@ -164,7 +164,8 @@ const TableView = ({
     const fields = new Map();
 
     columns.forEach((column) => {
-      if (String(column?.type).toLowerCase() !== "date" || !column?.accessor) {
+      // Any date-like type ("date", "datetime", ...) is filterable
+      if (!String(column?.type).toLowerCase().includes("date") || !column?.accessor) {
         return;
       }
 
