@@ -35,6 +35,7 @@ import { useThread } from "../../../queries/threads.queries.js";
 import { PageContext } from "../../../context/pageContext.jsx";
 import LockedBar from "../../LockedBar.jsx";
 import { useMediaQuery } from "../../../hooks/useMediaQuery.js";
+import EmailFrame from "../../EmailFrame.jsx";
 
 export default function ThreadView() {
   const scrollRef = useRef();
@@ -610,29 +611,9 @@ export default function ThreadView() {
 
                 {/* BODY — was a hard 700x700 box, which overflowed the card
                     on any screen narrower than that. */}
-                <iframe
-                  title="Email Preview"
-                  className="min-h-0 w-full flex-1 border-0"
-                  sandbox=""
-                  srcDoc={`
-                    <!DOCTYPE html>
-                    <html>
-                      <head>
-                        <meta charset="utf-8" />
-                        <meta name="viewport" content="width=device-width, initial-scale=1" />
-                        <style>
-                          body {
-                            margin: 0;
-                            padding: 16px;
-                            background: #ffffff;
-                          }
-                        </style>
-                      </head>
-                      <body>
-                        ${fullMessage?.body_html || fullMessage?.body || ""}
-                      </body>
-                    </html>
-                  `}
+                <EmailFrame
+                  className="min-h-0 w-full flex-1"
+                  html={fullMessage?.body_html || fullMessage?.body || ""}
                 />
               </motion.div>
             </motion.div>

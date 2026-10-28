@@ -15,7 +15,24 @@ function TableCell({
         actionContext,
         entity,
         layout,
+        filters,
     } = useTableContext();
+
+    /*
+     * Inbox + unread status:
+     * the "Created At" column reads `date_entered`
+     * instead of its layout accessor.
+     */
+    const isInboxUnread =
+        (layout?.moduleKey ?? entity) === "inbox" &&
+        filters?.status === "unread";
+
+    const valueAccessor =
+        isInboxUnread &&
+        String(column.label ?? "").trim().toLowerCase() ===
+            "created at"
+            ? "date_entered"
+            : column.accessor;
 
     const updateMutation = useUpdateEntity();
 
@@ -213,7 +230,7 @@ function TableCell({
                 mode="table"
                 field={column}
                 value={
-                    row[column.accessor]
+                    row[valueAccessor]
                 }
                 record={row}
                 onSave={handleSave}

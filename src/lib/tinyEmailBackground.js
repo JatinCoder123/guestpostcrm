@@ -29,9 +29,10 @@ const prepareBackgroundsForTinyMce = (html) => {
     const backgroundUrl = readBackgroundUrl(element);
     if (!backgroundUrl) return;
 
+    // Keep the CSS background-image so the editor still shows the image: the
+    // legacy `background` attribute alone only renders on table/td/th/body.
     element.setAttribute(BACKGROUND_DATA_ATTRIBUTE, backgroundUrl);
     element.setAttribute("background", backgroundUrl);
-    element.style.removeProperty("background-image");
   });
 
   return template.innerHTML;
@@ -50,6 +51,9 @@ const restoreBackgroundsInOutput = (html) => {
       const safeCssUrl = backgroundUrl
         .replaceAll("\\", "%5C")
         .replaceAll('"', "%22");
+      // The editor keeps its own copy of background-image; replace it rather
+      // than writing the declaration twice.
+      element.style.removeProperty("background-image");
       const currentStyle = (element.getAttribute("style") || "")
         .trim()
         .replace(/;+$/, "");
