@@ -18,7 +18,12 @@ import {
 } from "../../../store/Slices/orders";
 import { toast } from "react-toastify";
 import { useThreadContext } from "../../../hooks/useThreadContext";
-import { createPreviewOrder } from "../../PreviewOrder";
+import {
+  createPreviewOrder,
+  pickOrderTemplate,
+  GP_REJECT_TEMPLATE_NAME,
+  LI_REJECT_TEMPLATE_NAME,
+} from "../../PreviewOrder";
 import { useNavigate } from "react-router-dom";
 import { useTemplateByName } from "../../../queries/template.queries";
 import { orderKeys, useOrdersByEmail } from "../../../queries/orders.queries";
@@ -42,6 +47,8 @@ export default function EditOrder({ id, email }) {
   const [send, setSend] = useState(false);
   const { data: liTemplate } = useTemplateByName("LI_ORDER_TEMPLATE");
   const { data: gpTemplate } = useTemplateByName("OrderORG");
+  const { data: gpRejectTemplate } = useTemplateByName(GP_REJECT_TEMPLATE_NAME);
+  const { data: liRejectTemplate } = useTemplateByName(LI_REJECT_TEMPLATE_NAME);
 
   const handleChange = (key, value) => {
     setOrder((prev) => ({ ...prev, [key]: value }));
@@ -63,7 +70,13 @@ export default function EditOrder({ id, email }) {
   }, [orders, threadId, id, ordersLoading]);
   const handlePreview = () => {
     const html = createPreviewOrder({
-      templateData: order.order_type == "GUEST POST" ? gpTemplate : liTemplate,
+      templateData: pickOrderTemplate({
+        order,
+        gpTemplate,
+        liTemplate,
+        gpRejectTemplate,
+        liRejectTemplate,
+      }),
       order: { ...order },
       userEmail: email,
     });

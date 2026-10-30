@@ -6,7 +6,12 @@ import PageHeader from "../../PageHeader";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { extractEmail } from "../../../assets/assets";
 import { OrderView } from "../../OrderView";
-import { createPreviewOrder } from "../../PreviewOrder";
+import {
+  createPreviewOrder,
+  pickOrderTemplate,
+  GP_REJECT_TEMPLATE_NAME,
+  LI_REJECT_TEMPLATE_NAME,
+} from "../../PreviewOrder";
 import { orderAction } from "../../../store/Slices/orders";
 import { toast } from "react-toastify";
 import { useTemplateByName } from "../../../queries/template.queries";
@@ -61,10 +66,18 @@ export default function ThreadOrders({ email, id }) {
 
   const { data: liTemplate } = useTemplateByName("LI_ORDER_TEMPLATE");
   const { data: gpTemplate } = useTemplateByName("OrderORG");
+  const { data: gpRejectTemplate } = useTemplateByName(GP_REJECT_TEMPLATE_NAME);
+  const { data: liRejectTemplate } = useTemplateByName(LI_REJECT_TEMPLATE_NAME);
 
   const handlePreview = (order, itemEmail, itemThreadId) => {
     const html = createPreviewOrder({
-      templateData: order.order_type == "GUEST POST" ? gpTemplate : liTemplate,
+      templateData: pickOrderTemplate({
+        order,
+        gpTemplate,
+        liTemplate,
+        gpRejectTemplate,
+        liRejectTemplate,
+      }),
       order,
       userEmail: itemEmail,
     });
