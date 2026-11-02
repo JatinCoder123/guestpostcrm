@@ -337,7 +337,6 @@ export default function AllContacts() {
                 slice={"contacts"}
                 filterColumns={filterColumns}
                 refreshKey={['contacts']}
-                statusKey={"stage"}
                 statusList={statusList}
                 pageIndex={pageIndex}
                 pageCount={pageCount}

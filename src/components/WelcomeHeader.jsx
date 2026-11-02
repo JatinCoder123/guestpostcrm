@@ -2,11 +2,6 @@ import {
   Mail,
   Link2,
   List,
-  MailCheck,
-  MailOpen,
-  Send,
-  Bell,
-  ChartSpline,
   ArrowRight,
   UserCircle2,
   Loader2,
@@ -34,41 +29,7 @@ import { showNewEmailToast } from "./showNewEmailToast";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
-const StatBadge = ({
-  icon,
-  label,
-  value,
-  colorClass,
-  bgClass,
-  borderClass,
-}) => {
-  const [animate, setAnimate] = useState(false);
 
-  useEffect(() => {
-    setAnimate(true);
-    const t = setTimeout(() => setAnimate(false), 400);
-    return () => clearTimeout(t);
-  }, [value]);
-
-  return (
-    <div
-      className={`group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border ${borderClass} ${bgClass} transition-all duration-400 cursor-default`}
-    >
-      {createElement(icon, {
-        className: `w-4 h-4 ${colorClass} group-hover:scale-125 transition-transform duration-300`,
-      })}
-      <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
-        {label}:
-      </span>
-      <span
-        className={`text-xs font-bold ${colorClass} transition-all duration-300 ${animate ? "scale-125 opacity-100" : "scale-100 opacity-90"
-          } inline-block`}
-      >
-        {value ?? "—"}
-      </span>
-    </div>
-  );
-};
 
 const ProfilePromptSkeleton = () => (
   <div className="relative flex min-w-[255px] items-center gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white/80 px-3 py-2 shadow-lg shadow-slate-500/10 backdrop-blur-xl">
@@ -105,12 +66,6 @@ const WelcomeHeader = () => {
   const { handleClear, enteredEmail } = useContext(PageContext);
   const isSearchActive = Boolean(enteredEmail?.trim());
   const [animate, setAnimate] = useState(false);
-
-  const [stats, setStats] = useState({
-    reply_recieved: null,
-    reply_sent: null,
-    reminder_sent: null,
-  });
   const [firstSyncState, setFirstSyncState] = useState({
     status: "idle",
     result: null,
@@ -121,28 +76,7 @@ const WelcomeHeader = () => {
   const [crmProgressLoading, setCrmProgressLoading] = useState(true);
   const { handleDateClick } = useContext(PageContext)
 
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const data = await fetchGpc({
-          method: "GET",
-          params: { type: "statscount" },
-        });
 
-        if (data?.success && data?.stats) {
-          setStats({
-            reply_recieved: data.stats.reply_recieved,
-            reply_sent: data.stats.reply_sent,
-            reminder_sent: data.stats.reminder_sent,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch stats:", err);
-      }
-    };
-
-    loadStats();
-  }, []);
 
   const formatRouteName = (route) => {
     if (route === "/") {
@@ -161,11 +95,7 @@ const WelcomeHeader = () => {
 
   const resultTitle = formatRouteName(path);
 
-  useEffect(() => {
-    setAnimate(true);
-    const timer = setTimeout(() => setAnimate(false), 300);
-    return () => clearTimeout(timer);
-  }, [count]);
+
 
   useEffect(() => {
     if (showNewEmailBanner) {
@@ -334,25 +264,7 @@ const WelcomeHeader = () => {
               </div>
             )}
 
-            <div
-              onClick={() => navigate("/RecentEntry")}
-              className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer relative"
-            >
-              <List className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
 
-              <div
-                className={`absolute -top-2 -right-2
-                bg-blue-600 text-white text-xs font-semibold
-                rounded-full w-5 h-5 flex items-center justify-center
-                shadow-md transition-all duration-300 ease-out
-                ${animate
-                    ? "scale-125 opacity-100"
-                    : "scale-90 opacity-90"
-                  }`}
-              >
-                {count}
-              </div>
-            </div>
           </div>
 
           {showProfilePrompt && contactCheckLoading ? (
@@ -468,156 +380,7 @@ const WelcomeHeader = () => {
         </div>
 
         {/* RIGHT */}
-        <div className="flex-shrink-0 flex items-center gap-2 pr-2">
-          {/* SUMMARY */}
-          <div
-            onClick={() => navigate("/settings/controller")}
-            className="relative group cursor-pointer flex items-center justify-center"
-          >
-            {/* Circular Score */}
-            <div className="relative w-16 h-16 hover:scale-110 transition-all duration-300">
-              {/* Animated Ring */}
-              <svg
-                className="w-16 h-16 rotate-[-90deg]"
-                viewBox="0 0 120 120"
-              >
-                {/* Background */}
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  stroke="#ede9fe"
-                  strokeWidth="10"
-                  fill="none"
-                />
 
-                {/* Progress */}
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  stroke="url(#gradient)"
-                  strokeWidth="10"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray={326.72}
-                  strokeDashoffset={
-                    326.72 -
-                    ((summary?.total_score || 0) / 100) * 326.72
-                  }
-                  className="transition-all duration-1000 ease-out"
-                />
-
-                {/* Gradient */}
-                <defs>
-                  <linearGradient id="gradient">
-                    <stop offset="0%" stopColor="#8b5cf6" />
-                    <stop offset="100%" stopColor="#d946ef" />
-                  </linearGradient>
-                </defs>
-              </svg>
-
-              {/* Center */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-sm font-bold text-violet-700">
-                  {summary?.total_score || 0}%
-                </span>
-              </div>
-
-              {/* Pulse Glow */}
-              <div className="absolute inset-0 rounded-full bg-violet-500/20 blur-xl scale-90 animate-pulse -z-10" />
-            </div>
-
-            {/* HOVER CARD */}
-            <div
-              className="
-    absolute top-20 right-0
-    w-72
-    opacity-0 invisible
-    translate-y-2
-    group-hover:opacity-100
-    group-hover:visible
-    group-hover:translate-y-0
-    transition-all duration-300
-    bg-white/95 backdrop-blur-xl
-    text-gray-800
-    rounded-3xl shadow-2xl
-    border border-gray-200
-    p-5 z-50
-  "
-            >
-              {/* Header */}
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="
-        w-10 h-10 rounded-2xl
-        bg-gradient-to-r from-violet-500 to-fuchsia-500
-        flex items-center justify-center
-        shadow-lg
-      "
-                >
-                  <ChartSpline className="w-5 h-5 text-white" />
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold text-violet-700">
-                    Automation Summary
-                  </h3>
-
-                  <p className="text-xs text-gray-500">
-                    AI performance overview
-                  </p>
-                </div>
-              </div>
-
-              {/* Summary Only */}
-              <div
-                className="
-      p-4 rounded-2xl
-      bg-gradient-to-br from-violet-50 to-fuchsia-50
-      border border-violet-100
-    "
-              >
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {summary?.automation_summary ||
-                    "No automation summary available"}
-                </p>
-              </div>
-
-            </div>
-          </div>
-          {/* Vertical Divider */}
-          <div className="mx-2 w-0.5 h-10 bg-gray-300"></div>
-          <StatBadge
-            icon={MailOpen}
-            label="Received"
-            value={stats.reply_recieved}
-            colorClass="text-emerald-600"
-            bgClass="hover:bg-emerald-50"
-            borderClass="border-gray-200 hover:border-emerald-300"
-          />
-
-          <StatBadge
-            icon={Send}
-            label="Sent"
-            value={stats.reply_sent}
-            colorClass="text-blue-600"
-            bgClass="hover:bg-blue-50"
-            borderClass="border-gray-200 hover:border-blue-300"
-          />
-
-          <StatBadge
-            icon={Bell}
-            label="Reminders"
-            value={stats.reminder_sent}
-            colorClass="text-amber-600"
-            bgClass="hover:bg-amber-50"
-            borderClass="border-gray-200 hover:border-amber-300"
-          />
-
-          {/* SUMMARY */}
-
-        </div>
       </div>
     </div>
   );

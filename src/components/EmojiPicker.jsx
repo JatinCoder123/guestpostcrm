@@ -161,7 +161,7 @@ const EmojiInput = () => {
                         <button
                             key={index}
                             onClick={() => setSelectedEmoji(emoji)}
-                            className={`text-xl mr-2 bg-cyan-300 cursor-pointer rounded-full px-2 py-1 transition ${selectedEmoji === emoji ? "scale-125" : ""
+                            className={`text-xs mr-2 bg-cyan-300 cursor-pointer rounded-full px-2 py-1 transition ${selectedEmoji === emoji ? "scale-125" : ""
                                 }`}
                         >
                             {emoji}

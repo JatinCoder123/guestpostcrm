@@ -79,6 +79,7 @@ export const buildLedgerItem = ({
   status,
   detail,
   parent_name,
+  user = CURRENT_USER,
 }) => ({
   status,
   detail,
@@ -87,7 +88,7 @@ export const buildLedgerItem = ({
   parent_id: "",
   parent_name,
   template_id: "",
-  assigned_user_id: CURRENT_USER?.id || "",
+  assigned_user_id: user?.id || "",
 });
 
 export const applyHashtag = async ({

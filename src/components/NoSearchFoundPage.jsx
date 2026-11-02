@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getLiveSearchData } from "../api/liveSearch.api";
 import { createContactFromEmail } from "../api/contact.api";
 import { useNavigate } from "react-router-dom";
+import { buildLedgerItem, createLedgerEntry, getCurrentUser } from "../services/utils";
 
 export const NoSearchFoundPage = () => {
   const {
@@ -81,11 +82,28 @@ export const NoSearchFoundPage = () => {
         return;
       }
 
+      // The contact exists even if this fails, so don't block on it
+      try {
+        await createLedgerEntry({
+          email: normalizedEmail,
+          group: "New",
+          items: [
+            buildLedgerItem({
+              status: "Contact-Created",
+              detail: `email: {${normalizedEmail}}`,
+              user: getCurrentUser(),
+            }),
+          ],
+        });
+      } catch {
+        toast.warn("Contact created, but the ledger entry could not be added.");
+      }
+
       localStorage.setItem("searchTerm", normalizedEmail);
       setEnteredEmail(normalizedEmail);
       dispatch(ladgerAction.setTimeline(null));
       toast.success("Contact created successfully");
-      navigate(`/contacts?email=${encodeURIComponent(normalizedEmail)}&id=${encodeURIComponent(contactId)}`);
+      navigate(`/entity/contacts/${encodeURIComponent(normalizedEmail)}`);
     } catch (requestError) {
       setCreateError(
         requestError?.response?.data?.error ||

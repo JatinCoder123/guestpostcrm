@@ -10,7 +10,7 @@ const RightThreadHeader = () => {
     return (
         <div className="flex w-full min-w-0 flex-wrap items-center gap-2 px-1 py-1.5 sm:w-auto sm:flex-nowrap sm:gap-3 sm:px-4 sm:py-3">
             {/* Left Section */}
-            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-500 px-2 py-1.5 text-white sm:flex-none sm:gap-4 sm:rounded-t-lg sm:px-4 sm:py-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-[var(--topbtn-secondary)] px-2 py-1.5 text-white sm:flex-none sm:gap-4 sm:rounded-t-lg sm:px-4 sm:py-2">
                 <span className="hidden shrink-0 text-sm opacity-90 sm:inline">Client:</span>
                 <div
                     title={email}

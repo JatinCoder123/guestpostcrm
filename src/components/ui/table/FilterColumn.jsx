@@ -7,12 +7,16 @@ import {
 import { motion } from "framer-motion";
 
 import {
+    useEffect,
     useMemo,
     useState,
 } from "react";
 
 import { useTableContext } from "./Table";
 import { useIsDesktop } from "../../../hooks/useMediaQuery";
+
+import resolveOptions from "./utils/resolveOptions";
+
 
 const FilterColumn = () => {
     const {
@@ -21,63 +25,207 @@ const FilterColumn = () => {
         filters,
         setFilters,
     } = useTableContext();
-    // Below `lg` the panel stacks above the table and spans the full width;
-    // from `lg` up it's a fixed 280px column beside the table.
+
+    /*
+     * Below lg the panel stacks above the table and spans
+     * the full width; from lg up it's a fixed 280px column.
+     */
     const isDesktop = useIsDesktop();
-    const openWidth = isDesktop ? 280 : "100%";
+
+    const openWidth =
+        isDesktop ? 280 : "100%";
+
     const [search, setSearch] =
         useState("");
 
     const [expanded, setExpanded] =
         useState({});
 
-    // FILTER SEARCH
-    const filteredColumns =
-        useMemo(() => {
-            if (!search)
-                return (
-                    filterColumns || []
+    /*
+     * ------------------------------------------------------------
+     * RESOLVED FILTER COLUMNS
+     * ------------------------------------------------------------
+     *
+     * Every filter is normalized so the UI always receives:
+     *
+     * filter.values = [
+     *     {
+     *         label: "...",
+     *         value: "..."
+     *     }
+     * ]
+     *
+     * This works for:
+     *
+     * 1. filter.options
+     *
+     * 2. filter.values
+     *
+     * 3. filter.optionsSource
+     */
+    const [
+        resolvedFilterColumns,
+        setResolvedFilterColumns,
+    ] = useState([]);
+
+    /*
+     * ------------------------------------------------------------
+     * RESOLVE OPTIONS
+     * ------------------------------------------------------------
+     */
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadOptions = async () => {
+            if (!Array.isArray(filterColumns)) {
+                setResolvedFilterColumns([]);
+                return;
+            }
+
+            try {
+                const resolvedColumns =
+                    await Promise.all(
+                        filterColumns.map(
+                            async (filter) => {
+                                /*
+                                 * Only select filters need
+                                 * option resolution.
+                                 *
+                                 * Other filter types are
+                                 * passed through unchanged.
+                                 */
+                                if (
+                                    filter?.type !==
+                                    "select"
+                                ) {
+                                    return filter;
+                                }
+
+                                const values =
+                                    await resolveOptions(
+                                        filter
+                                    );
+
+                                return {
+                                    ...filter,
+                                    values,
+                                };
+                            }
+                        )
+                    );
+
+                if (!cancelled) {
+                    setResolvedFilterColumns(
+                        resolvedColumns
+                    );
+                }
+            } catch (error) {
+                console.error(
+                    "Failed to resolve filter options:",
+                    error
                 );
 
+                if (!cancelled) {
+                    /*
+                     * Do not break the filter panel if
+                     * an options source fails.
+                     *
+                     * Keep existing values/options
+                     * wherever possible.
+                     */
+                    setResolvedFilterColumns(
+                        filterColumns.map(
+                            (filter) => ({
+                                ...filter,
+                                values:
+                                    filter?.values ??
+                                    filter?.options ??
+                                    [],
+                            })
+                        )
+                    );
+                }
+            }
+        };
+
+        loadOptions();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [filterColumns]);
+
+
+    /*
+     * ------------------------------------------------------------
+     * FILTER SEARCH
+     * ------------------------------------------------------------
+     */
+    const filteredColumns =
+        useMemo(() => {
+            if (!search.trim()) {
+                return (
+                    resolvedFilterColumns || []
+                );
+            }
+
+            const searchValue =
+                search
+                    .trim()
+                    .toLowerCase();
+
             return (
-                filterColumns?.filter(
+                resolvedFilterColumns?.filter(
                     (filter) =>
-                        filter.label
-                            .toLowerCase()
+                        filter?.label
+                            ?.toLowerCase()
                             .includes(
-                                search.toLowerCase()
+                                searchValue
                             )
                 ) || []
             );
         }, [
             search,
-            filterColumns,
+            resolvedFilterColumns,
         ]);
 
-    // TOGGLE PARENT
+
+    /*
+     * ------------------------------------------------------------
+     * TOGGLE PARENT
+     * ------------------------------------------------------------
+     */
     const toggleParent =
         (accessor) => {
             setExpanded((prev) => ({
                 ...prev,
-
                 [accessor]:
-                    !prev[
-                    accessor
-                    ],
+                    !prev[accessor],
             }));
         };
 
-    // SELECT RADIO
+
+    /*
+     * ------------------------------------------------------------
+     * SELECT OPTION
+     * ------------------------------------------------------------
+     */
     const handleSelect = (
         accessor,
         value
     ) => {
-        console.log("filters", filters)
         setFilters({
             ...filters,
             [accessor]: value,
         });
     };
+
+
+    /*
+     * ------------------------------------------------------------
+     * RENDER
+     * ------------------------------------------------------------
+     */
     return (
         <motion.div
             initial={{
@@ -112,7 +260,11 @@ const FilterColumn = () => {
                 relative
             "
         >
-            {/* HEADER */}
+
+            {/* ---------------------------------------------------------- */}
+            {/* HEADER                                                     */}
+            {/* ---------------------------------------------------------- */}
+
             <div
                 className="
                     p-4
@@ -132,8 +284,8 @@ const FilterColumn = () => {
                     Filter {tableName}
                 </h2>
 
-                {/* SEARCH */}
                 <div className="relative mt-4">
+
                     <Search
                         className="
                             absolute
@@ -149,12 +301,9 @@ const FilterColumn = () => {
                     <input
                         type="text"
                         value={search}
-                        onChange={(
-                            e
-                        ) =>
+                        onChange={(e) =>
                             setSearch(
-                                e.target
-                                    .value
+                                e.target.value
                             )
                         }
                         placeholder="Search filters..."
@@ -170,17 +319,21 @@ const FilterColumn = () => {
                             text-sm
                             outline-none
                             transition-all
-
                             focus:bg-white
                             focus:border-blue-400
                             focus:ring-4
                             focus:ring-blue-100
                         "
                     />
+
                 </div>
             </div>
 
-            {/* FILTER LIST */}
+
+            {/* ---------------------------------------------------------- */}
+            {/* FILTER LIST                                                */}
+            {/* ---------------------------------------------------------- */}
+
             <div
                 className="
                     flex-1
@@ -190,19 +343,31 @@ const FilterColumn = () => {
                     flex
                     flex-col
                     gap-2
-                        max-h-[500px]
+                    max-h-[500px]
                     scrollbar-thin
                     scrollbar-thumb-gray-200
                     scrollbar-track-transparent
                 "
             >
+
                 {filteredColumns.map(
                     (filter) => {
+
                         const isExpanded =
                             expanded[
-                            filter
-                                .accessor
+                            filter.accessor
                             ];
+
+                        /*
+                         * `values` is already normalized
+                         * by resolveOptions().
+                         */
+                        const options =
+                            Array.isArray(
+                                filter.values
+                            )
+                                ? filter.values
+                                : [];
 
                         return (
                             <div
@@ -218,18 +383,21 @@ const FilterColumn = () => {
                                     shrink-0
                                 "
                             >
-                                {/* PARENT */}
+
+                                {/* ------------------------------------------------ */}
+                                {/* PARENT                                           */}
+                                {/* ------------------------------------------------ */}
+
                                 <button
-                                    onClick={(
-                                        e
-                                    ) => {
+                                    type="button"
+                                    onClick={(e) => {
                                         if (
-                                            e
-                                                .target
+                                            e.target
                                                 .tagName ===
                                             "INPUT"
-                                        )
+                                        ) {
                                             return;
+                                        }
 
                                         toggleParent(
                                             filter.accessor
@@ -252,6 +420,7 @@ const FilterColumn = () => {
                                         }
                                     `}
                                 >
+
                                     <div
                                         className="
                                             flex
@@ -260,6 +429,7 @@ const FilterColumn = () => {
                                             min-w-0
                                         "
                                     >
+
                                         <input
                                             type="checkbox"
                                             checked={
@@ -269,16 +439,25 @@ const FilterColumn = () => {
                                                 ]
                                             }
                                             onChange={(e) => {
-                                                if (!e.target.checked) {
+
+                                                if (
+                                                    !e
+                                                        .target
+                                                        .checked
+                                                ) {
                                                     const updated = {
                                                         ...filters,
                                                     };
 
                                                     delete updated[
-                                                        filter.accessor
+                                                        filter
+                                                            .accessor
                                                     ];
 
-                                                    setFilters(updated);
+                                                    setFilters(
+                                                        updated
+                                                    );
+
                                                 } else {
                                                     setExpanded(
                                                         (prev) => ({
@@ -305,26 +484,41 @@ const FilterColumn = () => {
                                                 filter.label
                                             }
                                         </span>
+
                                     </div>
 
                                     {isExpanded ? (
-                                        <ChevronDown className="w-4 h-4 shrink-0" />
+                                        <ChevronDown
+                                            className="
+                                                w-4
+                                                h-4
+                                                shrink-0
+                                            "
+                                        />
                                     ) : (
-                                        <ChevronRight className="w-4 h-4 shrink-0" />
+                                        <ChevronRight
+                                            className="
+                                                w-4
+                                                h-4
+                                                shrink-0
+                                            "
+                                        />
                                     )}
+
                                 </button>
 
-                                {/* CHILDREN */}
+
+                                {/* ------------------------------------------------ */}
+                                {/* OPTIONS                                          */}
+                                {/* ------------------------------------------------ */}
+
                                 <motion.div
-                                    initial={
-                                        false
-                                    }
+                                    initial={false}
                                     animate={{
                                         maxHeight:
                                             isExpanded
                                                 ? 260
                                                 : 0,
-
                                         opacity:
                                             isExpanded
                                                 ? 1
@@ -340,6 +534,7 @@ const FilterColumn = () => {
                                         bg-gray-50/40
                                     "
                                 >
+
                                     <div
                                         className="
                                             max-h-[260px]
@@ -347,20 +542,16 @@ const FilterColumn = () => {
                                             overflow-x-hidden
                                             p-2
                                             space-y-1
-
                                             scrollbar-thin
                                             scrollbar-thumb-gray-200
                                             scrollbar-track-transparent
                                         "
                                     >
-                                        {filter.values?.map(
-                                            (
-                                                item
-                                            ) => (
+
+                                        {options.map(
+                                            (item) => (
                                                 <label
-                                                    key={
-                                                        item.value
-                                                    }
+                                                    key={`${filter.accessor}-${item.value}`}
                                                     className="
                                                         flex
                                                         items-center
@@ -379,30 +570,108 @@ const FilterColumn = () => {
                                                         min-w-0
                                                     "
                                                 >
+
                                                     <input
-                                                        type="radio"
+                                                        type={
+                                                            filter.multiple
+                                                                ? "checkbox"
+                                                                : "radio"
+                                                        }
                                                         name={
-                                                            filter.accessor
+                                                            filter.multiple
+                                                                ? undefined
+                                                                : filter.accessor
                                                         }
                                                         checked={
-                                                            filters?.[
-                                                            filter
-                                                                .accessor
-                                                            ] ===
-                                                            item.value
+                                                            filter.multiple
+                                                                ? Array.isArray(
+                                                                    filters?.[
+                                                                    filter
+                                                                        .accessor
+                                                                    ]
+                                                                ) &&
+                                                                filters?.[
+                                                                    filter
+                                                                        .accessor
+                                                                ].includes(
+                                                                    item.value
+                                                                )
+                                                                : filters?.[
+                                                                filter
+                                                                    .accessor
+                                                                ] ===
+                                                                item.value
                                                         }
-                                                        onChange={() =>
+                                                        onChange={() => {
+
+                                                            /*
+                                                             * ------------------------------------------------
+                                                             * MULTIPLE SELECT
+                                                             * ------------------------------------------------
+                                                             */
+                                                            if (
+                                                                filter.multiple
+                                                            ) {
+                                                                const current =
+                                                                    Array.isArray(
+                                                                        filters?.[
+                                                                        filter
+                                                                            .accessor
+                                                                        ]
+                                                                    )
+                                                                        ? filters[
+                                                                        filter
+                                                                            .accessor
+                                                                        ]
+                                                                        : [];
+
+                                                                const exists =
+                                                                    current.includes(
+                                                                        item.value
+                                                                    );
+
+                                                                const next =
+                                                                    exists
+                                                                        ? current.filter(
+                                                                            (
+                                                                                value
+                                                                            ) =>
+                                                                                value !==
+                                                                                item.value
+                                                                        )
+                                                                        : [
+                                                                            ...current,
+                                                                            item.value,
+                                                                        ];
+
+                                                                setFilters(
+                                                                    {
+                                                                        ...filters,
+                                                                        [filter.accessor]:
+                                                                            next,
+                                                                    }
+                                                                );
+
+                                                                return;
+                                                            }
+
+                                                            /*
+                                                             * ------------------------------------------------
+                                                             * SINGLE SELECT
+                                                             * ------------------------------------------------
+                                                             */
                                                             handleSelect(
                                                                 filter.accessor,
                                                                 item.value
-                                                            )
-                                                        }
+                                                            );
+                                                        }}
                                                         className="
                                                             w-4
                                                             h-4
                                                             text-blue-600
                                                             border-gray-300
                                                             shrink-0
+                                                            cursor-pointer
                                                         "
                                                     />
 
@@ -411,16 +680,53 @@ const FilterColumn = () => {
                                                             item.label
                                                         }
                                                     </span>
+
                                                 </label>
                                             )
                                         )}
+
+                                        {isExpanded &&
+                                            options.length ===
+                                            0 && (
+                                                <div
+                                                    className="
+                                                        px-3
+                                                        py-4
+                                                        text-center
+                                                        text-xs
+                                                        text-gray-400
+                                                    "
+                                                >
+                                                    No options
+                                                    available
+                                                </div>
+                                            )}
+
                                     </div>
+
                                 </motion.div>
+
                             </div>
                         );
                     }
                 )}
+
+                {filteredColumns.length ===
+                    0 && (
+                        <div
+                            className="
+                            py-8
+                            text-center
+                            text-sm
+                            text-gray-400
+                        "
+                        >
+                            No filters found
+                        </div>
+                    )}
+
             </div>
+
         </motion.div>
     );
 };

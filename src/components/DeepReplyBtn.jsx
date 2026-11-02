@@ -13,7 +13,7 @@ export const DeepReplyBtn = () => {
           flex items-center justify-center
           h-10 w-10
           rounded-full
-          bg-gradient-to-r from-violet-600 to-indigo-600
+          bg-gradient-to-r from-[var(--topbtn-primary)] to-[var(--topbtn-secondary)]
           text-white
           shadow-md
           hover:shadow-xl

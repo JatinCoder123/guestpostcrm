@@ -157,6 +157,23 @@ export const getAllContacts = async ({
     });
     return data;
 };
+/**
+ * Search contacts by name / email (global search suggestions)
+ */
+export const searchContacts = async (search, per_page = 8) => {
+    const data = await http({
+        method: "POST",
+        body: {
+            "action": "fetch",
+            "module": "Contacts",
+            "page": 1,
+            "per_page": per_page,
+            "search": search,
+            "search_fields": ["first_name", "email1", "full_name"],
+        }
+    });
+    return data?.records || data?.data || [];
+};
 export const getAllUnreadEmails = async ({
     page = 1,
     per_page = 20

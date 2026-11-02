@@ -60,6 +60,8 @@ export default function ConversationItem({
     const unseenMessages =
         Number(unseen) || 0;
 
+    const lastMessageTime = formatConversationTime(conversation?.last_message_date);
+
     /* ==========================================
        INITIALS
     ========================================== */
@@ -102,14 +104,14 @@ export default function ConversationItem({
                 w-full
                 items-center
                 gap-3
-                rounded-lg
+                rounded-xl
                 px-3
-                py-3
+                py-2.5
                 text-left
                 transition
 
                 ${selected
-                    ? "bg-accent"
+                    ? "bg-primary/10 ring-1 ring-primary/15"
                     : "hover:bg-accent/70"
                 }
             `}
@@ -122,12 +124,12 @@ export default function ConversationItem({
                 className="
                     relative
                     flex
-                    h-11
-                    w-11
+                    h-10
+                    w-10
                     shrink-0
                     items-center
                     justify-center
-                    rounded-full
+                    rounded-xl
                     bg-search-primary
                     text-sm
                     font-semibold
@@ -184,7 +186,7 @@ export default function ConversationItem({
                         {name}
                     </p>
 
-                    {conversation?.last_message_date && (
+                    {lastMessageTime && (
                         <span
                             className={`
                                 shrink-0
@@ -197,7 +199,7 @@ export default function ConversationItem({
                             `}
                         >
                             {
-                                conversation.last_message_date
+                                lastMessageTime
                             }
                         </span>
                     )}
@@ -276,4 +278,26 @@ export default function ConversationItem({
             )}
         </button>
     );
+}
+
+function formatConversationTime(value) {
+    if (!value) return "";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+
+    if (isToday) {
+        return new Intl.DateTimeFormat(undefined, {
+            hour: "numeric",
+            minute: "2-digit",
+        }).format(date);
+    }
+
+    return new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+    }).format(date);
 }

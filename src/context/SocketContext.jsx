@@ -23,6 +23,7 @@ import { showConsole } from "../assets/assets.js";
 
 import { eventActions } from "../store/Slices/eventSlice.js";
 import { unrepliedAction } from "../store/Slices/unrepliedEmails.js";
+import { forceLogout } from "../store/Slices/userSlice.js";
 
 import { apiRequest } from "../services/api.js";
 
@@ -39,6 +40,79 @@ import toast from "react-hot-toast";
 const socket = io(
   "https://socket.guestpostcrm.com"
 );
+
+
+let notificationAudioContext;
+
+
+const playInternalChatBell = async () => {
+  try {
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+    if (!AudioContext) {
+      return;
+    }
+
+    notificationAudioContext ??=
+      new AudioContext();
+
+    if (
+      notificationAudioContext.state ===
+      "suspended"
+    ) {
+      await notificationAudioContext.resume();
+    }
+
+    const now =
+      notificationAudioContext.currentTime;
+
+    [
+      { frequency: 880, start: 0 },
+      { frequency: 1320, start: 0.12 },
+    ].forEach(({ frequency, start }) => {
+      const oscillator =
+        notificationAudioContext.createOscillator();
+
+      const gain =
+        notificationAudioContext.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(
+        frequency,
+        now + start
+      );
+
+      gain.gain.setValueAtTime(
+        0.0001,
+        now + start
+      );
+      gain.gain.exponentialRampToValueAtTime(
+        0.18,
+        now + start + 0.015
+      );
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + start + 0.38
+      );
+
+      oscillator.connect(gain);
+      gain.connect(
+        notificationAudioContext.destination
+      );
+
+      oscillator.start(now + start);
+      oscillator.stop(now + start + 0.4);
+    });
+  } catch (error) {
+    // Some browsers block audio until the user interacts with the page.
+    console.debug(
+      "Internal chat notification sound could not play:",
+      error
+    );
+  }
+};
 
 
 export const SocketContext =
@@ -183,6 +257,9 @@ export const SocketContextProvider = ({
   const userRef =
     useRef(userIdle);
 
+  const forceLogoutHandledRef =
+    useRef(false);
+
 
   /* =====================================================
      UPDATE REFS
@@ -196,6 +273,12 @@ export const SocketContextProvider = ({
     userIdle,
   ]);
 
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      forceLogoutHandledRef.current = false;
+    }
+  }, [isAuthenticated, user?.email]);
+
 
   /* =====================================================
      PRESENCE LIST
@@ -207,10 +290,7 @@ export const SocketContextProvider = ({
       users
     ) => {
 
-      console.log(
-        "USER",
-        users
-      );
+
 
       const list =
         Array.isArray(users)
@@ -508,6 +588,48 @@ export const SocketContextProvider = ({
 
 
     /* ===================================================
+       FORCE LOGOUT
+    =================================================== */
+
+    const forceLogoutHandler = (data) => {
+      const targetEmail =
+        typeof data?.email === "string"
+          ? data.email.trim().toLowerCase()
+          : "";
+
+      const currentUserEmail =
+        typeof user?.email === "string"
+          ? user.email.trim().toLowerCase()
+          : "";
+
+      if (
+        !targetEmail ||
+        !currentUserEmail ||
+        targetEmail !== currentUserEmail ||
+        forceLogoutHandledRef.current
+      ) {
+        return;
+      }
+
+      forceLogoutHandledRef.current = true;
+
+      const message =
+        data?.message ||
+        data?.reason ||
+        "You have been logged out by an administrator.";
+
+      toast.error(message, {
+        duration: 6000,
+        id: "force-logout",
+      });
+
+      socket.emit("presence:leave");
+      queryClient.clear();
+      dispatch(forceLogout(message));
+    };
+
+
+    /* ===================================================
        INTERNAL CHAT NOTIFICATION
     =================================================== */
 
@@ -612,6 +734,13 @@ export const SocketContextProvider = ({
       const senderName =
         sender?.name ||
         fromEmail;
+
+
+      /* =================================================
+         PLAY NOTIFICATION BELL
+      ================================================= */
+
+      playInternalChatBell();
 
 
       /* =================================================
@@ -1026,6 +1155,11 @@ export const SocketContextProvider = ({
       newMailHandler
     );
 
+    socket.on(
+      "force-logout",
+      forceLogoutHandler
+    );
+
 
     /* ===================================================
        CLEANUP
@@ -1046,6 +1180,11 @@ export const SocketContextProvider = ({
       socket.off(
         "new-mail",
         newMailHandler
+      );
+
+      socket.off(
+        "force-logout",
+        forceLogoutHandler
       );
 
     };

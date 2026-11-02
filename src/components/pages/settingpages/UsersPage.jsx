@@ -148,7 +148,7 @@ export function UsersPage() {
       )}
 
       {users.length > 0 && (
-        <div className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="mt-6 grid grid-cols-1 @min-[620px]/settings:grid-cols-2 @min-[940px]/settings:grid-cols-3 gap-6">
           {users.map((item) => (
             <div
               key={item.id}

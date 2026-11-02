@@ -1,17 +1,20 @@
 import { motion } from "framer-motion";
 import { AUTH_URL } from "../../store/constants.js";
 import logo from "../../assets/assets.js";
+import { markPreferredHomePageRedirectAfterLogin } from "../../utils/homePagePreference.js";
 
 export default function Login() {
   const currentUrl = window.location.href;
 
   const handleLoginWithGoogle = () => {
+    markPreferredHomePageRedirectAfterLogin();
     window.location.href = `${AUTH_URL}?controller=auth&action=googleLogin&frontend=${encodeURIComponent(
       currentUrl
     )}`;
   };
 
   const handleLoginWithMicrosoft = () => {
+    markPreferredHomePageRedirectAfterLogin();
     window.location.href = `${AUTH_URL}?controller=auth&action=microsoftLogin&frontend=${encodeURIComponent(
       currentUrl
     )}`;

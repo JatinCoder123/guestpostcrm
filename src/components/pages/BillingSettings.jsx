@@ -52,7 +52,7 @@ export default function BillingSettings() {
 
                 {/* Tabs */}
 
-                <div className="flex border-b">
+                <div className="flex flex-wrap border-b">
 
                     {tabs.map((item) => {
                         const Icon = item.icon;
@@ -61,7 +61,7 @@ export default function BillingSettings() {
                             <button
                                 key={item.id}
                                 onClick={() => navigate(`/settings/billing/${item.id}`)}
-                                className={`flex items-center gap-2 px-6 py-4 font-medium transition ${activeTab === item.id
+                                className={`flex min-h-11 items-center gap-2 px-3 sm:px-6 py-3 sm:py-4 font-medium transition ${activeTab === item.id
                                     ? "border-b-2 border-blue-600 text-blue-600"
                                     : "text-gray-500 hover:text-black"
                                     }`}
@@ -75,7 +75,7 @@ export default function BillingSettings() {
 
                 {/* Content */}
 
-                <div className="p-6">
+                <div className="min-w-0 p-3 sm:p-6">
 
                     {activeTab === "plans" && <PlansPage />}
 

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const SocialButtons = ({ displayCount, trust_score }) => {
   const navigate = useNavigate();
   return (
-    <div className="ml-0 flex min-w-0 flex-wrap items-center gap-2">
+    <div className="ml-0 flex shrink-0 flex-nowrap items-center gap-1.5 sm:gap-2">
 
       {/* DUPLICATE BUTTON WITH BADGE */}
       {displayCount > 0 && (

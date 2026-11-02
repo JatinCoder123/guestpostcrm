@@ -568,7 +568,7 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
 
           {/* Right CTA */}
           <div className="ml-auto flex shrink-0 items-center gap-2">
-            <div className="flex overflow-hidden rounded-xl bg-blue-600 text-white shadow-sm">
+            <div className="flex overflow-hidden rounded-xl bg-primary text-white shadow-sm">
               <button
                 type="button"
                 className="inline-flex h-9 items-center gap-2 px-4 text-[13px] font-semibold hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"

@@ -2,6 +2,20 @@ import { createSlice } from "@reduxjs/toolkit";
 import { AUTH_URL } from "../constants";
 import { showConsole } from "../../assets/assets";
 import { apiRequest, setConfig } from "../../services/api";
+import { HOME_PAGE_PREFERENCE_KEY } from "../../utils/homePagePreference";
+
+const clearLocalSession = () => {
+  const preferredHomePage = localStorage.getItem(HOME_PAGE_PREFERENCE_KEY);
+
+  localStorage.clear();
+
+  if (preferredHomePage) {
+    localStorage.setItem(HOME_PAGE_PREFERENCE_KEY, preferredHomePage);
+  }
+
+  localStorage.setItem("displayIntro", "true");
+  setConfig("", "", "");
+};
 
 const userSlice = createSlice({
   name: "user",
@@ -165,12 +179,7 @@ export const logout = () => {
         withCredentials: true,
       });
 
-      // Clear all localStorage
-      localStorage.clear();
-
-      // Optional: set intro again after clear
-      localStorage.setItem("displayIntro", "true");
-      setConfig("", "", "");
+      clearLocalSession();
 
       dispatch(userSlice.actions.logoutSuccess(data.message));
       dispatch(userSlice.actions.clearAllErrors());
@@ -181,6 +190,15 @@ export const logout = () => {
         )
       );
     }
+  };
+};
+
+// A server-requested logout must not depend on the logout API succeeding.
+export const forceLogout = (message = "You have been logged out by an administrator.") => {
+  return (dispatch) => {
+    clearLocalSession();
+    dispatch(userSlice.actions.logoutSuccess(message));
+    dispatch(userSlice.actions.clearAllErrors());
   };
 };
 

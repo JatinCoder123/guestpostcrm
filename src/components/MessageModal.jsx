@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useThreadContext } from "../hooks/useThreadContext";
 import { fetchGpc } from "../services/api";
 import { useMessage } from "../queries/threads.queries";
+import EmailFrame from "./EmailFrame";
 
 const MessageModal = ({
   showMessageModal,
@@ -28,39 +29,30 @@ const MessageModal = ({
     time: "",
   });
 
-  const cleanHtmlContent = (html) => {
-    const cleaned = html
-      .replace(/<style[^>]*>.*?<\/style>/gis, "")
-      .replace(/<script[^>]*>.*?<\/script>/gis, "")
-      .replace(/<!--.*?-->/g, "")
-      .trim();
-
-    return cleaned || html;
-  };
-
   useEffect(() => {
     if ((isModal && !showMessageModal) || !messageId || isMessageLoading) return;
     console.log("MESSAGE", data)
     if (isError) {
       setMessageContent("No Content Available")
+      return;
     }
 
     const htmlBody =
-      data.email?.body_html ||
-      data.email?.body ||
-      data.email?.content ||
+      data?.email?.body_html ||
+      data?.email?.body ||
+      data?.email?.content ||
       "";
 
     const subject =
-      data.email?.subject || "No Subject";
+      data?.email?.subject || "No Subject";
 
-    const from = data.email?.from_name || "Unknown Sender";
+    const from = data?.email?.from_name || "Unknown Sender";
 
     const fromEmail =
-      data.email?.from_addr || "";
+      data?.email?.from_addr || "";
 
     const createdDate =
-      data.email?.date_created || "";
+      data?.email?.date_created || "";
 
     let formattedDate = "";
     let formattedTime = "";
@@ -87,9 +79,7 @@ const MessageModal = ({
     });
 
     setMessageContent(
-      htmlBody
-        ? cleanHtmlContent(htmlBody)
-        : "Thread Is Either Missing Or Deleted."
+      htmlBody || "Thread Is Either Missing Or Deleted."
     );
   }, [showMessageModal, messageId, isModal, data, isError, isMessageLoading]);
 
@@ -200,9 +190,9 @@ const MessageModal = ({
       </div>
 
       {/* BODY */}
-      <div className="min-w-0 flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 p-3 sm:p-6 lg:p-8">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-gradient-to-br from-gray-50 to-gray-100 p-3 sm:p-6 lg:p-8">
         {isMessageLoading ? (
-          <div className="flex flex-col items-center justify-center h-full">
+          <div className="flex flex-1 flex-col items-center justify-center">
             <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
 
             <p className="text-gray-600 font-medium">
@@ -210,29 +200,13 @@ const MessageModal = ({
             </p>
           </div>
         ) : messageContent ? (
-          /* overflow-x-auto rather than hidden: email HTML often contains
-             fixed-width tables, which would otherwise be silently clipped. */
-          <div className="w-full max-w-4xl min-w-0 mx-auto overflow-x-auto rounded-xl border border-white/50 bg-gradient-to-br from-[#fdfcfb] to-[#e2d1c3] shadow-inner p-3 sm:p-5">
-            <div
-              className="
-          prose
-          max-w-none
-          break-words
-          whitespace-pre-wrap
-          [&_*]:max-w-full
-          [&_*]:break-words
-          [&_*]:wrap-anywhere
-          [&_a]:break-all
-          [&_img]:h-auto
-          [&_table]:w-auto
-        "
-              dangerouslySetInnerHTML={{
-                __html: messageContent,
-              }}
-            />
+          /* Same sandboxed frame as the thread view, so templates keep their
+             own CSS and images instead of being restyled by the app. */
+          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-inner">
+            <EmailFrame className="h-full w-full" html={messageContent} />
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center">
+          <div className="flex flex-1 flex-col items-center justify-center text-center">
             <MessageSquare
               size={32}
               className="text-gray-500"

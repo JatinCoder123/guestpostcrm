@@ -3,6 +3,8 @@ import {
     X,
     Copy,
     Check,
+    User,
+    Loader2,
 } from "lucide-react";
 
 import {
@@ -16,13 +18,22 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 
 import { PageContext } from "../context/pageContext";
+import { useDebounce } from "../hooks/useDebounce";
+import { useContactSearch } from "../queries/contact.queries";
 
 const STORAGE_KEY = "emailSearchHistory";
+const MIN_SEARCH_LENGTH = 2;
+
+const getContactName = (contact) =>
+    contact?.full_name?.trim() ||
+    [contact?.first_name, contact?.last_name]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
 
 const GlobalSearch = () => {
     const {
         enteredEmail,
-        setEnteredEmail,
         handleClear,
         handleDateClick,
     } = useContext(PageContext);
@@ -38,7 +49,31 @@ const GlobalSearch = () => {
     const [showHistory, setShowHistory] =
         useState(false);
 
+    // Keyboard-highlighted contact suggestion (-1 = none)
+    const [activeIndex, setActiveIndex] =
+        useState(-1);
+
     const searchRef = useRef(null);
+
+    // CONTACT SUGGESTIONS (DEBOUNCED)
+    const trimmedSearch = search.trim();
+    const debouncedSearch = useDebounce(trimmedSearch, 400);
+
+    const {
+        data: contactResults = [],
+        isFetching: searchingContacts,
+    } = useContactSearch(debouncedSearch);
+
+    const isTyping = trimmedSearch.length >= MIN_SEARCH_LENGTH;
+
+    const isSuggestionsLoading =
+        isTyping &&
+        (searchingContacts || debouncedSearch !== trimmedSearch);
+
+    const suggestions =
+        isTyping && debouncedSearch === trimmedSearch
+            ? contactResults.filter((contact) => contact?.email1)
+            : [];
 
     // LOAD SEARCH HISTORY
     useEffect(() => {
@@ -53,6 +88,11 @@ const GlobalSearch = () => {
     useEffect(() => {
         setSearch(enteredEmail || "");
     }, [enteredEmail]);
+
+    // RESET HIGHLIGHT WHEN RESULTS CHANGE
+    useEffect(() => {
+        setActiveIndex(-1);
+    }, [debouncedSearch]);
 
     // HANDLE OUTSIDE CLICK
     useEffect(() => {
@@ -78,68 +118,66 @@ const GlobalSearch = () => {
         };
     }, []);
 
-    // SAVE SEARCH HISTORY
-    const saveSearchHistory = (value) => {
+    // RUN SEARCH
+    // handleDateClick already stores the term, updates the history and
+    // navigates to the timeline, so every search goes through it alone.
+    const runSearch = (value) => {
         const trimmedValue = value?.trim();
 
-        if (!trimmedValue) return;
-
-        let history = JSON.parse(
-            localStorage.getItem(STORAGE_KEY) || "[]"
-        );
-
-        // REMOVE DUPLICATES
-        history = history.filter(
-            (item) => item.value !== trimmedValue
-        );
-
-        // ADD NEW HISTORY
-        history.unshift({
-            value: trimmedValue,
-            time: new Date().toLocaleString(),
-        });
-
-        // LIMIT HISTORY
-        history = history.slice(0, 3);
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(history)
-        );
-
-        setSearchHistory(history);
-    };
-
-    // MAIN SEARCH
-    const handleSearch = () => {
-        const trimmedSearch = search?.trim();
-
-        if (!trimmedSearch) {
+        if (!trimmedValue) {
             toast.error("Please enter an email");
 
             return;
         }
 
-        // UPDATE GLOBAL CONTEXT
-        setEnteredEmail(trimmedSearch);
+        setSearch(trimmedValue);
 
-        // SAVE HISTORY
-        saveSearchHistory(trimmedSearch);
-
-        // HIDE HISTORY
         setShowHistory(false);
 
-        // TRIGGER SEARCH
+        setActiveIndex(-1);
+
         handleDateClick({
-            email: trimmedSearch,
+            email: trimmedValue,
             navigate: "/",
         });
     };
 
-    // ENTER KEY SEARCH
-    const handleKeyPress = (e) => {
+    // MAIN SEARCH
+    const handleSearch = () => {
+        runSearch(search);
+    };
+
+    // KEYBOARD HANDLING
+    const handleKeyDown = (e) => {
+        if (e.key === "ArrowDown" && suggestions.length) {
+            e.preventDefault();
+            setShowHistory(true);
+            setActiveIndex((prev) =>
+                prev < suggestions.length - 1 ? prev + 1 : 0
+            );
+            return;
+        }
+
+        if (e.key === "ArrowUp" && suggestions.length) {
+            e.preventDefault();
+            setActiveIndex((prev) =>
+                prev > 0 ? prev - 1 : suggestions.length - 1
+            );
+            return;
+        }
+
+        if (e.key === "Escape") {
+            setShowHistory(false);
+            setActiveIndex(-1);
+            return;
+        }
+
         if (e.key === "Enter") {
-            handleSearch();
+            const activeContact = suggestions[activeIndex];
+
+            runSearch(
+                activeContact ? activeContact.email1 : search
+            );
         }
     };
 
@@ -163,34 +201,21 @@ const GlobalSearch = () => {
         }
     };
 
-    // HISTORY CLICK
-    const handleHistoryClick = (
-        value
-    ) => {
-        setSearch(value);
-
-        setEnteredEmail(value);
-
-        saveSearchHistory(value);
-
-        setShowHistory(false);
-
-        handleDateClick({
-            email: value,
-            navigate: "/",
-        });
-    };
-
     // CLEAR SEARCH
     const handleInputClear = () => {
         setSearch("");
 
-        setEnteredEmail("");
-
         handleClear();
 
         setShowHistory(false);
+
+        setActiveIndex(-1);
     };
+
+    const showSuggestionsPanel = showHistory && isTyping;
+
+    const showHistoryPanel =
+        showHistory && !isTyping && searchHistory.length > 0;
 
     return (
         <div
@@ -217,9 +242,12 @@ const GlobalSearch = () => {
             <input
                 value={search}
                 onFocus={() => setShowHistory(true)}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                    setSearch(e.target.value);
+                    setShowHistory(true);
+                }}
                 autoComplete="off"
-                onKeyDown={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 placeholder="Search anything..."
                 className="
                 w-0 min-w-0 flex-1
@@ -296,8 +324,81 @@ const GlobalSearch = () => {
                 <span className="hidden sm:inline">Search</span>
             </button>
 
+            {/* CONTACT SUGGESTIONS */}
+            {showSuggestionsPanel && (
+                <div
+                    className="
+                    absolute left-0 right-0 top-full
+                    z-999 mt-3
+                    overflow-hidden rounded-2xl
+                    border border-gray-200
+                    bg-white shadow-2xl
+                "
+                >
+                    <div
+                        className="
+                        flex items-center justify-between
+                        border-b bg-gray-50
+                        p-2 text-xs font-semibold
+                        text-gray-500
+                    "
+                    >
+                        <span>Contacts</span>
+
+                        {isSuggestionsLoading && (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                        )}
+                    </div>
+
+                    {!isSuggestionsLoading && suggestions.length === 0 && (
+                        <div className="px-4 py-3 text-sm text-gray-500">
+                            No contacts found. Press Enter to search "{trimmedSearch}".
+                        </div>
+                    )}
+
+                    <div className="max-h-80 overflow-y-auto">
+                        {suggestions.map((contact, index) => {
+                            const name = getContactName(contact);
+
+                            return (
+                                <button
+                                    key={contact.id || contact.email1}
+                                    type="button"
+                                    onMouseEnter={() => setActiveIndex(index)}
+                                    onClick={() => runSearch(contact.email1)}
+                                    className={`
+                                    w-full border-b
+                                    px-4 py-3 text-left
+                                    transition
+                                    last:border-b-0
+                                    hover:bg-blue-50
+                                    ${activeIndex === index ? "bg-blue-50" : ""}
+                                `}
+                                >
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <User className="h-4 w-4 shrink-0 text-blue-600" />
+
+                                        <div className="flex min-w-0 flex-col">
+                                            {name && (
+                                                <span className="truncate text-sm font-medium text-gray-800">
+                                                    {name}
+                                                </span>
+                                            )}
+
+                                            <span className="truncate text-xs text-gray-500">
+                                                {contact.email1}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
             {/* SEARCH HISTORY */}
-            {showHistory && searchHistory.length > 0 && (
+            {showHistoryPanel && (
                 <div
                     className="
                     absolute left-0 right-0 top-full
@@ -322,7 +423,7 @@ const GlobalSearch = () => {
                             key={index}
                             type="button"
                             onClick={() =>
-                                handleHistoryClick(item.value)
+                                runSearch(item.value)
                             }
                             className="
                             w-full border-b

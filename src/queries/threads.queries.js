@@ -27,6 +27,7 @@ export const useThread = (email, threadId = "") => {
 
             return data;
         },
+        retry: false,
         enabled: Boolean(email),
     });
 };

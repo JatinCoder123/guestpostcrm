@@ -474,7 +474,7 @@ const CSS = `
    collapses to a single column and the sidebar becomes a horizontally
    scrolling strip of the same action buttons — nothing is dropped, the
    group headings just fold away since they read oddly in a single row. */
-@media (max-width: 900px) {
+@container settings (max-width: 900px) {
   .dm-app {
     grid-template-areas: "topbar" "sidebar" "main";
     grid-template-columns: 1fr;

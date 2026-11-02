@@ -97,13 +97,5 @@ export const prefetchTimelineData = async (
                 getContactByEmail(email),
         }),
 
-        // queryClient.prefetchQuery({
-        //     queryKey:
-        //         mailerSummaryKeys.byEmail(
-        //             email
-        //         ),
-        //     queryFn: () =>
-        //         getMailerSummary(email),
-        // }),
     ]);
 };
