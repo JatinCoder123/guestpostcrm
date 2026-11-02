@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getLiveSearchData } from "../api/liveSearch.api";
 import { createContactFromEmail } from "../api/contact.api";
 import { useNavigate } from "react-router-dom";
-import { buildLedgerItem, createLedgerEntry } from "../services/utils";
+import { buildLedgerItem, createLedgerEntry, getCurrentUser } from "../services/utils";
 
 export const NoSearchFoundPage = () => {
   const {
@@ -86,11 +86,12 @@ export const NoSearchFoundPage = () => {
       try {
         await createLedgerEntry({
           email: normalizedEmail,
-          group: "Activity",
+          group: "New",
           items: [
             buildLedgerItem({
               status: "Contact-Created",
               detail: `email: {${normalizedEmail}}`,
+              user: getCurrentUser(),
             }),
           ],
         });

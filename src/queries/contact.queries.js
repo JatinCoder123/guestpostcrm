@@ -21,6 +21,7 @@ import { useContext } from "react";
 import { PageContext } from "../context/pageContext";
 import { useTablePreference } from "../hooks/useTablePreference";
 import { emailKeys } from "./email.queries";
+import { buildLedgerItem, createLedgerEntry, getCurrentUser } from "../services/utils";
 
 /**
  * Query Keys
@@ -161,6 +162,23 @@ export const useCreateContact = () => {
             toast.success(
                 "New Contact Created!"
             );
+
+            // The contact exists even if this fails, so don't block on it
+            createLedgerEntry({
+                email: contact.email1,
+                group: "New",
+                items: [
+                    buildLedgerItem({
+                        status: "Contact-Created",
+                        detail: `email: {${contact.email1}}`,
+                        user: getCurrentUser(),
+                    }),
+                ],
+            }).catch(() => {
+                toast.error(
+                    "Contact created, but the ledger entry could not be added."
+                );
+            });
 
             handleDateClick({
                 email: contact.email1, navigate: '/'
