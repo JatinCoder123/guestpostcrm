@@ -102,7 +102,7 @@ export const NoSearchFoundPage = () => {
       setEnteredEmail(normalizedEmail);
       dispatch(ladgerAction.setTimeline(null));
       toast.success("Contact created successfully");
-      navigate(`/contacts?email=${encodeURIComponent(normalizedEmail)}&id=${encodeURIComponent(contactId)}`);
+      navigate(`/entity/contacts/${encodeURIComponent(normalizedEmail)}`);
     } catch (requestError) {
       setCreateError(
         requestError?.response?.data?.error ||

@@ -22,6 +22,9 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 const NAV_BTN =
     "shrink-0 rounded-xl bg-gradient-to-r from-[var(--topbtn-primary)] to-[var(--topbtn-secondary)] px-3 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg lg:px-5";
 
+/* How many duplicate threads the sidebar shows at first, and adds per "Load More". */
+const THREAD_PAGE_SIZE = 5;
+
 function NavigationBar({
     messageLimit,
     setMessageLimit,
@@ -38,8 +41,15 @@ function NavigationBar({
 
 
     const [showThreads, setShowThreads] = useState(false);
+    const [threadLimit, setThreadLimit] = useState(THREAD_PAGE_SIZE);
 
-    const topThreads = duplicateEmail?.slice(0, 5) || [];
+    // Start from the first page again whenever another contact is opened.
+    useEffect(() => {
+        setThreadLimit(THREAD_PAGE_SIZE);
+    }, [email]);
+
+    const topThreads = duplicateEmail?.slice(0, threadLimit) || [];
+    const remainingThreads = duplicateEmail.length - topThreads.length;
 
 
     return (
@@ -191,7 +201,9 @@ function NavigationBar({
                                     </h2>
 
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Recent conversations
+                                        {loading
+                                            ? "Recent conversations"
+                                            : `Showing ${topThreads.length} of ${duplicateEmail.length}`}
                                     </p>
                                 </div>
 
@@ -230,7 +242,8 @@ function NavigationBar({
                                         ))}
                                     </div>
                                 ) : topThreads.length > 0 ? (
-                                    topThreads.map((thread) => {
+                                    <>
+                                    {topThreads.map((thread) => {
                                         const isActive =
                                             threadId ===
                                             thread.thread_id;
@@ -291,7 +304,25 @@ function NavigationBar({
                                                 </div>
                                             </motion.button>
                                         );
-                                    })
+                                    })}
+
+                                    {/* LOAD MORE */}
+                                    {remainingThreads > 0 && (
+                                        <button
+                                            onClick={() =>
+                                                setThreadLimit((p) => p + THREAD_PAGE_SIZE)
+                                            }
+                                            className="
+                          w-full rounded-2xl border border-dashed border-gray-300
+                          py-3 text-sm font-medium text-blue-600
+                          hover:border-blue-300 hover:bg-blue-50
+                          transition-all duration-200 cursor-pointer
+                        "
+                                        >
+                                            Load More ({remainingThreads} remaining)
+                                        </button>
+                                    )}
+                                    </>
                                 ) : (
                                     <div className="text-sm text-gray-400 p-2">
                                         No duplicate threads found
